@@ -3,6 +3,7 @@
 #[cfg(feature = "external")]
 extern crate std;
 
+pub mod external;
 mod token_contract;
 
 use crate::token_contract::create_contract;
