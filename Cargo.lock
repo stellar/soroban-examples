@@ -535,8 +535,10 @@ version = "0.0.0"
 dependencies = [
  "ed25519-dalek",
  "num-bigint",
+ "rand",
  "sha2 0.10.2",
  "stellar-contract-sdk",
+ "stellar-liqpool-contract",
  "stellar-token-contract",
  "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=d998d5e)",
 ]
