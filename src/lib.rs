@@ -144,6 +144,8 @@ fn transfer_b(e: &Env, to: Identifier, amount: BigInt) {
 pub trait LiquidityPoolTrait {
     fn initialize(e: Env, token_a: U256, token_b: U256);
 
+    fn share_id(e: Env) -> Binary;
+
     fn deposit(e: Env, to: Identifier);
 
     fn swap(e: Env, to: Identifier, out_a: BigInt, out_b: BigInt);
@@ -175,6 +177,10 @@ impl LiquidityPoolTrait for LiquidityPool {
         put_total_shares(&e, BigInt::from_u32(&e, 0));
         put_reserve_a(&e, BigInt::from_u32(&e, 0));
         put_reserve_b(&e, BigInt::from_u32(&e, 0));
+    }
+
+    fn share_id(e: Env) -> Binary {
+        get_token_share(&e)
     }
 
     fn deposit(e: Env, to: Identifier) {
@@ -234,13 +240,13 @@ impl LiquidityPoolTrait for LiquidityPool {
         let balance_shares = get_balance_shares(&e);
         let total_shares = get_total_shares(&e);
 
-        let new_balance_a = (balance_a.clone() * balance_shares.clone()) / total_shares.clone();
-        let new_balance_b = (balance_b.clone() * balance_shares.clone()) / total_shares.clone();
+        let out_a = (balance_a.clone() * balance_shares.clone()) / total_shares.clone();
+        let out_b = (balance_b.clone() * balance_shares.clone()) / total_shares.clone();
 
         burn_shares(&e, balance_shares);
-        transfer_a(&e, to.clone(), balance_a - new_balance_a.clone());
-        transfer_b(&e, to, balance_b - new_balance_b.clone());
-        put_reserve_a(&e, new_balance_a);
-        put_reserve_b(&e, new_balance_b);
+        transfer_a(&e, to.clone(), out_a.clone());
+        transfer_b(&e, to, out_b.clone());
+        put_reserve_a(&e, balance_a - out_a);
+        put_reserve_b(&e, balance_b - out_b);
     }
 }
