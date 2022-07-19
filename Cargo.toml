@@ -1,0 +1,24 @@
+[package]
+name = "stellar-liqpool-contract"
+version = "0.0.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["export"]
+export = []
+external = ["stellar-token-contract/external", "dep:ed25519-dalek", "dep:num-bigint", "dep:sha2", "dep:stellar-xdr"]
+
+[dependencies]
+ed25519-dalek = { version = "1.0.1", optional = true }
+num-bigint = { version = "0.4", optional = true }
+sha2 = { version = "0.10.2", optional = true }
+stellar-token-contract = { git = "https://github.com/stellar/rs-stellar-token-contract", rev = "ccb9c6c", default-features = false  }
+stellar-contract-sdk = { git = "https://github.com/stellar/rs-stellar-contract-sdk", rev = "0242e9f" }
+stellar-xdr = { git = "https://github.com/stellar/rs-stellar-xdr", rev = "d998d5e", features = ["next", "std"], optional = true }
+
+[dev_dependencies]
+rand = { version = "0.7.3" }
+stellar-liqpool-contract = { path = ".", default-features = false, features = ["external"] }
