@@ -593,6 +593,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "stellar-single-offer-contract"
+version = "0.0.0"
+dependencies = [
+ "ed25519-dalek",
+ "num-bigint",
+ "rand",
+ "stellar-contract-sdk",
+ "stellar-single-offer-contract",
+ "stellar-token-contract",
+ "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
+]
+
+[[package]]
 name = "stellar-token-contract"
 version = "0.0.0"
 source = "git+https://github.com/stellar/rs-stellar-token-contract?rev=03959d2#03959d257ae94ec006940cf6c849227c5f191a93"
