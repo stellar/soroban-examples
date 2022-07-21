@@ -122,6 +122,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "darling"
+version = "0.14.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4529658bdda7fd6769b8614be250cdcfc3aeb0ee72fe66f9e41e5e5eb73eac02"
+dependencies = [
+ "darling_core",
+ "darling_macro",
+]
+
+[[package]]
+name = "darling_core"
+version = "0.14.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "649c91bc01e8b1eac09fb91e8dbc7d517684ca6be8ebc75bb9cafc894f9fdb6f"
+dependencies = [
+ "fnv",
+ "ident_case",
+ "proc-macro2",
+ "quote",
+ "strsim",
+ "syn",
+]
+
+[[package]]
+name = "darling_macro"
+version = "0.14.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ddfc69c5bfcbd2fc09a0f38451d2daf0e372e367986a83906d1b0dbc88134fb5"
+dependencies = [
+ "darling_core",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "digest"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -170,6 +205,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f107b87b6afc2a64fd13cac55fe06d6c8859f12d4b14cbcdd2c67d0976781be"
 
 [[package]]
+name = "fnv"
+version = "1.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
+
+[[package]]
 name = "generic-array"
 version = "0.14.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -201,6 +242,12 @@ name = "hex"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+
+[[package]]
+name = "ident_case"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
 
 [[package]]
 name = "im-rc"
@@ -455,17 +502,17 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 [[package]]
 name = "stellar-contract-env-common"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=94c1717#94c1717516c8fad4ad65caa148183b9fcbc408db"
+source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=eb44fe13#eb44fe131ee9d16bb5b35527a1a115ec488e0c35"
 dependencies = [
  "static_assertions",
  "stellar-contract-env-macros",
- "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=d998d5e)",
+ "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
 ]
 
 [[package]]
 name = "stellar-contract-env-guest"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=94c1717#94c1717516c8fad4ad65caa148183b9fcbc408db"
+source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=eb44fe13#eb44fe131ee9d16bb5b35527a1a115ec488e0c35"
 dependencies = [
  "stellar-contract-env-common",
 ]
@@ -473,7 +520,7 @@ dependencies = [
 [[package]]
 name = "stellar-contract-env-host"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=94c1717#94c1717516c8fad4ad65caa148183b9fcbc408db"
+source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=eb44fe13#eb44fe131ee9d16bb5b35527a1a115ec488e0c35"
 dependencies = [
  "backtrace",
  "ed25519-dalek",
@@ -493,7 +540,7 @@ dependencies = [
 [[package]]
 name = "stellar-contract-env-macros"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=94c1717#94c1717516c8fad4ad65caa148183b9fcbc408db"
+source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=eb44fe13#eb44fe131ee9d16bb5b35527a1a115ec488e0c35"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -504,25 +551,27 @@ dependencies = [
 [[package]]
 name = "stellar-contract-env-panic-handler-wasm32-unreachable"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=94c1717#94c1717516c8fad4ad65caa148183b9fcbc408db"
+source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=eb44fe13#eb44fe131ee9d16bb5b35527a1a115ec488e0c35"
 
 [[package]]
 name = "stellar-contract-macros"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-sdk?rev=0242e9f#0242e9f02dbb1db8ddd8536d879d53b4ae9c28a1"
+source = "git+https://github.com/stellar/rs-stellar-contract-sdk?rev=d279737#d27973797f67f16519949b75b8147e97ef12fe53"
 dependencies = [
+ "darling",
  "itertools",
  "proc-macro2",
  "quote",
- "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=0edf9326)",
+ "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
  "syn",
 ]
 
 [[package]]
 name = "stellar-contract-sdk"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-sdk?rev=0242e9f#0242e9f02dbb1db8ddd8536d879d53b4ae9c28a1"
+source = "git+https://github.com/stellar/rs-stellar-contract-sdk?rev=d279737#d27973797f67f16519949b75b8147e97ef12fe53"
 dependencies = [
+ "ed25519-dalek",
  "stellar-contract-env-guest",
  "stellar-contract-env-host",
  "stellar-contract-env-panic-handler-wasm32-unreachable",
@@ -540,27 +589,19 @@ dependencies = [
  "stellar-contract-sdk",
  "stellar-liqpool-contract",
  "stellar-token-contract",
- "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=d998d5e)",
+ "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
 ]
 
 [[package]]
 name = "stellar-token-contract"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-token-contract?rev=ccb9c6c#ccb9c6c95499f01440ee9e3b304fb1d7406e754c"
+source = "git+https://github.com/stellar/rs-stellar-token-contract?rev=03959d2#03959d257ae94ec006940cf6c849227c5f191a93"
 dependencies = [
  "ed25519-dalek",
  "num-bigint",
  "sha2 0.10.2",
  "stellar-contract-sdk",
- "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=d998d5e)",
-]
-
-[[package]]
-name = "stellar-xdr"
-version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-xdr?rev=0edf9326#0edf932688f672be03b1a06ebaed0304bf964485"
-dependencies = [
- "base64",
+ "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
 ]
 
 [[package]]
@@ -575,10 +616,16 @@ dependencies = [
 [[package]]
 name = "stellar-xdr"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-xdr?rev=d998d5e#d998d5e64b0ac63272f9082753482854f02b5aac"
+source = "git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b#94e01c7bbb3622e12907e1ceb95ab85f4e55e085"
 dependencies = [
- "base64",
+ "num-bigint",
 ]
+
+[[package]]
+name = "strsim"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 
 [[package]]
 name = "subtle"
