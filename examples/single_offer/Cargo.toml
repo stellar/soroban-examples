@@ -1,0 +1,23 @@
+[package]
+name = "stellar-single-offer-contract"
+version = "0.0.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["export"]
+export = []
+external = ["stellar-token-contract/external", "dep:ed25519-dalek", "dep:num-bigint", "dep:stellar-xdr"]
+
+[dependencies]
+ed25519-dalek = { version = "1.0.1", optional = true }
+num-bigint = { version = "0.4", optional = true }
+stellar-token-contract = { git = "https://github.com/stellar/rs-stellar-token-contract", rev = "03959d2", default-features = false  }
+stellar-contract-sdk = { git = "https://github.com/stellar/rs-stellar-contract-sdk", rev = "d279737" }
+stellar-xdr = { git = "https://github.com/stellar/rs-stellar-xdr", rev = "94e01c7b", features = ["next", "std"], optional = true }
+
+[dev_dependencies]
+rand = { version = "0.7.3" }
+stellar-single-offer-contract = { path = ".", default-features = false, features = ["external"] }
