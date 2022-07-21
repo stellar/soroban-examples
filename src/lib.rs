@@ -156,7 +156,7 @@ pub trait LiquidityPoolTrait {
 
 struct LiquidityPool;
 
-#[contractimpl("export")]
+#[contractimpl(export_if = "export", tests_if = "external")]
 impl LiquidityPoolTrait for LiquidityPool {
     fn initialize(e: Env, token_a: U256, token_b: U256) {
         if token_a > token_b {
