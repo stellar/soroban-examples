@@ -2,7 +2,7 @@ use stellar_contract_sdk::{Binary, Env, VariableLengthBinary};
 use stellar_token_contract::public_types::U256;
 
 #[cfg(not(feature = "external"))]
-pub const TOKEN_CONTRACT: &[u8] = include_bytes!("../wasm/stellar_token_contract.wasm");
+pub const TOKEN_CONTRACT: &[u8] = include_bytes!("../../wasm/stellar_token_contract.wasm");
 
 #[cfg(not(feature = "external"))]
 pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> Binary {
