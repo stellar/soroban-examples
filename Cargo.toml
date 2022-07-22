@@ -2,6 +2,6 @@
 resolver = "2"
 
 members = [
-    "examples/liquidity_pool",
-    "examples/single_offer",
+    "liquidity_pool",
+    "single_offer",
 ]
