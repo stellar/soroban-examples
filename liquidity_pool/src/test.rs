@@ -12,23 +12,16 @@ fn generate_keypair() -> Keypair {
 }
 
 fn make_auth(kp: &Keypair, msg: &token::Message) -> token::Authorization {
-    use token::{Authorization, Ed25519Authorization};
     let signature = msg.sign(kp).unwrap();
-    Authorization::Ed25519(Ed25519Authorization {
-        nonce: msg.0.clone(),
-        signature,
-    })
+    token::Authorization::Ed25519(signature)
 }
 
 fn make_keyed_auth(kp: &Keypair, msg: &token::Message) -> token::KeyedAuthorization {
-    use token::{Ed25519Authorization, KeyedAuthorization, KeyedEd25519Authorization};
+    use token::{KeyedAuthorization, KeyedEd25519Authorization};
     let signature = msg.sign(kp).unwrap();
     KeyedAuthorization::Ed25519(KeyedEd25519Authorization {
         public_key: kp.public.to_bytes(),
-        auth: Ed25519Authorization {
-            nonce: msg.0.clone(),
-            signature,
-        },
+        signature,
     })
 }
 

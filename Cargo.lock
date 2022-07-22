@@ -588,7 +588,7 @@ dependencies = [
  "sha2 0.10.2",
  "stellar-contract-sdk",
  "stellar-liqpool-contract",
- "stellar-token-contract",
+ "stellar-token-contract 0.0.0 (git+https://github.com/stellar/rs-stellar-token-contract?rev=3e73379)",
  "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
 ]
 
@@ -601,7 +601,7 @@ dependencies = [
  "rand",
  "stellar-contract-sdk",
  "stellar-single-offer-contract",
- "stellar-token-contract",
+ "stellar-token-contract 0.0.0 (git+https://github.com/stellar/rs-stellar-token-contract?rev=03959d2)",
  "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
 ]
 
@@ -613,6 +613,17 @@ dependencies = [
  "ed25519-dalek",
  "num-bigint",
  "sha2 0.10.2",
+ "stellar-contract-sdk",
+ "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
+]
+
+[[package]]
+name = "stellar-token-contract"
+version = "0.0.0"
+source = "git+https://github.com/stellar/rs-stellar-token-contract?rev=3e73379#3e7337996851283c6cf9746dba159d34fe3455ef"
+dependencies = [
+ "ed25519-dalek",
+ "num-bigint",
  "stellar-contract-sdk",
  "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
 ]
