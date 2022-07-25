@@ -3,7 +3,7 @@
 use ed25519_dalek::{Keypair, Signer};
 use num_bigint::BigInt;
 use std::vec::Vec;
-use stellar_contract_sdk::{Binary, Env};
+use stellar_contract_sdk::{Binary, Env, TryIntoVal};
 use stellar_token_contract::external::{Authorization, Identifier, U256};
 use stellar_xdr::{HostFunction, ScMap, ScMapEntry, ScObject, ScVal, WriteXdr};
 
@@ -129,6 +129,6 @@ pub fn get_price(e: &mut Env, contract_id: &U256) -> Price {
         HostFunction::Call,
         (contract_id, "get_price").try_into().unwrap(),
     )
-    .try_into()
+    .try_into_val(e)
     .unwrap()
 }

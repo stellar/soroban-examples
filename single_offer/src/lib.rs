@@ -35,7 +35,7 @@ impl IntoEnvVal<Env, RawVal> for DataKey {
 // to sell 30 XLM and buy 5 BTC, the price would be Price{n: 5, d: 30}.
 #[derive(Clone)]
 #[contracttype]
-struct Price {
+pub struct Price {
     pub n: u32,
     pub d: u32,
 }
