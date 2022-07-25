@@ -3,6 +3,7 @@
 use crate::external as single_offer;
 use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
+use single_offer::MessageWithoutNonce as SingleOfferFn;
 use stellar_contract_sdk::Env;
 use stellar_token_contract::external as token;
 use token::{Identifier, MessageWithoutNonce as TokenContractFn, U256};
@@ -11,28 +12,50 @@ fn generate_keypair() -> Keypair {
     Keypair::generate(&mut thread_rng())
 }
 
-fn make_auth(kp: &Keypair, msg: &token::Message) -> token::Authorization {
-    use token::{Authorization, Ed25519Authorization};
+fn make_auth_offer(kp: &Keypair, msg: &single_offer::Message) -> token::Authorization {
     let signature = msg.sign(kp).unwrap();
-    Authorization::Ed25519(Ed25519Authorization {
-        nonce: msg.0.clone(),
+    token::Authorization::Ed25519(signature)
+}
+
+fn make_auth(kp: &Keypair, msg: &token::Message) -> token::Authorization {
+    let signature = msg.sign(kp).unwrap();
+    token::Authorization::Ed25519(signature)
+}
+
+fn make_keyed_auth(kp: &Keypair, msg: &token::Message) -> token::KeyedAuthorization {
+    use token::{KeyedAuthorization, KeyedEd25519Authorization};
+
+    let signature = msg.sign(kp).unwrap();
+    KeyedAuthorization::Ed25519(KeyedEd25519Authorization {
+        public_key: kp.public.to_bytes(),
         signature,
     })
 }
 
-fn make_keyed_auth(kp: &Keypair, msg: &token::Message) -> token::KeyedAuthorization {
-    use token::{Ed25519Authorization, KeyedAuthorization, KeyedEd25519Authorization};
-    let signature = msg.sign(kp).unwrap();
-    KeyedAuthorization::Ed25519(KeyedEd25519Authorization {
-        public_key: kp.public.to_bytes(),
-        auth: Ed25519Authorization {
-            nonce: msg.0.clone(),
-            signature,
-        },
-    })
+fn sign_ed25519_then_do_offer_fn(
+    e: &mut Env,
+    contract_id: &[u8; 32],
+    kp: &Keypair,
+    cf: SingleOfferFn,
+) {
+    let nonce = single_offer::nonce(e, contract_id);
+    let msg = single_offer::Message(nonce, cf);
+    match &msg.1 {
+        SingleOfferFn::Withdraw(amount) => {
+            single_offer::withdraw(e, contract_id, make_auth_offer(kp, &msg), amount);
+        }
+        SingleOfferFn::UpdatePrice(n, d) => {
+            single_offer::updt_price(e, contract_id, make_auth_offer(kp, &msg), n, d);
+        }
+    }
 }
 
-fn sign_ed25519_then_do(e: &mut Env, contract_id: &[u8; 32], kp: &Keypair, cf: TokenContractFn) {
+fn sign_ed25519_then_do_token_fn(
+    e: &mut Env,
+    contract_id: &[u8; 32],
+    kp: &Keypair,
+    cf: TokenContractFn,
+) {
     let nonce = token::nonce(e, contract_id, &(Identifier::Ed25519(kp.public.to_bytes())));
     let msg = token::Message(nonce, cf);
     match &msg.1 {
@@ -110,7 +133,7 @@ fn test() {
     let single_offer = create_single_offer_contract(&mut e, &id1, &token_a, &token_b, 1, 2);
 
     // MINT A for id1
-    sign_ed25519_then_do(
+    sign_ed25519_then_do_token_fn(
         &mut e,
         &token_a,
         &admin_a,
@@ -126,7 +149,7 @@ fn test() {
     );
 
     // MINT B for id2
-    sign_ed25519_then_do(
+    sign_ed25519_then_do_token_fn(
         &mut e,
         &token_b,
         &admin_b,
@@ -142,7 +165,7 @@ fn test() {
     );
 
     // TRANSFER 100 A FROM ID1 TO CONTRACT
-    sign_ed25519_then_do(
+    sign_ed25519_then_do_token_fn(
         &mut e,
         &token_a,
         &id1,
@@ -162,7 +185,7 @@ fn test() {
     );
 
     // TRANSFER 10 B FROM ID2 TO CONTRACT
-    sign_ed25519_then_do(
+    sign_ed25519_then_do_token_fn(
         &mut e,
         &token_b,
         &id2,
@@ -233,7 +256,13 @@ fn test() {
         0u64.into()
     );
 
-    single_offer::withdraw(&mut e, &single_offer);
+    //WITHDRAW 70 A, LEAVING 10 IN THE CONTRACT
+    sign_ed25519_then_do_offer_fn(
+        &mut e,
+        &single_offer,
+        &id1,
+        SingleOfferFn::Withdraw(70u32.into()),
+    );
 
     assert_eq!(
         token::balance(
@@ -241,7 +270,7 @@ fn test() {
             &token_a,
             &Identifier::Ed25519(id1.public.to_bytes())
         ),
-        980.into()
+        970.into()
     );
     assert_eq!(
         token::balance(
@@ -253,6 +282,72 @@ fn test() {
     );
     assert_eq!(
         token::balance(&mut e, &token_a, &Identifier::Contract(single_offer)),
+        10u64.into()
+    );
+
+    // UPDATE THE PRICE TO 1/1
+    sign_ed25519_then_do_offer_fn(
+        &mut e,
+        &single_offer,
+        &id1,
+        SingleOfferFn::UpdatePrice(1u32.into(), 1u32.into()),
+    );
+
+    // TRANSFER 10 B FROM ID2 TO CONTRACT
+    sign_ed25519_then_do_token_fn(
+        &mut e,
+        &token_b,
+        &id2,
+        TokenContractFn::Transfer(Identifier::Contract(single_offer), 10u64.into()),
+    );
+    // TRADE WILL SEND 10 B FROM CONTRACT TO ID1, AND 10 A FROM CONTRACT TO ID2 DUE TO NEW PRICE
+    single_offer::trade(
+        &mut e,
+        &single_offer,
+        Identifier::Ed25519(id2.public.to_bytes()),
+        10,
+    );
+
+    assert_eq!(
+        token::balance(
+            &mut e,
+            &token_a,
+            &Identifier::Ed25519(id1.public.to_bytes())
+        ),
+        970.into()
+    );
+    assert_eq!(
+        token::balance(
+            &mut e,
+            &token_a,
+            &Identifier::Ed25519(id2.public.to_bytes())
+        ),
+        30.into()
+    );
+    assert_eq!(
+        token::balance(&mut e, &token_a, &Identifier::Contract(single_offer)),
+        0u64.into()
+    );
+
+    // VALIDATE B BALANCES
+    assert_eq!(
+        token::balance(
+            &mut e,
+            &token_b,
+            &Identifier::Ed25519(id1.public.to_bytes())
+        ),
+        20.into()
+    );
+    assert_eq!(
+        token::balance(
+            &mut e,
+            &token_b,
+            &Identifier::Ed25519(id2.public.to_bytes())
+        ),
+        980.into()
+    );
+    assert_eq!(
+        token::balance(&mut e, &token_b, &Identifier::Contract(single_offer)),
         0u64.into()
     );
 }

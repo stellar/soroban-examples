@@ -1,10 +1,10 @@
-use stellar_contract_sdk::{Binary, Env, VariableLengthBinary};
+use stellar_contract_sdk::{Binary, Env};
 use stellar_token_contract::public_types::U256;
 
-#[cfg(not(feature = "external"))]
+#[cfg(not(feature = "testutils"))]
 pub const TOKEN_CONTRACT: &[u8] = include_bytes!("../../wasm/stellar_token_contract.wasm");
 
-#[cfg(not(feature = "external"))]
+#[cfg(not(feature = "testutils"))]
 pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> Binary {
     // TODO: Use linear memory for this
     let mut bin = Binary::new(&e);
@@ -18,11 +18,10 @@ pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> Binary {
     e.create_contract_from_contract(bin, salt).into()
 }
 
-#[cfg(feature = "external")]
+#[cfg(feature = "testutils")]
 pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> Binary {
     use sha2::{Digest, Sha256};
     use std::vec::Vec;
-    use stellar_contract_sdk::FixedLengthBinary;
     use stellar_xdr::{Hash, HashIdPreimage, HashIdPreimageContractId, Uint256, WriteXdr};
 
     let salt = {
@@ -32,7 +31,7 @@ pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> Binary {
         salt_bin = e.compute_hash_sha256(salt_bin);
         let mut salt_bytes: [u8; 32] = Default::default();
         for i in 0..salt_bin.len() {
-            salt_bytes[i as usize] = salt_bin.get(i);
+            salt_bytes[i as usize] = salt_bin.get(i).unwrap();
         }
         Uint256(salt_bytes)
     };

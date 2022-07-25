@@ -9,16 +9,16 @@ crate-type = ["cdylib", "rlib"]
 [features]
 default = ["export"]
 export = []
-external = ["stellar-token-contract/external", "dep:ed25519-dalek", "dep:num-bigint", "dep:sha2", "dep:stellar-xdr"]
+testutils = ["stellar-token-contract/testutils", "dep:ed25519-dalek", "dep:num-bigint", "dep:sha2", "dep:stellar-xdr"]
 
 [dependencies]
 ed25519-dalek = { version = "1.0.1", optional = true }
 num-bigint = { version = "0.4", optional = true }
 sha2 = { version = "0.10.2", optional = true }
-stellar-token-contract = { git = "https://github.com/stellar/rs-stellar-token-contract", rev = "3e73379", default-features = false  }
-stellar-contract-sdk = { git = "https://github.com/stellar/rs-stellar-contract-sdk", rev = "d279737" }
+stellar-token-contract = { git = "https://github.com/stellar/rs-stellar-token-contract", rev = "e5314b5", default-features = false  }
+stellar-contract-sdk = { git = "https://github.com/stellar/rs-stellar-contract-sdk", rev = "1ecd5df" }
 stellar-xdr = { git = "https://github.com/stellar/rs-stellar-xdr", rev = "94e01c7b", features = ["next", "std"], optional = true }
 
 [dev_dependencies]
 rand = { version = "0.7.3" }
-stellar-liqpool-contract = { path = ".", default-features = false, features = ["external"] }
+stellar-liqpool-contract = { path = ".", default-features = false, features = ["testutils"] }
