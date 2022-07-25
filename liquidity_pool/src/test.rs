@@ -18,7 +18,6 @@ fn make_auth(kp: &Keypair, msg: &token::Message) -> token::Authorization {
 
 fn make_keyed_auth(kp: &Keypair, msg: &token::Message) -> token::KeyedAuthorization {
     use token::{KeyedAuthorization, KeyedEd25519Authorization};
-
     let signature = msg.sign(kp).unwrap();
     KeyedAuthorization::Ed25519(KeyedEd25519Authorization {
         public_key: kp.public.to_bytes(),
