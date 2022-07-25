@@ -1,6 +1,6 @@
 #![no_std]
 
-#[cfg(feature = "external")]
+#[cfg(feature = "testutils")]
 extern crate std;
 
 mod cryptography;
@@ -56,10 +56,6 @@ fn get_balance(e: &Env, contract_id: Binary) -> BigInt {
     let mut args: Vec<EnvVal> = Vec::new(&e);
     args.push(get_contract_id(e).into_env_val(&e));
     e.call(contract_id, Symbol::from_str("balance"), args)
-}
-
-fn get_balance_sell(e: &Env) -> BigInt {
-    get_balance(&e, get_sell_token(&e))
 }
 
 fn get_balance_buy(e: &Env) -> BigInt {
@@ -118,14 +114,14 @@ pub fn to_administrator_authorization(e: &Env, auth: Authorization) -> KeyedAuth
     match (admin, auth) {
         (Identifier::Contract(admin_id), Authorization::Contract) => {
             if admin_id != e.get_invoking_contract() {
-                panic!();
+                panic!("admin is not invoking contract");
             }
             KeyedAuthorization::Contract
         }
-        (Identifier::Ed25519(admin_id), Authorization::Ed25519(ea)) => {
+        (Identifier::Ed25519(admin_id), Authorization::Ed25519(signature)) => {
             KeyedAuthorization::Ed25519(KeyedEd25519Authorization {
                 public_key: admin_id,
-                auth: ea,
+                signature,
             })
         }
         (Identifier::Account(admin_id), Authorization::Account(aa)) => {
@@ -134,7 +130,7 @@ pub fn to_administrator_authorization(e: &Env, auth: Authorization) -> KeyedAuth
                 auth: aa,
             })
         }
-        _ => panic!(),
+        _ => panic!("unknown identifier type"),
     }
 }
 
@@ -149,7 +145,7 @@ pub trait SingleOfferTrait {
 
 struct SingleOffer;
 
-#[contractimpl(export_if = "export", tests_if = "external")]
+#[contractimpl(export_if = "export")]
 impl SingleOfferTrait for SingleOffer {
     fn initialize(e: Env, admin: Identifier, sell_token: U256, buy_token: U256, n: u32, d: u32) {
         if has_administrator(&e) || n == 0 {

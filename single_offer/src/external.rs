@@ -1,9 +1,9 @@
-#![cfg(feature = "external")]
+#![cfg(feature = "testutils")]
 
 use ed25519_dalek::{Keypair, Signer};
 use num_bigint::BigInt;
 use std::vec::Vec;
-use stellar_contract_sdk::{Binary, Env, VariableLengthBinary};
+use stellar_contract_sdk::{Binary, Env};
 use stellar_token_contract::external::{Authorization, Identifier, U256};
 use stellar_xdr::{HostFunction, ScMap, ScMapEntry, ScObject, ScVal, WriteXdr};
 
