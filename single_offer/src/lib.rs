@@ -141,6 +141,7 @@ pub trait SingleOfferTrait {
     fn trade(e: Env, to: Identifier, min: u32);
     fn withdraw(e: Env, admin: Authorization, amount: BigInt);
     fn updt_price(e: Env, admin: Authorization, n: u32, d: u32);
+    fn get_price(e: Env) -> Price;
 }
 
 struct SingleOffer;
@@ -202,5 +203,9 @@ impl SingleOfferTrait for SingleOffer {
         );
 
         put_price(&e, Price { n, d });
+    }
+
+    fn get_price(e: Env) -> Price {
+        get_price(&e)
     }
 }

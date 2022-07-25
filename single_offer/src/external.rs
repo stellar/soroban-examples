@@ -7,6 +7,8 @@ use stellar_contract_sdk::{Binary, Env};
 use stellar_token_contract::external::{Authorization, Identifier, U256};
 use stellar_xdr::{HostFunction, ScMap, ScMapEntry, ScObject, ScVal, WriteXdr};
 
+use crate::Price;
+
 pub fn register_test_contract(e: &Env, contract_id: &U256) {
     let mut bin = Binary::new(e);
     for b in contract_id {
@@ -120,4 +122,13 @@ pub fn updt_price(e: &mut Env, contract_id: &U256, admin: Authorization, n: &u32
             .try_into()
             .unwrap(),
     );
+}
+
+pub fn get_price(e: &mut Env, contract_id: &U256) -> Price {
+    e.invoke_contract(
+        HostFunction::Call,
+        (contract_id, "get_price").try_into().unwrap(),
+    )
+    .try_into()
+    .unwrap()
 }
