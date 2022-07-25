@@ -1,7 +1,7 @@
-#![cfg(feature = "external")]
+#![cfg(feature = "testutils")]
 
 use num_bigint::BigInt;
-use stellar_contract_sdk::{Binary, Env, VariableLengthBinary};
+use stellar_contract_sdk::{Binary, Env};
 use stellar_token_contract::external::{Identifier, U256};
 use stellar_xdr::HostFunction;
 
