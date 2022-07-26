@@ -74,7 +74,7 @@ fn create_liqpool_contract(e: &mut Env, token_a: &U256, token_b: &U256) -> U256 
 
 #[test]
 fn test() {
-    let mut e = Env::with_empty_recording_storage();
+    let mut e = Env::default();
 
     let mut admin_a = generate_keypair();
     let mut admin_b = generate_keypair();
