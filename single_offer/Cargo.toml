@@ -14,8 +14,8 @@ testutils = ["stellar-token-contract/testutils", "dep:ed25519-dalek", "dep:num-b
 [dependencies]
 ed25519-dalek = { version = "1.0.1", optional = true }
 num-bigint = { version = "0.4", optional = true }
-stellar-token-contract = { git = "https://github.com/stellar/rs-stellar-token-contract", rev = "e5314b5", default-features = false  }
-stellar-contract-sdk = { git = "https://github.com/stellar/rs-stellar-contract-sdk", rev = "1ecd5df" }
+stellar-token-contract = { git = "https://github.com/stellar/rs-stellar-token-contract", rev = "feb3fb82", default-features = false  }
+stellar-contract-sdk = { git = "https://github.com/stellar/rs-stellar-contract-sdk", rev = "b4044595" }
 stellar-xdr = { git = "https://github.com/stellar/rs-stellar-xdr", rev = "94e01c7b", features = ["next", "std"], optional = true }
 
 [dev_dependencies]

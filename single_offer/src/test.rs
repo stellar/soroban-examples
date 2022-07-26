@@ -119,7 +119,7 @@ fn create_single_offer_contract(
 
 #[test]
 fn test() {
-    let mut e = Env::with_empty_recording_storage();
+    let mut e = Env::default();
 
     let admin_a = generate_keypair();
     let admin_b = generate_keypair();
