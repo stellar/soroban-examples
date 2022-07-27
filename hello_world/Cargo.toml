@@ -1,0 +1,24 @@
+[package]
+name = "stellar-hello-world-contract"
+version = "0.0.0"
+authors = ["Stellar Development Foundation <info@stellar.org>"]
+license = "Apache-2.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+doctest = false
+
+[features]
+default = ["export"]
+export = []
+testutils = ["stellar-contract-sdk/testutils", "dep:stellar-xdr"]
+
+[dependencies]
+stellar-contract-sdk = { git = "https://github.com/stellar/rs-stellar-contract-sdk", rev = "60d82bc" }
+# stellar-contract-sdk = { path = "../../rs-stellar-contract-sdk/sdk" }
+stellar-xdr = { git = "https://github.com/stellar/rs-stellar-xdr", rev = "94e01c7b", features = ["next", "std"], optional = true }
+
+[dev_dependencies]
+rand = { version = "0.7.3" }
+stellar-hello-world-contract = { path = ".", default-features = false, features = ["testutils"] }
