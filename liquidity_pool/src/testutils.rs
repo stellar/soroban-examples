@@ -27,25 +27,25 @@ impl LiquidityPool {
         }
     }
 
-    pub fn initialize(&mut self, token_a: &[u8; 32], token_b: &[u8; 32]) {
+    pub fn initialize(&self, token_a: &[u8; 32], token_b: &[u8; 32]) {
         let token_a = FixedBinary::from_array(&self.env, *token_a);
         let token_b = FixedBinary::from_array(&self.env, *token_b);
-        initialize(&mut self.env, &self.contract_id, &token_a, &token_b)
+        initialize(&self.env, &self.contract_id, &token_a, &token_b)
     }
 
-    pub fn share_id(&mut self) -> Binary {
-        share_id(&mut self.env, &self.contract_id)
+    pub fn share_id(&self) -> Binary {
+        share_id(&self.env, &self.contract_id)
     }
 
-    pub fn deposit(&mut self, to: &Identifier) {
-        deposit(&mut self.env, &self.contract_id, to)
+    pub fn deposit(&self, to: &Identifier) {
+        deposit(&self.env, &self.contract_id, to)
     }
 
-    pub fn swap(&mut self, to: &Identifier, out_a: &BigInt, out_b: &BigInt) {
-        swap(&mut self.env, &self.contract_id, to, out_a, out_b)
+    pub fn swap(&self, to: &Identifier, out_a: &BigInt, out_b: &BigInt) {
+        swap(&self.env, &self.contract_id, to, out_a, out_b)
     }
 
-    pub fn withdraw(&mut self, to: &Identifier) {
-        withdraw(&mut self.env, &self.contract_id, to)
+    pub fn withdraw(&self, to: &Identifier) {
+        withdraw(&self.env, &self.contract_id, to)
     }
 }

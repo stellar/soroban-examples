@@ -31,22 +31,22 @@ fn generate_keypair() -> Keypair {
     Keypair::generate(&mut thread_rng())
 }
 
-fn create_token_contract(e: &mut Env, id: &[u8; 32], admin: &Keypair) -> Token {
+fn create_token_contract(e: &Env, id: &[u8; 32], admin: &Keypair) -> Token {
     register_token(&e, id);
-    let mut token = Token::new(e, id);
+    let token = Token::new(e, id);
     // decimals, name, symbol don't matter in tests
     token.initialize(&to_ed25519(&e, admin), 7, "name", "symbol");
     token
 }
 
 fn create_liqpool_contract(
-    e: &mut Env,
+    e: &Env,
     token_a: &[u8; 32],
     token_b: &[u8; 32],
 ) -> ([u8; 32], LiquidityPool) {
     let id = generate_contract_id();
     register_liqpool(&e, &id);
-    let mut liqpool = LiquidityPool::new(e, &id);
+    let liqpool = LiquidityPool::new(e, &id);
     liqpool.initialize(token_a, token_b);
     (id, liqpool)
 }
@@ -61,7 +61,7 @@ fn contract_id_to_array(contract_id: Binary) -> [u8; 32] {
 
 #[test]
 fn test() {
-    let mut e: Env = Default::default();
+    let e: Env = Default::default();
 
     let admin1 = generate_keypair();
     let admin2 = generate_keypair();
@@ -69,12 +69,12 @@ fn test() {
     let user1_id = to_ed25519(&e, &user1);
 
     let (contract1, contract2) = generate_sorted_contract_ids();
-    let mut token1 = create_token_contract(&mut e, &contract1, &admin1);
-    let mut token2 = create_token_contract(&mut e, &contract2, &admin2);
-    let (contract_pool, mut liqpool) = create_liqpool_contract(&mut e, &contract1, &contract2);
+    let token1 = create_token_contract(&e, &contract1, &admin1);
+    let token2 = create_token_contract(&e, &contract2, &admin2);
+    let (contract_pool, liqpool) = create_liqpool_contract(&e, &contract1, &contract2);
     let pool_id = Identifier::Contract(FixedBinary::from_array(&e, contract_pool));
     let contract_share = contract_id_to_array(liqpool.share_id());
-    let mut token_share = Token::new(&e, &contract_share);
+    let token_share = Token::new(&e, &contract_share);
 
     token1.mint(&admin1, &user1_id, &BigInt::from_u32(&e, 1000));
     assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 1000));
