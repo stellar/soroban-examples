@@ -3,8 +3,8 @@
 #[cfg(feature = "testutils")]
 extern crate std;
 
-pub mod external;
 mod test;
+pub mod testutils;
 mod token_contract;
 
 use crate::token_contract::create_contract;

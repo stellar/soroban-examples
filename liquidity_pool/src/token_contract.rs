@@ -51,7 +51,7 @@ pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> Binary {
         id
     };
 
-    stellar_token_contract::external::register_test_contract(e, &new_contract_id);
+    stellar_token_contract::testutils::register_test_contract(e, &new_contract_id);
 
     let mut res = Binary::new(e);
     for b in new_contract_id {
