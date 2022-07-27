@@ -57,7 +57,7 @@ mod test {
         env.register_contract(contract_id.clone(), HelloContract);
 
         let (words, count) =
-            __hello::call_external(&env, &contract_id, &Recipient::World.into_val(&env));
+            __hello::call_internal(&env, &contract_id, &Recipient::World.into_val(&env));
         assert_eq!(
             words,
             vec![&env, Symbol::from_str("Hello"), Symbol::from_str("World")]
@@ -65,14 +65,14 @@ mod test {
         assert_eq!(count, 1);
 
         let (words, count) =
-            __hello::call_external(&env, &contract_id, &Recipient::World.into_val(&env));
+            __hello::call_internal(&env, &contract_id, &Recipient::World.into_val(&env));
         assert_eq!(
             words,
             vec![&env, Symbol::from_str("Hello"), Symbol::from_str("World")]
         );
         assert_eq!(count, 2);
 
-        let (words, count) = __hello::call_external(
+        let (words, count) = __hello::call_internal(
             &env,
             &contract_id,
             &Recipient::Person(Person {
