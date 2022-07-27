@@ -4,8 +4,8 @@
 extern crate std;
 
 mod cryptography;
-pub mod external;
 mod test;
+pub mod testutils;
 
 use stellar_contract_sdk::{
     contractimpl, contracttype, vec, BigInt, Binary, Env, EnvVal, IntoEnvVal, IntoVal, RawVal,
