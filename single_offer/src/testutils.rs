@@ -12,12 +12,12 @@ pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
     e.register_contract(contract_id, crate::SingleOffer {});
 }
 
-pub use crate::__get_price::call_external as get_price;
-pub use crate::__initialize::call_external as initialize;
-pub use crate::__nonce::call_external as nonce;
-pub use crate::__trade::call_external as trade;
-pub use crate::__updt_price::call_external as updt_price;
-pub use crate::__withdraw::call_external as withdraw;
+pub use crate::__get_price::call_internal as get_price;
+pub use crate::__initialize::call_internal as initialize;
+pub use crate::__nonce::call_internal as nonce;
+pub use crate::__trade::call_internal as trade;
+pub use crate::__updt_price::call_internal as updt_price;
+pub use crate::__withdraw::call_internal as withdraw;
 
 pub struct SingleOffer {
     env: Env,
