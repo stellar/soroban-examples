@@ -7,10 +7,9 @@ mod cryptography;
 mod test;
 pub mod testutils;
 
-use stellar_contract_sdk::{
-    contractimpl, contracttype, vec, BigInt, Binary, Env, EnvVal, IntoVal, RawVal, Symbol, Vec,
-};
-use stellar_token_contract::public_types::{
+use stellar_contract_sdk::{contractimpl, contracttype, vec, BigInt, Binary, Env, IntoVal, RawVal};
+use stellar_token_contract as token;
+use token::public_types::{
     Authorization, Identifier, KeyedAccountAuthorization, KeyedAuthorization,
     KeyedEd25519Authorization, U256,
 };
@@ -53,9 +52,7 @@ fn get_buy_token(e: &Env) -> Binary {
 }
 
 fn get_balance(e: &Env, contract_id: Binary) -> BigInt {
-    let mut args: Vec<EnvVal> = Vec::new(&e);
-    args.push(get_contract_id(e).into_env_val(&e));
-    e.invoke_contract(contract_id, Symbol::from_str("balance"), args)
+    token::balance(e, &contract_id, &get_contract_id(e))
 }
 
 fn get_balance_buy(e: &Env) -> BigInt {
@@ -79,11 +76,7 @@ fn get_price(e: &Env) -> Price {
 }
 
 fn transfer(e: &Env, contract_id: Binary, to: Identifier, amount: BigInt) {
-    let mut args = Vec::new(e);
-    args.push(KeyedAuthorization::Contract.into_env_val(e));
-    args.push(to.into_env_val(e));
-    args.push(amount.into_env_val(e));
-    e.invoke_contract::<()>(contract_id, Symbol::from_str("xfer"), args);
+    token::xfer(e, &contract_id, &KeyedAuthorization::Contract, &to, &amount);
 }
 
 fn transfer_sell(e: &Env, to: Identifier, amount: BigInt) {
