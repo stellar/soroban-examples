@@ -82,7 +82,7 @@ pub fn initialize(
     n: u32,
     d: u32,
 ) {
-    e.invoke_contract(
+    e.invoke_contract_external(
         HostFunction::Call,
         (contract_id, "initialize", &admin, token_a, token_b, n, d)
             .try_into()
@@ -91,7 +91,7 @@ pub fn initialize(
 }
 
 pub fn nonce(e: &mut Env, contract_id: &U256) -> BigInt {
-    e.invoke_contract(
+    e.invoke_contract_external(
         HostFunction::Call,
         (contract_id, "nonce").try_into().unwrap(),
     )
@@ -100,14 +100,14 @@ pub fn nonce(e: &mut Env, contract_id: &U256) -> BigInt {
 }
 
 pub fn trade(e: &mut Env, contract_id: &U256, to: Identifier, min: u32) {
-    e.invoke_contract(
+    e.invoke_contract_external(
         HostFunction::Call,
         (contract_id, "trade", &to, min).try_into().unwrap(),
     );
 }
 
 pub fn withdraw(e: &mut Env, contract_id: &U256, admin: Authorization, amount: &BigInt) {
-    e.invoke_contract(
+    e.invoke_contract_external(
         HostFunction::Call,
         (contract_id, "withdraw", &admin, amount)
             .try_into()
@@ -116,7 +116,7 @@ pub fn withdraw(e: &mut Env, contract_id: &U256, admin: Authorization, amount: &
 }
 
 pub fn updt_price(e: &mut Env, contract_id: &U256, admin: Authorization, n: &u32, d: &u32) {
-    e.invoke_contract(
+    e.invoke_contract_external(
         HostFunction::Call,
         (contract_id, "updt_price", &admin, n, d)
             .try_into()
@@ -125,7 +125,7 @@ pub fn updt_price(e: &mut Env, contract_id: &U256, admin: Authorization, n: &u32
 }
 
 pub fn get_price(e: &mut Env, contract_id: &U256) -> Price {
-    e.invoke_contract(
+    e.invoke_contract_external(
         HostFunction::Call,
         (contract_id, "get_price").try_into().unwrap(),
     )
