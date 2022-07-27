@@ -1,4 +1,4 @@
-use stellar_contract_sdk::{Binary, Env, IntoVal};
+use stellar_contract_sdk::{Binary, Env};
 use stellar_token_contract::public_types::U256;
 
 #[cfg(not(feature = "testutils"))]
@@ -14,6 +14,8 @@ pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> Binary {
     e.create_contract_from_contract(bin, salt).into()
 }
 
+#[cfg(feature = "testutils")]
+use stellar_contract_sdk::IntoVal;
 #[cfg(feature = "testutils")]
 pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> Binary {
     use sha2::{Digest, Sha256};
