@@ -4,7 +4,7 @@ use crate::cryptography::Domain;
 use crate::Price;
 use ed25519_dalek::Keypair;
 use stellar_contract_sdk::testutils::ed25519::Sign;
-use stellar_contract_sdk::{BigInt, Binary, Env, EnvVal, FixedBinary, IntoEnvVal, TryIntoVal, Vec};
+use stellar_contract_sdk::{BigInt, Binary, Env, EnvVal, FixedBinary, IntoVal, Vec};
 use stellar_token_contract::public_types::{Authorization, Identifier, Message, MessageV0};
 
 pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
@@ -69,8 +69,7 @@ impl SingleOffer {
             domain: Domain::Withdraw as u32,
             parameters: args,
         });
-        let auth =
-            Authorization::Ed25519(admin.sign(msg).unwrap().try_into_val(&self.env).unwrap());
+        let auth = Authorization::Ed25519(admin.sign(msg).unwrap().into_val(&self.env));
         withdraw(&mut self.env, &self.contract_id, &auth, amount)
     }
 
@@ -83,8 +82,7 @@ impl SingleOffer {
             domain: Domain::UpdatePrice as u32,
             parameters: args,
         });
-        let auth =
-            Authorization::Ed25519(admin.sign(msg).unwrap().try_into_val(&self.env).unwrap());
+        let auth = Authorization::Ed25519(admin.sign(msg).unwrap().into_val(&self.env));
         updt_price(&mut self.env, &self.contract_id, &auth, &n, &d)
     }
 

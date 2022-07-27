@@ -8,8 +8,7 @@ mod test;
 pub mod testutils;
 
 use stellar_contract_sdk::{
-    contractimpl, contracttype, vec, BigInt, Binary, Env, EnvVal, IntoEnvVal, IntoVal, RawVal,
-    Symbol, Vec,
+    contractimpl, contracttype, vec, BigInt, Binary, Env, EnvVal, IntoVal, RawVal, Symbol, Vec,
 };
 use stellar_token_contract::public_types::{
     Authorization, Identifier, KeyedAccountAuthorization, KeyedAuthorization,
@@ -46,11 +45,11 @@ fn get_contract_id(e: &Env) -> Identifier {
 }
 
 fn get_sell_token(e: &Env) -> Binary {
-    e.get_contract_data(DataKey::SellToken)
+    e.contract_data().get(DataKey::SellToken)
 }
 
 fn get_buy_token(e: &Env) -> Binary {
-    e.get_contract_data(DataKey::BuyToken)
+    e.contract_data().get(DataKey::BuyToken)
 }
 
 fn get_balance(e: &Env, contract_id: Binary) -> BigInt {
@@ -64,19 +63,19 @@ fn get_balance_buy(e: &Env) -> BigInt {
 }
 
 fn put_sell_token(e: &Env, contract_id: U256) {
-    e.put_contract_data(DataKey::SellToken, contract_id);
+    e.contract_data().set(DataKey::SellToken, contract_id);
 }
 
 fn put_buy_token(e: &Env, contract_id: U256) {
-    e.put_contract_data(DataKey::BuyToken, contract_id);
+    e.contract_data().set(DataKey::BuyToken, contract_id);
 }
 
 fn put_price(e: &Env, price: Price) {
-    e.put_contract_data(DataKey::Price, price);
+    e.contract_data().set(DataKey::Price, price);
 }
 
 fn get_price(e: &Env) -> Price {
-    e.get_contract_data(DataKey::Price)
+    e.contract_data().get(DataKey::Price)
 }
 
 fn transfer(e: &Env, contract_id: Binary, to: Identifier, amount: BigInt) {
@@ -97,17 +96,17 @@ fn transfer_buy(e: &Env, to: Identifier, amount: BigInt) {
 
 fn has_administrator(e: &Env) -> bool {
     let key = DataKey::Admin;
-    e.has_contract_data(key)
+    e.contract_data().has(key)
 }
 
 fn read_administrator(e: &Env) -> Identifier {
     let key = DataKey::Admin;
-    e.get_contract_data(key)
+    e.contract_data().get(key)
 }
 
 fn write_administrator(e: &Env, id: Identifier) {
     let key = DataKey::Admin;
-    e.put_contract_data(key, id);
+    e.contract_data().set(key, id);
 }
 
 pub fn to_administrator_authorization(e: &Env, auth: Authorization) -> KeyedAuthorization {
