@@ -9,7 +9,7 @@ mod token_contract;
 
 use crate::token_contract::create_contract;
 use stellar_contract_sdk::{
-    contractimpl, BigInt, Binary, Env, EnvVal, IntoEnvVal, RawVal, Symbol, Vec,
+    contractimpl, BigInt, Binary, Env, EnvVal, IntoVal, RawVal, Symbol, Vec,
 };
 use stellar_token_contract::public_types::{Authorization, Identifier, KeyedAuthorization, U256};
 
@@ -24,9 +24,9 @@ pub enum DataKey {
     ReserveB = 5,
 }
 
-impl IntoEnvVal<Env, RawVal> for DataKey {
-    fn into_env_val(self, env: &Env) -> EnvVal {
-        (self as u32).into_env_val(env)
+impl IntoVal<Env, RawVal> for DataKey {
+    fn into_val(self, env: &Env) -> RawVal {
+        (self as u32).into_val(env)
     }
 }
 
@@ -35,27 +35,27 @@ fn get_contract_id(e: &Env) -> Identifier {
 }
 
 fn get_token_a(e: &Env) -> Binary {
-    e.get_contract_data(DataKey::TokenA)
+    e.contract_data().get(DataKey::TokenA)
 }
 
 fn get_token_b(e: &Env) -> Binary {
-    e.get_contract_data(DataKey::TokenB)
+    e.contract_data().get(DataKey::TokenB)
 }
 
 fn get_token_share(e: &Env) -> Binary {
-    e.get_contract_data(DataKey::TokenShare)
+    e.contract_data().get(DataKey::TokenShare)
 }
 
 fn get_total_shares(e: &Env) -> BigInt {
-    e.get_contract_data(DataKey::TotalShares)
+    e.contract_data().get(DataKey::TotalShares)
 }
 
 fn get_reserve_a(e: &Env) -> BigInt {
-    e.get_contract_data(DataKey::ReserveA)
+    e.contract_data().get(DataKey::ReserveA)
 }
 
 fn get_reserve_b(e: &Env) -> BigInt {
-    e.get_contract_data(DataKey::ReserveB)
+    e.contract_data().get(DataKey::ReserveB)
 }
 
 fn get_balance(e: &Env, contract_id: Binary) -> BigInt {
@@ -77,27 +77,27 @@ fn get_balance_shares(e: &Env) -> BigInt {
 }
 
 fn put_token_a(e: &Env, contract_id: U256) {
-    e.put_contract_data(DataKey::TokenA, contract_id);
+    e.contract_data().set(DataKey::TokenA, contract_id);
 }
 
 fn put_token_b(e: &Env, contract_id: U256) {
-    e.put_contract_data(DataKey::TokenB, contract_id);
+    e.contract_data().set(DataKey::TokenB, contract_id);
 }
 
 fn put_token_share(e: &Env, contract_id: U256) {
-    e.put_contract_data(DataKey::TokenShare, contract_id);
+    e.contract_data().set(DataKey::TokenShare, contract_id);
 }
 
 fn put_total_shares(e: &Env, amount: BigInt) {
-    e.put_contract_data(DataKey::TotalShares, amount)
+    e.contract_data().set(DataKey::TotalShares, amount)
 }
 
 fn put_reserve_a(e: &Env, amount: BigInt) {
-    e.put_contract_data(DataKey::ReserveA, amount)
+    e.contract_data().set(DataKey::ReserveA, amount)
 }
 
 fn put_reserve_b(e: &Env, amount: BigInt) {
-    e.put_contract_data(DataKey::ReserveB, amount)
+    e.contract_data().set(DataKey::ReserveB, amount)
 }
 
 fn burn_shares(e: &Env, amount: BigInt) {
