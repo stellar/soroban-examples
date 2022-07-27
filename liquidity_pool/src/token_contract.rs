@@ -6,7 +6,7 @@ pub const TOKEN_CONTRACT: &[u8] = include_bytes!("../../wasm/stellar_token_contr
 
 #[cfg(not(feature = "testutils"))]
 pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> Binary {
-    let bin = Binary::from_slice(TOKEN_CONTRACT);
+    let bin = Binary::from_slice(e, TOKEN_CONTRACT);
     let mut salt = Binary::new(&e);
     salt.append(&token_a.clone().into());
     salt.append(&token_b.clone().into());
