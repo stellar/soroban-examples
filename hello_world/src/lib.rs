@@ -51,7 +51,7 @@ mod test {
     use stellar_contract_sdk::{vec, Binary, Env, IntoVal};
 
     #[test]
-    fn test_world() {
+    fn test() {
         let env = Env::default();
         let contract_id = Binary::from_array(&env, [0; 32]);
         env.register_contract(contract_id.clone(), HelloContract);
@@ -71,13 +71,7 @@ mod test {
             vec![&env, Symbol::from_str("Hello"), Symbol::from_str("World")]
         );
         assert_eq!(count, 2);
-    }
 
-    #[test]
-    fn test_person() {
-        let env = Env::default();
-        let contract_id = Binary::from_array(&env, [0; 32]);
-        env.register_contract(contract_id.clone(), HelloContract);
         let (words, count) = __hello::call_external(
             &env,
             &contract_id,
