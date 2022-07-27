@@ -20,13 +20,17 @@ pub struct HelloContract;
 #[contractimpl(export_if = "export")]
 impl HelloContract {
     pub fn hello(env: Env, recipient: Recipient) -> (Vec<Symbol>, u32) {
-        let to = match recipient {
+        let greeting_words = vec![&env, Symbol::from_str("Hello")];
+
+        let recipient_words = match recipient {
             Recipient::World => vec![&env, Symbol::from_str("World")],
             Recipient::Person(ref p) => vec![&env, p.first, p.last],
         };
+
+        let words = vec![&env, greeting_words, recipient_words].concat();
+
         let count: u32 = Self::increment(&env, &recipient);
-        let mut words = vec![&env, Symbol::from_str("Hello")];
-        words.append(&to);
+
         (words, count)
     }
 
