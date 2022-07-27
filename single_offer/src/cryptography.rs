@@ -20,7 +20,8 @@ pub fn read_nonce(e: &Env) -> BigInt {
 pub fn read_and_increment_nonce(e: &Env) -> BigInt {
     let key = DataKey::Nonce;
     let nonce = read_nonce(e);
-    e.contract_data().set(key, nonce.clone() + BigInt::from_u32(e, 1));
+    e.contract_data()
+        .set(key, nonce.clone() + BigInt::from_u32(e, 1));
     nonce
 }
 
