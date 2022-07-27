@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-use crate::external::{register_test_contract as register_liqpool, LiquidityPool};
+use crate::testutils::{register_test_contract as register_liqpool, LiquidityPool};
 use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
 use stellar_contract_sdk::{BigInt, Binary, Env, FixedBinary};
