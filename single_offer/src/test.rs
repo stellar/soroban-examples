@@ -75,7 +75,7 @@ fn test() {
     token2.xfer(&user2, &offer_id, &BigInt::from_u32(&e, 10));
     assert_eq!(token2.balance(&user2_id), BigInt::from_u32(&e, 990));
     assert_eq!(token2.balance(&offer_id), BigInt::from_u32(&e, 10));
-    offer.trade(&user2_id, 20); // TODO: Why isn't this BigInt?
+    offer.trade(&user2_id, &BigInt::from_u32(&e, 20));
     assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 900));
     assert_eq!(token1.balance(&user2_id), BigInt::from_u32(&e, 20));
     assert_eq!(token1.balance(&offer_id), BigInt::from_u32(&e, 80));
@@ -99,7 +99,7 @@ fn test() {
     token2.xfer(&user2, &offer_id, &BigInt::from_u32(&e, 10));
     assert_eq!(token2.balance(&user2_id), BigInt::from_u32(&e, 980));
     assert_eq!(token2.balance(&offer_id), BigInt::from_u32(&e, 10));
-    offer.trade(&user2_id, 10); // TODO: Why isn't this BigInt?
+    offer.trade(&user2_id, &BigInt::from_u32(&e, 10));
     assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 970));
     assert_eq!(token1.balance(&user2_id), BigInt::from_u32(&e, 30));
     assert_eq!(token1.balance(&offer_id), BigInt::from_u32(&e, 00));

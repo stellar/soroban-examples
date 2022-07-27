@@ -57,7 +57,7 @@ impl SingleOffer {
         nonce(&mut self.env, &self.contract_id)
     }
 
-    pub fn trade(&mut self, to: &Identifier, min: u32) {
+    pub fn trade(&mut self, to: &Identifier, min: &BigInt) {
         trade(&mut self.env, &self.contract_id, &to, &min)
     }
 
