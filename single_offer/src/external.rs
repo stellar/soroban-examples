@@ -1,134 +1,94 @@
 #![cfg(feature = "testutils")]
 
-use ed25519_dalek::{Keypair, Signer};
-use num_bigint::BigInt;
-use std::vec::Vec;
-use stellar_contract_sdk::{Binary, Env, TryIntoVal};
-use stellar_token_contract::external::{Authorization, Identifier, U256};
-use stellar_xdr::{HostFunction, ScMap, ScMapEntry, ScObject, ScVal, WriteXdr};
-
+use crate::cryptography::Domain;
 use crate::Price;
+use ed25519_dalek::Keypair;
+use stellar_contract_sdk::testutils::ed25519::Sign;
+use stellar_contract_sdk::{BigInt, Binary, Env, EnvVal, FixedBinary, IntoEnvVal, TryIntoVal, Vec};
+use stellar_token_contract::public_types::{Authorization, Identifier, Message, MessageV0};
 
-pub fn register_test_contract(e: &Env, contract_id: &U256) {
-    let mut bin = Binary::new(e);
-    for b in contract_id {
-        bin.push(*b);
+pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
+    let contract_id = Binary::from_array(e, *contract_id);
+    e.register_contract(contract_id, crate::SingleOffer {});
+}
+
+pub use crate::__get_price::call_external as get_price;
+pub use crate::__initialize::call_external as initialize;
+pub use crate::__nonce::call_external as nonce;
+pub use crate::__trade::call_external as trade;
+pub use crate::__updt_price::call_external as updt_price;
+pub use crate::__withdraw::call_external as withdraw;
+
+pub struct SingleOffer {
+    env: Env,
+    contract_id: Binary,
+}
+
+impl SingleOffer {
+    pub fn new(env: &Env, contract_id: &[u8; 32]) -> Self {
+        Self {
+            env: env.clone(),
+            contract_id: Binary::from_slice(env, contract_id),
+        }
     }
 
-    e.register_contract(bin.into(), crate::SingleOffer {});
-}
-pub enum MessageWithoutNonce {
-    Withdraw(BigInt),
-    UpdatePrice(u32, u32),
-}
-pub struct Message(pub BigInt, pub MessageWithoutNonce);
-
-impl TryInto<ScVal> for &Message {
-    type Error = ();
-    fn try_into(self) -> Result<ScVal, Self::Error> {
-        let mut map = Vec::new();
-        match self {
-            Message(nonce, MessageWithoutNonce::Withdraw(amount)) => {
-                map.push(ScMapEntry {
-                    key: "domain".try_into()?,
-                    val: 0u32.into(),
-                });
-                map.push(ScMapEntry {
-                    key: "nonce".try_into()?,
-                    val: nonce.try_into()?,
-                });
-                map.push(ScMapEntry {
-                    key: "parameters".try_into()?,
-                    val: (amount,).try_into()?,
-                });
-            }
-            Message(nonce, MessageWithoutNonce::UpdatePrice(n, d)) => {
-                map.push(ScMapEntry {
-                    key: "domain".try_into()?,
-                    val: 1u32.into(),
-                });
-                map.push(ScMapEntry {
-                    key: "nonce".try_into()?,
-                    val: nonce.try_into()?,
-                });
-                map.push(ScMapEntry {
-                    key: "parameters".try_into()?,
-                    val: (n, d).try_into()?,
-                });
-            }
-        };
-        let scmap = ScVal::Object(Some(ScObject::Map(ScMap(map.try_into().map_err(|_| ())?))));
-        ("V0", scmap).try_into()
+    pub fn initialize(
+        &mut self,
+        admin: &Identifier,
+        token_a: &[u8; 32],
+        token_b: &[u8; 32],
+        n: u32,
+        d: u32,
+    ) {
+        let token_a = FixedBinary::from_array(&self.env, *token_a);
+        let token_b = FixedBinary::from_array(&self.env, *token_b);
+        initialize(
+            &mut self.env,
+            &self.contract_id,
+            admin,
+            &token_a,
+            &token_b,
+            &n,
+            &d,
+        )
     }
-}
 
-pub type U512 = [u8; 64];
-
-impl Message {
-    pub fn sign(&self, kp: &Keypair) -> Result<U512, ()> {
-        let mut buf = Vec::<u8>::new();
-        let val: ScVal = self.try_into()?;
-        val.write_xdr(&mut buf).map_err(|_| ())?;
-        Ok(kp.sign(&buf).to_bytes())
+    pub fn nonce(&mut self) -> BigInt {
+        nonce(&mut self.env, &self.contract_id)
     }
-}
 
-pub fn initialize(
-    e: &mut Env,
-    contract_id: &U256,
-    admin: Identifier,
-    token_a: &U256,
-    token_b: &U256,
-    n: u32,
-    d: u32,
-) {
-    e.invoke_contract_external(
-        HostFunction::Call,
-        (contract_id, "initialize", &admin, token_a, token_b, n, d)
-            .try_into()
-            .unwrap(),
-    );
-}
+    pub fn trade(&mut self, to: &Identifier, min: u32) {
+        trade(&mut self.env, &self.contract_id, &to, &min)
+    }
 
-pub fn nonce(e: &mut Env, contract_id: &U256) -> BigInt {
-    e.invoke_contract_external(
-        HostFunction::Call,
-        (contract_id, "nonce").try_into().unwrap(),
-    )
-    .try_into()
-    .unwrap()
-}
+    pub fn withdraw(&mut self, admin: &Keypair, amount: &BigInt) {
+        let mut args: Vec<EnvVal> = Vec::new(&self.env);
+        args.push(amount.clone().into_env_val(&self.env));
+        let msg = Message::V0(MessageV0 {
+            nonce: self.nonce(),
+            domain: Domain::Withdraw as u32,
+            parameters: args,
+        });
+        let auth =
+            Authorization::Ed25519(admin.sign(msg).unwrap().try_into_val(&self.env).unwrap());
+        withdraw(&mut self.env, &self.contract_id, &auth, amount)
+    }
 
-pub fn trade(e: &mut Env, contract_id: &U256, to: Identifier, min: u32) {
-    e.invoke_contract_external(
-        HostFunction::Call,
-        (contract_id, "trade", &to, min).try_into().unwrap(),
-    );
-}
+    pub fn updt_price(&mut self, admin: &Keypair, n: u32, d: u32) {
+        let mut args: Vec<EnvVal> = Vec::new(&self.env);
+        args.push(n.into_env_val(&self.env));
+        args.push(d.into_env_val(&self.env));
+        let msg = Message::V0(MessageV0 {
+            nonce: self.nonce(),
+            domain: Domain::UpdatePrice as u32,
+            parameters: args,
+        });
+        let auth =
+            Authorization::Ed25519(admin.sign(msg).unwrap().try_into_val(&self.env).unwrap());
+        updt_price(&mut self.env, &self.contract_id, &auth, &n, &d)
+    }
 
-pub fn withdraw(e: &mut Env, contract_id: &U256, admin: Authorization, amount: &BigInt) {
-    e.invoke_contract_external(
-        HostFunction::Call,
-        (contract_id, "withdraw", &admin, amount)
-            .try_into()
-            .unwrap(),
-    );
-}
-
-pub fn updt_price(e: &mut Env, contract_id: &U256, admin: Authorization, n: &u32, d: &u32) {
-    e.invoke_contract_external(
-        HostFunction::Call,
-        (contract_id, "updt_price", &admin, n, d)
-            .try_into()
-            .unwrap(),
-    );
-}
-
-pub fn get_price(e: &mut Env, contract_id: &U256) -> Price {
-    e.invoke_contract_external(
-        HostFunction::Call,
-        (contract_id, "get_price").try_into().unwrap(),
-    )
-    .try_into_val(e)
-    .unwrap()
+    pub fn get_price(&mut self) -> Price {
+        get_price(&mut self.env, &self.contract_id)
+    }
 }
