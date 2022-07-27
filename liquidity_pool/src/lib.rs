@@ -8,10 +8,9 @@ pub mod testutils;
 mod token_contract;
 
 use crate::token_contract::create_contract;
-use stellar_contract_sdk::{
-    contractimpl, BigInt, Binary, Env, EnvVal, IntoVal, RawVal, Symbol, Vec,
-};
-use stellar_token_contract::public_types::{Authorization, Identifier, KeyedAuthorization, U256};
+use stellar_contract_sdk::{contractimpl, BigInt, Binary, Env, IntoVal, RawVal};
+use stellar_token_contract as token;
+use token::public_types::{Authorization, Identifier, KeyedAuthorization, U256};
 
 #[derive(Clone, Copy)]
 #[repr(u32)]
@@ -59,9 +58,7 @@ fn get_reserve_b(e: &Env) -> BigInt {
 }
 
 fn get_balance(e: &Env, contract_id: Binary) -> BigInt {
-    let mut args: Vec<EnvVal> = Vec::new(&e);
-    args.push(get_contract_id(e).into_env_val(&e));
-    e.invoke_contract(contract_id, Symbol::from_str("balance"), args)
+    token::balance(e, &contract_id, &get_contract_id(e))
 }
 
 fn get_balance_a(e: &Env) -> BigInt {
@@ -102,36 +99,32 @@ fn put_reserve_b(e: &Env, amount: BigInt) {
 
 fn burn_shares(e: &Env, amount: BigInt) {
     let total = get_total_shares(e);
-
-    let mut args = Vec::new(e);
-    args.push(Authorization::Contract.into_env_val(e));
-    args.push(get_contract_id(e).into_env_val(e));
-    args.push(amount.clone().into_env_val(e));
-
     let share_contract_id = get_token_share(e);
-    e.invoke_contract::<()>(share_contract_id, Symbol::from_str("burn"), args);
+    token::burn(
+        e,
+        &share_contract_id,
+        &Authorization::Contract,
+        &get_contract_id(e),
+        &amount,
+    );
     put_total_shares(e, total - amount);
 }
 
 fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
     let total = get_total_shares(e);
-
-    let mut args = Vec::new(e);
-    args.push(Authorization::Contract.into_env_val(e));
-    args.push(to.into_env_val(e));
-    args.push(amount.clone().into_env_val(e));
-
     let share_contract_id = get_token_share(e);
-    e.invoke_contract::<()>(share_contract_id, Symbol::from_str("mint"), args);
+    token::mint(
+        e,
+        &share_contract_id,
+        &Authorization::Contract,
+        &to,
+        &amount,
+    );
     put_total_shares(e, total + amount);
 }
 
 fn transfer(e: &Env, contract_id: Binary, to: Identifier, amount: BigInt) {
-    let mut args = Vec::new(e);
-    args.push(KeyedAuthorization::Contract.into_env_val(e));
-    args.push(to.into_env_val(e));
-    args.push(amount.into_env_val(e));
-    e.invoke_contract::<()>(contract_id, Symbol::from_str("xfer"), args);
+    token::xfer(e, &contract_id, &KeyedAuthorization::Contract, &to, &amount);
 }
 
 fn transfer_a(e: &Env, to: Identifier, amount: BigInt) {
@@ -164,15 +157,13 @@ impl LiquidityPoolTrait for LiquidityPool {
         }
 
         let share_contract_id = create_contract(&e, &token_a, &token_b);
-        let mut args = Vec::new(&e);
-        args.push(get_contract_id(&e).into_env_val(&e));
-        args.push(7u32.into_env_val(&e)); // TODO: Set decimals.
-        args.push(Binary::from_slice(&e, b"name").into()); // TODO: Set name.
-        args.push(Binary::from_slice(&e, b"symbol").into()); // TODO: Set symbol.
-        e.invoke_contract::<()>(
-            share_contract_id.clone(),
-            Symbol::from_str("initialize"),
-            args,
+        token::initialize(
+            &e,
+            &share_contract_id,
+            &get_contract_id(&e),
+            &7,
+            &Binary::from_slice(&e, b"name"),
+            &Binary::from_slice(&e, b"symbol"),
         );
 
         put_token_a(&e, token_a);
