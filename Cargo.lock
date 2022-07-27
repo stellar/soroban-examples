@@ -593,7 +593,6 @@ dependencies = [
  "rand",
  "stellar-contract-sdk",
  "stellar-hello-world-contract",
- "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
 ]
 
 [[package]]
