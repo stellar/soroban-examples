@@ -591,7 +591,6 @@ name = "stellar-liqpool-contract"
 version = "0.0.0"
 dependencies = [
  "ed25519-dalek",
- "num-bigint",
  "rand",
  "sha2 0.10.2",
  "stellar-contract-sdk",

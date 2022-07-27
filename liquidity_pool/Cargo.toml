@@ -9,11 +9,10 @@ crate-type = ["cdylib", "rlib"]
 [features]
 default = ["export"]
 export = []
-testutils = ["stellar-contract-sdk/testutils", "stellar-token-contract/testutils", "dep:ed25519-dalek", "dep:num-bigint", "dep:sha2", "dep:stellar-xdr"]
+testutils = ["stellar-contract-sdk/testutils", "stellar-token-contract/testutils", "dep:ed25519-dalek", "dep:sha2", "dep:stellar-xdr"]
 
 [dependencies]
 ed25519-dalek = { version = "1.0.1", optional = true }
-num-bigint = { version = "0.4", optional = true }
 sha2 = { version = "0.10.2", optional = true }
 stellar-token-contract = { git = "https://github.com/stellar/rs-stellar-token-contract", rev = "ee77ffa", default-features = false  }
 # stellar-token-contract = { path = "../../rs-stellar-token-contract", default-features = false  }
