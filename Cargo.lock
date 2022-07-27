@@ -100,9 +100,9 @@ dependencies = [
 
 [[package]]
 name = "crypto-common"
-version = "0.1.3"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57952ca27b5e3606ff4dd79b0020231aaf9d6aa76dc05fd30137538c50bd3ce8"
+checksum = "1bfb12502f3fc46cca1bb51ac28df9d618d813cdc3d2f25b9fe775a34af26bb3"
 dependencies = [
  "generic-array",
  "typenum",
@@ -361,9 +361,9 @@ checksum = "eb9f9e6e233e5c4a35559a617bf40a4ec447db2e84c20b55a6f83167b7e57872"
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.40"
+version = "1.0.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd96a1e8ed2596c337f8eae5f24924ec83f5ad5ab21ea8e455d3566c69fbcaf7"
+checksum = "cdcc2916cde080c1876ff40292a396541241fe0072ef928cd76582e9ea5d60d2"
 dependencies = [
  "unicode-ident",
 ]
@@ -441,18 +441,18 @@ checksum = "7ef03e0a2b150c7a90d01faf6254c9c48a41e95fb2a8c2ac1c6f0d2b9aefc342"
 
 [[package]]
 name = "serde"
-version = "1.0.137"
+version = "1.0.140"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61ea8d54c77f8315140a05f4c7237403bf38b72704d031543aa1d16abbf517d1"
+checksum = "fc855a42c7967b7c369eb5860f7164ef1f6f81c20c7cc1141f2a604e18723b03"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.137"
+version = "1.0.140"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1f26faba0c3959972377d3b2d306ee9f71faee9714294e41bb777f83f88578be"
+checksum = "6f2122636b9fe3b81f1cb25099fcf2d3f542cdb1d45940d56c713158884a05da"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -575,6 +575,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "stellar-contract-macros"
+version = "0.0.0"
+source = "git+https://github.com/stellar/rs-stellar-contract-sdk?rev=c20718fc#c20718fcc433f4ca0db42ff5c76ba287b20dbe18"
+dependencies = [
+ "darling",
+ "itertools",
+ "proc-macro2",
+ "quote",
+ "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
+ "syn",
+]
+
+[[package]]
 name = "stellar-contract-sdk"
 version = "0.0.0"
 source = "git+https://github.com/stellar/rs-stellar-contract-sdk?rev=60d82bc#60d82bc595d7ba568e1cf7a87cb34437cf8d8b38"
@@ -583,7 +596,27 @@ dependencies = [
  "stellar-contract-env-guest",
  "stellar-contract-env-host",
  "stellar-contract-env-panic-handler-wasm32-unreachable",
- "stellar-contract-macros",
+ "stellar-contract-macros 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-sdk?rev=60d82bc)",
+]
+
+[[package]]
+name = "stellar-contract-sdk"
+version = "0.0.0"
+source = "git+https://github.com/stellar/rs-stellar-contract-sdk?rev=c20718fc#c20718fcc433f4ca0db42ff5c76ba287b20dbe18"
+dependencies = [
+ "ed25519-dalek",
+ "stellar-contract-env-guest",
+ "stellar-contract-env-host",
+ "stellar-contract-env-panic-handler-wasm32-unreachable",
+ "stellar-contract-macros 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-sdk?rev=c20718fc)",
+]
+
+[[package]]
+name = "stellar-hello-world-contract"
+version = "0.0.0"
+dependencies = [
+ "stellar-contract-sdk 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-sdk?rev=c20718fc)",
+ "stellar-hello-world-contract",
 ]
 
 [[package]]
@@ -593,7 +626,7 @@ dependencies = [
  "ed25519-dalek",
  "rand",
  "sha2 0.10.2",
- "stellar-contract-sdk",
+ "stellar-contract-sdk 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-sdk?rev=60d82bc)",
  "stellar-liqpool-contract",
  "stellar-token-contract",
  "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
@@ -605,7 +638,7 @@ version = "0.0.0"
 dependencies = [
  "ed25519-dalek",
  "rand",
- "stellar-contract-sdk",
+ "stellar-contract-sdk 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-sdk?rev=60d82bc)",
  "stellar-single-offer-contract",
  "stellar-token-contract",
 ]
@@ -616,7 +649,7 @@ version = "0.0.0"
 source = "git+https://github.com/stellar/rs-stellar-token-contract?rev=ee77ffa#ee77ffa22acf2fddc3ba051f9a6b57746b220608"
 dependencies = [
  "ed25519-dalek",
- "stellar-contract-sdk",
+ "stellar-contract-sdk 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-sdk?rev=60d82bc)",
 ]
 
 [[package]]
@@ -711,9 +744,9 @@ checksum = "dcf81ac59edc17cc8697ff311e8f5ef2d99fcbd9817b34cec66f90b6c3dfd987"
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.1"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5bd2fe26506023ed7b5e1e315add59d6f584c621d037f9368fea9cfb988f368c"
+checksum = "15c61ba63f9235225a22310255a29b806b907c9b8c964bcbd0a2c70f3f2deea7"
 
 [[package]]
 name = "unicode-xid"
