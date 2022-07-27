@@ -8,8 +8,7 @@ pub mod external;
 mod test;
 
 use stellar_contract_sdk::{
-    contractimpl, contracttype, vec, BigInt, Binary, Env, EnvVal, IntoEnvVal, IntoVal, RawVal,
-    Symbol, Vec,
+    contractimpl, contracttype, vec, BigInt, Binary, Env, EnvVal, IntoVal, RawVal, Symbol, Vec,
 };
 use stellar_token_contract::public_types::{
     Authorization, Identifier, KeyedAccountAuthorization, KeyedAuthorization,

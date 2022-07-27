@@ -9,7 +9,7 @@ mod token_contract;
 
 use crate::token_contract::create_contract;
 use stellar_contract_sdk::{
-    contractimpl, BigInt, Binary, Env, EnvVal, IntoEnvVal, RawVal, Symbol, Vec,
+    contractimpl, BigInt, Binary, Env, EnvVal, IntoVal, RawVal, Symbol, Vec,
 };
 use stellar_token_contract::public_types::{Authorization, Identifier, KeyedAuthorization, U256};
 
@@ -24,9 +24,9 @@ pub enum DataKey {
     ReserveB = 5,
 }
 
-impl IntoEnvVal<Env, RawVal> for DataKey {
-    fn into_env_val(self, env: &Env) -> EnvVal {
-        (self as u32).into_env_val(env)
+impl IntoVal<Env, RawVal> for DataKey {
+    fn into_val(self, env: &Env) -> RawVal {
+        (self as u32).into_val(env)
     }
 }
 
