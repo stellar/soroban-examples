@@ -61,7 +61,7 @@ fn get_reserve_b(e: &Env) -> BigInt {
 fn get_balance(e: &Env, contract_id: Binary) -> BigInt {
     let mut args: Vec<EnvVal> = Vec::new(&e);
     args.push(get_contract_id(e).into_env_val(&e));
-    e.call(contract_id, Symbol::from_str("balance"), args)
+    e.invoke_contract(contract_id, Symbol::from_str("balance"), args)
 }
 
 fn get_balance_a(e: &Env) -> BigInt {
@@ -109,7 +109,7 @@ fn burn_shares(e: &Env, amount: BigInt) {
     args.push(amount.clone().into_env_val(e));
 
     let share_contract_id = get_token_share(e);
-    e.call::<()>(share_contract_id, Symbol::from_str("burn"), args);
+    e.invoke_contract::<()>(share_contract_id, Symbol::from_str("burn"), args);
     put_total_shares(e, total - amount);
 }
 
@@ -122,7 +122,7 @@ fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
     args.push(amount.clone().into_env_val(e));
 
     let share_contract_id = get_token_share(e);
-    e.call::<()>(share_contract_id, Symbol::from_str("mint"), args);
+    e.invoke_contract::<()>(share_contract_id, Symbol::from_str("mint"), args);
     put_total_shares(e, total + amount);
 }
 
@@ -131,7 +131,7 @@ fn transfer(e: &Env, contract_id: Binary, to: Identifier, amount: BigInt) {
     args.push(KeyedAuthorization::Contract.into_env_val(e));
     args.push(to.into_env_val(e));
     args.push(amount.into_env_val(e));
-    e.call::<()>(contract_id, Symbol::from_str("xfer"), args);
+    e.invoke_contract::<()>(contract_id, Symbol::from_str("xfer"), args);
 }
 
 fn transfer_a(e: &Env, to: Identifier, amount: BigInt) {
@@ -166,8 +166,11 @@ impl LiquidityPoolTrait for LiquidityPool {
         let share_contract_id = create_contract(&e, &token_a, &token_b);
         let mut args = Vec::new(&e);
         args.push(get_contract_id(&e).into_env_val(&e));
-        e.call::<()>(
-            share_contract_id.clone().into(),
+        args.push(7u32.into_env_val(&e)); // TODO: Set decimals.
+        args.push(Binary::from_slice(&e, b"name").into()); // TODO: Set name.
+        args.push(Binary::from_slice(&e, b"symbol").into()); // TODO: Set symbol.
+        e.invoke_contract::<()>(
+            share_contract_id.clone(),
             Symbol::from_str("initialize"),
             args,
         );

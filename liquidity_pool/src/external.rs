@@ -15,7 +15,7 @@ pub fn register_test_contract(e: &Env, contract_id: &U256) {
 }
 
 pub fn initialize(e: &mut Env, contract_id: &U256, token_a: &U256, token_b: &U256) {
-    e.invoke_contract(
+    e.invoke_contract_external(
         HostFunction::Call,
         (contract_id, "initialize", token_a, token_b)
             .try_into()
@@ -25,7 +25,7 @@ pub fn initialize(e: &mut Env, contract_id: &U256, token_a: &U256, token_b: &U25
 
 pub fn share_id(e: &mut Env, contract_id: &U256) -> U256 {
     use stellar_xdr::{ScObject, ScVal};
-    let id = e.invoke_contract(
+    let id = e.invoke_contract_external(
         HostFunction::Call,
         (contract_id, "share_id").try_into().unwrap(),
     );
@@ -37,21 +37,21 @@ pub fn share_id(e: &mut Env, contract_id: &U256) -> U256 {
 }
 
 pub fn deposit(e: &mut Env, contract_id: &U256, to: &Identifier) {
-    e.invoke_contract(
+    e.invoke_contract_external(
         HostFunction::Call,
         (contract_id, "deposit", to).try_into().unwrap(),
     );
 }
 
 pub fn swap(e: &mut Env, contract_id: &U256, to: &Identifier, out_a: &BigInt, out_b: &BigInt) {
-    e.invoke_contract(
+    e.invoke_contract_external(
         HostFunction::Call,
         (contract_id, "swap", to, out_a, out_b).try_into().unwrap(),
     );
 }
 
 pub fn withdraw(e: &mut Env, contract_id: &U256, to: &Identifier) {
-    e.invoke_contract(
+    e.invoke_contract_external(
         HostFunction::Call,
         (contract_id, "withdraw", to).try_into().unwrap(),
     );

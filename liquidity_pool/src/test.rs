@@ -3,7 +3,7 @@
 use crate::external as liqpool;
 use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
-use stellar_contract_sdk::Env;
+use stellar_contract_sdk::{Binary, Env};
 use stellar_token_contract::external as token;
 use token::{Identifier, MessageWithoutNonce as TokenContractFn, U256};
 
@@ -60,7 +60,14 @@ fn create_token_contract(e: &mut Env, admin: &Keypair) -> U256 {
     let mut id: U256 = Default::default();
     thread_rng().fill_bytes(&mut id);
     token::register_test_contract(&e, &id);
-    token::initialize(e, &id, &Identifier::Ed25519(admin.public.to_bytes()));
+    token::initialize(
+        e,
+        &id,
+        &Identifier::Ed25519(admin.public.to_bytes()),
+        &7,
+        &Binary::from_slice(e, b"name"),   // TODO: Set name.
+        &Binary::from_slice(e, b"symbol"), // TODO: Set symbol.
+    );
     id
 }
 

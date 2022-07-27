@@ -8,7 +8,8 @@ pub mod external;
 mod test;
 
 use stellar_contract_sdk::{
-    contractimpl, contracttype, vec, BigInt, Binary, Env, EnvVal, IntoEnvVal, RawVal, Symbol, Vec,
+    contractimpl, contracttype, vec, BigInt, Binary, Env, EnvVal, IntoEnvVal, IntoVal, RawVal,
+    Symbol, Vec,
 };
 use stellar_token_contract::public_types::{
     Authorization, Identifier, KeyedAccountAuthorization, KeyedAuthorization,
@@ -25,9 +26,9 @@ pub enum DataKey {
     Nonce = 4,
 }
 
-impl IntoEnvVal<Env, RawVal> for DataKey {
-    fn into_env_val(self, env: &Env) -> EnvVal {
-        (self as u32).into_env_val(env)
+impl IntoVal<Env, RawVal> for DataKey {
+    fn into_val(self, env: &Env) -> RawVal {
+        (self as u32).into_val(env)
     }
 }
 
@@ -55,7 +56,7 @@ fn get_buy_token(e: &Env) -> Binary {
 fn get_balance(e: &Env, contract_id: Binary) -> BigInt {
     let mut args: Vec<EnvVal> = Vec::new(&e);
     args.push(get_contract_id(e).into_env_val(&e));
-    e.call(contract_id, Symbol::from_str("balance"), args)
+    e.invoke_contract(contract_id, Symbol::from_str("balance"), args)
 }
 
 fn get_balance_buy(e: &Env) -> BigInt {
@@ -83,7 +84,7 @@ fn transfer(e: &Env, contract_id: Binary, to: Identifier, amount: BigInt) {
     args.push(KeyedAuthorization::Contract.into_env_val(e));
     args.push(to.into_env_val(e));
     args.push(amount.into_env_val(e));
-    e.call::<()>(contract_id, Symbol::from_str("xfer"), args);
+    e.invoke_contract::<()>(contract_id, Symbol::from_str("xfer"), args);
 }
 
 fn transfer_sell(e: &Env, to: Identifier, amount: BigInt) {
