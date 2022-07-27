@@ -7,9 +7,7 @@ mod cryptography;
 mod test;
 pub mod testutils;
 
-use stellar_contract_sdk::{
-    contractimpl, contracttype, vec, BigInt, Binary, Env, IntoVal, RawVal,
-};
+use stellar_contract_sdk::{contractimpl, contracttype, vec, BigInt, Binary, Env, IntoVal, RawVal};
 use stellar_token_contract as token;
 use token::public_types::{
     Authorization, Identifier, KeyedAccountAuthorization, KeyedAuthorization,
