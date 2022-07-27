@@ -591,7 +591,6 @@ name = "stellar-liqpool-contract"
 version = "0.0.0"
 dependencies = [
  "ed25519-dalek",
- "num-bigint",
  "rand",
  "sha2 0.10.2",
  "stellar-contract-sdk",
@@ -605,12 +604,10 @@ name = "stellar-single-offer-contract"
 version = "0.0.0"
 dependencies = [
  "ed25519-dalek",
- "num-bigint",
  "rand",
  "stellar-contract-sdk",
  "stellar-single-offer-contract",
  "stellar-token-contract",
- "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
 ]
 
 [[package]]
