@@ -139,7 +139,7 @@ pub trait SingleOfferTrait {
     // See comment above the Price struct for information on pricing
     fn initialize(e: Env, admin: Identifier, sell_token: U256, buy_token: U256, n: u32, d: u32);
     fn nonce(e: Env) -> BigInt;
-    fn trade(e: Env, to: Identifier, min: u32);
+    fn trade(e: Env, to: Identifier, min: BigInt);
     fn withdraw(e: Env, admin: Authorization, amount: BigInt);
     fn updt_price(e: Env, admin: Authorization, n: u32, d: u32);
     fn get_price(e: Env) -> Price;
@@ -160,7 +160,7 @@ impl SingleOfferTrait for SingleOffer {
         put_price(&e, Price { n, d });
     }
 
-    fn trade(e: Env, to: Identifier, min: u32) {
+    fn trade(e: Env, to: Identifier, min: BigInt) {
         let balance_buy_token = get_balance_buy(&e);
 
         let price = get_price(&e);
@@ -168,7 +168,7 @@ impl SingleOfferTrait for SingleOffer {
         let amount = balance_buy_token.clone() * BigInt::from_u32(&e, price.d)
             / BigInt::from_u32(&e, price.n);
 
-        if amount < BigInt::from_u32(&e, min) {
+        if amount < min {
             panic!();
         }
 
