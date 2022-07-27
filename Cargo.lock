@@ -616,7 +616,7 @@ dependencies = [
 [[package]]
 name = "stellar-token-contract"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-token-contract?rev=bfff1daa#bfff1daa6cdfe4ebd49dbebee79ff70f9dcab7be"
+source = "git+https://github.com/stellar/rs-stellar-token-contract?rev=522ea6d2#522ea6d2ab683266423e2a5661b18183b0a5becf"
 dependencies = [
  "ed25519-dalek",
  "num-bigint",
