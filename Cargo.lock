@@ -575,19 +575,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "stellar-contract-macros"
-version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-sdk?rev=c20718fc#c20718fcc433f4ca0db42ff5c76ba287b20dbe18"
-dependencies = [
- "darling",
- "itertools",
- "proc-macro2",
- "quote",
- "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
- "syn",
-]
-
-[[package]]
 name = "stellar-contract-sdk"
 version = "0.0.0"
 source = "git+https://github.com/stellar/rs-stellar-contract-sdk?rev=86ebc3c#86ebc3cadcbabb78c309b71f8ba90b17342a75dd"
@@ -596,26 +583,14 @@ dependencies = [
  "stellar-contract-env-guest",
  "stellar-contract-env-host",
  "stellar-contract-env-panic-handler-wasm32-unreachable",
- "stellar-contract-macros 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-sdk?rev=60d82bc)",
-]
-
-[[package]]
-name = "stellar-contract-sdk"
-version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-sdk?rev=c20718fc#c20718fcc433f4ca0db42ff5c76ba287b20dbe18"
-dependencies = [
- "ed25519-dalek",
- "stellar-contract-env-guest",
- "stellar-contract-env-host",
- "stellar-contract-env-panic-handler-wasm32-unreachable",
- "stellar-contract-macros 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-sdk?rev=c20718fc)",
+ "stellar-contract-macros",
 ]
 
 [[package]]
 name = "stellar-hello-world-contract"
 version = "0.0.0"
 dependencies = [
- "stellar-contract-sdk 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-sdk?rev=c20718fc)",
+ "stellar-contract-sdk",
  "stellar-hello-world-contract",
 ]
 
@@ -626,7 +601,7 @@ dependencies = [
  "ed25519-dalek",
  "rand",
  "sha2 0.10.2",
- "stellar-contract-sdk 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-sdk?rev=60d82bc)",
+ "stellar-contract-sdk",
  "stellar-liqpool-contract",
  "stellar-token-contract",
  "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
@@ -638,7 +613,7 @@ version = "0.0.0"
 dependencies = [
  "ed25519-dalek",
  "rand",
- "stellar-contract-sdk 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-sdk?rev=60d82bc)",
+ "stellar-contract-sdk",
  "stellar-single-offer-contract",
  "stellar-token-contract",
 ]
@@ -649,7 +624,7 @@ version = "0.0.0"
 source = "git+https://github.com/stellar/rs-stellar-token-contract?rev=37e2cd3#37e2cd3580f8e28beea9e8f9194b9cf8547472dd"
 dependencies = [
  "ed25519-dalek",
- "stellar-contract-sdk 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-sdk?rev=60d82bc)",
+ "stellar-contract-sdk",
 ]
 
 [[package]]

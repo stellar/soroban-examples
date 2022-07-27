@@ -15,7 +15,7 @@ export = []
 testutils = ["stellar-contract-sdk/testutils"]
 
 [dependencies]
-stellar-contract-sdk = { git = "https://github.com/stellar/rs-stellar-contract-sdk", rev = "c20718fc" }
+stellar-contract-sdk = { git = "https://github.com/stellar/rs-stellar-contract-sdk", rev = "86ebc3c" }
 
 [dev_dependencies]
 stellar-hello-world-contract = { path = ".", default-features = false, features = ["testutils"] }
