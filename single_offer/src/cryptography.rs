@@ -1,4 +1,4 @@
-use stellar_contract_sdk::{serde::Serialize, BigInt, Env, EnvVal};
+use stellar_contract_sdk::{serde::Serialize, Account, BigInt, Env, EnvVal};
 
 use stellar_token_contract::public_types::{
     KeyedAccountAuthorization, KeyedAuthorization, KeyedEd25519Authorization, Message, MessageV0,
@@ -10,8 +10,8 @@ use crate::DataKey;
 // Nonce management
 pub fn read_nonce(e: &Env) -> BigInt {
     let key = DataKey::Nonce;
-    if e.has_contract_data(key.clone()) {
-        e.get_contract_data(key.clone())
+    if e.contract_data().has(key.clone()) {
+        e.contract_data().get(key.clone())
     } else {
         BigInt::from_u32(e, 0)
     }
@@ -20,7 +20,8 @@ pub fn read_nonce(e: &Env) -> BigInt {
 pub fn read_and_increment_nonce(e: &Env) -> BigInt {
     let key = DataKey::Nonce;
     let nonce = read_nonce(e);
-    e.put_contract_data(key, nonce.clone() + BigInt::from_u32(e, 1));
+    e.contract_data()
+        .set(key, nonce.clone() + BigInt::from_u32(e, 1));
     nonce
 }
 
@@ -52,8 +53,7 @@ fn check_account_auth(
     domain: Domain,
     parameters: EnvVal,
 ) {
-    use stellar_contract_sdk::Binary;
-    let acc_id: Binary = auth.public_key.clone().into();
+    let account = Account::from_public_key(&auth.public_key).unwrap();
 
     let msg = MessageV0 {
         nonce: read_and_increment_nonce(&e),
@@ -62,7 +62,7 @@ fn check_account_auth(
     };
     let msg_bin = Message::V0(msg).serialize(e);
 
-    let threshold = e.account_get_medium_threshold(acc_id.clone());
+    let threshold = account.medium_threshold();
     let mut weight = 0u32;
 
     let sigs = &auth.auth.signatures;
@@ -81,7 +81,7 @@ fn check_account_auth(
             msg_bin.clone(),
         );
         // TODO: Check for overflow
-        weight += e.account_get_signer_weight(acc_id.clone(), sig.public_key.clone().into());
+        weight += account.signer_weight(&sig.public_key);
 
         prev_pk = Some(sig.public_key);
     }

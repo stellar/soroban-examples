@@ -19,17 +19,17 @@ fn generate_keypair() -> Keypair {
     Keypair::generate(&mut thread_rng())
 }
 
-fn create_token_contract(e: &mut Env, admin: &Keypair) -> ([u8; 32], Token) {
+fn create_token_contract(e: &Env, admin: &Keypair) -> ([u8; 32], Token) {
     let id = generate_contract_id();
     register_token(&e, &id);
-    let mut token = Token::new(e, &id);
+    let token = Token::new(e, &id);
     // decimals, name, symbol don't matter in tests
     token.initialize(&to_ed25519(&e, admin), 7, "name", "symbol");
     (id, token)
 }
 
 fn create_single_offer_contract(
-    e: &mut Env,
+    e: &Env,
     admin: &Keypair,
     token_a: &[u8; 32],
     token_b: &[u8; 32],
@@ -38,14 +38,14 @@ fn create_single_offer_contract(
 ) -> ([u8; 32], SingleOffer) {
     let id = generate_contract_id();
     register_single_offer(&e, &id);
-    let mut single_offer = SingleOffer::new(e, &id);
+    let single_offer = SingleOffer::new(e, &id);
     single_offer.initialize(&to_ed25519(&e, admin), token_a, token_b, n, d);
     (id, single_offer)
 }
 
 #[test]
 fn test() {
-    let mut e: Env = Default::default();
+    let e: Env = Default::default();
 
     let admin1 = generate_keypair();
     let admin2 = generate_keypair();
@@ -54,11 +54,11 @@ fn test() {
     let user2 = generate_keypair();
     let user2_id = to_ed25519(&e, &user2);
 
-    let (contract1, mut token1) = create_token_contract(&mut e, &admin1);
-    let (contract2, mut token2) = create_token_contract(&mut e, &admin2);
+    let (contract1, token1) = create_token_contract(&e, &admin1);
+    let (contract2, token2) = create_token_contract(&e, &admin2);
     // The price here is 1 A == .5 B
-    let (contract_offer, mut offer) =
-        create_single_offer_contract(&mut e, &user1, &contract1, &contract2, 1, 2);
+    let (contract_offer, offer) =
+        create_single_offer_contract(&e, &user1, &contract1, &contract2, 1, 2);
     let offer_id = Identifier::Contract(FixedBinary::from_array(&e, contract_offer));
 
     token1.mint(&admin1, &user1_id, &BigInt::from_u32(&e, 1000));

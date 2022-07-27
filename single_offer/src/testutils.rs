@@ -4,7 +4,7 @@ use crate::cryptography::Domain;
 use crate::Price;
 use ed25519_dalek::Keypair;
 use stellar_contract_sdk::testutils::ed25519::Sign;
-use stellar_contract_sdk::{BigInt, Binary, Env, EnvVal, FixedBinary, IntoEnvVal, TryIntoVal, Vec};
+use stellar_contract_sdk::{BigInt, Binary, Env, EnvVal, FixedBinary, IntoVal, Vec};
 use stellar_token_contract::public_types::{Authorization, Identifier, Message, MessageV0};
 
 pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
@@ -33,7 +33,7 @@ impl SingleOffer {
     }
 
     pub fn initialize(
-        &mut self,
+        &self,
         admin: &Identifier,
         token_a: &[u8; 32],
         token_b: &[u8; 32],
@@ -43,7 +43,7 @@ impl SingleOffer {
         let token_a = FixedBinary::from_array(&self.env, *token_a);
         let token_b = FixedBinary::from_array(&self.env, *token_b);
         initialize(
-            &mut self.env,
+            &self.env,
             &self.contract_id,
             admin,
             &token_a,
@@ -53,15 +53,15 @@ impl SingleOffer {
         )
     }
 
-    pub fn nonce(&mut self) -> BigInt {
-        nonce(&mut self.env, &self.contract_id)
+    pub fn nonce(&self) -> BigInt {
+        nonce(&self.env, &self.contract_id)
     }
 
-    pub fn trade(&mut self, to: &Identifier, min: &BigInt) {
-        trade(&mut self.env, &self.contract_id, &to, &min)
+    pub fn trade(&self, to: &Identifier, min: &BigInt) {
+        trade(&self.env, &self.contract_id, &to, &min)
     }
 
-    pub fn withdraw(&mut self, admin: &Keypair, amount: &BigInt) {
+    pub fn withdraw(&self, admin: &Keypair, amount: &BigInt) {
         let mut args: Vec<EnvVal> = Vec::new(&self.env);
         args.push(amount.clone().into_env_val(&self.env));
         let msg = Message::V0(MessageV0 {
@@ -69,12 +69,11 @@ impl SingleOffer {
             domain: Domain::Withdraw as u32,
             parameters: args,
         });
-        let auth =
-            Authorization::Ed25519(admin.sign(msg).unwrap().try_into_val(&self.env).unwrap());
-        withdraw(&mut self.env, &self.contract_id, &auth, amount)
+        let auth = Authorization::Ed25519(admin.sign(msg).unwrap().into_val(&self.env));
+        withdraw(&self.env, &self.contract_id, &auth, amount)
     }
 
-    pub fn updt_price(&mut self, admin: &Keypair, n: u32, d: u32) {
+    pub fn updt_price(&self, admin: &Keypair, n: u32, d: u32) {
         let mut args: Vec<EnvVal> = Vec::new(&self.env);
         args.push(n.into_env_val(&self.env));
         args.push(d.into_env_val(&self.env));
@@ -83,12 +82,11 @@ impl SingleOffer {
             domain: Domain::UpdatePrice as u32,
             parameters: args,
         });
-        let auth =
-            Authorization::Ed25519(admin.sign(msg).unwrap().try_into_val(&self.env).unwrap());
-        updt_price(&mut self.env, &self.contract_id, &auth, &n, &d)
+        let auth = Authorization::Ed25519(admin.sign(msg).unwrap().into_val(&self.env));
+        updt_price(&self.env, &self.contract_id, &auth, &n, &d)
     }
 
-    pub fn get_price(&mut self) -> Price {
-        get_price(&mut self.env, &self.contract_id)
+    pub fn get_price(&self) -> Price {
+        get_price(&self.env, &self.contract_id)
     }
 }
