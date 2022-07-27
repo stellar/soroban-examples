@@ -590,7 +590,6 @@ dependencies = [
 name = "stellar-hello-world-contract"
 version = "0.0.0"
 dependencies = [
- "rand",
  "stellar-contract-sdk",
  "stellar-hello-world-contract",
 ]
