@@ -8,11 +8,11 @@ pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
     e.register_contract(contract_id, crate::LiquidityPool {});
 }
 
-pub use crate::__deposit::call_external as deposit;
-pub use crate::__initialize::call_external as initialize;
-pub use crate::__share_id::call_external as share_id;
-pub use crate::__swap::call_external as swap;
-pub use crate::__withdraw::call_external as withdraw;
+pub use crate::__deposit::call_internal as deposit;
+pub use crate::__initialize::call_internal as initialize;
+pub use crate::__share_id::call_internal as share_id;
+pub use crate::__swap::call_internal as swap;
+pub use crate::__withdraw::call_internal as withdraw;
 
 pub struct LiquidityPool {
     env: Env,
