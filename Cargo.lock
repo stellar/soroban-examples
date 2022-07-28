@@ -504,7 +504,7 @@ name = "soroban-custom-types-contract"
 version = "0.0.0"
 dependencies = [
  "soroban-custom-types-contract",
- "soroban-sdk 0.0.0 (git+https://github.com/stellar/rs-soroban-sdk?rev=33734026)",
+ "soroban-sdk",
 ]
 
 [[package]]
@@ -512,17 +512,7 @@ name = "soroban-env-common"
 version = "0.0.0"
 source = "git+https://github.com/stellar/rs-soroban-env?rev=36a5007#36a5007611ab095f7821bef00d3fae2953c9ad47"
 dependencies = [
- "soroban-env-macros 0.0.0 (git+https://github.com/stellar/rs-soroban-env?rev=36a5007)",
- "static_assertions",
- "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
-]
-
-[[package]]
-name = "soroban-env-common"
-version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=36a5007#36a5007611ab095f7821bef00d3fae2953c9ad47"
-dependencies = [
- "soroban-env-macros 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-env?rev=36a5007)",
+ "soroban-env-macros",
  "static_assertions",
  "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
 ]
@@ -532,16 +522,7 @@ name = "soroban-env-guest"
 version = "0.0.0"
 source = "git+https://github.com/stellar/rs-soroban-env?rev=36a5007#36a5007611ab095f7821bef00d3fae2953c9ad47"
 dependencies = [
- "soroban-env-common 0.0.0 (git+https://github.com/stellar/rs-soroban-env?rev=36a5007)",
- "static_assertions",
-]
-
-[[package]]
-name = "soroban-env-guest"
-version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=36a5007#36a5007611ab095f7821bef00d3fae2953c9ad47"
-dependencies = [
- "soroban-env-common 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-env?rev=36a5007)",
+ "soroban-env-common",
  "static_assertions",
 ]
 
@@ -560,28 +541,7 @@ dependencies = [
  "num-integer",
  "num-traits",
  "sha2 0.10.2",
- "soroban-env-common 0.0.0 (git+https://github.com/stellar/rs-soroban-env?rev=36a5007)",
- "static_assertions",
- "thiserror",
- "tinyvec",
-]
-
-[[package]]
-name = "soroban-env-host"
-version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=36a5007#36a5007611ab095f7821bef00d3fae2953c9ad47"
-dependencies = [
- "backtrace",
- "dyn-fmt",
- "ed25519-dalek",
- "hex",
- "im-rc",
- "log",
- "num-bigint",
- "num-integer",
- "num-traits",
- "sha2 0.10.2",
- "soroban-env-common 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-env?rev=36a5007)",
+ "soroban-env-common",
  "static_assertions",
  "thiserror",
  "tinyvec",
@@ -591,17 +551,6 @@ dependencies = [
 name = "soroban-env-macros"
 version = "0.0.0"
 source = "git+https://github.com/stellar/rs-soroban-env?rev=36a5007#36a5007611ab095f7821bef00d3fae2953c9ad47"
-dependencies = [
- "proc-macro2",
- "quote",
- "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=540ed24e)",
- "syn",
-]
-
-[[package]]
-name = "soroban-env-macros"
-version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=36a5007#36a5007611ab095f7821bef00d3fae2953c9ad47"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -614,7 +563,7 @@ name = "soroban-hello-world-contract"
 version = "0.0.0"
 dependencies = [
  "soroban-hello-world-contract",
- "soroban-sdk 0.0.0 (git+https://github.com/stellar/rs-soroban-sdk?rev=32b76650)",
+ "soroban-sdk",
 ]
 
 [[package]]
@@ -622,7 +571,7 @@ name = "soroban-increment-contract"
 version = "0.0.0"
 dependencies = [
  "soroban-increment-contract",
- "soroban-sdk 0.0.0 (git+https://github.com/stellar/rs-soroban-sdk?rev=32b76650)",
+ "soroban-sdk",
 ]
 
 [[package]]
@@ -633,7 +582,7 @@ dependencies = [
  "rand",
  "sha2 0.10.2",
  "soroban-liquidity-pool-contract",
- "soroban-sdk 0.0.0 (git+https://github.com/stellar/rs-soroban-sdk?rev=32b76650)",
+ "soroban-sdk",
  "soroban-token-contract",
  "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
 ]
@@ -652,38 +601,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "soroban-macros"
-version = "0.0.0"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=33734026#33734026b292efc6c3fb08924fe287621130513c"
-dependencies = [
- "darling",
- "itertools",
- "proc-macro2",
- "quote",
- "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
- "syn",
-]
-
-[[package]]
 name = "soroban-sdk"
 version = "0.0.0"
 source = "git+https://github.com/stellar/rs-soroban-sdk?rev=32b76650#32b76650ca806f74390010d3779f00a0e2d9c376"
 dependencies = [
  "ed25519-dalek",
- "soroban-env-guest 0.0.0 (git+https://github.com/stellar/rs-soroban-env?rev=36a5007)",
- "soroban-env-host 0.0.0 (git+https://github.com/stellar/rs-soroban-env?rev=36a5007)",
- "soroban-macros 0.0.0 (git+https://github.com/stellar/rs-soroban-sdk?rev=32b76650)",
-]
-
-[[package]]
-name = "soroban-sdk"
-version = "0.0.0"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=33734026#33734026b292efc6c3fb08924fe287621130513c"
-dependencies = [
- "ed25519-dalek",
- "soroban-env-guest 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-env?rev=36a5007)",
- "soroban-env-host 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-env?rev=36a5007)",
- "soroban-macros 0.0.0 (git+https://github.com/stellar/rs-soroban-sdk?rev=33734026)",
+ "soroban-env-guest",
+ "soroban-env-host",
+ "soroban-macros",
 ]
 
 [[package]]
@@ -692,7 +617,7 @@ version = "0.0.0"
 dependencies = [
  "ed25519-dalek",
  "rand",
- "soroban-sdk 0.0.0 (git+https://github.com/stellar/rs-soroban-sdk?rev=32b76650)",
+ "soroban-sdk",
  "soroban-single-offer-contract",
  "soroban-token-contract",
 ]
@@ -703,7 +628,7 @@ version = "0.0.0"
 source = "git+https://github.com/stellar/soroban-token-contract?rev=24b77fee#24b77fee80dd148f9a4c0e04d896cecf01262946"
 dependencies = [
  "ed25519-dalek",
- "soroban-sdk 0.0.0 (git+https://github.com/stellar/rs-soroban-sdk?rev=32b76650)",
+ "soroban-sdk",
 ]
 
 [[package]]
