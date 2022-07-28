@@ -3,7 +3,7 @@
 use crate::testutils::{register_test_contract as register_liqpool, LiquidityPool};
 use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
-use soroban_sdk::{BigInt, Binary, Env, FixedBinary};
+use soroban_sdk::{BigInt, Env, FixedBinary};
 use soroban_token_contract::public_types::Identifier;
 use soroban_token_contract::testutils::{
     register_test_contract as register_token, to_ed25519, Token,
@@ -51,14 +51,6 @@ fn create_liqpool_contract(
     (id, liqpool)
 }
 
-fn contract_id_to_array(contract_id: Binary) -> [u8; 32] {
-    let mut res: [u8; 32] = Default::default();
-    for (i, b) in contract_id.into_iter().enumerate() {
-        res[i] = b;
-    }
-    res
-}
-
 #[test]
 fn test() {
     let e: Env = Default::default();
@@ -73,7 +65,7 @@ fn test() {
     let token2 = create_token_contract(&e, &contract2, &admin2);
     let (contract_pool, liqpool) = create_liqpool_contract(&e, &contract1, &contract2);
     let pool_id = Identifier::Contract(FixedBinary::from_array(&e, contract_pool));
-    let contract_share = contract_id_to_array(liqpool.share_id());
+    let contract_share: [u8; 32] = liqpool.share_id().try_into().unwrap(); // TODO: This should be just into
     let token_share = Token::new(&e, &contract_share);
 
     token1.mint(&admin1, &user1_id, &BigInt::from_u32(&e, 1000));

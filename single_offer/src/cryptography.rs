@@ -44,7 +44,7 @@ fn check_ed25519_auth(
     };
     let msg_bin = Message::V0(msg).serialize(e);
 
-    e.verify_sig_ed25519(auth.signature.into(), auth.public_key.into(), msg_bin);
+    e.verify_sig_ed25519(auth.public_key.into(), msg_bin, auth.signature.into());
 }
 
 fn check_account_auth(
@@ -76,9 +76,9 @@ fn check_account_auth(
         }
 
         e.verify_sig_ed25519(
-            sig.signature.into(),
             sig.public_key.clone().into(),
             msg_bin.clone(),
+            sig.signature.into(),
         );
         // TODO: Check for overflow
         weight += account.signer_weight(&sig.public_key);

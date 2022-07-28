@@ -8,7 +8,7 @@ pub mod testutils;
 mod token_contract;
 
 use crate::token_contract::create_contract;
-use soroban_sdk::{contractimpl, BigInt, Binary, Env, IntoVal, RawVal};
+use soroban_sdk::{contractimpl, BigInt, Binary, Env, FixedBinary, IntoVal, RawVal};
 use soroban_token_contract as token;
 use token::public_types::{Authorization, Identifier, KeyedAuthorization, U256};
 
@@ -33,15 +33,15 @@ fn get_contract_id(e: &Env) -> Identifier {
     Identifier::Contract(e.get_current_contract().into())
 }
 
-fn get_token_a(e: &Env) -> Binary {
+fn get_token_a(e: &Env) -> FixedBinary<32> {
     e.contract_data().get(DataKey::TokenA)
 }
 
-fn get_token_b(e: &Env) -> Binary {
+fn get_token_b(e: &Env) -> FixedBinary<32> {
     e.contract_data().get(DataKey::TokenB)
 }
 
-fn get_token_share(e: &Env) -> Binary {
+fn get_token_share(e: &Env) -> FixedBinary<32> {
     e.contract_data().get(DataKey::TokenShare)
 }
 
@@ -57,7 +57,7 @@ fn get_reserve_b(e: &Env) -> BigInt {
     e.contract_data().get(DataKey::ReserveB)
 }
 
-fn get_balance(e: &Env, contract_id: Binary) -> BigInt {
+fn get_balance(e: &Env, contract_id: FixedBinary<32>) -> BigInt {
     token::balance(e, &contract_id, &get_contract_id(e))
 }
 
@@ -123,7 +123,7 @@ fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
     put_total_shares(e, total + amount);
 }
 
-fn transfer(e: &Env, contract_id: Binary, to: Identifier, amount: BigInt) {
+fn transfer(e: &Env, contract_id: FixedBinary<32>, to: Identifier, amount: BigInt) {
     token::xfer(e, &contract_id, &KeyedAuthorization::Contract, &to, &amount);
 }
 
@@ -138,7 +138,7 @@ fn transfer_b(e: &Env, to: Identifier, amount: BigInt) {
 pub trait LiquidityPoolTrait {
     fn initialize(e: Env, token_a: U256, token_b: U256);
 
-    fn share_id(e: Env) -> Binary;
+    fn share_id(e: Env) -> FixedBinary<32>;
 
     fn deposit(e: Env, to: Identifier);
 
@@ -174,7 +174,7 @@ impl LiquidityPoolTrait for LiquidityPool {
         put_reserve_b(&e, BigInt::from_u32(&e, 0));
     }
 
-    fn share_id(e: Env) -> Binary {
+    fn share_id(e: Env) -> FixedBinary<32> {
         get_token_share(&e)
     }
 
