@@ -29,7 +29,7 @@ const NAME: Symbol = Symbol::from_str("NAME");
 #[contractimpl(export_if = "export")]
 impl CustomTypesContract {
     pub fn store(env: Env, name: Name) {
-        env.contract_data().set(NAME, name)
+        env.contract_data().set(NAME, name);
     }
 
     pub fn retrieve(env: Env) -> soroban_sdk::Vec<Name> {
