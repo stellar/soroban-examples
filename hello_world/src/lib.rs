@@ -48,31 +48,29 @@ impl HelloContract {
 #[cfg(test)]
 mod test {
     use super::*;
-    use soroban_sdk::{vec, Binary, Env, IntoVal};
+    use soroban_sdk::{vec, Env, FixedBinary, IntoVal};
 
     #[test]
     fn test() {
         let env = Env::default();
-        let contract_id = Binary::from_array(&env, [0; 32]);
-        env.register_contract(contract_id.clone(), HelloContract);
+        let contract_id = FixedBinary::from_array(&env, [0; 32]);
+        env.register_contract(&contract_id, HelloContract);
 
-        let (words, count) =
-            __hello::call_internal(&env, &contract_id, &Recipient::World.into_val(&env));
+        let (words, count) = hello::invoke(&env, &contract_id, &Recipient::World.into_val(&env));
         assert_eq!(
             words,
             vec![&env, Symbol::from_str("Hello"), Symbol::from_str("World")]
         );
         assert_eq!(count, 1);
 
-        let (words, count) =
-            __hello::call_internal(&env, &contract_id, &Recipient::World.into_val(&env));
+        let (words, count) = hello::invoke(&env, &contract_id, &Recipient::World.into_val(&env));
         assert_eq!(
             words,
             vec![&env, Symbol::from_str("Hello"), Symbol::from_str("World")]
         );
         assert_eq!(count, 2);
 
-        let (words, count) = __hello::call_internal(
+        let (words, count) = hello::invoke(
             &env,
             &contract_id,
             &Recipient::Person(Person {
