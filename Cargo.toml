@@ -3,6 +3,7 @@ resolver = "2"
 
 members = [
     "hello_world",
+    "increment",
     "liquidity_pool",
     "single_offer",
 ]

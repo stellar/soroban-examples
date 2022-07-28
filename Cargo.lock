@@ -559,6 +559,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "soroban-increment-contract"
+version = "0.0.0"
+dependencies = [
+ "soroban-increment-contract",
+ "soroban-sdk",
+]
+
+[[package]]
 name = "soroban-liquidity-pool-contract"
 version = "0.0.0"
 dependencies = [
