@@ -21,7 +21,7 @@ const NAME: Symbol = Symbol::from_str("NAME");
 
 #[contractimpl(export_if = "export")]
 impl CustomTypesContract {
-    pub fn store(env: Env, name: Name) -> Option<Name> {
+    pub fn store(env: Env, name: Name) {
         env.contract_data().set(NAME, name)
     }
 
@@ -41,25 +41,34 @@ mod test {
         let contract_id = FixedBinary::from_array(&env, [0; 32]);
         env.register_contract(&contract_id, HelloContract);
 
-        assert_eq!(
-            store::invoke(
-                &env,
-                &contract_id,
-                Name::First(Symbol::from_str("firstonly")),
-            ),
-            None
+        assert_eq!(retrieve::invoke(&env, &contract_id,), None);
+
+        store::invoke(
+            &env,
+            &contract_id,
+            Name::First(Symbol::from_str("firstonly")),
         );
 
         assert_eq!(
-            store::invoke(
-                &env,
-                &contract_id,
-                Name::FirstLast(FirstLast {
-                    first: Symbol::from_str("first"),
-                    last: Symbol::from_str("last")
-                }),
-            ),
-            Name::First(Symbol::from_str("firstonly"))
+            retrieve::invoke(&env, &contract_id,),
+            Some(Name::First(Symbol::from_str("firstonly")))
+        );
+
+        store::invoke(
+            &env,
+            &contract_id,
+            Name::FirstLast(FirstLast {
+                first: Symbol::from_str("first"),
+                last: Symbol::from_str("last"),
+            }),
+        );
+
+        assert_eq!(
+            retrieve::invoke(&env, &contract_id,),
+            Some(Name::FirstLast(FirstLast {
+                first: Symbol::from_str("first"),
+                last: Symbol::from_str("last"),
+            })),
         );
     }
 }
