@@ -500,34 +500,28 @@ dependencies = [
 ]
 
 [[package]]
-name = "static_assertions"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
-
-[[package]]
-name = "stellar-contract-env-common"
+name = "soroban-env-common"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=79b13dd#79b13dd98968f0cfe8faf36f3ecefab40fbc1920"
+source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=36a5007#36a5007611ab095f7821bef00d3fae2953c9ad47"
 dependencies = [
+ "soroban-env-macros",
  "static_assertions",
- "stellar-contract-env-macros",
  "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
 ]
 
 [[package]]
-name = "stellar-contract-env-guest"
+name = "soroban-env-guest"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=79b13dd#79b13dd98968f0cfe8faf36f3ecefab40fbc1920"
+source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=36a5007#36a5007611ab095f7821bef00d3fae2953c9ad47"
 dependencies = [
+ "soroban-env-common",
  "static_assertions",
- "stellar-contract-env-common",
 ]
 
 [[package]]
-name = "stellar-contract-env-host"
+name = "soroban-env-host"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=79b13dd#79b13dd98968f0cfe8faf36f3ecefab40fbc1920"
+source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=36a5007#36a5007611ab095f7821bef00d3fae2953c9ad47"
 dependencies = [
  "backtrace",
  "dyn-fmt",
@@ -539,16 +533,16 @@ dependencies = [
  "num-integer",
  "num-traits",
  "sha2 0.10.2",
+ "soroban-env-common",
  "static_assertions",
- "stellar-contract-env-common",
  "thiserror",
  "tinyvec",
 ]
 
 [[package]]
-name = "stellar-contract-env-macros"
+name = "soroban-env-macros"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=79b13dd#79b13dd98968f0cfe8faf36f3ecefab40fbc1920"
+source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=36a5007#36a5007611ab095f7821bef00d3fae2953c9ad47"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -557,14 +551,30 @@ dependencies = [
 ]
 
 [[package]]
-name = "stellar-contract-env-panic-handler-wasm32-unreachable"
+name = "soroban-hello-world-contract"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-env?rev=79b13dd#79b13dd98968f0cfe8faf36f3ecefab40fbc1920"
+dependencies = [
+ "soroban-hello-world-contract",
+ "soroban-sdk",
+]
 
 [[package]]
-name = "stellar-contract-macros"
+name = "soroban-liquidity-pool-contract"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-sdk?rev=86ebc3c#86ebc3cadcbabb78c309b71f8ba90b17342a75dd"
+dependencies = [
+ "ed25519-dalek",
+ "rand",
+ "sha2 0.10.2",
+ "soroban-liquidity-pool-contract",
+ "soroban-sdk",
+ "soroban-token-contract",
+ "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
+]
+
+[[package]]
+name = "soroban-macros"
+version = "0.0.0"
+source = "git+https://github.com/stellar/rs-stellar-contract-sdk?rev=7e3422e#7e3422eddbe29e3349bd9d28d0ca10955ee9ec27"
 dependencies = [
  "darling",
  "itertools",
@@ -575,57 +585,41 @@ dependencies = [
 ]
 
 [[package]]
-name = "stellar-contract-sdk"
+name = "soroban-sdk"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-contract-sdk?rev=86ebc3c#86ebc3cadcbabb78c309b71f8ba90b17342a75dd"
+source = "git+https://github.com/stellar/rs-stellar-contract-sdk?rev=7e3422e#7e3422eddbe29e3349bd9d28d0ca10955ee9ec27"
 dependencies = [
  "ed25519-dalek",
- "stellar-contract-env-guest",
- "stellar-contract-env-host",
- "stellar-contract-env-panic-handler-wasm32-unreachable",
- "stellar-contract-macros",
+ "soroban-env-guest",
+ "soroban-env-host",
+ "soroban-macros",
 ]
 
 [[package]]
-name = "stellar-hello-world-contract"
-version = "0.0.0"
-dependencies = [
- "stellar-contract-sdk",
- "stellar-hello-world-contract",
-]
-
-[[package]]
-name = "stellar-liqpool-contract"
+name = "soroban-single-offer-contract"
 version = "0.0.0"
 dependencies = [
  "ed25519-dalek",
  "rand",
- "sha2 0.10.2",
- "stellar-contract-sdk",
- "stellar-liqpool-contract",
- "stellar-token-contract",
- "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
+ "soroban-sdk",
+ "soroban-single-offer-contract",
+ "soroban-token-contract",
 ]
 
 [[package]]
-name = "stellar-single-offer-contract"
+name = "soroban-token-contract"
 version = "0.0.0"
+source = "git+https://github.com/stellar/rs-stellar-token-contract?rev=d0f6b11#d0f6b11bb3771d61da2340836227d68a31615e68"
 dependencies = [
  "ed25519-dalek",
- "rand",
- "stellar-contract-sdk",
- "stellar-single-offer-contract",
- "stellar-token-contract",
+ "soroban-sdk",
 ]
 
 [[package]]
-name = "stellar-token-contract"
-version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-token-contract?rev=37e2cd3#37e2cd3580f8e28beea9e8f9194b9cf8547472dd"
-dependencies = [
- "ed25519-dalek",
- "stellar-contract-sdk",
-]
+name = "static_assertions"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "stellar-xdr"

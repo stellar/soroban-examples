@@ -1,7 +1,8 @@
 [package]
-name = "stellar-liqpool-contract"
+name = "soroban-liquidity-pool-contract"
 version = "0.0.0"
 edition = "2021"
+publish = false
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -9,17 +10,20 @@ crate-type = ["cdylib", "rlib"]
 [features]
 default = ["export"]
 export = []
-testutils = ["stellar-contract-sdk/testutils", "stellar-token-contract/testutils", "dep:ed25519-dalek", "dep:sha2", "dep:stellar-xdr"]
+testutils = ["soroban-sdk/testutils", "soroban-token-contract/testutils", "dep:ed25519-dalek", "dep:sha2", "dep:stellar-xdr"]
 
 [dependencies]
 ed25519-dalek = { version = "1.0.1", optional = true }
 sha2 = { version = "0.10.2", optional = true }
-stellar-token-contract = { git = "https://github.com/stellar/rs-stellar-token-contract", rev = "37e2cd3", default-features = false  }
-# stellar-token-contract = { path = "../../rs-stellar-token-contract", default-features = false  }
-stellar-contract-sdk = { git = "https://github.com/stellar/rs-stellar-contract-sdk", rev = "86ebc3c" }
-# stellar-contract-sdk = { path = "../../rs-stellar-contract-sdk/sdk" }
+soroban-token-contract = { git = "https://github.com/stellar/rs-stellar-token-contract", rev = "d0f6b11", default-features = false  }
+# soroban-token-contract = { git = "https://github.com/stellar/soroban-token-contract", rev = "d0f6b11", default-features = false  }
+# soroban-token-contract = { path = "../../soroban-token-contract", default-features = false  }
+soroban-sdk = { git = "https://github.com/stellar/rs-stellar-contract-sdk", rev = "7e3422e" }
+# switch to this once the repos are renamed
+# soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "7e3422e" }
+# soroban-sdk = { path = "../../rs-soroban-sdk/sdk" }
 stellar-xdr = { git = "https://github.com/stellar/rs-stellar-xdr", rev = "94e01c7b", features = ["next", "std"], optional = true }
 
 [dev_dependencies]
 rand = { version = "0.7.3" }
-stellar-liqpool-contract = { path = ".", default-features = false, features = ["testutils"] }
+soroban-liquidity-pool-contract = { path = ".", default-features = false, features = ["testutils"] }

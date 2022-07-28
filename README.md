@@ -1,7 +1,7 @@
-# rs-stellar-liqpool-example
+# soroban-examples
 
-Example liquidity pool for Stellar Jump Cannon
+Example contracts for Soroban
 
-WARNING: This implementation has not been tested or audited. It is likely to
-have significant errors and security vulnerabilities. It should not be relied
+WARNING: These implementations have not been tested or audited. They is likely to
+have significant errors and security vulnerabilities. They should not be relied
 on for any purpose.

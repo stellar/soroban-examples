@@ -1,9 +1,10 @@
 [package]
-name = "stellar-hello-world-contract"
+name = "soroban-hello-world-contract"
 version = "0.0.0"
 authors = ["Stellar Development Foundation <info@stellar.org>"]
 license = "Apache-2.0"
 edition = "2021"
+publish = false
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -12,10 +13,12 @@ doctest = false
 [features]
 default = ["export"]
 export = []
-testutils = ["stellar-contract-sdk/testutils"]
+testutils = ["soroban-sdk/testutils"]
 
 [dependencies]
-stellar-contract-sdk = { git = "https://github.com/stellar/rs-stellar-contract-sdk", rev = "86ebc3c" }
+soroban-sdk = { git = "https://github.com/stellar/rs-stellar-contract-sdk", rev = "7e3422e" }
+# switch to this once the repos are renamed
+# soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "7e3422e" }
 
 [dev_dependencies]
-stellar-hello-world-contract = { path = ".", default-features = false, features = ["testutils"] }
+soroban-hello-world-contract = { path = ".", default-features = false, features = ["testutils"] }

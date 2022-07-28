@@ -1,7 +1,8 @@
 [package]
-name = "stellar-single-offer-contract"
+name = "soroban-single-offer-contract"
 version = "0.0.0"
 edition = "2021"
+publish = false
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -9,15 +10,19 @@ crate-type = ["cdylib", "rlib"]
 [features]
 default = ["export"]
 export = []
-testutils = ["stellar-contract-sdk/testutils", "stellar-token-contract/testutils", "dep:ed25519-dalek"]
+testutils = ["soroban-sdk/testutils", "soroban-token-contract/testutils", "dep:ed25519-dalek"]
 
 [dependencies]
 ed25519-dalek = { version = "1.0.1", optional = true }
-stellar-token-contract = { git = "https://github.com/stellar/rs-stellar-token-contract", rev = "37e2cd3", default-features = false  }
-# stellar-token-contract = { path = "../../rs-stellar-token-contract", default-features = false  }
-stellar-contract-sdk = { git = "https://github.com/stellar/rs-stellar-contract-sdk", rev = "86ebc3c" }
-# stellar-contract-sdk = { path = "../../rs-stellar-contract-sdk/sdk" }
+soroban-token-contract = { git = "https://github.com/stellar/rs-stellar-token-contract", rev = "d0f6b11", default-features = false  }
+# switch to this once the repos are renamed
+# soroban-token-contract = { git = "https://github.com/stellar/soroban-token-contract", rev = "d0f6b11", default-features = false  }
+# soroban-token-contract = { path = "../../soroban-token-contract", default-features = false  }
+soroban-sdk = { git = "https://github.com/stellar/rs-stellar-contract-sdk", rev = "7e3422e" }
+# switch to this once the repos are renamed
+# soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "7e3422e" }
+# soroban-sdk = { path = "../../rs-soroban-sdk/sdk" }
 
 [dev_dependencies]
 rand = { version = "0.7.3" }
-stellar-single-offer-contract = { path = ".", default-features = false, features = ["testutils"] }
+soroban-single-offer-contract = { path = ".", default-features = false, features = ["testutils"] }

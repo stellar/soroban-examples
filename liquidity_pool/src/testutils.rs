@@ -1,7 +1,7 @@
 #![cfg(feature = "testutils")]
 
-use stellar_contract_sdk::{BigInt, Binary, Env, FixedBinary};
-use stellar_token_contract::public_types::Identifier;
+use soroban_sdk::{BigInt, Binary, Env, FixedBinary};
+use soroban_token_contract::public_types::Identifier;
 
 pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
     let contract_id = Binary::from_array(e, *contract_id);
