@@ -44,11 +44,11 @@ fn get_contract_id(e: &Env) -> Identifier {
 }
 
 fn get_sell_token(e: &Env) -> FixedBinary<32> {
-    e.contract_data().get(DataKey::SellToken)
+    e.contract_data().get_unchecked(DataKey::SellToken).unwrap()
 }
 
 fn get_buy_token(e: &Env) -> FixedBinary<32> {
-    e.contract_data().get(DataKey::BuyToken)
+    e.contract_data().get_unchecked(DataKey::BuyToken).unwrap()
 }
 
 fn get_balance(e: &Env, contract_id: FixedBinary<32>) -> BigInt {
@@ -72,7 +72,7 @@ fn put_price(e: &Env, price: Price) {
 }
 
 fn get_price(e: &Env) -> Price {
-    e.contract_data().get(DataKey::Price)
+    e.contract_data().get_unchecked(DataKey::Price).unwrap()
 }
 
 fn transfer(e: &Env, contract_id: FixedBinary<32>, to: Identifier, amount: BigInt) {
@@ -94,7 +94,7 @@ fn has_administrator(e: &Env) -> bool {
 
 fn read_administrator(e: &Env) -> Identifier {
     let key = DataKey::Admin;
-    e.contract_data().get(key)
+    e.contract_data().get_unchecked(key).unwrap()
 }
 
 fn write_administrator(e: &Env, id: Identifier) {
