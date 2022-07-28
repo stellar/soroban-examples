@@ -36,10 +36,12 @@ impl HelloContract {
 
     fn increment(env: &Env, recipient: &Recipient) -> u32 {
         let mut count: u32 = 1;
-        if env.contract_data().has(recipient.clone()) {
-            let prev_count: u32 = env.contract_data().get(recipient.clone());
-            count += prev_count;
-        }
+        let prev_count: u32 = env
+            .contract_data()
+            .get(recipient.clone())
+            .unwrap_or(Ok(0)) // If no value set, assume 0.
+            .unwrap(); // Assume value is the correct type.
+        count += prev_count;
         env.contract_data().set(recipient.clone(), count);
         count
     }

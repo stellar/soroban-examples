@@ -34,27 +34,31 @@ fn get_contract_id(e: &Env) -> Identifier {
 }
 
 fn get_token_a(e: &Env) -> FixedBinary<32> {
-    e.contract_data().get(DataKey::TokenA)
+    e.contract_data().get_unchecked(DataKey::TokenA).unwrap()
 }
 
 fn get_token_b(e: &Env) -> FixedBinary<32> {
-    e.contract_data().get(DataKey::TokenB)
+    e.contract_data().get_unchecked(DataKey::TokenB).unwrap()
 }
 
 fn get_token_share(e: &Env) -> FixedBinary<32> {
-    e.contract_data().get(DataKey::TokenShare)
+    e.contract_data()
+        .get_unchecked(DataKey::TokenShare)
+        .unwrap()
 }
 
 fn get_total_shares(e: &Env) -> BigInt {
-    e.contract_data().get(DataKey::TotalShares)
+    e.contract_data()
+        .get_unchecked(DataKey::TotalShares)
+        .unwrap()
 }
 
 fn get_reserve_a(e: &Env) -> BigInt {
-    e.contract_data().get(DataKey::ReserveA)
+    e.contract_data().get_unchecked(DataKey::ReserveA).unwrap()
 }
 
 fn get_reserve_b(e: &Env) -> BigInt {
-    e.contract_data().get(DataKey::ReserveB)
+    e.contract_data().get_unchecked(DataKey::ReserveB).unwrap()
 }
 
 fn get_balance(e: &Env, contract_id: FixedBinary<32>) -> BigInt {
