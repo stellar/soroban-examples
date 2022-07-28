@@ -11,8 +11,7 @@ pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> FixedBinary<3
     salt.append(&token_a.clone().into());
     salt.append(&token_b.clone().into());
     let salt = e.compute_hash_sha256(salt);
-    e.create_contract_from_contract(bin.try_into().unwrap(), salt.into())
-        .into() // TODO: The arguments to create_contract_from_contract should not need conversions
+    e.create_contract_from_contract(bin, salt)
 }
 
 #[cfg(feature = "testutils")]
@@ -27,10 +26,10 @@ pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> FixedBinary<3
         let mut salt_bin = Binary::new(&e);
         salt_bin.append(&token_a.clone().into());
         salt_bin.append(&token_b.clone().into());
-        Uint256(e.compute_hash_sha256(salt_bin).try_into().unwrap()) // TODO: Should be into
+        Uint256(e.compute_hash_sha256(salt_bin).into())
     };
 
-    let contract_id = Hash(e.get_current_contract().try_into().unwrap()); // TODO: Should be into
+    let contract_id = Hash(e.get_current_contract().into());
 
     let new_contract_id = {
         let pre_image =
