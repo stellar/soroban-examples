@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contractimpl, contracttype, vec, Env, Symbol};
+use soroban_sdk::{contractimpl, contracttype, Env, Symbol};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -32,21 +32,18 @@ impl CustomTypesContract {
         env.contract_data().set(NAME, name);
     }
 
-    pub fn retrieve(env: Env) -> soroban_sdk::Vec<Name> {
-        vec![
-            &env,
-            env.contract_data()
-                .get(NAME) // Get the value associated with key NAME.
-                .unwrap_or(Ok(Name::None)) // If no value, use None instead.
-                .unwrap(),
-        ] // Assume the type is of type Name.
+    pub fn retrieve(env: Env) -> Name {
+        env.contract_data()
+            .get(NAME) // Get the value associated with key NAME.
+            .unwrap_or(Ok(Name::None)) // If no value, use None instead.
+            .unwrap()
     }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-    use soroban_sdk::{vec, Env, FixedBinary};
+    use soroban_sdk::{Env, FixedBinary};
 
     #[test]
     fn test() {
@@ -54,7 +51,7 @@ mod test {
         let contract_id = FixedBinary::from_array(&env, [0; 32]);
         env.register_contract(&contract_id, CustomTypesContract);
 
-        assert_eq!(retrieve::invoke(&env, &contract_id), vec![&env, Name::None]);
+        assert_eq!(retrieve::invoke(&env, &contract_id), Name::None);
 
         store::invoke(
             &env,
@@ -66,12 +63,9 @@ mod test {
 
         assert_eq!(
             retrieve::invoke(&env, &contract_id),
-            vec![
-                &env,
-                Name::First(First {
-                    first: Symbol::from_str("firstonly"),
-                })
-            ],
+            Name::First(First {
+                first: Symbol::from_str("firstonly"),
+            }),
         );
 
         store::invoke(
@@ -85,13 +79,10 @@ mod test {
 
         assert_eq!(
             retrieve::invoke(&env, &contract_id),
-            vec![
-                &env,
-                Name::FirstLast(FirstLast {
-                    first: Symbol::from_str("first"),
-                    last: Symbol::from_str("last"),
-                })
-            ],
+            Name::FirstLast(FirstLast {
+                first: Symbol::from_str("first"),
+                last: Symbol::from_str("last"),
+            }),
         );
     }
 }
