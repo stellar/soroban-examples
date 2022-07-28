@@ -2,10 +2,10 @@ all: check build test
 
 export RUSTFLAGS=-Dwarnings
 
-test:
+test: fmt
 	cargo test
 
-build:
+build: fmt
 	cargo build --target wasm32-unknown-unknown --release
 	CARGO_TARGET_DIR=target-tiny cargo +nightly build --target wasm32-unknown-unknown --release \
 		-Z build-std=std,panic_abort \
@@ -21,7 +21,7 @@ build:
 			ls -l "$$i"; \
 		done
 
-check:
+check: fmt
 	cargo hack --feature-powerset check --all-targets
 	cargo check --release --target wasm32-unknown-unknown
 
