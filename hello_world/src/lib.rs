@@ -39,11 +39,7 @@ mod test {
         let words = hello::invoke(&env, &contract_id, &Symbol::from_str("SourBun"));
         assert_eq!(
             words,
-            vec![
-                &env,
-                Symbol::from_str("Hello"),
-                Symbol::from_str("SourBun"),
-            ]
+            vec![&env, Symbol::from_str("Hello"), Symbol::from_str("SourBun"),]
         );
     }
 }
