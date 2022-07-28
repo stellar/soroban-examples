@@ -3,29 +3,30 @@ use soroban_sdk::{contractimpl, contracttype, vec, Env, Symbol, Vec};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum MyEnum {
-    World,
-    Person(Person),
+pub enum Name {
+    First(Symbol),
+    FirstLast(Name),
 }
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct MyStruct {
+pub struct FirstLast {
     pub first: Symbol,
     pub last: Symbol,
 }
 
 pub struct CustomTypesContract;
 
+const NAME: Symbol = Symbol::from_str("NAME");
+
 #[contractimpl(export_if = "export")]
 impl CustomTypesContract {
-    pub fn execute(env: Env, to: Symbol) -> Vec<Symbol> {
-        const GREETING: Symbol = Symbol::from_str("CustomTypes");
+    pub fn store(env: Env, name: Name) -> Option<Name> {
+        env.contract_data().set(NAME, name)
+    }
 
-        match to {
-            Recipient::World => vec![&env, GREETING, Symbol::from_str("World")],
-            Recipient::Person(ref p) => vec![&env, GREETING, p.first, p.last],
-        }
+    pub fn retrieve(env: Env, to: Symbol) -> Option<Name> {
+        env.contract_data().get(NAME)
     }
 }
 
@@ -40,28 +41,25 @@ mod test {
         let contract_id = FixedBinary::from_array(&env, [0; 32]);
         env.register_contract(&contract_id, HelloContract);
 
-        let words = hello::invoke(&env, &contract_id, &Recipient::World);
         assert_eq!(
-            words,
-            vec![&env, Symbol::from_str("Hello"), Symbol::from_str("World"),]
+            store::invoke(
+                &env,
+                &contract_id,
+                Name::First(Symbol::from_str("firstonly")),
+            ),
+            None
         );
 
-        let words = hello::invoke(
-            &env,
-            &contract_id,
-            &Recipient::Person(Person {
-                first: Symbol::from_str("Sour"),
-                last: Symbol::from_str("Bun"),
-            }),
-        );
         assert_eq!(
-            words,
-            vec![
+            store::invoke(
                 &env,
-                Symbol::from_str("Hello"),
-                Symbol::from_str("Sour"),
-                Symbol::from_str("Bun")
-            ]
+                &contract_id,
+                Name::FirstLast(FirstLast {
+                    first: Symbol::from_str("first"),
+                    last: Symbol::from_str("last")
+                }),
+            ),
+            Name::First(Symbol::from_str("firstonly"))
         );
     }
 }
