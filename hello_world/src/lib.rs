@@ -1,5 +1,5 @@
 #![no_std]
-use stellar_contract_sdk::{contractimpl, contracttype, vec, Env, Symbol, Vec};
+use soroban_sdk::{contractimpl, contracttype, vec, Env, Symbol, Vec};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -48,7 +48,7 @@ impl HelloContract {
 #[cfg(test)]
 mod test {
     use super::*;
-    use stellar_contract_sdk::{vec, Binary, Env, IntoVal};
+    use soroban_sdk::{vec, Binary, Env, IntoVal};
 
     #[test]
     fn test() {

@@ -1,8 +1,8 @@
-use stellar_contract_sdk::{Binary, Env};
-use stellar_token_contract::public_types::U256;
+use soroban_sdk::{Binary, Env};
+use soroban_token_contract::public_types::U256;
 
 #[cfg(not(feature = "testutils"))]
-pub const TOKEN_CONTRACT: &[u8] = include_bytes!("../../wasm/stellar_token_contract.wasm");
+pub const TOKEN_CONTRACT: &[u8] = include_bytes!("../../wasm/soroban_token_contract.wasm");
 
 #[cfg(not(feature = "testutils"))]
 pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> Binary {
@@ -15,7 +15,7 @@ pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> Binary {
 }
 
 #[cfg(feature = "testutils")]
-use stellar_contract_sdk::IntoVal;
+use soroban_sdk::IntoVal;
 #[cfg(feature = "testutils")]
 pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> Binary {
     use sha2::{Digest, Sha256};
@@ -51,6 +51,6 @@ pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> Binary {
         Sha256::digest(buf).into_val(e)
     };
 
-    stellar_token_contract::testutils::register_test_contract(e, &new_contract_id);
+    soroban_token_contract::testutils::register_test_contract(e, &new_contract_id);
     Binary::from_array(e, new_contract_id)
 }

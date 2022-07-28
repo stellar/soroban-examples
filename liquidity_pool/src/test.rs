@@ -3,9 +3,9 @@
 use crate::testutils::{register_test_contract as register_liqpool, LiquidityPool};
 use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
-use stellar_contract_sdk::{BigInt, Binary, Env, FixedBinary};
-use stellar_token_contract::public_types::Identifier;
-use stellar_token_contract::testutils::{
+use soroban_sdk::{BigInt, Binary, Env, FixedBinary};
+use soroban_token_contract::public_types::Identifier;
+use soroban_token_contract::testutils::{
     register_test_contract as register_token, to_ed25519, Token,
 };
 

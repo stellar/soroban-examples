@@ -3,9 +3,9 @@
 use crate::cryptography::Domain;
 use crate::Price;
 use ed25519_dalek::Keypair;
-use stellar_contract_sdk::testutils::ed25519::Sign;
-use stellar_contract_sdk::{BigInt, Binary, Env, EnvVal, FixedBinary, IntoVal, Vec};
-use stellar_token_contract::public_types::{Authorization, Identifier, Message, MessageV0};
+use soroban_sdk::testutils::ed25519::Sign;
+use soroban_sdk::{BigInt, Binary, Env, EnvVal, FixedBinary, IntoVal, Vec};
+use soroban_token_contract::public_types::{Authorization, Identifier, Message, MessageV0};
 
 pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
     let contract_id = Binary::from_array(e, *contract_id);

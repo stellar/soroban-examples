@@ -8,8 +8,8 @@ pub mod testutils;
 mod token_contract;
 
 use crate::token_contract::create_contract;
-use stellar_contract_sdk::{contractimpl, BigInt, Binary, Env, IntoVal, RawVal};
-use stellar_token_contract as token;
+use soroban_sdk::{contractimpl, BigInt, Binary, Env, IntoVal, RawVal};
+use soroban_token_contract as token;
 use token::public_types::{Authorization, Identifier, KeyedAuthorization, U256};
 
 #[derive(Clone, Copy)]

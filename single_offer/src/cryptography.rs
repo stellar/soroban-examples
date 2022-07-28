@@ -1,6 +1,6 @@
-use stellar_contract_sdk::{serde::Serialize, Account, BigInt, Env, EnvVal};
+use soroban_sdk::{serde::Serialize, Account, BigInt, Env, EnvVal};
 
-use stellar_token_contract::public_types::{
+use soroban_token_contract::public_types::{
     KeyedAccountAuthorization, KeyedAuthorization, KeyedEd25519Authorization, Message, MessageV0,
     U256,
 };
