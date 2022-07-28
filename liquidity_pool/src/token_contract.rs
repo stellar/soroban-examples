@@ -11,7 +11,8 @@ pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> FixedBinary<3
     salt.append(&token_a.clone().into());
     salt.append(&token_b.clone().into());
     let salt = e.compute_hash_sha256(salt);
-    e.create_contract_from_contract(bin.try_into().unwrap(), salt.into()).into() // TODO: The arguments to create_contract_from_contract should not need conversions
+    e.create_contract_from_contract(bin.try_into().unwrap(), salt.into())
+        .into() // TODO: The arguments to create_contract_from_contract should not need conversions
 }
 
 #[cfg(feature = "testutils")]
