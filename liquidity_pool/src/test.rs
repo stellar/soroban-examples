@@ -65,7 +65,7 @@ fn test() {
     let token2 = create_token_contract(&e, &contract2, &admin2);
     let (contract_pool, liqpool) = create_liqpool_contract(&e, &contract1, &contract2);
     let pool_id = Identifier::Contract(FixedBinary::from_array(&e, contract_pool));
-    let contract_share: [u8; 32] = liqpool.share_id().try_into().unwrap(); // TODO: This should be just into
+    let contract_share: [u8; 32] = liqpool.share_id().into();
     let token_share = Token::new(&e, &contract_share);
 
     token1.mint(&admin1, &user1_id, &BigInt::from_u32(&e, 1000));
