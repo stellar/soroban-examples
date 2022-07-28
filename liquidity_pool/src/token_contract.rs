@@ -26,22 +26,10 @@ pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> FixedBinary<3
         let mut salt_bin = Binary::new(&e);
         salt_bin.append(&token_a.clone().into());
         salt_bin.append(&token_b.clone().into());
-        let salt_bin = e.compute_hash_sha256(salt_bin);
-        let mut salt_bytes: [u8; 32] = Default::default();
-        for i in 0..salt_bin.len() {
-            salt_bytes[i as usize] = salt_bin.get(i).unwrap();
-        }
-        Uint256(salt_bytes)
+        Uint256(e.compute_hash_sha256(salt_bin).try_into().unwrap()) // TODO: Should be into
     };
 
-    let contract_id = {
-        let contract_id_bin = e.get_current_contract();
-        let mut contract_id_bytes: [u8; 32] = Default::default();
-        for i in 0..contract_id_bin.len() {
-            contract_id_bytes[i as usize] = contract_id_bin.get(i).unwrap();
-        }
-        Hash(contract_id_bytes)
-    };
+    let contract_id = Hash(e.get_current_contract().try_into().unwrap()); // TODO: Should be into
 
     let new_contract_id = {
         let pre_image =
