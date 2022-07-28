@@ -5,13 +5,13 @@ use soroban_token_contract::public_types::U256;
 pub const TOKEN_CONTRACT: &[u8] = include_bytes!("../../wasm/soroban_token_contract.wasm");
 
 #[cfg(not(feature = "testutils"))]
-pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> FixedBinary {
+pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> FixedBinary<32> {
     let bin = Binary::from_slice(e, TOKEN_CONTRACT);
     let mut salt = Binary::new(&e);
     salt.append(&token_a.clone().into());
     salt.append(&token_b.clone().into());
     let salt = e.compute_hash_sha256(salt);
-    e.create_contract_from_contract(bin, salt).into()
+    e.create_contract_from_contract(bin.try_into().unwrap(), salt.into()).into() // TODO: The arguments to create_contract_from_contract should not need conversions
 }
 
 #[cfg(feature = "testutils")]
