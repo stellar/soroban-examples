@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contractimpl, contracttype, vec, Env, Symbol, Vec};
+use soroban_sdk::{contractimpl, vec, Env, Symbol, Vec};
 
 pub struct HelloContract;
 
@@ -9,20 +9,6 @@ impl HelloContract {
         const GREETING: Symbol = Symbol::from_str("Hello");
         vec![&env, GREETING, to]
     }
-}
-
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Recipient {
-    World,
-    Person(Person),
-}
-
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Person {
-    pub first: Symbol,
-    pub last: Symbol,
 }
 
 #[cfg(test)]
