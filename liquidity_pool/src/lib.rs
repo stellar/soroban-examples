@@ -42,11 +42,15 @@ fn get_token_b(e: &Env) -> FixedBinary<32> {
 }
 
 fn get_token_share(e: &Env) -> FixedBinary<32> {
-    e.contract_data().get_unchecked(DataKey::TokenShare).unwrap()
+    e.contract_data()
+        .get_unchecked(DataKey::TokenShare)
+        .unwrap()
 }
 
 fn get_total_shares(e: &Env) -> BigInt {
-    e.contract_data().get_unchecked(DataKey::TotalShares).unwrap()
+    e.contract_data()
+        .get_unchecked(DataKey::TotalShares)
+        .unwrap()
 }
 
 fn get_reserve_a(e: &Env) -> BigInt {
