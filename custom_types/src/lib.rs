@@ -1,11 +1,18 @@
 #![no_std]
-use soroban_sdk::{contractimpl, contracttype, vec, Env, Symbol, Vec};
+use soroban_sdk::{contractimpl, contracttype, vec, Env, Symbol};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Name {
-    First(Symbol),
-    FirstLast(Name),
+    None,
+    First(First),
+    FirstLast(FirstLast),
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct First {
+    pub first: Symbol,
 }
 
 #[contracttype]
@@ -25,8 +32,14 @@ impl CustomTypesContract {
         env.contract_data().set(NAME, name)
     }
 
-    pub fn retrieve(env: Env, to: Symbol) -> Option<Name> {
-        env.contract_data().get(NAME)
+    pub fn retrieve(env: Env) -> soroban_sdk::Vec<Name> {
+        vec![
+            &env,
+            env.contract_data()
+                .get(NAME) // Get the value associated with key NAME.
+                .unwrap_or(Ok(Name::None)) // If no value, use None instead.
+                .unwrap(),
+        ] // Assume the type is of type Name.
     }
 }
 
@@ -39,36 +52,46 @@ mod test {
     fn test() {
         let env = Env::default();
         let contract_id = FixedBinary::from_array(&env, [0; 32]);
-        env.register_contract(&contract_id, HelloContract);
+        env.register_contract(&contract_id, CustomTypesContract);
 
-        assert_eq!(retrieve::invoke(&env, &contract_id,), None);
+        assert_eq!(retrieve::invoke(&env, &contract_id), vec![&env, Name::None]);
 
         store::invoke(
             &env,
             &contract_id,
-            Name::First(Symbol::from_str("firstonly")),
+            &Name::First(First {
+                first: Symbol::from_str("firstonly"),
+            }),
         );
 
         assert_eq!(
-            retrieve::invoke(&env, &contract_id,),
-            Some(Name::First(Symbol::from_str("firstonly")))
+            retrieve::invoke(&env, &contract_id),
+            vec![
+                &env,
+                Name::First(First {
+                    first: Symbol::from_str("firstonly"),
+                })
+            ],
         );
 
         store::invoke(
             &env,
             &contract_id,
-            Name::FirstLast(FirstLast {
+            &Name::FirstLast(FirstLast {
                 first: Symbol::from_str("first"),
                 last: Symbol::from_str("last"),
             }),
         );
 
         assert_eq!(
-            retrieve::invoke(&env, &contract_id,),
-            Some(Name::FirstLast(FirstLast {
-                first: Symbol::from_str("first"),
-                last: Symbol::from_str("last"),
-            })),
+            retrieve::invoke(&env, &contract_id),
+            vec![
+                &env,
+                Name::FirstLast(FirstLast {
+                    first: Symbol::from_str("first"),
+                    last: Symbol::from_str("last"),
+                })
+            ],
         );
     }
 }
