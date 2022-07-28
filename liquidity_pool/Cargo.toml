@@ -15,12 +15,9 @@ testutils = ["soroban-sdk/testutils", "soroban-token-contract/testutils", "dep:e
 [dependencies]
 ed25519-dalek = { version = "1.0.1", optional = true }
 sha2 = { version = "0.10.2", optional = true }
-soroban-token-contract = { git = "https://github.com/stellar/rs-stellar-token-contract", rev = "d0f6b11", default-features = false  }
-# soroban-token-contract = { git = "https://github.com/stellar/soroban-token-contract", rev = "d0f6b11", default-features = false  }
+soroban-token-contract = { git = "https://github.com/stellar/soroban-token-contract", rev = "46463cc", default-features = false  }
 # soroban-token-contract = { path = "../../soroban-token-contract", default-features = false  }
-soroban-sdk = { git = "https://github.com/stellar/rs-stellar-contract-sdk", rev = "7e3422e" }
-# switch to this once the repos are renamed
-# soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "7e3422e" }
+soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "9d77da8" }
 # soroban-sdk = { path = "../../rs-soroban-sdk/sdk" }
 stellar-xdr = { git = "https://github.com/stellar/rs-stellar-xdr", rev = "94e01c7b", features = ["next", "std"], optional = true }
 

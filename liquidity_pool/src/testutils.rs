@@ -1,29 +1,29 @@
 #![cfg(feature = "testutils")]
 
-use soroban_sdk::{BigInt, Binary, Env, FixedBinary};
+use soroban_sdk::{BigInt, Env, FixedBinary};
 use soroban_token_contract::public_types::Identifier;
 
 pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
-    let contract_id = Binary::from_array(e, *contract_id);
-    e.register_contract(contract_id, crate::LiquidityPool {});
+    let contract_id = FixedBinary::from_array(e, *contract_id);
+    e.register_contract(&contract_id, crate::LiquidityPool {});
 }
 
-pub use crate::__deposit::call_internal as deposit;
-pub use crate::__initialize::call_internal as initialize;
-pub use crate::__share_id::call_internal as share_id;
-pub use crate::__swap::call_internal as swap;
-pub use crate::__withdraw::call_internal as withdraw;
+pub use crate::deposit::invoke as deposit;
+pub use crate::initialize::invoke as initialize;
+pub use crate::share_id::invoke as share_id;
+pub use crate::swap::invoke as swap;
+pub use crate::withdraw::invoke as withdraw;
 
 pub struct LiquidityPool {
     env: Env,
-    contract_id: Binary,
+    contract_id: FixedBinary<32>,
 }
 
 impl LiquidityPool {
     pub fn new(env: &Env, contract_id: &[u8; 32]) -> Self {
         Self {
             env: env.clone(),
-            contract_id: Binary::from_slice(env, contract_id),
+            contract_id: FixedBinary::from_array(env, *contract_id),
         }
     }
 
@@ -33,7 +33,7 @@ impl LiquidityPool {
         initialize(&self.env, &self.contract_id, &token_a, &token_b)
     }
 
-    pub fn share_id(&self) -> Binary {
+    pub fn share_id(&self) -> FixedBinary<32> {
         share_id(&self.env, &self.contract_id)
     }
 
