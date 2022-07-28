@@ -7,7 +7,7 @@ mod cryptography;
 mod test;
 pub mod testutils;
 
-use soroban_sdk::{contractimpl, contracttype, vec, BigInt, Binary, Env, IntoVal, RawVal};
+use soroban_sdk::{contractimpl, contracttype, vec, BigInt, Env, FixedBinary, IntoVal, RawVal};
 use soroban_token_contract as token;
 use token::public_types::{
     Authorization, Identifier, KeyedAccountAuthorization, KeyedAuthorization,
@@ -43,15 +43,15 @@ fn get_contract_id(e: &Env) -> Identifier {
     Identifier::Contract(e.get_current_contract().into())
 }
 
-fn get_sell_token(e: &Env) -> Binary {
+fn get_sell_token(e: &Env) -> FixedBinary<32> {
     e.contract_data().get(DataKey::SellToken)
 }
 
-fn get_buy_token(e: &Env) -> Binary {
+fn get_buy_token(e: &Env) -> FixedBinary<32> {
     e.contract_data().get(DataKey::BuyToken)
 }
 
-fn get_balance(e: &Env, contract_id: Binary) -> BigInt {
+fn get_balance(e: &Env, contract_id: FixedBinary<32>) -> BigInt {
     token::balance(e, &contract_id, &get_contract_id(e))
 }
 
@@ -75,7 +75,7 @@ fn get_price(e: &Env) -> Price {
     e.contract_data().get(DataKey::Price)
 }
 
-fn transfer(e: &Env, contract_id: Binary, to: Identifier, amount: BigInt) {
+fn transfer(e: &Env, contract_id: FixedBinary<32>, to: Identifier, amount: BigInt) {
     token::xfer(e, &contract_id, &KeyedAuthorization::Contract, &to, &amount);
 }
 

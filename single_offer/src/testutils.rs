@@ -4,31 +4,31 @@ use crate::cryptography::Domain;
 use crate::Price;
 use ed25519_dalek::Keypair;
 use soroban_sdk::testutils::ed25519::Sign;
-use soroban_sdk::{BigInt, Binary, Env, EnvVal, FixedBinary, IntoVal, Vec};
+use soroban_sdk::{BigInt, Env, EnvVal, FixedBinary, IntoVal, Vec};
 use soroban_token_contract::public_types::{Authorization, Identifier, Message, MessageV0};
 
 pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
-    let contract_id = Binary::from_array(e, *contract_id);
-    e.register_contract(contract_id, crate::SingleOffer {});
+    let contract_id = FixedBinary::from_array(e, *contract_id);
+    e.register_contract(&contract_id, crate::SingleOffer {});
 }
 
-pub use crate::__get_price::call_internal as get_price;
-pub use crate::__initialize::call_internal as initialize;
-pub use crate::__nonce::call_internal as nonce;
-pub use crate::__trade::call_internal as trade;
-pub use crate::__updt_price::call_internal as updt_price;
-pub use crate::__withdraw::call_internal as withdraw;
+pub use crate::get_price::invoke as get_price;
+pub use crate::initialize::invoke as initialize;
+pub use crate::nonce::invoke as nonce;
+pub use crate::trade::invoke as trade;
+pub use crate::updt_price::invoke as updt_price;
+pub use crate::withdraw::invoke as withdraw;
 
 pub struct SingleOffer {
     env: Env,
-    contract_id: Binary,
+    contract_id: FixedBinary<32>,
 }
 
 impl SingleOffer {
     pub fn new(env: &Env, contract_id: &[u8; 32]) -> Self {
         Self {
             env: env.clone(),
-            contract_id: Binary::from_slice(env, contract_id),
+            contract_id: FixedBinary::from_array(env, *contract_id),
         }
     }
 

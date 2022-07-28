@@ -567,7 +567,7 @@ dependencies = [
  "sha2 0.10.2",
  "soroban-liquidity-pool-contract",
  "soroban-sdk 0.0.0 (git+https://github.com/stellar/rs-soroban-sdk?rev=9d77da8)",
- "soroban-token-contract 0.0.0 (git+https://github.com/stellar/soroban-token-contract?rev=46463cc)",
+ "soroban-token-contract",
  "stellar-xdr 0.0.0 (git+https://github.com/stellar/rs-stellar-xdr?rev=94e01c7b)",
 ]
 
@@ -625,9 +625,9 @@ version = "0.0.0"
 dependencies = [
  "ed25519-dalek",
  "rand",
- "soroban-sdk 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-sdk?rev=7e3422e)",
+ "soroban-sdk 0.0.0 (git+https://github.com/stellar/rs-soroban-sdk?rev=9d77da8)",
  "soroban-single-offer-contract",
- "soroban-token-contract 0.0.0 (git+https://github.com/stellar/rs-stellar-token-contract?rev=d0f6b11)",
+ "soroban-token-contract",
 ]
 
 [[package]]
@@ -637,15 +637,6 @@ source = "git+https://github.com/stellar/soroban-token-contract?rev=46463cc#4646
 dependencies = [
  "ed25519-dalek",
  "soroban-sdk 0.0.0 (git+https://github.com/stellar/rs-soroban-sdk?rev=9d77da8)",
-]
-
-[[package]]
-name = "soroban-token-contract"
-version = "0.0.0"
-source = "git+https://github.com/stellar/rs-stellar-token-contract?rev=d0f6b11#d0f6b11bb3771d61da2340836227d68a31615e68"
-dependencies = [
- "ed25519-dalek",
- "soroban-sdk 0.0.0 (git+https://github.com/stellar/rs-stellar-contract-sdk?rev=7e3422e)",
 ]
 
 [[package]]
