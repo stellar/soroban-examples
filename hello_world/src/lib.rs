@@ -5,13 +5,9 @@ pub struct HelloContract;
 
 #[contractimpl(export_if = "export")]
 impl HelloContract {
-    pub fn hello(env: Env, to: Recipient) -> Vec<Symbol> {
+    pub fn hello(env: Env, to: Symbol) -> Vec<Symbol> {
         const GREETING: Symbol = Symbol::from_str("Hello");
-
-        match to {
-            Recipient::World => vec![&env, GREETING, Symbol::from_str("World")],
-            Recipient::Person(ref p) => vec![&env, GREETING, p.first, p.last],
-        }
+        vec![&env, GREETING, to]
     }
 }
 
@@ -40,27 +36,13 @@ mod test {
         let contract_id = FixedBinary::from_array(&env, [0; 32]);
         env.register_contract(&contract_id, HelloContract);
 
-        let words = hello::invoke(&env, &contract_id, &Recipient::World);
-        assert_eq!(
-            words,
-            vec![&env, Symbol::from_str("Hello"), Symbol::from_str("World"),]
-        );
-
-        let words = hello::invoke(
-            &env,
-            &contract_id,
-            &Recipient::Person(Person {
-                first: Symbol::from_str("Sour"),
-                last: Symbol::from_str("Bun"),
-            }),
-        );
+        let words = hello::invoke(&env, &contract_id, &Symbol::from_str("SourBun"));
         assert_eq!(
             words,
             vec![
                 &env,
                 Symbol::from_str("Hello"),
-                Symbol::from_str("Sour"),
-                Symbol::from_str("Bun")
+                Symbol::from_str("SourBun"),
             ]
         );
     }
