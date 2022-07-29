@@ -168,7 +168,7 @@ struct SingleOffer;
 #[contractimpl(export_if = "export")]
 impl SingleOfferTrait for SingleOffer {
     fn initialize(e: Env, admin: Identifier, sell_token: U256, buy_token: U256, n: u32, d: u32) {
-        if has_administrator(&e) || n == 0 {
+        if has_administrator(&e) || d == 0 {
             panic!()
         }
         write_administrator(&e, admin);
@@ -213,6 +213,9 @@ impl SingleOfferTrait for SingleOffer {
     }
 
     fn updt_price(e: Env, admin: Authorization, n: u32, d: u32) {
+        if d == 0 {
+            panic!()
+        }
         let auth = to_administrator_authorization(&e, admin.clone());
         cryptography::check_auth(
             &e,
