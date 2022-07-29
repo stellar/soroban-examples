@@ -5,14 +5,7 @@ use soroban_sdk::{contractimpl, contracttype, Env, Symbol};
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Name {
     None,
-    First(First),
     FirstLast(FirstLast),
-}
-
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct First {
-    pub first: Symbol,
 }
 
 #[contracttype]
