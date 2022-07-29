@@ -1,0 +1,22 @@
+[package]
+name = "soroban-custom-types-contract"
+version = "0.0.0"
+authors = ["Stellar Development Foundation <info@stellar.org>"]
+license = "Apache-2.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+doctest = false
+
+[features]
+default = ["export"]
+export = []
+testutils = ["soroban-sdk/testutils"]
+
+[dependencies]
+soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "32b76650" }
+
+[dev_dependencies]
+soroban-custom-types-contract = { path = ".", default-features = false, features = ["testutils"] }

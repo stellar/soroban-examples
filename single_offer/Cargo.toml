@@ -15,9 +15,7 @@ testutils = ["soroban-sdk/testutils", "soroban-token-contract/testutils", "dep:e
 [dependencies]
 ed25519-dalek = { version = "1.0.1", optional = true }
 soroban-token-contract = { git = "https://github.com/stellar/soroban-token-contract", rev = "24b77fee", default-features = false  }
-# soroban-token-contract = { path = "../../soroban-token-contract", default-features = false  }
 soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "32b76650" }
-# soroban-sdk = { path = "../../rs-soroban-sdk/sdk" }
 
 [dev_dependencies]
 rand = { version = "0.7.3" }
