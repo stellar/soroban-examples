@@ -181,8 +181,8 @@ struct LiquidityPool;
 #[contractimpl(export_if = "export")]
 impl LiquidityPoolTrait for LiquidityPool {
     fn initialize(e: Env, token_a: U256, token_b: U256) {
-        if token_a > token_b {
-            panic!();
+        if token_a >= token_b {
+            panic!("token_a must be less than token_b");
         }
 
         let share_contract_id = create_contract(&e, &token_a, &token_b);
@@ -250,7 +250,7 @@ impl LiquidityPoolTrait for LiquidityPool {
         let old_inv_a = residue_denominator.clone() * reserve_a.clone();
         let old_inv_b = residue_denominator.clone() * reserve_b.clone();
         if new_inv_a * new_inv_b < old_inv_a * old_inv_b {
-            panic!();
+            panic!("constant product invariant does not hold");
         }
 
         transfer_a(&e, to.clone(), out_a.clone());
