@@ -1,8 +1,7 @@
 use soroban_sdk::{serde::Serialize, Account, BigInt, Env, EnvVal};
 
 use soroban_token_contract::public_types::{
-    KeyedAccountAuthorization, KeyedAuthorization, KeyedEd25519Authorization, Message, MessageV0,
-    U256,
+    KeyedAccountAuthorization, KeyedAuthorization, KeyedEd25519Signature, Message, MessageV0, U256,
 };
 
 use crate::DataKey;
@@ -31,12 +30,7 @@ pub enum Domain {
     UpdatePrice = 1,
 }
 
-fn check_ed25519_auth(
-    e: &Env,
-    auth: KeyedEd25519Authorization,
-    domain: Domain,
-    parameters: EnvVal,
-) {
+fn check_ed25519_auth(e: &Env, auth: KeyedEd25519Signature, domain: Domain, parameters: EnvVal) {
     let msg = MessageV0 {
         nonce: read_and_increment_nonce(&e),
         domain: domain as u32,
@@ -65,7 +59,7 @@ fn check_account_auth(
     let threshold = account.medium_threshold();
     let mut weight = 0u32;
 
-    let sigs = &auth.auth.signatures;
+    let sigs = &auth.signatures;
     let mut prev_pk: Option<U256> = None;
     for sig in sigs.iter().map(Result::unwrap) {
         // Cannot take multiple signatures from the same key

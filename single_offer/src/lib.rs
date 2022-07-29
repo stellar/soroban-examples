@@ -11,7 +11,7 @@ use soroban_sdk::{contractimpl, contracttype, vec, BigInt, Env, FixedBinary, Int
 use soroban_token_contract as token;
 use token::public_types::{
     Authorization, Identifier, KeyedAccountAuthorization, KeyedAuthorization,
-    KeyedEd25519Authorization, U256,
+    KeyedEd25519Signature, U256,
 };
 
 #[derive(Clone, Copy)]
@@ -112,15 +112,15 @@ pub fn to_administrator_authorization(e: &Env, auth: Authorization) -> KeyedAuth
             KeyedAuthorization::Contract
         }
         (Identifier::Ed25519(admin_id), Authorization::Ed25519(signature)) => {
-            KeyedAuthorization::Ed25519(KeyedEd25519Authorization {
+            KeyedAuthorization::Ed25519(KeyedEd25519Signature {
                 public_key: admin_id,
                 signature,
             })
         }
-        (Identifier::Account(admin_id), Authorization::Account(aa)) => {
+        (Identifier::Account(admin_id), Authorization::Account(signatures)) => {
             KeyedAuthorization::Account(KeyedAccountAuthorization {
                 public_key: admin_id,
-                auth: aa,
+                signatures,
             })
         }
         _ => panic!("unknown identifier type"),
