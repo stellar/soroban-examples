@@ -127,13 +127,39 @@ pub fn to_administrator_authorization(e: &Env, auth: Authorization) -> KeyedAuth
     }
 }
 
+/*
+How to use this contract to trade
+
+1. call initialize(seller, USDC_ADDR, BTC_ADDR, 1, 10). Seller is now the admin
+2. seller sends 20 USDC to this contracts address.
+3. buyer sends 1 BTC to this contracts address AND calls trade(buyer, 10). This contract will send 1 BTC to
+   seller and 10 USDC to buyer. If these two actions are not done atomically, then the 1 BTC sent to this
+   address can be taken by another user calling trade.
+4. call withdraw(sellerAuth, 10). This will send the remaining 10 USDC in the contract back to seller.
+   The sellers nonce is required to create the Authorization, which can be retrieved by calling nonce()
+*/
 pub trait SingleOfferTrait {
     // See comment above the Price struct for information on pricing
+    // Sets the admin, the sell/buy tokens, and the price
     fn initialize(e: Env, admin: Identifier, sell_token: U256, buy_token: U256, n: u32, d: u32);
+
+    // Returns the nonce for the admin
     fn nonce(e: Env) -> BigInt;
+
+    // Sends the full balance of this contracts buy_token balance (let's call this BuyB) to the admin, and
+    // also sends buyB * d / n of the sell_token to the "to" identifier specified in trade call. Note that
+    // the seller and the buyer need to transfer the sell_token and buy_token to this contract prior to calling
+    // trade. Due to this and the fact that the buyer is a parameter to trade, the buyer must tranfer the buy_token
+    // to the contract and call trade in the same transaction for safety.
     fn trade(e: Env, to: Identifier, min: BigInt);
+
+    // Sends amount of sell_token from this contract to the admin. Must be authorized by admin
     fn withdraw(e: Env, admin: Authorization, amount: BigInt);
+
+    // Updates the price. Must be authorized by admin
     fn updt_price(e: Env, admin: Authorization, n: u32, d: u32);
+
+    // Get the current price
     fn get_price(e: Env) -> Price;
 }
 
@@ -142,7 +168,7 @@ struct SingleOffer;
 #[contractimpl(export_if = "export")]
 impl SingleOfferTrait for SingleOffer {
     fn initialize(e: Env, admin: Identifier, sell_token: U256, buy_token: U256, n: u32, d: u32) {
-        if has_administrator(&e) || n == 0 {
+        if has_administrator(&e) || d == 0 {
             panic!()
         }
         write_administrator(&e, admin);
@@ -187,6 +213,9 @@ impl SingleOfferTrait for SingleOffer {
     }
 
     fn updt_price(e: Env, admin: Authorization, n: u32, d: u32) {
+        if d == 0 {
+            panic!()
+        }
         let auth = to_administrator_authorization(&e, admin.clone());
         cryptography::check_auth(
             &e,

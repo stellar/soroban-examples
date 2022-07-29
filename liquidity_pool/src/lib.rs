@@ -139,15 +139,40 @@ fn transfer_b(e: &Env, to: Identifier, amount: BigInt) {
     transfer(&e, get_token_b(&e), to, amount);
 }
 
+/*
+How to use this contract to swap
+
+1. call initialize(provider, USDC_ADDR, BTC_ADDR).
+2. provider sends 100 USDC and 100 BTC to this contracts address and calls deposit(provider) in the same transaction.
+   provider now has 100 pool share tokens, and this contract has 100 USDC and 100 BTC.
+3. swapper sends 100 USDC to this contract and calls swap(swapper, 0, 49) in the same transaction. 49 BTC will be sent to swapper.
+4. provider sends 100 pool share tokens to this contract, and then calls withdraw(provider). 51 BTC and 200 USDC will be sent to
+   provider, and the 100 pool share tokens in this contract will be burned.
+*/
 pub trait LiquidityPoolTrait {
+    // Sets the token contract addresses for this pool
     fn initialize(e: Env, token_a: U256, token_b: U256);
 
+    // Returns the token contract address for the pool share token
     fn share_id(e: Env) -> FixedBinary<32>;
 
+    // Mints pool shares for the "to" Identifier. The amount minted is determined based on the difference
+    // between the reserves stored by this contract, and the actual balance of token_a and token_b for this
+    // contract. This means that an account calling deposit must first send token_a and token_b to this contract,
+    // and them call deposit in the same transaction. If these steps aren't done atomically, then the depositer
+    // could lose their tokens.
     fn deposit(e: Env, to: Identifier);
 
+    // Does a swap and sends out_a of token_a and out_b of token_b to the "to" Identifier if the constant product invariant still
+    // holds. The difference between the balance and reserve for each token in this contract determines the amounts that
+    // can be swapped. For this to be used safely, the swapper must send tokens to this contract and call swap in the
+    // same transaction. If these steps aren't done atomically, then the swapper could lose their tokens.
     fn swap(e: Env, to: Identifier, out_a: BigInt, out_b: BigInt);
 
+    // Burns all pool share tokens in this contract, and sends the corresponding amount of token_a and token_b to
+    // "to". For this to be used safely, the withdrawer must send the pool share token to this contract and call
+    // withdraw in the same transaction. If these steps aren't done atomically, then the withdrawer
+    // could lose their tokens.
     fn withdraw(e: Env, to: Identifier);
 }
 
