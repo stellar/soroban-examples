@@ -14,21 +14,6 @@ fn test() {
     store::invoke(
         &env,
         &contract_id,
-        &Name::First(First {
-            first: Symbol::from_str("firstonly"),
-        }),
-    );
-
-    assert_eq!(
-        retrieve::invoke(&env, &contract_id),
-        Name::First(First {
-            first: Symbol::from_str("firstonly"),
-        }),
-    );
-
-    store::invoke(
-        &env,
-        &contract_id,
         &Name::FirstLast(FirstLast {
             first: Symbol::from_str("first"),
             last: Symbol::from_str("last"),
