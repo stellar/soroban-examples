@@ -13,19 +13,17 @@ fn test() {
     let contract_b = FixedBinary::from_array(&env, [1; 32]);
     env.register_contract(&contract_b, ContractB);
 
-    assert_eq!(
-        add_with::invoke(
-            &env,
-            // Invoke 'add_with' on contract B.
-            &contract_b,
-            // Value X.
-            &5,
-            // Value Y.
-            &7,
-            // Tell contract B to call contract A.
-            &contract_a,
-        ),
-        // Expect result 12.
-        12
+    // Invoke 'add_with' on contract B.
+    let sum = add_with::invoke(
+        &env,
+        &contract_b,
+        // Value X.
+        &5,
+        // Value Y.
+        &7,
+        // Tell contract B to call contract A.
+        &contract_a,
     );
+
+    assert_eq!(sum, 12);
 }
