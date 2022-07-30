@@ -480,6 +480,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "soroban-cross-contract-calls-contract"
+version = "0.0.0"
+dependencies = [
+ "soroban-cross-contract-calls-contract",
+ "soroban-sdk",
+]
+
+[[package]]
 name = "soroban-custom-types-contract"
 version = "0.0.0"
 dependencies = [
