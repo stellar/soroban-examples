@@ -13,10 +13,10 @@ export = []
 testutils = ["soroban-sdk/testutils", "soroban-token-contract/testutils", "dep:ed25519-dalek"]
 
 [dependencies]
+soroban-sdk = "0.0.3"
+soroban-token-contract = { version = "0.0.2", default-features = false  }
 ed25519-dalek = { version = "1.0.1", optional = true }
-soroban-token-contract = { git = "https://github.com/stellar/soroban-token-contract", rev = "a1e9ed0", default-features = false  }
-soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "32b76650" }
 
 [dev_dependencies]
-rand = { version = "0.7.3" }
 soroban-single-offer-contract = { path = ".", default-features = false, features = ["testutils"] }
+rand = { version = "0.7.3" }
