@@ -1,0 +1,22 @@
+[package]
+name = "soroban-cross-contract-calls-contract"
+version = "0.0.0"
+authors = ["Stellar Development Foundation <info@stellar.org>"]
+license = "Apache-2.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+doctest = false
+
+[features]
+default = ["export"]
+export = []
+testutils = ["soroban-sdk/testutils"]
+
+[dependencies]
+soroban-sdk = "0.0.3"
+
+[dev_dependencies]
+soroban-cross-contract-calls-contract = { path = ".", default-features = false, features = ["testutils"] }
