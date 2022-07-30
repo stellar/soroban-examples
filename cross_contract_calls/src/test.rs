@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-use super::{add_with, ContractA, ContractB};
+use super::{a::ContractA, b::add_with, b::ContractB};
 use soroban_sdk::{Env, FixedBinary};
 
 #[test]

@@ -5,6 +5,7 @@ members = [
     "hello_world",
     "increment",
     "custom_types",
+    "cross_contract_calls",
     "liquidity_pool",
     "single_offer",
 ]
