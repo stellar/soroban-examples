@@ -13,12 +13,12 @@ export = []
 testutils = ["soroban-sdk/testutils", "soroban-token-contract/testutils", "dep:ed25519-dalek", "dep:sha2", "dep:stellar-xdr"]
 
 [dependencies]
+soroban-sdk = "0.0.3"
+soroban-token-contract = { version = "0.0.2", default-features = false  }
+stellar-xdr = { version = "0.0.1", features = ["next", "std"], optional = true }
 ed25519-dalek = { version = "1.0.1", optional = true }
 sha2 = { version = "0.10.2", optional = true }
-soroban-token-contract = { git = "https://github.com/stellar/soroban-token-contract", rev = "a1e9ed0", default-features = false  }
-soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "32b76650" }
-stellar-xdr = { git = "https://github.com/stellar/rs-stellar-xdr", rev = "94e01c7b", features = ["next", "std"], optional = true }
 
 [dev_dependencies]
-rand = { version = "0.7.3" }
 soroban-liquidity-pool-contract = { path = ".", default-features = false, features = ["testutils"] }
+rand = { version = "0.7.3" }

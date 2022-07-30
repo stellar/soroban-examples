@@ -16,7 +16,7 @@ export = []
 testutils = ["soroban-sdk/testutils"]
 
 [dependencies]
-soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "32b76650" }
+soroban-sdk = "0.0.3"
 
 [dev_dependencies]
 soroban-custom-types-contract = { path = ".", default-features = false, features = ["testutils"] }
