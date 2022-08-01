@@ -655,6 +655,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "soroban-single-offer-contract-xfer-from"
+version = "0.0.0"
+dependencies = [
+ "ed25519-dalek",
+ "rand",
+ "soroban-sdk",
+ "soroban-single-offer-contract-xfer-from",
+ "soroban-token-contract",
+]
+
+[[package]]
 name = "soroban-token-contract"
 version = "0.0.2"
 source = "git+https://github.com/stellar/soroban-token-contract?rev=9e52fbb#9e52fbb9b2f4710a1d9c2375ba84a3c5f3827cb6"
