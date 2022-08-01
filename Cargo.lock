@@ -617,6 +617,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "soroban-single-offer-contract-xfer-from"
+version = "0.0.0"
+dependencies = [
+ "ed25519-dalek",
+ "rand",
+ "soroban-sdk",
+ "soroban-single-offer-contract-xfer-from",
+ "soroban-token-contract",
+]
+
+[[package]]
 name = "soroban-token-contract"
 version = "0.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
