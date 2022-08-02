@@ -8,6 +8,7 @@ members = [
     "cross_contract_calls",
     "liquidity_pool",
     "single_offer",
+    "single_offer_xfer_from",
 ]
 
 [profile.release]
@@ -19,3 +20,8 @@ debug-assertions = false
 panic = "abort"
 codegen-units = 1
 lto = true
+
+[patch.crates-io]
+soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "d5af365" }
+soroban-token-contract = { git = "https://github.com/stellar/soroban-token-contract", rev = "9e52fbb" }
+soroban-env-host = { git = "https://github.com/stellar/rs-soroban-env", rev = "21bc98a" }
