@@ -619,6 +619,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "soroban-liquidity-pool-router-contract"
+version = "0.0.0"
+dependencies = [
+ "ed25519-dalek",
+ "rand",
+ "sha2 0.10.2",
+ "soroban-liquidity-pool-contract",
+ "soroban-liquidity-pool-router-contract",
+ "soroban-sdk",
+ "soroban-token-contract",
+ "stellar-xdr",
+]
+
+[[package]]
 name = "soroban-sdk"
 version = "0.0.3"
 source = "git+https://github.com/stellar/rs-soroban-sdk?rev=d5af365#d5af365c1ac19f7576e63c0ad4e8298f8100875f"
