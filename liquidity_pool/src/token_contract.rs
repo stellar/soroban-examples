@@ -2,6 +2,18 @@
 use soroban_sdk::{Binary, Env, FixedBinary};
 use soroban_token_contract::public_types::U256;
 
+// Creating the token contract happens a couple different ways depending on the
+// situation:
+//
+// In tests, or when imported with testutils, without the token-wasm
+// feature, we use the imported token contract library and register it manually
+// as a test contract.
+//
+// In tests, when token-wasm feature is enabled, we use the embedded token wasm
+// file.
+//
+// Outside of tests and testutils, we use the embedded token wasm file.
+
 #[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
 pub const TOKEN_CONTRACT: &[u8] = include_bytes!("../../soroban_token_contract.wasm");
 
