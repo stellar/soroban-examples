@@ -1,10 +1,11 @@
+#![allow(unused)]
 use soroban_sdk::{Binary, Env, FixedBinary};
 use soroban_token_contract::public_types::U256;
 
-#[cfg(any(not(any(test, feature = "testutils")), feature = "token-wasm"))]
+#[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
 pub const TOKEN_CONTRACT: &[u8] = include_bytes!("../../soroban_token_contract.wasm");
 
-#[cfg(any(not(any(test, feature = "testutils")), feature = "token-wasm"))]
+#[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
 pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> FixedBinary<32> {
     let bin = Binary::from_slice(e, TOKEN_CONTRACT);
     let mut salt = Binary::new(&e);
