@@ -19,4 +19,4 @@ testutils = ["soroban-sdk/testutils"]
 soroban-sdk = "0.0.3"
 
 [dev_dependencies]
-soroban-custom-types-contract = { path = ".", default-features = false, features = ["testutils"] }
+soroban-sdk = { version = "0.0.3", features = ["testutils"] }

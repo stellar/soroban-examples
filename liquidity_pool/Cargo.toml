@@ -22,5 +22,5 @@ sha2 = { version = "0.10.2", optional = true }
 
 [dev_dependencies]
 soroban-env-host = { version = "0.0.3" }
-soroban-liquidity-pool-contract = { path = ".", default-features = false, features = ["testutils"] }
+soroban-sdk = { version = "0.0.3", features = ["testutils"] }
 rand = { version = "0.7.3" }
