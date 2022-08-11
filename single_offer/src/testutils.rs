@@ -4,11 +4,11 @@ use crate::cryptography::Domain;
 use crate::Price;
 use ed25519_dalek::Keypair;
 use soroban_sdk::testutils::ed25519::Sign;
-use soroban_sdk::{BigInt, Env, EnvVal, FixedBinary, IntoVal, Vec};
+use soroban_sdk::{BigInt, BytesN, Env, EnvVal, IntoVal, Vec};
 use soroban_token_contract::public_types::{Authorization, Identifier, Message, MessageV0};
 
 pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
-    let contract_id = FixedBinary::from_array(e, *contract_id);
+    let contract_id = BytesN::from_array(e, *contract_id);
     e.register_contract(&contract_id, crate::SingleOffer {});
 }
 
@@ -21,14 +21,14 @@ pub use crate::withdraw::invoke as withdraw;
 
 pub struct SingleOffer {
     env: Env,
-    contract_id: FixedBinary<32>,
+    contract_id: BytesN<32>,
 }
 
 impl SingleOffer {
     pub fn new(env: &Env, contract_id: &[u8; 32]) -> Self {
         Self {
             env: env.clone(),
-            contract_id: FixedBinary::from_array(env, *contract_id),
+            contract_id: BytesN::from_array(env, *contract_id),
         }
     }
 
@@ -40,8 +40,8 @@ impl SingleOffer {
         n: u32,
         d: u32,
     ) {
-        let token_a = FixedBinary::from_array(&self.env, *token_a);
-        let token_b = FixedBinary::from_array(&self.env, *token_b);
+        let token_a = BytesN::from_array(&self.env, *token_a);
+        let token_b = BytesN::from_array(&self.env, *token_b);
         initialize(
             &self.env,
             &self.contract_id,

@@ -8,7 +8,7 @@ mod test;
 pub mod testutils;
 
 use cryptography::Domain;
-use soroban_sdk::{contractimpl, contracttype, BigInt, Env, FixedBinary, IntoVal};
+use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, IntoVal};
 use soroban_token_contract as token;
 use token::public_types::{
     Authorization, Identifier, KeyedAccountAuthorization, KeyedAuthorization,
@@ -34,11 +34,11 @@ pub struct Price {
     pub d: u32,
 }
 
-fn get_sell_token(e: &Env) -> FixedBinary<32> {
+fn get_sell_token(e: &Env) -> BytesN<32> {
     e.contract_data().get_unchecked(DataKey::SellToken).unwrap()
 }
 
-fn get_buy_token(e: &Env) -> FixedBinary<32> {
+fn get_buy_token(e: &Env) -> BytesN<32> {
     e.contract_data().get_unchecked(DataKey::BuyToken).unwrap()
 }
 
@@ -60,7 +60,7 @@ fn get_price(e: &Env) -> Price {
 
 fn transfer_from(
     e: &Env,
-    contract_id: FixedBinary<32>,
+    contract_id: BytesN<32>,
     from: &Identifier,
     to: &Identifier,
     amount: &BigInt,
