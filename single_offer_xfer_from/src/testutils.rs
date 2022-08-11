@@ -1,4 +1,4 @@
-#![cfg(feature = "testutils")]
+#![cfg(any(test, feature = "testutils"))]
 
 use crate::cryptography::Domain;
 use crate::Price;
