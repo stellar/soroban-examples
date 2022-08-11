@@ -1,5 +1,5 @@
 #![no_std]
 
-mod a;
-mod b;
+pub mod a;
+pub mod b;
 mod test;

@@ -1,10 +1,23 @@
+#![allow(unused)]
 use soroban_sdk::{Binary, Env, FixedBinary};
 use soroban_token_contract::public_types::U256;
 
-#[cfg(any(not(feature = "testutils"), feature = "token-wasm"))]
+// Creating the token contract happens a couple different ways depending on the
+// situation:
+//
+// In tests, or when imported with testutils, without the token-wasm
+// feature, we use the imported token contract library and register it manually
+// as a test contract.
+//
+// In tests, when token-wasm feature is enabled, we use the embedded token wasm
+// file.
+//
+// Outside of tests and testutils, we use the embedded token wasm file.
+
+#[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
 pub const TOKEN_CONTRACT: &[u8] = include_bytes!("../../soroban_token_contract.wasm");
 
-#[cfg(any(not(feature = "testutils"), feature = "token-wasm"))]
+#[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
 pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> FixedBinary<32> {
     let bin = Binary::from_slice(e, TOKEN_CONTRACT);
     let mut salt = Binary::new(&e);
@@ -14,7 +27,10 @@ pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> FixedBinary<3
     e.create_contract_from_contract(bin, salt)
 }
 
-#[cfg(all(feature = "testutils", not(feature = "token-wasm")))]
+#[cfg(all(any(test, feature = "testutils"), not(feature = "token-wasm")))]
+extern crate std;
+
+#[cfg(all(any(test, feature = "testutils"), not(feature = "token-wasm")))]
 pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> FixedBinary<32> {
     use sha2::{Digest, Sha256};
     use soroban_sdk::IntoVal;

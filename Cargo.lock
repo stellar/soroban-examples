@@ -519,7 +519,6 @@ dependencies = [
 name = "soroban-cross-contract-calls-contract"
 version = "0.0.0"
 dependencies = [
- "soroban-cross-contract-calls-contract",
  "soroban-sdk",
 ]
 
@@ -527,7 +526,6 @@ dependencies = [
 name = "soroban-custom-types-contract"
 version = "0.0.0"
 dependencies = [
- "soroban-custom-types-contract",
  "soroban-sdk",
 ]
 
@@ -592,7 +590,6 @@ dependencies = [
 name = "soroban-hello-world-contract"
 version = "0.0.0"
 dependencies = [
- "soroban-hello-world-contract",
  "soroban-sdk",
 ]
 
@@ -600,7 +597,6 @@ dependencies = [
 name = "soroban-increment-contract"
 version = "0.0.0"
 dependencies = [
- "soroban-increment-contract",
  "soroban-sdk",
 ]
 
@@ -612,7 +608,6 @@ dependencies = [
  "rand",
  "sha2 0.10.2",
  "soroban-env-host",
- "soroban-liquidity-pool-contract",
  "soroban-sdk",
  "soroban-token-contract",
  "stellar-xdr",
@@ -650,7 +645,6 @@ dependencies = [
  "ed25519-dalek",
  "rand",
  "soroban-sdk",
- "soroban-single-offer-contract",
  "soroban-token-contract",
 ]
 
@@ -661,7 +655,6 @@ dependencies = [
  "ed25519-dalek",
  "rand",
  "soroban-sdk",
- "soroban-single-offer-contract-xfer-from",
  "soroban-token-contract",
 ]
 

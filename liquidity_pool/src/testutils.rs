@@ -1,4 +1,4 @@
-#![cfg(feature = "testutils")]
+#![cfg(any(test, feature = "testutils"))]
 
 use soroban_sdk::{BigInt, Env, FixedBinary};
 use soroban_token_contract::public_types::Identifier;
