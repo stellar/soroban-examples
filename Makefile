@@ -4,7 +4,6 @@ export RUSTFLAGS=-Dwarnings
 
 test: fmt
 	cargo test
-	cd liquidity_pool && cargo test --features testutils,token-wasm
 
 build: fmt
 	cargo build --target wasm32-unknown-unknown --release

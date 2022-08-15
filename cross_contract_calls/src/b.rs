@@ -1,10 +1,10 @@
-use soroban_sdk::{contractimpl, vec, Env, FixedBinary, IntoVal, Symbol};
+use soroban_sdk::{contractimpl, vec, BytesN, Env, IntoVal, Symbol};
 
 pub struct ContractB;
 
 #[contractimpl(export_if = "export")]
 impl ContractB {
-    pub fn add_with(env: Env, x: u32, y: u32, contract_id: FixedBinary<32>) -> u32 {
+    pub fn add_with(env: Env, x: u32, y: u32, contract_id: BytesN<32>) -> u32 {
         env.invoke_contract(
             &contract_id,
             &Symbol::from_str("add"),
