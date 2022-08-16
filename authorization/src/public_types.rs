@@ -1,7 +1,7 @@
-use soroban_sdk::{contracttype, Env, EnvVal, FixedBinary, Symbol, Vec};
+use soroban_sdk::{contracttype, BytesN, Env, EnvVal, Symbol, Vec};
 
-pub type U256 = FixedBinary<32>;
-pub type U512 = FixedBinary<64>;
+pub type U256 = BytesN<32>;
+pub type U512 = BytesN<64>;
 
 #[derive(Clone)]
 #[contracttype]

@@ -7,7 +7,7 @@ use ed25519_dalek::Keypair;
 use rand::thread_rng;
 use soroban_sdk::testutils::ed25519::Sign;
 
-use soroban_sdk::{Env, EnvVal, FixedBinary, Vec};
+use soroban_sdk::{BytesN, Env, EnvVal, Vec};
 
 pub fn to_ed25519(e: &Env, kp: &Keypair) -> Identifier {
     Identifier::Ed25519(kp.public.to_bytes().into_val(e))
@@ -27,7 +27,7 @@ fn make_auth(e: &Env, kp: &Keypair, nonce: &BigInt, data: &BigInt) -> KeyedAutho
         parameters: args,
     });
     KeyedAuthorization::Ed25519(KeyedEd25519Signature {
-        public_key: FixedBinary::from_array(&e, kp.public.to_bytes()),
+        public_key: BytesN::from_array(&e, kp.public.to_bytes()),
         signature: kp.sign(msg).unwrap().into_val(e),
     })
 }
@@ -35,7 +35,7 @@ fn make_auth(e: &Env, kp: &Keypair, nonce: &BigInt, data: &BigInt) -> KeyedAutho
 #[test]
 fn test() {
     let env = Env::default();
-    let contract_id = FixedBinary::from_array(&env, [0; 32]);
+    let contract_id = BytesN::from_array(&env, [0; 32]);
     env.register_contract(&contract_id, AuthContract);
 
     let user1 = generate_keypair();
@@ -50,7 +50,7 @@ fn test() {
 #[should_panic(expected = "Failed ED25519 verification")]
 fn bad_data() {
     let env = Env::default();
-    let contract_id = FixedBinary::from_array(&env, [0; 32]);
+    let contract_id = BytesN::from_array(&env, [0; 32]);
     env.register_contract(&contract_id, AuthContract);
 
     let user1 = generate_keypair();
