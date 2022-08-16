@@ -8,7 +8,7 @@ mod public_types;
 mod test;
 
 use public_types::{Identifier, KeyedAuthorization};
-use soroban_sdk::{contractimpl, contracttype, BigInt, Env, IntoVal};
+use soroban_sdk::{contractimpl, contracttype, BigInt, Env, IntoVal, Symbol};
 
 #[derive(Clone)]
 #[contracttype]
@@ -27,7 +27,7 @@ impl AuthContract {
             &e,
             &auth,
             nonce.clone(),
-            cryptography::Domain::SaveData,
+            Symbol::from_str("save_data"),
             (nonce, num.clone()).into_val(&e),
         );
 
