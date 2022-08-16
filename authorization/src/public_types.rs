@@ -37,7 +37,7 @@ impl KeyedAuthorization {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 #[contracttype]
 pub enum Identifier {
     Contract(U256),
