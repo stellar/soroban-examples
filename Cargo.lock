@@ -480,6 +480,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "soroban-authorization-contract"
+version = "0.0.0"
+dependencies = [
+ "ed25519-dalek",
+ "rand",
+ "soroban-authorization-contract",
+ "soroban-sdk",
+]
+
+[[package]]
 name = "soroban-cross-contract-calls-contract"
 version = "0.0.0"
 dependencies = [
