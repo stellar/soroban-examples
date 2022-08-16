@@ -21,14 +21,6 @@ pub struct KeyedAccountAuthorization {
 
 #[derive(Clone)]
 #[contracttype]
-pub enum Authorization {
-    Contract,
-    Ed25519(U512),
-    Account(AccountAuthorization),
-}
-
-#[derive(Clone)]
-#[contracttype]
 pub enum KeyedAuthorization {
     Contract,
     Ed25519(KeyedEd25519Signature),
