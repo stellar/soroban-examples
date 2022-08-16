@@ -31,9 +31,19 @@ pub enum Domain {
     SaveData = 0,
 }
 
-fn check_ed25519_auth(e: &Env, auth: &KeyedEd25519Signature, domain: Domain, parameters: EnvVal) {
+fn check_ed25519_auth(
+    e: &Env,
+    auth: &KeyedEd25519Signature,
+    nonce: BigInt,
+    domain: Domain,
+    parameters: EnvVal,
+) {
+    let stored_nonce = read_and_increment_nonce(&e, Identifier::Ed25519(auth.public_key.clone()));
+    if nonce != stored_nonce {
+        panic!("incorrect nonce")
+    }
+
     let msg = MessageV0 {
-        nonce: read_and_increment_nonce(&e, Identifier::Ed25519(auth.public_key.clone())),
         domain: domain as u32,
         parameters: parameters.try_into().unwrap(),
     };
@@ -49,13 +59,18 @@ fn check_ed25519_auth(e: &Env, auth: &KeyedEd25519Signature, domain: Domain, par
 fn check_account_auth(
     e: &Env,
     auth: &KeyedAccountAuthorization,
+    nonce: BigInt,
     domain: Domain,
     parameters: EnvVal,
 ) {
+    let stored_nonce = read_and_increment_nonce(&e, Identifier::Account(auth.clone().public_key));
+    if nonce != stored_nonce {
+        panic!("incorrect nonce")
+    }
+
     let acc = Account::from_public_key(&auth.public_key).unwrap();
 
     let msg = MessageV0 {
-        nonce: read_and_increment_nonce(&e, Identifier::Account(auth.clone().public_key)),
         domain: domain as u32,
         parameters: parameters.try_into().unwrap(),
     };
@@ -90,12 +105,23 @@ fn check_account_auth(
     }
 }
 
-pub fn check_auth(e: &Env, auth: &KeyedAuthorization, domain: Domain, parameters: EnvVal) {
+// Note that nonce is not used by KeyedAuthorization::Contract
+pub fn check_auth(
+    e: &Env,
+    auth: &KeyedAuthorization,
+    nonce: BigInt,
+    domain: Domain,
+    parameters: EnvVal,
+) {
     match auth {
         KeyedAuthorization::Contract => {
             e.get_invoking_contract();
         }
-        KeyedAuthorization::Ed25519(kea) => check_ed25519_auth(e, kea, domain, parameters),
-        KeyedAuthorization::Account(kaa) => check_account_auth(e, kaa, domain, parameters),
+        KeyedAuthorization::Ed25519(kea) => {
+            check_ed25519_auth(e, kea, nonce.clone(), domain, parameters)
+        }
+        KeyedAuthorization::Account(kaa) => {
+            check_account_auth(e, kaa, nonce.clone(), domain, parameters)
+        }
     }
 }

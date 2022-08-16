@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, BigInt, Env, EnvVal, FixedBinary, Vec};
+use soroban_sdk::{contracttype, Env, EnvVal, FixedBinary, Vec};
 
 pub type U256 = FixedBinary<32>;
 pub type U512 = FixedBinary<64>;
@@ -57,7 +57,6 @@ pub enum Identifier {
 #[derive(Clone)]
 #[contracttype]
 pub struct MessageV0 {
-    pub nonce: BigInt,
     pub domain: u32,
     pub parameters: Vec<EnvVal>,
 }

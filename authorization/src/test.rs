@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-use crate::public_types::{KeyedEd25519Signature, Message, MessageV0, U256};
+use crate::public_types::{KeyedEd25519Signature, Message, MessageV0};
 
 use super::*;
 use ed25519_dalek::Keypair;
@@ -17,13 +17,12 @@ fn generate_keypair() -> Keypair {
     Keypair::generate(&mut thread_rng())
 }
 
-fn make_auth(e: &Env, contract_id: &U256, kp: &Keypair, data: &BigInt) -> KeyedAuthorization {
-    let id = to_ed25519(&e, &kp);
-
+fn make_auth(e: &Env, kp: &Keypair, nonce: &BigInt, data: &BigInt) -> KeyedAuthorization {
     let mut args: Vec<EnvVal> = Vec::new(&e);
+    args.push(nonce.clone().into_env_val(&e));
     args.push(data.clone().into_env_val(&e));
+
     let msg = Message::V0(MessageV0 {
-        nonce: nonce::invoke(&e, &contract_id, &id),
         domain: cryptography::Domain::SaveData as u32,
         parameters: args,
     });
@@ -42,6 +41,7 @@ fn test() {
     let user1 = generate_keypair();
     let data = BigInt::from_u32(&env, 2);
 
-    let auth = make_auth(&env, &contract_id, &user1, &data);
-    save_data::invoke(&env, &contract_id, &auth, &data)
+    let nonce = nonce::invoke(&env, &contract_id, &to_ed25519(&env, &user1));
+    let auth = make_auth(&env, &user1, &nonce, &data);
+    save_data::invoke(&env, &contract_id, &auth, &nonce, &data)
 }

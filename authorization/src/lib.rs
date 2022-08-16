@@ -21,12 +21,14 @@ pub struct AuthContract;
 
 #[contractimpl(export_if = "export")]
 impl AuthContract {
-    pub fn save_data(e: Env, auth: KeyedAuthorization, num: BigInt) {
+    // Saves data that corresponds to an Identifier, with that Identifiers authorization
+    pub fn save_data(e: Env, auth: KeyedAuthorization, nonce: BigInt, num: BigInt) {
         cryptography::check_auth(
             &e,
             &auth,
+            nonce.clone(),
             cryptography::Domain::SaveData,
-            (vec![&e, num]).into_val(&e),
+            (nonce, num.clone()).into_val(&e),
         );
 
         let auth_id = auth.get_identifier(&e);
