@@ -12,13 +12,6 @@ pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
     e.register_contract(&contract_id, crate::SingleOffer {});
 }
 
-pub use crate::get_price::invoke as get_price;
-pub use crate::initialize::invoke as initialize;
-pub use crate::nonce::invoke as nonce;
-pub use crate::trade::invoke as trade;
-pub use crate::updt_price::invoke as updt_price;
-pub use crate::withdraw::invoke as withdraw;
-
 pub struct SingleOffer {
     env: Env,
     contract_id: BytesN<32>,
@@ -42,7 +35,7 @@ impl SingleOffer {
     ) {
         let token_a = BytesN::from_array(&self.env, *token_a);
         let token_b = BytesN::from_array(&self.env, *token_b);
-        initialize(
+        crate::initialize(
             &self.env,
             &self.contract_id,
             admin,
@@ -54,11 +47,11 @@ impl SingleOffer {
     }
 
     pub fn nonce(&self) -> BigInt {
-        nonce(&self.env, &self.contract_id)
+        crate::nonce(&self.env, &self.contract_id)
     }
 
     pub fn trade(&self, to: &Identifier, min: &BigInt) {
-        trade(&self.env, &self.contract_id, &to, &min)
+        crate::trade(&self.env, &self.contract_id, &to, &min)
     }
 
     pub fn withdraw(&self, admin: &Keypair, amount: &BigInt) {
@@ -70,7 +63,7 @@ impl SingleOffer {
             parameters: args,
         });
         let auth = Authorization::Ed25519(admin.sign(msg).unwrap().into_val(&self.env));
-        withdraw(&self.env, &self.contract_id, &auth, amount)
+        crate::withdraw(&self.env, &self.contract_id, &auth, amount)
     }
 
     pub fn updt_price(&self, admin: &Keypair, n: u32, d: u32) {
@@ -83,10 +76,18 @@ impl SingleOffer {
             parameters: args,
         });
         let auth = Authorization::Ed25519(admin.sign(msg).unwrap().into_val(&self.env));
-        updt_price(&self.env, &self.contract_id, &auth, &n, &d)
+        crate::updt_price(&self.env, &self.contract_id, &auth, &n, &d)
     }
 
     pub fn get_price(&self) -> Price {
-        get_price(&self.env, &self.contract_id)
+        crate::get_price(&self.env, &self.contract_id)
+    }
+
+    pub fn get_sell(&self) -> BytesN<32> {
+        crate::get_sell(&self.env, &self.contract_id)
+    }
+
+    pub fn get_buy(&self) -> BytesN<32> {
+        crate::get_buy(&self.env, &self.contract_id)
     }
 }

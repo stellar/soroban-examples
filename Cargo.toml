@@ -8,8 +8,10 @@ members = [
     "custom_types",
     "cross_contract_calls",
     "liquidity_pool",
+    "liquidity_pool_router",
     "single_offer",
     "single_offer_xfer_from",
+    "single_offer_router",
 ]
 
 [profile.release]

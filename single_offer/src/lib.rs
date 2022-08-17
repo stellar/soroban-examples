@@ -7,6 +7,16 @@ mod cryptography;
 mod test;
 pub mod testutils;
 
+pub use crate::get_buy::invoke as get_buy;
+pub use crate::get_price::invoke as get_price;
+pub use crate::get_sell::invoke as get_sell;
+pub use crate::initialize::invoke as initialize;
+pub use crate::nonce::invoke as nonce;
+pub use crate::trade::invoke as trade;
+pub use crate::updt_price::invoke as updt_price;
+pub use crate::withdraw::invoke as withdraw;
+
+use crate::cryptography::{check_auth, read_nonce, Domain};
 use soroban_sdk::{contractimpl, contracttype, vec, BigInt, BytesN, Env, IntoVal, RawVal};
 use soroban_token_contract as token;
 use token::public_types::{
@@ -71,7 +81,7 @@ fn put_price(e: &Env, price: Price) {
     e.contract_data().set(DataKey::Price, price);
 }
 
-fn get_price(e: &Env) -> Price {
+fn load_price(e: &Env) -> Price {
     e.contract_data().get_unchecked(DataKey::Price).unwrap()
 }
 
@@ -161,9 +171,13 @@ pub trait SingleOfferTrait {
 
     // Get the current price
     fn get_price(e: Env) -> Price;
+
+    fn get_sell(e: Env) -> BytesN<32>;
+
+    fn get_buy(e: Env) -> BytesN<32>;
 }
 
-struct SingleOffer;
+pub struct SingleOffer;
 
 #[contractimpl(export_if = "export")]
 impl SingleOfferTrait for SingleOffer {
@@ -186,7 +200,7 @@ impl SingleOfferTrait for SingleOffer {
     fn trade(e: Env, to: Identifier, min: BigInt) {
         let balance_buy_token = get_balance_buy(&e);
 
-        let price = get_price(&e);
+        let price = load_price(&e);
 
         let amount = balance_buy_token.clone() * BigInt::from_u32(&e, price.d)
             / BigInt::from_u32(&e, price.n);
@@ -202,15 +216,15 @@ impl SingleOfferTrait for SingleOffer {
     }
 
     fn nonce(e: Env) -> BigInt {
-        cryptography::read_nonce(&e)
+        read_nonce(&e)
     }
 
     fn withdraw(e: Env, admin: Authorization, amount: BigInt) {
         let auth = to_administrator_authorization(&e, admin.clone());
-        cryptography::check_auth(
+        check_auth(
             &e,
             auth,
-            cryptography::Domain::Withdraw,
+            Domain::Withdraw,
             (vec![&e, amount.clone()]).into_env_val(&e),
         );
 
@@ -222,10 +236,10 @@ impl SingleOfferTrait for SingleOffer {
             panic!("d is zero but cannot be zero")
         }
         let auth = to_administrator_authorization(&e, admin.clone());
-        cryptography::check_auth(
+        check_auth(
             &e,
             auth,
-            cryptography::Domain::UpdatePrice,
+            Domain::UpdatePrice,
             (n.clone(), d.clone()).into_env_val(&e),
         );
 
@@ -233,6 +247,14 @@ impl SingleOfferTrait for SingleOffer {
     }
 
     fn get_price(e: Env) -> Price {
-        get_price(&e)
+        load_price(&e)
+    }
+
+    fn get_sell(e: Env) -> BytesN<32> {
+        get_sell_token(&e)
+    }
+
+    fn get_buy(e: Env) -> BytesN<32> {
+        get_buy_token(&e)
     }
 }

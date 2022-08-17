@@ -1,0 +1,25 @@
+[package]
+name = "soroban-liquidity-pool-router-contract"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["export"]
+export = []
+testutils = ["soroban-sdk/testutils", "soroban-token-contract/testutils","soroban-liquidity-pool-contract/testutils","dep:ed25519-dalek", "dep:sha2", "dep:stellar-xdr"]
+
+[dependencies]
+soroban-sdk = "0.0.3"
+soroban-token-contract = { version = "0.0.2", default-features = false  }
+soroban-liquidity-pool-contract = { path = "../liquidity_pool", version = "0.0.0", default-features = false  }
+ed25519-dalek = { version = "1.0.1", optional = true }
+stellar-xdr = { version = "0.0.1", features = ["next", "std"], optional = true }
+sha2 = { version = "0.10.2", optional = true }
+
+[dev_dependencies]
+soroban-liquidity-pool-router-contract = { path = ".", default-features = false, features = ["testutils"] }
+rand = { version = "0.7.3" }

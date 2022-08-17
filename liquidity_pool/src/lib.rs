@@ -136,6 +136,13 @@ fn transfer_b(e: &Env, to: Identifier, amount: BigInt) {
     transfer(&e, get_token_b(&e), to, amount);
 }
 
+pub use crate::deposit::invoke as deposit;
+pub use crate::get_rsrvs::invoke as get_rsrvs;
+pub use crate::initialize::invoke as initialize;
+pub use crate::share_id::invoke as share_id;
+pub use crate::swap::invoke as swap;
+pub use crate::withdraw::invoke as withdraw;
+
 /*
 How to use this contract to swap
 
@@ -170,7 +177,10 @@ pub trait LiquidityPoolTrait {
     // "to". For this to be used safely, the withdrawer must send the pool share token to this contract and call
     // withdraw in the same transaction. If these steps aren't done atomically, then the withdrawer
     // could lose their tokens.
-    fn withdraw(e: Env, to: Identifier);
+    // Returns amount of both tokens withdrawn
+    fn withdraw(e: Env, to: Identifier) -> (BigInt, BigInt);
+
+    fn get_rsrvs(e: Env) -> (BigInt, BigInt);
 }
 
 struct LiquidityPool;
@@ -246,6 +256,7 @@ impl LiquidityPoolTrait for LiquidityPool {
         let new_inv_b = new_invariant_factor(balance_b.clone(), reserve_b.clone(), out_b.clone());
         let old_inv_a = residue_denominator.clone() * reserve_a.clone();
         let old_inv_b = residue_denominator.clone() * reserve_b.clone();
+
         if new_inv_a * new_inv_b < old_inv_a * old_inv_b {
             panic!("constant product invariant does not hold");
         }
@@ -256,7 +267,7 @@ impl LiquidityPoolTrait for LiquidityPool {
         put_reserve_b(&e, balance_b - out_b);
     }
 
-    fn withdraw(e: Env, to: Identifier) {
+    fn withdraw(e: Env, to: Identifier) -> (BigInt, BigInt) {
         let (balance_a, balance_b) = (get_balance_a(&e), get_balance_b(&e));
         let balance_shares = get_balance_shares(&e);
         let total_shares = get_total_shares(&e);
@@ -267,7 +278,13 @@ impl LiquidityPoolTrait for LiquidityPool {
         burn_shares(&e, balance_shares);
         transfer_a(&e, to.clone(), out_a.clone());
         transfer_b(&e, to, out_b.clone());
-        put_reserve_a(&e, balance_a - out_a);
-        put_reserve_b(&e, balance_b - out_b);
+        put_reserve_a(&e, balance_a - out_a.clone());
+        put_reserve_b(&e, balance_b - out_b.clone());
+
+        (out_a, out_b)
+    }
+
+    fn get_rsrvs(e: Env) -> (BigInt, BigInt) {
+        (get_reserve_a(&e), get_reserve_b(&e))
     }
 }
