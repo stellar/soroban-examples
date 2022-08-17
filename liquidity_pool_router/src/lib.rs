@@ -9,7 +9,7 @@ pub mod testutils;
 
 use pool_contract::create_contract;
 use soroban_liquidity_pool_contract as liquidity_pool;
-use soroban_sdk::{contractimpl, contracttype, BigInt, Binary, Env, FixedBinary};
+use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env};
 use soroban_token_contract as token;
 use token::public_types::{Identifier, KeyedAuthorization, U256};
 
@@ -79,12 +79,12 @@ fn sort(a: &U256, b: &U256) -> (U256, U256) {
     panic!("a and b can't be the same")
 }
 
-pub fn pool_salt(e: &Env, token_a: &U256, token_b: &U256) -> FixedBinary<32> {
+pub fn pool_salt(e: &Env, token_a: &U256, token_b: &U256) -> BytesN<32> {
     if token_a >= token_b {
         panic!("token_a must be less t&han token_b");
     }
 
-    let mut salt_bin = Binary::new(&e);
+    let mut salt_bin = Bytes::new(&e);
     salt_bin.append(&token_a.clone().into());
     salt_bin.append(&token_b.clone().into());
     e.compute_hash_sha256(salt_bin)

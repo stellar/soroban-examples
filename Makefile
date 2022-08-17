@@ -1,13 +1,18 @@
+default: build-normal
+
 all: check build test
 
 export RUSTFLAGS=-Dwarnings
 
-test: fmt
+test: build-normal
 	cargo test
-	cd liquidity_pool && cargo test --features testutils,token-wasm
 
-build: fmt
+build: build-normal build-optimized
+
+build-normal:
 	cargo build --target wasm32-unknown-unknown --release
+
+build-optimized:
 	CARGO_TARGET_DIR=target-tiny cargo +nightly build --target wasm32-unknown-unknown --release \
 		-Z build-std=std,panic_abort \
 		-Z build-std-features=panic_immediate_abort

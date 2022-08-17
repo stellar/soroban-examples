@@ -8,7 +8,7 @@ mod test;
 pub mod testutils;
 
 use offer_contract::create_contract;
-use soroban_sdk::{contractimpl, contracttype, BigInt, Binary, Env, FixedBinary};
+use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env};
 use soroban_single_offer_contract as offer;
 use soroban_token_contract as token;
 use token::public_types::{Identifier, KeyedAuthorization, U256};
@@ -51,7 +51,7 @@ pub trait SingleOfferRouterTrait {
 }
 
 pub fn offer_salt(e: &Env, admin: &Identifier, sell_token: &U256, buy_token: &U256) -> U256 {
-    let mut salt_bin = Binary::new(&e);
+    let mut salt_bin = Bytes::new(&e);
 
     match admin {
         Identifier::Contract(a) => salt_bin.append(&a.clone().into()),
@@ -103,7 +103,7 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
         offer::trade(&e, &offer, &to, &min);
     }
 
-    fn get_offer(e: Env, admin: Identifier, sell_token: U256, buy_token: U256) -> FixedBinary<32> {
+    fn get_offer(e: Env, admin: Identifier, sell_token: U256, buy_token: U256) -> BytesN<32> {
         let salt = offer_salt(&e, &admin, &sell_token, &buy_token);
         get_offer(&e, &salt)
     }

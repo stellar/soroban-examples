@@ -3,7 +3,7 @@
 use crate::testutils::{register_test_contract as register_single_offer_router, SingleOfferRouter};
 use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
-use soroban_sdk::{BigInt, Env, FixedBinary};
+use soroban_sdk::{BigInt, BytesN, Env};
 use soroban_token_contract::public_types::Identifier;
 use soroban_token_contract::testutils::{
     register_test_contract as register_token, to_ed25519, Token,
@@ -60,7 +60,7 @@ fn test() {
     let (contract_offer_router, offer_router) =
         create_single_offer_router_contract(&e, &user1, &contract1, &contract2, 1, 1);
 
-    let router_id = Identifier::Contract(FixedBinary::from_array(&e, contract_offer_router));
+    let router_id = Identifier::Contract(BytesN::from_array(&e, contract_offer_router));
 
     // mint tokens that will be traded
     token1.mint(&admin1, &user1_id, &BigInt::from_u32(&e, 20));
@@ -71,7 +71,7 @@ fn test() {
     let offer_addr = offer_router
         .get_offer(&user1_id, &contract1, &contract2)
         .into();
-    let offer_id = Identifier::Contract(FixedBinary::from_array(&e, offer_addr));
+    let offer_id = Identifier::Contract(BytesN::from_array(&e, offer_addr));
 
     // admin transfers the sell_token (token1) to the contract address
     token1.xfer(&user1, &offer_id, &BigInt::from_u32(&e, 10));

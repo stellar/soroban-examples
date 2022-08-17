@@ -1,14 +1,11 @@
 #![no_std]
 
-#[cfg(feature = "testutils")]
-extern crate std;
-
 mod test;
 pub mod testutils;
 mod token_contract;
 
 use crate::token_contract::create_contract;
-use soroban_sdk::{contractimpl, BigInt, Binary, Env, FixedBinary, IntoVal, RawVal};
+use soroban_sdk::{contractimpl, BigInt, Bytes, BytesN, Env, IntoVal, RawVal};
 use soroban_token_contract as token;
 use token::public_types::{Authorization, Identifier, KeyedAuthorization, U256};
 
@@ -33,15 +30,15 @@ fn get_contract_id(e: &Env) -> Identifier {
     Identifier::Contract(e.get_current_contract().into())
 }
 
-fn get_token_a(e: &Env) -> FixedBinary<32> {
+fn get_token_a(e: &Env) -> BytesN<32> {
     e.contract_data().get_unchecked(DataKey::TokenA).unwrap()
 }
 
-fn get_token_b(e: &Env) -> FixedBinary<32> {
+fn get_token_b(e: &Env) -> BytesN<32> {
     e.contract_data().get_unchecked(DataKey::TokenB).unwrap()
 }
 
-fn get_token_share(e: &Env) -> FixedBinary<32> {
+fn get_token_share(e: &Env) -> BytesN<32> {
     e.contract_data()
         .get_unchecked(DataKey::TokenShare)
         .unwrap()
@@ -61,7 +58,7 @@ fn get_reserve_b(e: &Env) -> BigInt {
     e.contract_data().get_unchecked(DataKey::ReserveB).unwrap()
 }
 
-fn get_balance(e: &Env, contract_id: FixedBinary<32>) -> BigInt {
+fn get_balance(e: &Env, contract_id: BytesN<32>) -> BigInt {
     token::balance(e, &contract_id, &get_contract_id(e))
 }
 
@@ -127,7 +124,7 @@ fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
     put_total_shares(e, total + amount);
 }
 
-fn transfer(e: &Env, contract_id: FixedBinary<32>, to: Identifier, amount: BigInt) {
+fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
     token::xfer(e, &contract_id, &KeyedAuthorization::Contract, &to, &amount);
 }
 
@@ -161,7 +158,7 @@ pub trait LiquidityPoolTrait {
     fn initialize(e: Env, token_a: U256, token_b: U256);
 
     // Returns the token contract address for the pool share token
-    fn share_id(e: Env) -> FixedBinary<32>;
+    fn share_id(e: Env) -> BytesN<32>;
 
     // Mints pool shares for the "to" Identifier. The amount minted is determined based on the difference
     // between the reserves stored by this contract, and the actual balance of token_a and token_b for this
@@ -201,8 +198,8 @@ impl LiquidityPoolTrait for LiquidityPool {
             &share_contract_id,
             &get_contract_id(&e),
             &7,
-            &Binary::from_slice(&e, b"name"),
-            &Binary::from_slice(&e, b"symbol"),
+            &Bytes::from_slice(&e, b"name"),
+            &Bytes::from_slice(&e, b"symbol"),
         );
 
         put_token_a(&e, token_a);
@@ -213,7 +210,7 @@ impl LiquidityPoolTrait for LiquidityPool {
         put_reserve_b(&e, BigInt::from_u32(&e, 0));
     }
 
-    fn share_id(e: Env) -> FixedBinary<32> {
+    fn share_id(e: Env) -> BytesN<32> {
         get_token_share(&e)
     }
 

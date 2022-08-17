@@ -1,18 +1,18 @@
-use soroban_sdk::{Env, FixedBinary};
+use soroban_sdk::{BytesN, Env};
 use soroban_token_contract::public_types::U256;
 
 #[cfg(any(not(feature = "testutils"), feature = "offer-wasm"))]
 pub const POOL_CONTRACT: &[u8] = include_bytes!("../../soroban_liquidity_pool_contract.wasm");
 
 #[cfg(any(not(feature = "testutils"), feature = "offer-wasm"))]
-pub fn create_contract(e: &Env, salt: &U256) -> FixedBinary<32> {
-    use soroban_sdk::Binary;
-    let bin = Binary::from_slice(e, POOL_CONTRACT);
+pub fn create_contract(e: &Env, salt: &U256) -> BytesN<32> {
+    use soroban_sdk::Bytes;
+    let bin = Bytes::from_slice(e, POOL_CONTRACT);
     e.create_contract_from_contract(bin, salt.clone())
 }
 
 #[cfg(all(feature = "testutils", not(feature = "token-wasm")))]
-pub fn create_contract(e: &Env, salt: &U256) -> FixedBinary<32> {
+pub fn create_contract(e: &Env, salt: &U256) -> BytesN<32> {
     use sha2::{Digest, Sha256};
     use soroban_sdk::IntoVal;
     use stellar_xdr::{Hash, HashIdPreimage, HashIdPreimageContractId, Uint256, WriteXdr};
@@ -29,5 +29,5 @@ pub fn create_contract(e: &Env, salt: &U256) -> FixedBinary<32> {
     let new_contract_id = Sha256::digest(buf).into_val(e);
 
     soroban_liquidity_pool_contract::testutils::register_test_contract(e, &new_contract_id);
-    FixedBinary::from_array(e, new_contract_id)
+    BytesN::from_array(e, new_contract_id)
 }

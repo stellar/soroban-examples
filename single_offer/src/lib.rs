@@ -17,7 +17,7 @@ pub use crate::updt_price::invoke as updt_price;
 pub use crate::withdraw::invoke as withdraw;
 
 use crate::cryptography::{check_auth, read_nonce, Domain};
-use soroban_sdk::{contractimpl, contracttype, vec, BigInt, Env, FixedBinary, IntoVal, RawVal};
+use soroban_sdk::{contractimpl, contracttype, vec, BigInt, BytesN, Env, IntoVal, RawVal};
 use soroban_token_contract as token;
 use token::public_types::{
     Authorization, Identifier, KeyedAccountAuthorization, KeyedAuthorization,
@@ -53,15 +53,15 @@ fn get_contract_id(e: &Env) -> Identifier {
     Identifier::Contract(e.get_current_contract().into())
 }
 
-fn get_sell_token(e: &Env) -> FixedBinary<32> {
+fn get_sell_token(e: &Env) -> BytesN<32> {
     e.contract_data().get_unchecked(DataKey::SellToken).unwrap()
 }
 
-fn get_buy_token(e: &Env) -> FixedBinary<32> {
+fn get_buy_token(e: &Env) -> BytesN<32> {
     e.contract_data().get_unchecked(DataKey::BuyToken).unwrap()
 }
 
-fn get_balance(e: &Env, contract_id: FixedBinary<32>) -> BigInt {
+fn get_balance(e: &Env, contract_id: BytesN<32>) -> BigInt {
     token::balance(e, &contract_id, &get_contract_id(e))
 }
 
@@ -85,7 +85,7 @@ fn load_price(e: &Env) -> Price {
     e.contract_data().get_unchecked(DataKey::Price).unwrap()
 }
 
-fn transfer(e: &Env, contract_id: FixedBinary<32>, to: Identifier, amount: BigInt) {
+fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
     token::xfer(e, &contract_id, &KeyedAuthorization::Contract, &to, &amount);
 }
 
@@ -172,9 +172,9 @@ pub trait SingleOfferTrait {
     // Get the current price
     fn get_price(e: Env) -> Price;
 
-    fn get_sell(e: Env) -> FixedBinary<32>;
+    fn get_sell(e: Env) -> BytesN<32>;
 
-    fn get_buy(e: Env) -> FixedBinary<32>;
+    fn get_buy(e: Env) -> BytesN<32>;
 }
 
 pub struct SingleOffer;
@@ -250,11 +250,11 @@ impl SingleOfferTrait for SingleOffer {
         load_price(&e)
     }
 
-    fn get_sell(e: Env) -> FixedBinary<32> {
+    fn get_sell(e: Env) -> BytesN<32> {
         get_sell_token(&e)
     }
 
-    fn get_buy(e: Env) -> FixedBinary<32> {
+    fn get_buy(e: Env) -> BytesN<32> {
         get_buy_token(&e)
     }
 }
