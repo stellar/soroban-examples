@@ -75,6 +75,9 @@ where
 {
     match auth.get_keyed_auth() {
         KeyedAuthorization::Contract => {
+            if nonce != BigInt::from_i32(e, 0) {
+                panic!("nonce should be zero for Contract")
+            }
             e.get_invoking_contract();
         }
         KeyedAuthorization::Ed25519(kea) => {
