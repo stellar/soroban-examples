@@ -1,8 +1,8 @@
-use soroban_sdk::{serde::Serialize, Account, BigInt, Env, EnvVal, Symbol};
+use soroban_sdk::{serde::Serialize, Account, BigInt, BytesN, Env, EnvVal, Symbol};
 
 use crate::public_types::{
     Identifier, KeyedAccountAuthorization, KeyedAuthorization, KeyedEd25519Signature, Message,
-    MessageV0, U256,
+    MessageV0,
 };
 
 pub trait NonceAuth {
@@ -43,7 +43,7 @@ fn check_account_auth(
     let mut weight = 0u32;
 
     let sigs = &auth.signatures;
-    let mut prev_pk: Option<U256> = None;
+    let mut prev_pk: Option<BytesN<32>> = None;
     for sig in sigs.iter().map(Result::unwrap) {
         // Cannot take multiple signatures from the same key
         if let Some(prev) = prev_pk {
