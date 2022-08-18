@@ -1,43 +1,17 @@
-use soroban_sdk::{serde::Serialize, Account, BigInt, Env, EnvVal, Symbol};
+use soroban_sdk::{serde::Serialize, Account, BigInt, BytesN, Env, EnvVal, Symbol};
 
-use crate::{
-    public_types::{
-        Identifier, KeyedAccountAuthorization, KeyedAuthorization, KeyedEd25519Signature, Message,
-        MessageV0, U256,
-    },
-    DataKey,
+use crate::public_types::{
+    Identifier, KeyedAccountAuthorization, KeyedAuthorization, KeyedEd25519Signature, Message,
+    MessageV0,
 };
 
-// Nonce management
-pub fn read_nonce(e: &Env, id: Identifier) -> BigInt {
-    let key = DataKey::Nonce(id);
-    if let Some(nonce) = e.contract_data().get(key) {
-        nonce.unwrap()
-    } else {
-        BigInt::zero(e)
-    }
+pub trait NonceAuth {
+    fn read_nonce(e: &Env, id: Identifier) -> BigInt;
+    fn read_and_increment_nonce(&self, e: &Env, id: Identifier) -> BigInt;
+    fn get_keyed_auth(&self) -> &KeyedAuthorization;
 }
 
-pub fn read_and_increment_nonce(e: &Env, id: Identifier) -> BigInt {
-    let key = DataKey::Nonce(id.clone());
-    let nonce = read_nonce(e, id);
-    e.contract_data()
-        .set(key, nonce.clone() + BigInt::from_u32(e, 1));
-    nonce
-}
-
-fn check_ed25519_auth(
-    e: &Env,
-    auth: &KeyedEd25519Signature,
-    nonce: BigInt,
-    function: Symbol,
-    parameters: EnvVal,
-) {
-    let stored_nonce = read_and_increment_nonce(&e, Identifier::Ed25519(auth.public_key.clone()));
-    if nonce != stored_nonce {
-        panic!("incorrect nonce")
-    }
-
+fn check_ed25519_auth(e: &Env, auth: &KeyedEd25519Signature, function: Symbol, parameters: EnvVal) {
     let msg = MessageV0 {
         function,
         parameters: parameters.try_into().unwrap(),
@@ -54,15 +28,9 @@ fn check_ed25519_auth(
 fn check_account_auth(
     e: &Env,
     auth: &KeyedAccountAuthorization,
-    nonce: BigInt,
     function: Symbol,
     parameters: EnvVal,
 ) {
-    let stored_nonce = read_and_increment_nonce(&e, Identifier::Account(auth.clone().public_key));
-    if nonce != stored_nonce {
-        panic!("incorrect nonce")
-    }
-
     let acc = Account::from_public_key(&auth.public_key).unwrap();
 
     let msg = MessageV0 {
@@ -75,7 +43,7 @@ fn check_account_auth(
     let mut weight = 0u32;
 
     let sigs = &auth.signatures;
-    let mut prev_pk: Option<U256> = None;
+    let mut prev_pk: Option<BytesN<32>> = None;
     for sig in sigs.iter().map(Result::unwrap) {
         // Cannot take multiple signatures from the same key
         if let Some(prev) = prev_pk {
@@ -101,22 +69,32 @@ fn check_account_auth(
 }
 
 // Note that nonce is not used by KeyedAuthorization::Contract
-pub fn check_auth(
-    e: &Env,
-    auth: &KeyedAuthorization,
-    nonce: BigInt,
-    function: Symbol,
-    parameters: EnvVal,
-) {
-    match auth {
+pub fn check_auth<T>(e: &Env, auth: &T, nonce: BigInt, function: Symbol, parameters: EnvVal)
+where
+    T: NonceAuth,
+{
+    match auth.get_keyed_auth() {
         KeyedAuthorization::Contract => {
+            if nonce != BigInt::from_i32(e, 0) {
+                panic!("nonce should be zero for Contract")
+            }
             e.get_invoking_contract();
         }
         KeyedAuthorization::Ed25519(kea) => {
-            check_ed25519_auth(e, kea, nonce.clone(), function, parameters)
+            let stored_nonce =
+                auth.read_and_increment_nonce(e, Identifier::Ed25519(kea.public_key.clone()));
+            if nonce != stored_nonce {
+                panic!("incorrect nonce")
+            }
+            check_ed25519_auth(e, &kea, function, parameters)
         }
         KeyedAuthorization::Account(kaa) => {
-            check_account_auth(e, kaa, nonce.clone(), function, parameters)
+            let stored_nonce =
+                auth.read_and_increment_nonce(e, Identifier::Account(kaa.public_key.clone()));
+            if nonce != stored_nonce {
+                panic!("incorrect nonce")
+            }
+            check_account_auth(e, &kaa, function, parameters)
         }
     }
 }

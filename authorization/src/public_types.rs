@@ -1,13 +1,10 @@
 use soroban_sdk::{contracttype, BytesN, Env, EnvVal, Symbol, Vec};
 
-pub type U256 = BytesN<32>;
-pub type U512 = BytesN<64>;
-
 #[derive(Clone)]
 #[contracttype]
 pub struct KeyedEd25519Signature {
-    pub public_key: U256,
-    pub signature: U512,
+    pub public_key: BytesN<32>,
+    pub signature: BytesN<64>,
 }
 
 pub type AccountAuthorization = Vec<KeyedEd25519Signature>;
@@ -15,7 +12,7 @@ pub type AccountAuthorization = Vec<KeyedEd25519Signature>;
 #[derive(Clone)]
 #[contracttype]
 pub struct KeyedAccountAuthorization {
-    pub public_key: U256,
+    pub public_key: BytesN<32>,
     pub signatures: AccountAuthorization,
 }
 
@@ -40,9 +37,9 @@ impl KeyedAuthorization {
 #[derive(Clone, PartialEq)]
 #[contracttype]
 pub enum Identifier {
-    Contract(U256),
-    Ed25519(U256),
-    Account(U256),
+    Contract(BytesN<32>),
+    Ed25519(BytesN<32>),
+    Account(BytesN<32>),
 }
 
 // TODO: This is missing fields
