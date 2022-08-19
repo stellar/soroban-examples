@@ -65,7 +65,7 @@ pub fn offer_salt(e: &Env, admin: &Identifier, sell_token: &U256, buy_token: &U2
 
 struct SingleOfferRouter;
 
-#[contractimpl(export_if = "export")]
+#[contractimpl]
 impl SingleOfferRouterTrait for SingleOfferRouter {
     fn init(e: Env, admin: Identifier, sell_token: U256, buy_token: U256, n: u32, d: u32) {
         let salt = offer_salt(&e, &admin, &sell_token, &buy_token);

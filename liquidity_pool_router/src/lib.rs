@@ -118,7 +118,7 @@ fn get_deposit_amounts(
 
 struct LiquidityPoolRouter;
 
-#[contractimpl(export_if = "export")]
+#[contractimpl]
 impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
     fn sf_deposit(
         e: Env,

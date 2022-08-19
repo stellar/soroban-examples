@@ -19,7 +19,7 @@ pub struct CustomTypesContract;
 
 const NAME: Symbol = Symbol::from_str("NAME");
 
-#[contractimpl(export_if = "export")]
+#[contractimpl]
 impl CustomTypesContract {
     pub fn store(env: Env, name: Name) {
         env.contract_data().set(NAME, name);

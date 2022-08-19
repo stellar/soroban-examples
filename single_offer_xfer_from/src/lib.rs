@@ -157,7 +157,7 @@ pub trait SingleOfferXferFromTrait {
 
 struct SingleOfferXferFrom;
 
-#[contractimpl(export_if = "export")]
+#[contractimpl]
 impl SingleOfferXferFromTrait for SingleOfferXferFrom {
     fn initialize(e: Env, admin: Identifier, sell_token: U256, buy_token: U256, n: u32, d: u32) {
         if has_administrator(&e) {

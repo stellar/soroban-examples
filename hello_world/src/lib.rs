@@ -3,7 +3,7 @@ use soroban_sdk::{contractimpl, vec, Env, Symbol, Vec};
 
 pub struct HelloContract;
 
-#[contractimpl(export_if = "export")]
+#[contractimpl]
 impl HelloContract {
     pub fn hello(env: Env, to: Symbol) -> Vec<Symbol> {
         const GREETING: Symbol = Symbol::from_str("Hello");

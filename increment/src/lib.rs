@@ -5,7 +5,7 @@ const COUNTER: Symbol = Symbol::from_str("COUNTER");
 
 pub struct IncrementContract;
 
-#[contractimpl(export_if = "export")]
+#[contractimpl]
 impl IncrementContract {
     /// Increment increments an internal counter, and returns the value.
     pub fn increment(env: Env) -> u32 {

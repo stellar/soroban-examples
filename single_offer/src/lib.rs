@@ -179,7 +179,7 @@ pub trait SingleOfferTrait {
 
 pub struct SingleOffer;
 
-#[contractimpl(export_if = "export")]
+#[contractimpl]
 impl SingleOfferTrait for SingleOffer {
     fn initialize(e: Env, admin: Identifier, sell_token: U256, buy_token: U256, n: u32, d: u32) {
         if has_administrator(&e) {

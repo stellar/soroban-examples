@@ -2,7 +2,7 @@ use soroban_sdk::{contractimpl, vec, BytesN, Env, IntoVal, Symbol};
 
 pub struct ContractB;
 
-#[contractimpl(export_if = "export")]
+#[contractimpl]
 impl ContractB {
     pub fn add_with(env: Env, x: u32, y: u32, contract_id: BytesN<32>) -> u32 {
         env.invoke_contract(
