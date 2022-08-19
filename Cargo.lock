@@ -749,7 +749,7 @@ dependencies = [
 [[package]]
 name = "soroban-token-contract"
 version = "0.0.2"
-source = "git+https://github.com/stellar/soroban-token-contract?rev=f3b6f07#f3b6f0769dc4fd310999420ea79e39e7e767cb31"
+source = "git+https://github.com/stellar/soroban-token-contract?rev=4a525ea#4a525ea5942fa9c2726a082c4a3e54c164ed395c"
 dependencies = [
  "ed25519-dalek",
  "soroban-sdk",
