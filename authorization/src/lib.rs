@@ -49,7 +49,8 @@ impl NonceAuth for WrappedAuth {
 
 pub struct AuthContract;
 
-#[contractimpl]
+#[cfg_attr(feature = "export", contractimpl)]
+#[cfg_attr(not(feature = "export"), contractimpl(export = false))]
 impl AuthContract {
     // Sets the admin identifier
     pub fn set_admin(e: Env, admin: Identifier) {
