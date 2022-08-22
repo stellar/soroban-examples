@@ -14,6 +14,8 @@ pub trait NonceAuth {
 fn check_ed25519_auth(e: &Env, auth: &KeyedEd25519Signature, function: Symbol, parameters: EnvVal) {
     let msg = MessageV0 {
         function,
+        contrct_id: e.get_current_contract(),
+        network_id: e.ledger().network_passphrase(),
         parameters: parameters.try_into().unwrap(),
     };
     let msg_bin = Message::V0(msg).serialize(e);
@@ -35,6 +37,8 @@ fn check_account_auth(
 
     let msg = MessageV0 {
         function,
+        contrct_id: e.get_current_contract(),
+        network_id: e.ledger().network_passphrase(),
         parameters: parameters.try_into().unwrap(),
     };
     let msg_bin = Message::V0(msg).serialize(e);
