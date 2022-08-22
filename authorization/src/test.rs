@@ -20,6 +20,8 @@ fn generate_keypair() -> Keypair {
 fn make_auth(e: &Env, kp: &Keypair, args: Vec<EnvVal>, function: &str) -> KeyedAuthorization {
     let msg = Message::V0(MessageV0 {
         function: Symbol::from_str(function),
+        contrct_id: BytesN::from_array(&e, [0; 32]),
+        network_id: e.ledger().network_passphrase(),
         parameters: args,
     });
     KeyedAuthorization::Ed25519(KeyedEd25519Signature {

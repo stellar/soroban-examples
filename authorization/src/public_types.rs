@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, BytesN, Env, EnvVal, Symbol, Vec};
+use soroban_sdk::{contracttype, Bytes, BytesN, Env, EnvVal, Symbol, Vec};
 
 #[derive(Clone)]
 #[contracttype]
@@ -42,11 +42,12 @@ pub enum Identifier {
     Account(BytesN<32>),
 }
 
-// TODO: This is missing fields
 #[derive(Clone)]
 #[contracttype]
 pub struct MessageV0 {
     pub function: Symbol,
+    pub contrct_id: BytesN<32>,
+    pub network_id: Bytes,
     pub parameters: Vec<EnvVal>,
 }
 
