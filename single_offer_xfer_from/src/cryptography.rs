@@ -1,4 +1,4 @@
-use soroban_sdk::{serde::Serialize, TryIntoVal, Account, BigInt, Env, EnvVal};
+use soroban_sdk::{serde::Serialize, Account, BigInt, Env, EnvVal, TryIntoVal};
 
 use soroban_token_contract::public_types::{
     Identifier, KeyedAccountAuthorization, KeyedAuthorization, KeyedEd25519Signature, Message,
