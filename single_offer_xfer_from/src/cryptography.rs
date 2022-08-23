@@ -1,4 +1,4 @@
-use soroban_sdk::{serde::Serialize, Account, BigInt, Env, EnvVal};
+use soroban_sdk::{serde::Serialize, TryIntoVal, Account, BigInt, Env, EnvVal};
 
 use soroban_token_contract::public_types::{
     Identifier, KeyedAccountAuthorization, KeyedAuthorization, KeyedEd25519Signature, Message,
@@ -35,7 +35,7 @@ fn check_ed25519_auth(e: &Env, auth: KeyedEd25519Signature, domain: Domain, para
     let msg = MessageV0 {
         nonce: read_and_increment_nonce(&e, Identifier::Ed25519(auth.public_key.clone())),
         domain: domain as u32,
-        parameters: parameters.try_into().unwrap(),
+        parameters: parameters.to_raw().try_into_val(e).unwrap(),
     };
     let msg_bin = Message::V0(msg).serialize(e);
 
@@ -53,7 +53,7 @@ fn check_account_auth(
     let msg = MessageV0 {
         nonce: read_and_increment_nonce(&e, Identifier::Account(auth.public_key)),
         domain: domain as u32,
-        parameters: parameters.try_into().unwrap(),
+        parameters: parameters.to_raw().try_into_val(e).unwrap(),
     };
     let msg_bin = Message::V0(msg).serialize(e);
 

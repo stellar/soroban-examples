@@ -1,4 +1,4 @@
-use soroban_sdk::{serde::Serialize, Account, BigInt, BytesN, Env, EnvVal, Symbol};
+use soroban_sdk::{serde::Serialize, Account, BigInt, BytesN, Env, EnvVal, Symbol, TryIntoVal};
 
 use crate::public_types::{
     Identifier, KeyedAccountAuthorization, KeyedAuthorization, KeyedEd25519Signature, Message,
@@ -16,7 +16,7 @@ fn check_ed25519_auth(e: &Env, auth: &KeyedEd25519Signature, function: Symbol, p
         function,
         contrct_id: e.get_current_contract(),
         network_id: e.ledger().network_passphrase(),
-        parameters: parameters.try_into().unwrap(),
+        parameters: parameters.to_raw().try_into_val(e).unwrap(),
     };
     let msg_bin = Message::V0(msg).serialize(e);
 
@@ -39,7 +39,7 @@ fn check_account_auth(
         function,
         contrct_id: e.get_current_contract(),
         network_id: e.ledger().network_passphrase(),
-        parameters: parameters.try_into().unwrap(),
+        parameters: parameters.to_raw().try_into_val(e).unwrap(),
     };
     let msg_bin = Message::V0(msg).serialize(e);
 
