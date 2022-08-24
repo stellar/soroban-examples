@@ -1,8 +1,7 @@
 #![allow(unused)]
 use soroban_sdk::{Bytes, BytesN, Env};
-use soroban_token_contract::public_types::U256;
 
-pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> BytesN<32> {
+pub fn create_contract(e: &Env, token_a: &BytesN<32>, token_b: &BytesN<32>) -> BytesN<32> {
     let mut salt = Bytes::new(&e);
     salt.append(&token_a.clone().into());
     salt.append(&token_b.clone().into());

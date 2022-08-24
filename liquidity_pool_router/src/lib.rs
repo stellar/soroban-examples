@@ -10,8 +10,8 @@ pub mod testutils;
 use pool_contract::create_contract;
 use soroban_liquidity_pool_contract as liquidity_pool;
 use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env};
+use soroban_sdk_auth::public_types::{Identifier, Signature};
 use soroban_token_contract as token;
-use token::public_types::{Identifier, KeyedAuthorization, U256};
 
 pub use crate::get_pool::invoke as get_pool;
 pub use crate::sf_deposit::invoke as sf_deposit;
@@ -21,21 +21,25 @@ pub use crate::swap_out::invoke as swap_out;
 #[derive(Clone)]
 #[contracttype]
 pub enum DataKey {
-    Pool(U256),
+    Pool(BytesN<32>),
 }
 
-fn get_pool_id(e: &Env, salt: &U256) -> U256 {
+fn get_contract_id(e: &Env) -> Identifier {
+    Identifier::Contract(e.get_current_contract().into())
+}
+
+fn get_pool_id(e: &Env, salt: &BytesN<32>) -> BytesN<32> {
     e.contract_data()
         .get_unchecked(DataKey::Pool(salt.clone()))
         .unwrap()
 }
 
-fn put_pool(e: &Env, salt: &U256, pool: &U256) {
+fn put_pool(e: &Env, salt: &BytesN<32>, pool: &BytesN<32>) {
     e.contract_data()
         .set(DataKey::Pool(salt.clone()), pool.clone())
 }
 
-fn has_pool(e: &Env, salt: &U256) -> bool {
+fn has_pool(e: &Env, salt: &BytesN<32>) -> bool {
     e.contract_data().has(DataKey::Pool(salt.clone()))
 }
 
@@ -44,8 +48,8 @@ pub trait LiquidityPoolRouterTrait {
     fn sf_deposit(
         e: Env,
         to: Identifier,
-        token_a: U256,
-        token_b: U256,
+        token_a: BytesN<32>,
+        token_b: BytesN<32>,
         desired_a: BigInt,
         min_a: BigInt,
         desired_b: BigInt,
@@ -54,23 +58,30 @@ pub trait LiquidityPoolRouterTrait {
 
     // swaps out an exact amount of "buy", in exchange for "sell" that this contract has an
     // allowance for from "to". "sell" amount swapped in must not be greater than "in_max"
-    fn swap_out(e: Env, to: Identifier, sell: U256, buy: U256, out: BigInt, in_max: BigInt);
+    fn swap_out(
+        e: Env,
+        to: Identifier,
+        sell: BytesN<32>,
+        buy: BytesN<32>,
+        out: BigInt,
+        in_max: BigInt,
+    );
 
     fn sf_withdrw(
         e: Env,
         to: Identifier,
-        token_a: U256,
-        token_b: U256,
+        token_a: BytesN<32>,
+        token_b: BytesN<32>,
         share_amount: BigInt,
         min_a: BigInt,
         min_b: BigInt,
     );
 
     // returns the contract address for the specified token_a/token_b combo
-    fn get_pool(e: Env, token_a: U256, token_b: U256) -> U256;
+    fn get_pool(e: Env, token_a: BytesN<32>, token_b: BytesN<32>) -> BytesN<32>;
 }
 
-fn sort(a: &U256, b: &U256) -> (U256, U256) {
+fn sort(a: &BytesN<32>, b: &BytesN<32>) -> (BytesN<32>, BytesN<32>) {
     if a < b {
         return (a.clone(), b.clone());
     } else if a > b {
@@ -79,7 +90,7 @@ fn sort(a: &U256, b: &U256) -> (U256, U256) {
     panic!("a and b can't be the same")
 }
 
-pub fn pool_salt(e: &Env, token_a: &U256, token_b: &U256) -> BytesN<32> {
+pub fn pool_salt(e: &Env, token_a: &BytesN<32>, token_b: &BytesN<32>) -> BytesN<32> {
     if token_a >= token_b {
         panic!("token_a must be less t&han token_b");
     }
@@ -123,8 +134,8 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
     fn sf_deposit(
         e: Env,
         to: Identifier,
-        token_a: U256,
-        token_b: U256,
+        token_a: BytesN<32>,
+        token_b: BytesN<32>,
         desired_a: BigInt,
         min_a: BigInt,
         desired_b: BigInt,
@@ -144,19 +155,23 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         let reserves = liquidity_pool::get_rsrvs(&e, &pool_id);
         let amounts = get_deposit_amounts(desired_a, min_a, desired_b, min_b, reserves);
 
+        let nonce_a = token::nonce(&e, &token_a, &get_contract_id(&e));
         token::xfer_from(
             &e,
             &token_a,
-            &KeyedAuthorization::Contract,
+            &Signature::Contract,
+            &nonce_a,
             &to,
             &Identifier::Contract(pool_id.clone()),
             &amounts.0,
         );
 
+        let nonce_b = token::nonce(&e, &token_b, &get_contract_id(&e));
         token::xfer_from(
             &e,
             &token_b,
-            &KeyedAuthorization::Contract,
+            &Signature::Contract,
+            &nonce_b,
             &to,
             &Identifier::Contract(pool_id.clone()),
             &amounts.1,
@@ -165,7 +180,14 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         liquidity_pool::deposit(&e, &pool_id, &to);
     }
 
-    fn swap_out(e: Env, to: Identifier, sell: U256, buy: U256, out: BigInt, in_max: BigInt) {
+    fn swap_out(
+        e: Env,
+        to: Identifier,
+        sell: BytesN<32>,
+        buy: BytesN<32>,
+        out: BigInt,
+        in_max: BigInt,
+    ) {
         let (token_a, token_b) = sort(&sell, &buy);
         let pool_id = Self::get_pool(e.clone(), token_a.clone(), token_b);
 
@@ -188,10 +210,12 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
             panic!("in amount is over max")
         }
 
+        let nonce = token::nonce(&e, &sell, &get_contract_id(&e));
         token::xfer_from(
             &e,
             &sell,
-            &KeyedAuthorization::Contract,
+            &Signature::Contract,
+            &nonce,
             &to,
             &Identifier::Contract(pool_id.clone()),
             &xfer_amount,
@@ -213,8 +237,8 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
     fn sf_withdrw(
         e: Env,
         to: Identifier,
-        token_a: U256,
-        token_b: U256,
+        token_a: BytesN<32>,
+        token_b: BytesN<32>,
         share_amount: BigInt,
         min_a: BigInt,
         min_b: BigInt,
@@ -223,10 +247,12 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
 
         let share_token = liquidity_pool::share_id(&e, &pool_id);
 
+        let nonce = token::nonce(&e, &share_token, &get_contract_id(&e));
         token::xfer_from(
             &e,
             &share_token,
-            &KeyedAuthorization::Contract,
+            &Signature::Contract,
+            &nonce,
             &to,
             &Identifier::Contract(pool_id.clone()),
             &share_amount,
@@ -239,7 +265,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         }
     }
 
-    fn get_pool(e: Env, token_a: U256, token_b: U256) -> U256 {
+    fn get_pool(e: Env, token_a: BytesN<32>, token_b: BytesN<32>) -> BytesN<32> {
         let salt = pool_salt(&e, &token_a, &token_b);
         get_pool_id(&e, &salt)
     }

@@ -3,17 +3,16 @@
 #[cfg(feature = "testutils")]
 extern crate std;
 
-mod cryptography;
 mod test;
 pub mod testutils;
 
-use cryptography::Domain;
-use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, IntoVal};
-use soroban_token_contract as token;
-use token::public_types::{
-    Authorization, Identifier, KeyedAccountAuthorization, KeyedAuthorization,
-    KeyedEd25519Signature, U256,
+use soroban_sdk::{contractimpl, contracttype, vec, BigInt, BytesN, Env, IntoVal, Symbol};
+use soroban_sdk_auth::{
+    check_auth,
+    public_types::{Identifier, Signature},
+    NonceAuth,
 };
+use soroban_token_contract as token;
 
 #[derive(Clone)]
 #[contracttype]
@@ -34,6 +33,10 @@ pub struct Price {
     pub d: u32,
 }
 
+fn get_contract_id(e: &Env) -> Identifier {
+    Identifier::Contract(e.get_current_contract().into())
+}
+
 fn get_sell_token(e: &Env) -> BytesN<32> {
     e.contract_data().get_unchecked(DataKey::SellToken).unwrap()
 }
@@ -42,11 +45,11 @@ fn get_buy_token(e: &Env) -> BytesN<32> {
     e.contract_data().get_unchecked(DataKey::BuyToken).unwrap()
 }
 
-fn put_sell_token(e: &Env, contract_id: U256) {
+fn put_sell_token(e: &Env, contract_id: BytesN<32>) {
     e.contract_data().set(DataKey::SellToken, contract_id);
 }
 
-fn put_buy_token(e: &Env, contract_id: U256) {
+fn put_buy_token(e: &Env, contract_id: BytesN<32>) {
     e.contract_data().set(DataKey::BuyToken, contract_id);
 }
 
@@ -65,10 +68,12 @@ fn transfer_from(
     to: &Identifier,
     amount: &BigInt,
 ) {
+    let nonce = token::nonce(&e, &contract_id, &get_contract_id(&e));
     token::xfer_from(
         e,
         &contract_id,
-        &KeyedAuthorization::Contract,
+        &Signature::Contract,
+        &nonce,
         &from,
         &to,
         &amount,
@@ -98,28 +103,38 @@ fn write_administrator(e: &Env, id: Identifier) {
     e.contract_data().set(key, id);
 }
 
-pub fn to_administrator_authorization(e: &Env, auth: Authorization) -> KeyedAuthorization {
-    let admin = read_administrator(e);
-    match (admin, auth) {
-        (Identifier::Contract(admin_id), Authorization::Contract) => {
-            if admin_id != e.get_invoking_contract() {
-                panic!("admin is not invoking contract");
-            }
-            KeyedAuthorization::Contract
-        }
-        (Identifier::Ed25519(admin_id), Authorization::Ed25519(signature)) => {
-            KeyedAuthorization::Ed25519(KeyedEd25519Signature {
-                public_key: admin_id,
-                signature,
-            })
-        }
-        (Identifier::Account(admin_id), Authorization::Account(signatures)) => {
-            KeyedAuthorization::Account(KeyedAccountAuthorization {
-                public_key: admin_id,
-                signatures,
-            })
-        }
-        _ => panic!("unknown identifier type"),
+pub fn check_admin(e: &Env, auth: &Signature) {
+    let auth_id = auth.get_identifier(&e);
+    if auth_id != read_administrator(&e) {
+        panic!("not authorized by admin")
+    }
+}
+
+fn read_nonce(e: &Env, id: Identifier) -> BigInt {
+    let key = DataKey::Nonce(id);
+    if let Some(nonce) = e.contract_data().get(key) {
+        nonce.unwrap()
+    } else {
+        BigInt::zero(e)
+    }
+}
+struct WrappedAuth(Signature);
+
+impl NonceAuth for WrappedAuth {
+    fn read_nonce(e: &Env, id: Identifier) -> BigInt {
+        read_nonce(e, id)
+    }
+
+    fn read_and_increment_nonce(&self, e: &Env, id: Identifier) -> BigInt {
+        let key = DataKey::Nonce(id.clone());
+        let nonce = Self::read_nonce(e, id);
+        e.contract_data()
+            .set(key, nonce.clone() + BigInt::from_u32(e, 1));
+        nonce
+    }
+
+    fn get_keyed_auth(&self) -> &Signature {
+        &self.0
     }
 }
 
@@ -135,7 +150,14 @@ How to use this contract to trade
 
 pub trait SingleOfferXferFromTrait {
     // See comment above the Price struct for information on pricing
-    fn initialize(e: Env, admin: Identifier, sell_token: U256, buy_token: U256, n: u32, d: u32);
+    fn initialize(
+        e: Env,
+        admin: Identifier,
+        sell_token: BytesN<32>,
+        buy_token: BytesN<32>,
+        n: u32,
+        d: u32,
+    );
 
     // Returns the current nonce for "id"
     fn nonce(e: Env, id: Identifier) -> BigInt;
@@ -143,13 +165,13 @@ pub trait SingleOfferXferFromTrait {
     // Sends amount_to_sell of buy_token to the admin, and sends amount_to_sell * d / n of
     // sell_token to "to". Allowances must be sufficient for this contract address to send
     // sell_token from admin and buy_token from "to". Needs to be authorized by "to".
-    // (KeyedAuthorization is required because a different entity
+    // (Signature is required because a different entity
     // could submit the trade with a bad min, or the admin could change the price and then
     // call trade).
-    fn trade(e: Env, to: KeyedAuthorization, amount_to_sell: BigInt, min: BigInt);
+    fn trade(e: Env, to: Signature, nonce: BigInt, amount_to_sell: BigInt, min: BigInt);
 
     // Updates the price. Must be authorized by admin
-    fn updt_price(e: Env, admin: Authorization, n: u32, d: u32);
+    fn updt_price(e: Env, admin: Signature, nonce: BigInt, n: u32, d: u32);
 
     // Get the current price
     fn get_price(e: Env) -> Price;
@@ -159,7 +181,14 @@ struct SingleOfferXferFrom;
 
 #[contractimpl]
 impl SingleOfferXferFromTrait for SingleOfferXferFrom {
-    fn initialize(e: Env, admin: Identifier, sell_token: U256, buy_token: U256, n: u32, d: u32) {
+    fn initialize(
+        e: Env,
+        admin: Identifier,
+        sell_token: BytesN<32>,
+        buy_token: BytesN<32>,
+        n: u32,
+        d: u32,
+    ) {
         if has_administrator(&e) {
             panic!("admin is already set");
         }
@@ -175,13 +204,19 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
         put_price(&e, Price { n, d });
     }
 
-    fn trade(e: Env, to: KeyedAuthorization, amount_to_sell: BigInt, min: BigInt) {
+    fn trade(e: Env, to: Signature, nonce: BigInt, amount_to_sell: BigInt, min: BigInt) {
         let to_id = to.get_identifier(&e);
-        cryptography::check_auth(
+        check_auth(
             &e,
-            to,
-            Domain::Trade,
-            (amount_to_sell.clone(), min.clone()).into_val(&e),
+            &WrappedAuth(to),
+            nonce.clone(),
+            Symbol::from_str("trade"),
+            vec![
+                &e,
+                nonce.into_val(&e),
+                amount_to_sell.clone().into_val(&e),
+                min.clone().into_val(&e),
+            ],
         );
 
         let price = get_price(&e);
@@ -200,19 +235,27 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
     }
 
     fn nonce(e: Env, id: Identifier) -> BigInt {
-        cryptography::read_nonce(&e, id)
+        read_nonce(&e, id)
     }
 
-    fn updt_price(e: Env, admin: Authorization, n: u32, d: u32) {
+    fn updt_price(e: Env, admin: Signature, nonce: BigInt, n: u32, d: u32) {
+        check_admin(&e, &admin);
+
         if d == 0 {
             panic!("d is zero but cannot be zero")
         }
-        let auth = to_administrator_authorization(&e, admin.clone());
-        cryptography::check_auth(
+
+        check_auth(
             &e,
-            auth,
-            cryptography::Domain::UpdatePrice,
-            (n.clone(), d.clone()).into_env_val(&e),
+            &WrappedAuth(admin),
+            nonce.clone(),
+            Symbol::from_str("updt_price"),
+            vec![
+                &e,
+                nonce.into_val(&e),
+                n.clone().into_val(&e),
+                d.clone().into_val(&e),
+            ],
         );
 
         put_price(&e, Price { n, d });

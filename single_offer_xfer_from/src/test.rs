@@ -4,7 +4,7 @@ use crate::testutils::{register_test_contract as register_single_offer, SingleOf
 use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
 use soroban_sdk::{BigInt, BytesN, Env};
-use soroban_token_contract::public_types::Identifier;
+use soroban_sdk_auth::public_types::Identifier;
 use soroban_token_contract::testutils::{
     register_test_contract as register_token, to_ed25519, Token,
 };
@@ -60,7 +60,7 @@ fn test() {
     // The price here is 1 A == .5 B and the admin in user1
     let (contract_offer, offer) =
         create_single_offer_contract(&e, &user1, &contract1, &contract2, 1, 2);
-    let offer_id = Identifier::Contract(BytesN::from_array(&e, contract_offer));
+    let offer_id = Identifier::Contract(BytesN::from_array(&e, &contract_offer));
 
     // mint tokens that will be traded
     token1.mint(&admin1, &user1_id, &BigInt::from_u32(&e, 30));

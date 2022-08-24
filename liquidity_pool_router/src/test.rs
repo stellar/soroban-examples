@@ -7,7 +7,7 @@ use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
 use soroban_liquidity_pool_contract as liquidity_pool;
 use soroban_sdk::{BigInt, BytesN, Env};
-use soroban_token_contract::public_types::Identifier;
+use soroban_sdk_auth::public_types::Identifier;
 use soroban_token_contract::testutils::{
     register_test_contract as register_token, to_ed25519, Token,
 };
@@ -62,7 +62,7 @@ fn test() {
     let token1 = create_token_contract(&e, &contract1, &admin1);
     let token2 = create_token_contract(&e, &contract2, &admin2);
     let (contract_router, router) = create_liquidity_pool_router_contract(&e);
-    let router_id = Identifier::Contract(BytesN::from_array(&e, contract_router));
+    let router_id = Identifier::Contract(BytesN::from_array(&e, &contract_router));
 
     token1.mint(&admin1, &user1_id, &BigInt::from_u32(&e, 1000));
     assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 1000));
@@ -83,7 +83,7 @@ fn test() {
     );
 
     let contract_pool = router.get_pool(&contract1, &contract2);
-    let pool_id = Identifier::Contract(BytesN::from_array(&e, contract_pool.clone().into()));
+    let pool_id = Identifier::Contract(contract_pool.clone());
 
     let token_share = Token::new(&e, &liquidity_pool::share_id(&e, &contract_pool).into());
 

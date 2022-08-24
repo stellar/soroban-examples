@@ -3,13 +3,14 @@
 #[cfg(feature = "testutils")]
 extern crate std;
 
-pub mod cryptography;
-pub mod public_types;
 mod test;
 
-use cryptography::NonceAuth;
-use public_types::{Identifier, KeyedAuthorization};
-use soroban_sdk::{contractimpl, contracttype, BigInt, Env, IntoVal, Symbol};
+use soroban_sdk::{contractimpl, contracttype, vec, BigInt, Env, IntoVal, Symbol};
+use soroban_sdk_auth::{
+    check_auth,
+    public_types::{Identifier, Signature},
+    NonceAuth,
+};
 
 #[derive(Clone)]
 #[contracttype]
@@ -27,7 +28,7 @@ fn read_nonce(e: &Env, id: Identifier) -> BigInt {
         BigInt::zero(e)
     }
 }
-struct WrappedAuth(KeyedAuthorization);
+struct WrappedAuth(Signature);
 
 impl NonceAuth for WrappedAuth {
     fn read_nonce(e: &Env, id: Identifier) -> BigInt {
@@ -42,7 +43,7 @@ impl NonceAuth for WrappedAuth {
         nonce
     }
 
-    fn get_keyed_auth(&self) -> &KeyedAuthorization {
+    fn get_keyed_auth(&self) -> &Signature {
         &self.0
     }
 }
@@ -62,33 +63,38 @@ impl AuthContract {
     }
 
     // Saves data that corresponds to an Identifier, with that Identifiers authorization
-    pub fn save_data(e: Env, auth: KeyedAuthorization, nonce: BigInt, num: BigInt) {
+    pub fn save_data(e: Env, auth: Signature, nonce: BigInt, num: BigInt) {
         let auth_id = auth.get_identifier(&e);
 
-        cryptography::check_auth(
+        check_auth(
             &e,
             &WrappedAuth(auth),
             nonce.clone(),
             Symbol::from_str("save_data"),
-            (nonce, num.clone()).into_val(&e),
+            vec![&e, nonce.into_val(&e), num.clone().into_val(&e)],
         );
 
         e.contract_data().set(DataKey::Acc(auth_id), num);
     }
 
     // The admin can write data for any Identifier
-    pub fn overwrite(e: Env, auth: KeyedAuthorization, nonce: BigInt, id: Identifier, num: BigInt) {
+    pub fn overwrite(e: Env, auth: Signature, nonce: BigInt, id: Identifier, num: BigInt) {
         let auth_id = auth.get_identifier(&e);
         if auth_id != e.contract_data().get_unchecked(DataKey::Admin).unwrap() {
             panic!("not authorized by admin")
         }
 
-        cryptography::check_auth(
+        check_auth(
             &e,
             &WrappedAuth(auth),
             nonce.clone(),
             Symbol::from_str("overwrite"),
-            (nonce, id.clone(), num.clone()).into_val(&e),
+            vec![
+                &e,
+                nonce.into_val(&e),
+                id.clone().into_val(&e),
+                num.clone().into_val(&e),
+            ],
         );
 
         e.contract_data().set(DataKey::Acc(id), num);
