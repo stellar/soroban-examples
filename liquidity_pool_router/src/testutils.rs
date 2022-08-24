@@ -1,9 +1,9 @@
 #![cfg(feature = "testutils")]
 use soroban_sdk::{BigInt, BytesN, Env};
-use soroban_token_contract::public_types::{Identifier, U256};
+use soroban_sdk_auth::public_types::Identifier;
 
 pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
-    let contract_id = BytesN::from_array(e, *contract_id);
+    let contract_id = BytesN::from_array(e, contract_id);
     e.register_contract(&contract_id, crate::LiquidityPoolRouter {});
 }
 
@@ -16,7 +16,7 @@ impl LiquidityPoolRouter {
     pub fn new(env: &Env, contract_id: &[u8; 32]) -> Self {
         Self {
             env: env.clone(),
-            contract_id: BytesN::from_array(env, *contract_id),
+            contract_id: BytesN::from_array(env, contract_id),
         }
     }
 
@@ -30,8 +30,8 @@ impl LiquidityPoolRouter {
         desired_b: &BigInt,
         min_b: &BigInt,
     ) {
-        let token_a = BytesN::from_array(&self.env, *token_a);
-        let token_b = BytesN::from_array(&self.env, *token_b);
+        let token_a = BytesN::from_array(&self.env, token_a);
+        let token_b = BytesN::from_array(&self.env, token_b);
 
         crate::sf_deposit(
             &self.env,
@@ -54,8 +54,8 @@ impl LiquidityPoolRouter {
         out: &BigInt,
         in_max: &BigInt,
     ) {
-        let sell = BytesN::from_array(&self.env, *sell);
-        let buy = BytesN::from_array(&self.env, *buy);
+        let sell = BytesN::from_array(&self.env, sell);
+        let buy = BytesN::from_array(&self.env, buy);
 
         crate::swap_out(
             &self.env,
@@ -77,8 +77,8 @@ impl LiquidityPoolRouter {
         min_a: &BigInt,
         min_b: &BigInt,
     ) {
-        let token_a = BytesN::from_array(&self.env, *token_a);
-        let token_b = BytesN::from_array(&self.env, *token_b);
+        let token_a = BytesN::from_array(&self.env, token_a);
+        let token_b = BytesN::from_array(&self.env, token_b);
 
         crate::sf_withdrw(
             &self.env,
@@ -92,9 +92,9 @@ impl LiquidityPoolRouter {
         )
     }
 
-    pub fn get_pool(&self, token_a: &[u8; 32], token_b: &[u8; 32]) -> U256 {
-        let token_a = BytesN::from_array(&self.env, *token_a);
-        let token_b = BytesN::from_array(&self.env, *token_b);
+    pub fn get_pool(&self, token_a: &[u8; 32], token_b: &[u8; 32]) -> BytesN<32> {
+        let token_a = BytesN::from_array(&self.env, token_a);
+        let token_b = BytesN::from_array(&self.env, token_b);
 
         crate::get_pool(&self.env, &self.contract_id, &token_a, &token_b)
     }

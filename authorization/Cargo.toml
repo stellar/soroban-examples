@@ -10,10 +10,11 @@ crate-type = ["cdylib", "rlib"]
 [features]
 default = ["export"]
 export = []
-testutils = ["soroban-sdk/testutils", "dep:ed25519-dalek"]
+testutils = ["soroban-sdk/testutils", "soroban-sdk-auth/testutils", "dep:ed25519-dalek"]
 
 [dependencies]
 soroban-sdk = "0.0.3"
+soroban-sdk-auth = "0.0.0"
 ed25519-dalek = { version = "1.0.1", optional = true }
 
 [dev_dependencies]

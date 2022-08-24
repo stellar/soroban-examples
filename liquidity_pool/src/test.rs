@@ -4,7 +4,7 @@ use crate::testutils::{register_test_contract as register_liqpool, LiquidityPool
 use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
 use soroban_sdk::{BigInt, BytesN, Env};
-use soroban_token_contract::public_types::Identifier;
+use soroban_sdk_auth::public_types::Identifier;
 use soroban_token_contract::testutils::{
     register_test_contract as register_token, to_ed25519, Token,
 };
@@ -64,7 +64,7 @@ fn test() {
     let token1 = create_token_contract(&e, &contract1, &admin1);
     let token2 = create_token_contract(&e, &contract2, &admin2);
     let (contract_pool, liqpool) = create_liqpool_contract(&e, &contract1, &contract2);
-    let pool_id = Identifier::Contract(BytesN::from_array(&e, contract_pool));
+    let pool_id = Identifier::Contract(BytesN::from_array(&e, &contract_pool));
     let contract_share: [u8; 32] = liqpool.share_id().into();
     let token_share = Token::new(&e, &contract_share);
 

@@ -14,6 +14,7 @@ testutils = ["soroban-sdk/testutils", "soroban-token-contract/testutils","soroba
 
 [dependencies]
 soroban-sdk = "0.0.3"
+soroban-sdk-auth = "0.0.0"
 soroban-token-contract = { version = "0.0.2", default-features = false  }
 soroban-liquidity-pool-contract = { path = "../liquidity_pool", version = "0.0.0", default-features = false  }
 ed25519-dalek = { version = "1.0.1", optional = true }

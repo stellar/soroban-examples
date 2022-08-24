@@ -1,17 +1,18 @@
 #![cfg(any(test, feature = "testutils"))]
 
-use crate::cryptography::Domain;
 use crate::Price;
 use ed25519_dalek::Keypair;
 use soroban_sdk::testutils::ed25519::Sign;
-use soroban_sdk::{BigInt, BytesN, Env, EnvVal, IntoVal, Vec};
-use soroban_token_contract::public_types::{
-    Authorization, Identifier, KeyedAuthorization, KeyedEd25519Signature, Message, MessageV0,
-};
+use soroban_sdk::{BigInt, BytesN, Env, IntoVal, RawVal, Symbol, Vec};
+use soroban_sdk_auth::public_types::{Ed25519Signature, Identifier, Message, MessageV0, Signature};
 
 pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
-    let contract_id = BytesN::from_array(e, *contract_id);
+    let contract_id = BytesN::from_array(e, contract_id);
     e.register_contract(&contract_id, crate::SingleOfferXferFrom {});
+}
+
+fn to_ed25519(e: &Env, kp: &Keypair) -> Identifier {
+    Identifier::Ed25519(kp.public.to_bytes().into_val(e))
 }
 
 pub use crate::get_price::invoke as get_price;
@@ -29,7 +30,7 @@ impl SingleOfferXferFrom {
     pub fn new(env: &Env, contract_id: &[u8; 32]) -> Self {
         Self {
             env: env.clone(),
-            contract_id: BytesN::from_array(env, *contract_id),
+            contract_id: BytesN::from_array(env, contract_id),
         }
     }
 
@@ -41,8 +42,8 @@ impl SingleOfferXferFrom {
         n: u32,
         d: u32,
     ) {
-        let token_a = BytesN::from_array(&self.env, *token_a);
-        let token_b = BytesN::from_array(&self.env, *token_b);
+        let token_a = BytesN::from_array(&self.env, token_a);
+        let token_b = BytesN::from_array(&self.env, token_b);
         initialize(
             &self.env,
             &self.contract_id,
@@ -59,37 +60,54 @@ impl SingleOfferXferFrom {
     }
 
     pub fn trade(&self, to: &Keypair, amount_to_sell: &BigInt, min: &BigInt) {
-        let mut args: Vec<EnvVal> = Vec::new(&self.env);
-        args.push(amount_to_sell.clone().into_env_val(&self.env));
-        args.push(min.clone().into_env_val(&self.env));
+        let id = to_ed25519(&self.env, &to);
+        let nonce = nonce(&self.env, &self.contract_id, &id);
+
+        let mut args: Vec<RawVal> = Vec::new(&self.env);
+        args.push(nonce.clone().into_val(&self.env));
+        args.push(amount_to_sell.clone().into_val(&self.env));
+        args.push(min.clone().into_val(&self.env));
         let msg = Message::V0(MessageV0 {
-            nonce: self.nonce(&Identifier::Ed25519(
-                to.public.to_bytes().into_val(&self.env),
-            )),
-            domain: Domain::Trade as u32,
-            parameters: args,
+            function: Symbol::from_str("trade"),
+            contrct_id: self.contract_id.clone(),
+            network_id: self.env.ledger().network_passphrase(),
+            args,
         });
-        let auth = KeyedAuthorization::Ed25519(KeyedEd25519Signature {
+        let auth = Signature::Ed25519(Ed25519Signature {
             public_key: to.public.to_bytes().into_val(&self.env),
             signature: to.sign(msg).unwrap().into_val(&self.env),
         });
 
-        trade(&self.env, &self.contract_id, &auth, amount_to_sell, min)
+        trade(
+            &self.env,
+            &self.contract_id,
+            &auth,
+            &nonce,
+            amount_to_sell,
+            min,
+        )
     }
 
     pub fn updt_price(&self, admin: &Keypair, n: u32, d: u32) {
-        let mut args: Vec<EnvVal> = Vec::new(&self.env);
-        args.push(n.into_env_val(&self.env));
-        args.push(d.into_env_val(&self.env));
+        let id = to_ed25519(&self.env, &admin);
+        let nonce = nonce(&self.env, &self.contract_id, &id);
+
+        let mut args: Vec<RawVal> = Vec::new(&self.env);
+        args.push(nonce.clone().into_val(&self.env));
+        args.push(n.into_val(&self.env));
+        args.push(d.into_val(&self.env));
         let msg = Message::V0(MessageV0 {
-            nonce: self.nonce(&Identifier::Ed25519(
-                admin.public.to_bytes().into_val(&self.env),
-            )),
-            domain: Domain::UpdatePrice as u32,
-            parameters: args,
+            function: Symbol::from_str("updt_price"),
+            contrct_id: self.contract_id.clone(),
+            network_id: self.env.ledger().network_passphrase(),
+            args,
         });
-        let auth = Authorization::Ed25519(admin.sign(msg).unwrap().into_val(&self.env));
-        updt_price(&self.env, &self.contract_id, &auth, &n, &d)
+        let auth = Signature::Ed25519(Ed25519Signature {
+            public_key: admin.public.to_bytes().into_val(&self.env),
+            signature: admin.sign(msg).unwrap().into_val(&self.env),
+        });
+
+        updt_price(&self.env, &self.contract_id, &auth, &nonce, &n, &d)
     }
 
     pub fn get_price(&self) -> Price {

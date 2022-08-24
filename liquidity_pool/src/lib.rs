@@ -6,8 +6,8 @@ mod token_contract;
 
 use crate::token_contract::create_contract;
 use soroban_sdk::{contractimpl, BigInt, Bytes, BytesN, Env, IntoVal, RawVal};
+use soroban_sdk_auth::public_types::{Identifier, Signature};
 use soroban_token_contract as token;
-use token::public_types::{Authorization, Identifier, KeyedAuthorization, U256};
 
 #[derive(Clone, Copy)]
 #[repr(u32)]
@@ -74,15 +74,15 @@ fn get_balance_shares(e: &Env) -> BigInt {
     get_balance(&e, get_token_share(&e))
 }
 
-fn put_token_a(e: &Env, contract_id: U256) {
+fn put_token_a(e: &Env, contract_id: BytesN<32>) {
     e.contract_data().set(DataKey::TokenA, contract_id);
 }
 
-fn put_token_b(e: &Env, contract_id: U256) {
+fn put_token_b(e: &Env, contract_id: BytesN<32>) {
     e.contract_data().set(DataKey::TokenB, contract_id);
 }
 
-fn put_token_share(e: &Env, contract_id: U256) {
+fn put_token_share(e: &Env, contract_id: BytesN<32>) {
     e.contract_data().set(DataKey::TokenShare, contract_id);
 }
 
@@ -104,7 +104,8 @@ fn burn_shares(e: &Env, amount: BigInt) {
     token::burn(
         e,
         &share_contract_id,
-        &Authorization::Contract,
+        &Signature::Contract,
+        &BigInt::from_u32(&e, 0),
         &get_contract_id(e),
         &amount,
     );
@@ -117,7 +118,8 @@ fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
     token::mint(
         e,
         &share_contract_id,
-        &Authorization::Contract,
+        &Signature::Contract,
+        &BigInt::from_u32(&e, 0),
         &to,
         &amount,
     );
@@ -125,7 +127,14 @@ fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
 }
 
 fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
-    token::xfer(e, &contract_id, &KeyedAuthorization::Contract, &to, &amount);
+    token::xfer(
+        e,
+        &contract_id,
+        &Signature::Contract,
+        &BigInt::from_u32(&e, 0),
+        &to,
+        &amount,
+    );
 }
 
 fn transfer_a(e: &Env, to: Identifier, amount: BigInt) {
@@ -155,7 +164,7 @@ How to use this contract to swap
 */
 pub trait LiquidityPoolTrait {
     // Sets the token contract addresses for this pool
-    fn initialize(e: Env, token_a: U256, token_b: U256);
+    fn initialize(e: Env, token_a: BytesN<32>, token_b: BytesN<32>);
 
     // Returns the token contract address for the pool share token
     fn share_id(e: Env) -> BytesN<32>;
@@ -187,7 +196,7 @@ struct LiquidityPool;
 
 #[contractimpl]
 impl LiquidityPoolTrait for LiquidityPool {
-    fn initialize(e: Env, token_a: U256, token_b: U256) {
+    fn initialize(e: Env, token_a: BytesN<32>, token_b: BytesN<32>) {
         if token_a >= token_b {
             panic!("token_a must be less than token_b");
         }
