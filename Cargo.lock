@@ -543,7 +543,6 @@ version = "0.0.0"
 dependencies = [
  "ed25519-dalek",
  "rand",
- "soroban-authorization-contract",
  "soroban-sdk",
  "soroban-sdk-auth",
 ]
@@ -654,7 +653,6 @@ dependencies = [
  "rand",
  "sha2 0.10.2",
  "soroban-liquidity-pool-contract",
- "soroban-liquidity-pool-router-contract",
  "soroban-sdk",
  "soroban-sdk-auth",
  "soroban-token-contract",
@@ -739,7 +737,6 @@ dependencies = [
  "soroban-sdk",
  "soroban-sdk-auth",
  "soroban-single-offer-contract",
- "soroban-single-offer-router-contract",
  "soroban-token-contract",
  "stellar-xdr",
 ]

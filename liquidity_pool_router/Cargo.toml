@@ -15,12 +15,18 @@ testutils = ["soroban-sdk/testutils", "soroban-token-contract/testutils","soroba
 [dependencies]
 soroban-sdk = "0.0.3"
 soroban-sdk-auth = "0.0.0"
-soroban-token-contract = { version = "0.0.2", default-features = false  }
-soroban-liquidity-pool-contract = { path = "../liquidity_pool", version = "0.0.0", default-features = false  }
+soroban-token-contract = { version = "0.0.2", default-features = false }
+soroban-liquidity-pool-contract = { path = "../liquidity_pool", version = "0.0.0", default-features = false }
 ed25519-dalek = { version = "1.0.1", optional = true }
 stellar-xdr = { version = "0.0.1", features = ["next", "std"], optional = true }
 sha2 = { version = "0.10.2", optional = true }
 
 [dev_dependencies]
-soroban-liquidity-pool-router-contract = { path = ".", default-features = false, features = ["testutils"] }
+soroban-sdk = { version = "0.0.3", features = ["testutils"] }
+soroban-sdk-auth = { version = "0.0.0", features = ["testutils"] }
+soroban-token-contract = { version = "0.0.2", default-features = false, features = ["testutils"] }
+soroban-liquidity-pool-contract = { path = "../liquidity_pool", version = "0.0.0", default-features = false, features = ["testutils"] }
+stellar-xdr = { version = "0.0.1", features = ["next", "std"] }
+ed25519-dalek = { version = "1.0.1" }
+sha2 = { version = "0.10.2" }
 rand = { version = "0.7.3" }
