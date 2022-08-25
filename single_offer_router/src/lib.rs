@@ -1,6 +1,6 @@
 #![no_std]
 
-#[cfg(feature = "testutils")]
+#[cfg(any(test, feature = "testutils"))]
 extern crate std;
 
 mod offer_contract;

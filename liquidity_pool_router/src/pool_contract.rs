@@ -1,16 +1,16 @@
 use soroban_sdk::{BytesN, Env};
 
-#[cfg(any(not(feature = "testutils"), feature = "offer-wasm"))]
+#[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
 pub const POOL_CONTRACT: &[u8] = include_bytes!("../../soroban_liquidity_pool_contract.wasm");
 
-#[cfg(any(not(feature = "testutils"), feature = "offer-wasm"))]
+#[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
 pub fn create_contract(e: &Env, salt: &BytesN<32>) -> BytesN<32> {
     use soroban_sdk::Bytes;
     let bin = Bytes::from_slice(e, POOL_CONTRACT);
     e.create_contract_from_contract(bin, salt.clone())
 }
 
-#[cfg(all(feature = "testutils", not(feature = "token-wasm")))]
+#[cfg(all(any(test, feature = "testutils"), not(feature = "token-wasm")))]
 pub fn create_contract(e: &Env, salt: &BytesN<32>) -> BytesN<32> {
     use sha2::{Digest, Sha256};
     use stellar_xdr::{Hash, HashIdPreimage, HashIdPreimageContractId, Uint256, WriteXdr};
