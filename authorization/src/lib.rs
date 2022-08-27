@@ -71,7 +71,7 @@ impl AuthContract {
             &WrappedAuth(auth),
             nonce.clone(),
             Symbol::from_str("save_data"),
-            vec![&e, nonce.into_val(&e), num.clone().into_val(&e)],
+            (nonce, num.clone()).into_val(&e),
         );
 
         e.contract_data().set(DataKey::Acc(auth_id), num);

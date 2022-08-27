@@ -13,6 +13,7 @@ use soroban_sdk_auth::{
     NonceAuth,
 };
 use soroban_token_contract as token;
+use token::TokenClient;
 
 #[derive(Clone)]
 #[contracttype]
@@ -68,16 +69,15 @@ fn transfer_from(
     to: &Identifier,
     amount: &BigInt,
 ) {
-    let nonce = token::nonce(&e, &contract_id, &get_contract_id(&e));
-    token::xfer_from(
-        e,
-        &contract_id,
-        &Signature::Contract,
-        &nonce,
-        &from,
-        &to,
-        &amount,
-    );
+    let client = TokenClient::new(&e, &contract_id);
+    let nonce = client.nonce(get_contract_id(&e));
+    client.xfer_from(
+        Signature::Contract,
+        nonce,
+        from.clone(),
+        to.clone(),
+        amount.clone(),
+    )
 }
 
 fn transfer_sell(e: &Env, from: &Identifier, to: &Identifier, amount: &BigInt) {

@@ -4,6 +4,7 @@ use crate::testutils::{
     register_test_contract as register_liquidity_pool_router, LiquidityPoolRouter,
 };
 use ed25519_dalek::Keypair;
+use liquidity_pool::LiquidityPoolClient;
 use rand::{thread_rng, RngCore};
 use soroban_liquidity_pool_contract as liquidity_pool;
 use soroban_sdk::{BigInt, BytesN, Env};
@@ -85,7 +86,8 @@ fn test() {
     let contract_pool = router.get_pool(&contract1, &contract2);
     let pool_id = Identifier::Contract(contract_pool.clone());
 
-    let token_share = Token::new(&e, &liquidity_pool::share_id(&e, &contract_pool).into());
+    let share_id = LiquidityPoolClient::new(&e, &contract_pool).share_id();
+    let token_share = Token::new(&e, &share_id.into());
 
     assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 900));
     assert_eq!(token1.balance(&pool_id), BigInt::from_u32(&e, 100));

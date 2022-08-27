@@ -301,6 +301,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "itoa"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6c8af84674fe1f223a982c933a0ee1086ac4d4052aa0fb8060c12c6ad838e754"
+
+[[package]]
 name = "libc"
 version = "0.2.132"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -492,10 +498,41 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ef03e0a2b150c7a90d01faf6254c9c48a41e95fb2a8c2ac1c6f0d2b9aefc342"
 
 [[package]]
+name = "ryu"
+version = "1.0.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4501abdff3ae82a1c1b477a17252eb69cee9e66eb915c1abaa4f44d873df9f09"
+
+[[package]]
 name = "serde"
 version = "1.0.144"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0f747710de3dcd43b88c9168773254e809d8ddbdf9653b84e2554ab219f17860"
+dependencies = [
+ "serde_derive",
+]
+
+[[package]]
+name = "serde_derive"
+version = "1.0.144"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "94ed3a816fb1d101812f83e789f888322c34e291f894f19590dc310963e87a00"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "serde_json"
+version = "1.0.85"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e55a28e3aaef9d5ce0506d0a14dbba8054ddc7e499ef522dd8b26859ec9d4a44"
+dependencies = [
+ "itoa",
+ "ryu",
+ "serde",
+]
 
 [[package]]
 name = "sha2"
@@ -673,7 +710,7 @@ dependencies = [
 [[package]]
 name = "soroban-sdk"
 version = "0.0.3"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=3045aca#3045aca4ffab9599a8317845a996b95b189b53ff"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=eb33d97#eb33d9703ca12fc8091e31e051498ec51ac393c6"
 dependencies = [
  "ed25519-dalek",
  "soroban-env-guest",
@@ -684,7 +721,7 @@ dependencies = [
 [[package]]
 name = "soroban-sdk-auth"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=3045aca#3045aca4ffab9599a8317845a996b95b189b53ff"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=eb33d97#eb33d9703ca12fc8091e31e051498ec51ac393c6"
 dependencies = [
  "soroban-sdk",
 ]
@@ -692,7 +729,7 @@ dependencies = [
 [[package]]
 name = "soroban-sdk-macros"
 version = "0.0.3"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=3045aca#3045aca4ffab9599a8317845a996b95b189b53ff"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=eb33d97#eb33d9703ca12fc8091e31e051498ec51ac393c6"
 dependencies = [
  "darling",
  "itertools",
@@ -744,14 +781,18 @@ dependencies = [
 [[package]]
 name = "soroban-spec"
 version = "0.0.1"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=3045aca#3045aca4ffab9599a8317845a996b95b189b53ff"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=eb33d97#eb33d9703ca12fc8091e31e051498ec51ac393c6"
 dependencies = [
  "base64",
  "darling",
  "itertools",
  "proc-macro2",
  "quote",
+ "serde",
+ "serde_derive",
+ "serde_json",
  "sha2 0.10.2",
+ "soroban-env-host",
  "stellar-xdr",
  "syn",
  "thiserror",
@@ -761,7 +802,7 @@ dependencies = [
 [[package]]
 name = "soroban-token-contract"
 version = "0.0.2"
-source = "git+https://github.com/stellar/soroban-token-contract?rev=c26f7cf#c26f7cfac37d9a24ca66b7fa1908757266b99040"
+source = "git+https://github.com/stellar/soroban-token-contract?rev=35b0784#35b07841f21c5d388980373689462caeedf22985"
 dependencies = [
  "ed25519-dalek",
  "soroban-sdk",
@@ -812,6 +853,9 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 name = "stellar-xdr"
 version = "0.0.1"
 source = "git+https://github.com/stellar/rs-stellar-xdr?rev=61de11d#61de11d0ce5eb8a6e722d903af2abfadb5f5bd0e"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "strsim"

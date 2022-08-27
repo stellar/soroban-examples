@@ -3,6 +3,8 @@
 use soroban_sdk::{BigInt, BytesN, Env};
 use soroban_sdk_auth::public_types::Identifier;
 
+use crate::LiquidityPoolClient;
+
 pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
     let contract_id = BytesN::from_array(e, contract_id);
     e.register_contract(&contract_id, crate::LiquidityPool {});
@@ -14,6 +16,10 @@ pub struct LiquidityPool {
 }
 
 impl LiquidityPool {
+    fn client(&self) -> LiquidityPoolClient {
+        LiquidityPoolClient::new(&self.env, &self.contract_id)
+    }
+
     pub fn new(env: &Env, contract_id: &[u8; 32]) -> Self {
         Self {
             env: env.clone(),
@@ -24,26 +30,26 @@ impl LiquidityPool {
     pub fn initialize(&self, token_a: &[u8; 32], token_b: &[u8; 32]) {
         let token_a = BytesN::from_array(&self.env, token_a);
         let token_b = BytesN::from_array(&self.env, token_b);
-        crate::initialize(&self.env, &self.contract_id, &token_a, &token_b)
+        self.client().initialize(token_a, token_b)
     }
 
     pub fn share_id(&self) -> BytesN<32> {
-        crate::share_id(&self.env, &self.contract_id)
+        self.client().share_id()
     }
 
     pub fn deposit(&self, to: &Identifier) {
-        crate::deposit(&self.env, &self.contract_id, to)
+        self.client().deposit(to.clone())
     }
 
     pub fn swap(&self, to: &Identifier, out_a: &BigInt, out_b: &BigInt) {
-        crate::swap(&self.env, &self.contract_id, to, out_a, out_b)
+        self.client().swap(to.clone(), out_a.clone(), out_b.clone())
     }
 
     pub fn withdraw(&self, to: &Identifier) -> (BigInt, BigInt) {
-        crate::withdraw(&self.env, &self.contract_id, to)
+        self.client().withdraw(to.clone())
     }
 
     pub fn get_rsrvs(&self) -> (BigInt, BigInt) {
-        crate::get_rsrvs(&self.env, &self.contract_id)
+        self.client().get_rsrvs()
     }
 }

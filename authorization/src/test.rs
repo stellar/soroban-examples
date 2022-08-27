@@ -37,26 +37,27 @@ fn test() {
 
     // 1. set the admin
     let admin = generate_keypair();
-    set_admin::invoke(&env, &contract_id, &to_ed25519(&env, &admin));
+    let client = AuthContractClient::new(&env, contract_id);
+    client.set_admin(to_ed25519(&env, &admin));
 
     // 2. store data with user1's auth
     let user1 = generate_keypair();
-    let user1_id = &to_ed25519(&env, &user1);
+    let user1_id = to_ed25519(&env, &user1);
     let data = BigInt::from_u32(&env, 2);
 
-    let user1_nonce = nonce::invoke(&env, &contract_id, user1_id);
+    let user1_nonce = client.nonce(user1_id.clone());
 
     let mut args: Vec<RawVal> = Vec::new(&env);
     args.push(user1_nonce.clone().into_val(&env));
     args.push(data.clone().into_val(&env));
 
     let auth = make_auth(&env, &user1, args, "save_data");
-    save_data::invoke(&env, &contract_id, &auth, &user1_nonce, &data);
+    client.save_data(auth, user1_nonce, data);
 
     // 3. Overwrite user1's data using admin
     let new_data = BigInt::from_u32(&env, 10);
 
-    let admin_nonce = nonce::invoke(&env, &contract_id, &to_ed25519(&env, &admin));
+    let admin_nonce = client.nonce(to_ed25519(&env, &admin));
     let mut args: Vec<RawVal> = Vec::new(&env);
     args.push(admin_nonce.clone().into_val(&env));
     args.push(user1_id.clone().into_val(&env));
@@ -64,7 +65,7 @@ fn test() {
 
     let auth = make_auth(&env, &admin, args, "overwrite");
 
-    overwrite::invoke(&env, &contract_id, &auth, &admin_nonce, user1_id, &new_data);
+    client.overwrite(auth, admin_nonce, user1_id, new_data);
 }
 
 #[test]
@@ -78,11 +79,14 @@ fn bad_data() {
     let signed_data = BigInt::from_u32(&env, 1);
     let data = BigInt::from_u32(&env, 2);
 
-    let nonce = nonce::invoke(&env, &contract_id, &to_ed25519(&env, &user1));
+    let client = AuthContractClient::new(&env, contract_id);
+    let nonce = client.nonce(to_ed25519(&env, &user1));
+
     let mut args: Vec<RawVal> = Vec::new(&env);
     args.push(nonce.clone().into_val(&env));
     args.push(signed_data.clone().into_val(&env));
 
     let auth = make_auth(&env, &user1, args, "save_data");
-    save_data::invoke(&env, &contract_id, &auth, &nonce, &data)
+
+    client.save_data(auth, nonce, data);
 }

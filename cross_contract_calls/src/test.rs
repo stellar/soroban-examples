@@ -1,6 +1,8 @@
 #![cfg(test)]
 
-use super::{a::ContractA, b::add_with, b::ContractB};
+use crate::b::ContractBClient;
+
+use super::{a::ContractA, b::ContractB};
 use soroban_sdk::{BytesN, Env};
 
 #[test]
@@ -14,16 +16,6 @@ fn test() {
     env.register_contract(&contract_b, ContractB);
 
     // Invoke 'add_with' on contract B.
-    let sum = add_with::invoke(
-        &env,
-        &contract_b,
-        // Value X.
-        &5,
-        // Value Y.
-        &7,
-        // Tell contract B to call contract A.
-        &contract_a,
-    );
-
+    let sum = ContractBClient::new(&env, &contract_b).add_with(5, 7, contract_a);
     assert_eq!(sum, 12);
 }
