@@ -183,7 +183,8 @@ pub trait SingleOfferTrait {
 
 pub struct SingleOffer;
 
-#[contractimpl]
+#[cfg_attr(feature = "export", contractimpl)]
+#[cfg_attr(not(feature = "export"), contractimpl(export = false))]
 impl SingleOfferTrait for SingleOffer {
     fn initialize(
         e: Env,

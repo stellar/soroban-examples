@@ -78,7 +78,7 @@ fn test() {
     token2.approve(&user2, &router_id, &BigInt::from_u32(&e, 20));
 
     offer_router.safe_trade(
-        &user2_id,
+        &user2,
         &offer_addr.into(),
         &BigInt::from_u32(&e, 10),
         &BigInt::from_u32(&e, 10),
