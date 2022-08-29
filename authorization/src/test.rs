@@ -6,7 +6,7 @@ use rand::thread_rng;
 use soroban_sdk::testutils::ed25519::Sign;
 
 use soroban_sdk::{BytesN, Env, RawVal, Vec};
-use soroban_sdk_auth::public_types::{Ed25519Signature, Message, MessageV0};
+use soroban_sdk_auth::public_types::{Ed25519Signature, SignaturePayload, SignaturePayloadV0};
 
 pub fn to_ed25519(e: &Env, kp: &Keypair) -> Identifier {
     Identifier::Ed25519(kp.public.to_bytes().into_val(e))
@@ -17,10 +17,10 @@ fn generate_keypair() -> Keypair {
 }
 
 fn make_auth(e: &Env, kp: &Keypair, args: Vec<RawVal>, function: &str) -> Signature {
-    let msg = Message::V0(MessageV0 {
+    let msg = SignaturePayload::V0(SignaturePayloadV0 {
         function: Symbol::from_str(function),
-        contrct_id: BytesN::from_array(&e, &[0; 32]),
-        network_id: e.ledger().network_passphrase(),
+        contract: BytesN::from_array(&e, &[0; 32]),
+        network: e.ledger().network_passphrase(),
         args,
     });
     Signature::Ed25519(Ed25519Signature {
