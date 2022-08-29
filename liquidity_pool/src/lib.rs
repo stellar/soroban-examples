@@ -8,6 +8,7 @@ use crate::token_contract::create_contract;
 use soroban_sdk::{contractimpl, BigInt, Bytes, BytesN, Env, IntoVal, RawVal};
 use soroban_sdk_auth::public_types::{Identifier, Signature};
 use soroban_token_contract as token;
+use token::TokenClient;
 
 #[derive(Clone, Copy)]
 #[repr(u32)]
@@ -59,7 +60,7 @@ fn get_reserve_b(e: &Env) -> BigInt {
 }
 
 fn get_balance(e: &Env, contract_id: BytesN<32>) -> BigInt {
-    token::balance(e, &contract_id, &get_contract_id(e))
+    TokenClient::new(&e, contract_id).balance(get_contract_id(e))
 }
 
 fn get_balance_a(e: &Env) -> BigInt {
@@ -101,13 +102,12 @@ fn put_reserve_b(e: &Env, amount: BigInt) {
 fn burn_shares(e: &Env, amount: BigInt) {
     let total = get_total_shares(e);
     let share_contract_id = get_token_share(e);
-    token::burn(
-        e,
-        &share_contract_id,
-        &Signature::Contract,
-        &BigInt::from_u32(&e, 0),
-        &get_contract_id(e),
-        &amount,
+
+    TokenClient::new(&e, share_contract_id).burn(
+        Signature::Contract,
+        BigInt::from_u32(&e, 0),
+        get_contract_id(e),
+        amount.clone(),
     );
     put_total_shares(e, total - amount);
 }
@@ -115,25 +115,23 @@ fn burn_shares(e: &Env, amount: BigInt) {
 fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
     let total = get_total_shares(e);
     let share_contract_id = get_token_share(e);
-    token::mint(
-        e,
-        &share_contract_id,
-        &Signature::Contract,
-        &BigInt::from_u32(&e, 0),
-        &to,
-        &amount,
+
+    TokenClient::new(&e, share_contract_id).mint(
+        Signature::Contract,
+        BigInt::from_u32(&e, 0),
+        to,
+        amount.clone(),
     );
+
     put_total_shares(e, total + amount);
 }
 
 fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
-    token::xfer(
-        e,
-        &contract_id,
-        &Signature::Contract,
-        &BigInt::from_u32(&e, 0),
-        &to,
-        &amount,
+    TokenClient::new(&e, contract_id).xfer(
+        Signature::Contract,
+        BigInt::from_u32(&e, 0),
+        to,
+        amount,
     );
 }
 
@@ -144,13 +142,6 @@ fn transfer_a(e: &Env, to: Identifier, amount: BigInt) {
 fn transfer_b(e: &Env, to: Identifier, amount: BigInt) {
     transfer(&e, get_token_b(&e), to, amount);
 }
-
-pub use crate::deposit::invoke as deposit;
-pub use crate::get_rsrvs::invoke as get_rsrvs;
-pub use crate::initialize::invoke as initialize;
-pub use crate::share_id::invoke as share_id;
-pub use crate::swap::invoke as swap;
-pub use crate::withdraw::invoke as withdraw;
 
 /*
 How to use this contract to swap
@@ -202,13 +193,11 @@ impl LiquidityPoolTrait for LiquidityPool {
         }
 
         let share_contract_id = create_contract(&e, &token_a, &token_b);
-        token::initialize(
-            &e,
-            &share_contract_id,
-            &get_contract_id(&e),
-            &7,
-            &Bytes::from_slice(&e, b"name"),
-            &Bytes::from_slice(&e, b"symbol"),
+        TokenClient::new(&e, share_contract_id.clone()).initialize(
+            get_contract_id(&e),
+            7,
+            Bytes::from_slice(&e, b"name"),
+            Bytes::from_slice(&e, b"symbol"),
         );
 
         put_token_a(&e, token_a);

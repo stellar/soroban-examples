@@ -9,7 +9,7 @@ fn test() {
     let contract_id = BytesN::from_array(&env, &[0; 32]);
     env.register_contract(&contract_id, HelloContract);
 
-    let words = hello::invoke(&env, &contract_id, &Symbol::from_str("SourBun"));
+    let words = HelloContractClient::new(&env, &contract_id).hello(Symbol::from_str("SourBun"));
     assert_eq!(
         words,
         vec![&env, Symbol::from_str("Hello"), Symbol::from_str("SourBun"),]

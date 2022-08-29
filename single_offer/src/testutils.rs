@@ -1,6 +1,6 @@
 #![cfg(any(test, feature = "testutils"))]
 
-use crate::Price;
+use crate::{Price, SingleOfferClient};
 use ed25519_dalek::Keypair;
 use soroban_sdk::testutils::ed25519::Sign;
 use soroban_sdk::{BigInt, BytesN, Env, IntoVal, RawVal, Symbol, Vec};
@@ -17,6 +17,10 @@ pub struct SingleOffer {
 }
 
 impl SingleOffer {
+    fn client(&self) -> SingleOfferClient {
+        SingleOfferClient::new(&self.env, &self.contract_id)
+    }
+
     pub fn new(env: &Env, contract_id: &[u8; 32]) -> Self {
         Self {
             env: env.clone(),
@@ -34,23 +38,16 @@ impl SingleOffer {
     ) {
         let token_a = BytesN::from_array(&self.env, token_a);
         let token_b = BytesN::from_array(&self.env, token_b);
-        crate::initialize(
-            &self.env,
-            &self.contract_id,
-            admin,
-            &token_a,
-            &token_b,
-            &n,
-            &d,
-        )
+        self.client()
+            .initialize(admin.clone(), token_a, token_b, n, d);
     }
 
     pub fn nonce(&self) -> BigInt {
-        crate::nonce(&self.env, &self.contract_id)
+        self.client().nonce()
     }
 
     pub fn trade(&self, to: &Identifier, min: &BigInt) {
-        crate::trade(&self.env, &self.contract_id, &to, &min)
+        self.client().trade(to.clone(), min.clone())
     }
 
     pub fn withdraw(&self, admin: &Keypair, amount: &BigInt) {
@@ -69,7 +66,8 @@ impl SingleOffer {
             public_key: admin.public.to_bytes().into_val(&self.env),
             signature: admin.sign(msg).unwrap().into_val(&self.env),
         });
-        crate::withdraw(&self.env, &self.contract_id, &auth, &nonce, amount)
+
+        self.client().withdraw(auth, nonce, amount.clone())
     }
 
     pub fn updt_price(&self, admin: &Keypair, n: u32, d: u32) {
@@ -89,18 +87,18 @@ impl SingleOffer {
             public_key: admin.public.to_bytes().into_val(&self.env),
             signature: admin.sign(msg).unwrap().into_val(&self.env),
         });
-        crate::updt_price(&self.env, &self.contract_id, &auth, &nonce, &n, &d)
+        self.client().updt_price(auth, nonce, n, d)
     }
 
     pub fn get_price(&self) -> Price {
-        crate::get_price(&self.env, &self.contract_id)
+        self.client().get_price()
     }
 
     pub fn get_sell(&self) -> BytesN<32> {
-        crate::get_sell(&self.env, &self.contract_id)
+        self.client().get_sell()
     }
 
     pub fn get_buy(&self) -> BytesN<32> {
-        crate::get_buy(&self.env, &self.contract_id)
+        self.client().get_buy()
     }
 }

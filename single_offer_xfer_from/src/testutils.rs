@@ -1,6 +1,6 @@
 #![cfg(any(test, feature = "testutils"))]
 
-use crate::Price;
+use crate::{Price, SingleOfferXferFromClient};
 use ed25519_dalek::Keypair;
 use soroban_sdk::testutils::ed25519::Sign;
 use soroban_sdk::{BigInt, BytesN, Env, IntoVal, RawVal, Symbol, Vec};
@@ -15,18 +15,16 @@ fn to_ed25519(e: &Env, kp: &Keypair) -> Identifier {
     Identifier::Ed25519(kp.public.to_bytes().into_val(e))
 }
 
-pub use crate::get_price::invoke as get_price;
-pub use crate::initialize::invoke as initialize;
-pub use crate::nonce::invoke as nonce;
-pub use crate::trade::invoke as trade;
-pub use crate::updt_price::invoke as updt_price;
-
 pub struct SingleOfferXferFrom {
     env: Env,
     contract_id: BytesN<32>,
 }
 
 impl SingleOfferXferFrom {
+    fn client(&self) -> SingleOfferXferFromClient {
+        SingleOfferXferFromClient::new(&self.env, &self.contract_id)
+    }
+
     pub fn new(env: &Env, contract_id: &[u8; 32]) -> Self {
         Self {
             env: env.clone(),
@@ -44,24 +42,18 @@ impl SingleOfferXferFrom {
     ) {
         let token_a = BytesN::from_array(&self.env, token_a);
         let token_b = BytesN::from_array(&self.env, token_b);
-        initialize(
-            &self.env,
-            &self.contract_id,
-            admin,
-            &token_a,
-            &token_b,
-            &n,
-            &d,
-        )
+
+        self.client()
+            .initialize(admin.clone(), token_a, token_b, n, d)
     }
 
     pub fn nonce(&self, id: &Identifier) -> BigInt {
-        nonce(&self.env, &self.contract_id, id)
+        self.client().nonce(id.clone())
     }
 
     pub fn trade(&self, to: &Keypair, amount_to_sell: &BigInt, min: &BigInt) {
         let id = to_ed25519(&self.env, &to);
-        let nonce = nonce(&self.env, &self.contract_id, &id);
+        let nonce = self.nonce(&id);
 
         let mut args: Vec<RawVal> = Vec::new(&self.env);
         args.push(nonce.clone().into_val(&self.env));
@@ -78,19 +70,13 @@ impl SingleOfferXferFrom {
             signature: to.sign(msg).unwrap().into_val(&self.env),
         });
 
-        trade(
-            &self.env,
-            &self.contract_id,
-            &auth,
-            &nonce,
-            amount_to_sell,
-            min,
-        )
+        self.client()
+            .trade(auth, nonce, amount_to_sell.clone(), min.clone())
     }
 
     pub fn updt_price(&self, admin: &Keypair, n: u32, d: u32) {
         let id = to_ed25519(&self.env, &admin);
-        let nonce = nonce(&self.env, &self.contract_id, &id);
+        let nonce = self.nonce(&id);
 
         let mut args: Vec<RawVal> = Vec::new(&self.env);
         args.push(nonce.clone().into_val(&self.env));
@@ -107,10 +93,10 @@ impl SingleOfferXferFrom {
             signature: admin.sign(msg).unwrap().into_val(&self.env),
         });
 
-        updt_price(&self.env, &self.contract_id, &auth, &nonce, &n, &d)
+        self.client().updt_price(auth, nonce, n, d)
     }
 
     pub fn get_price(&self) -> Price {
-        get_price(&self.env, &self.contract_id)
+        self.client().get_price()
     }
 }

@@ -7,21 +7,20 @@ mod pool_contract;
 mod test;
 pub mod testutils;
 
+use liquidity_pool::LiquidityPoolClient;
 use pool_contract::create_contract;
 use soroban_liquidity_pool_contract as liquidity_pool;
 use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env};
 use soroban_sdk_auth::public_types::{Identifier, Signature};
+use soroban_sdk_auth::NonceAuth;
 use soroban_token_contract as token;
-
-pub use crate::get_pool::invoke as get_pool;
-pub use crate::sf_deposit::invoke as sf_deposit;
-pub use crate::sf_withdrw::invoke as sf_withdrw;
-pub use crate::swap_out::invoke as swap_out;
+use token::TokenClient;
 
 #[derive(Clone)]
 #[contracttype]
 pub enum DataKey {
     Pool(BytesN<32>),
+    Nonce(Identifier),
 }
 
 fn get_contract_id(e: &Env) -> Identifier {
@@ -127,6 +126,34 @@ fn get_deposit_amounts(
     }
 }
 
+fn read_nonce(e: &Env, id: Identifier) -> BigInt {
+    let key = DataKey::Nonce(id);
+    if let Some(nonce) = e.contract_data().get(key) {
+        nonce.unwrap()
+    } else {
+        BigInt::zero(e)
+    }
+}
+struct WrappedAuth(Signature);
+
+impl NonceAuth for WrappedAuth {
+    fn read_nonce(e: &Env, id: Identifier) -> BigInt {
+        read_nonce(e, id)
+    }
+
+    fn read_and_increment_nonce(&self, e: &Env, id: Identifier) -> BigInt {
+        let key = DataKey::Nonce(id.clone());
+        let nonce = Self::read_nonce(e, id);
+        e.contract_data()
+            .set(key, nonce.clone() + BigInt::from_u32(e, 1));
+        nonce
+    }
+
+    fn get_keyed_auth(&self) -> &Signature {
+        &self.0
+    }
+}
+
 struct LiquidityPoolRouter;
 
 #[contractimpl]
@@ -147,37 +174,36 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
 
             put_pool(&e, &salt, &pool_contract_id);
 
-            liquidity_pool::initialize(&e, &pool_contract_id, &token_a, &token_b);
+            LiquidityPoolClient::new(&e, &pool_contract_id)
+                .initialize(token_a.clone(), token_b.clone());
         }
 
         let pool_id = get_pool_id(&e, &salt);
 
-        let reserves = liquidity_pool::get_rsrvs(&e, &pool_id);
+        let reserves = LiquidityPoolClient::new(&e, &pool_id).get_rsrvs();
         let amounts = get_deposit_amounts(desired_a, min_a, desired_b, min_b, reserves);
 
-        let nonce_a = token::nonce(&e, &token_a, &get_contract_id(&e));
-        token::xfer_from(
-            &e,
-            &token_a,
-            &Signature::Contract,
-            &nonce_a,
-            &to,
-            &Identifier::Contract(pool_id.clone()),
-            &amounts.0,
+        let client_a = TokenClient::new(&e, token_a);
+        let nonce_a = client_a.nonce(get_contract_id(&e));
+        client_a.xfer_from(
+            Signature::Contract,
+            nonce_a,
+            to.clone(),
+            Identifier::Contract(pool_id.clone()),
+            amounts.0,
         );
 
-        let nonce_b = token::nonce(&e, &token_b, &get_contract_id(&e));
-        token::xfer_from(
-            &e,
-            &token_b,
-            &Signature::Contract,
-            &nonce_b,
-            &to,
-            &Identifier::Contract(pool_id.clone()),
-            &amounts.1,
+        let client_b = TokenClient::new(&e, token_b);
+        let nonce_b = client_b.nonce(get_contract_id(&e));
+        client_b.xfer_from(
+            Signature::Contract,
+            nonce_b,
+            to.clone(),
+            Identifier::Contract(pool_id.clone()),
+            amounts.1,
         );
 
-        liquidity_pool::deposit(&e, &pool_id, &to);
+        LiquidityPoolClient::new(&e, &pool_id).deposit(to);
     }
 
     fn swap_out(
@@ -191,7 +217,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         let (token_a, token_b) = sort(&sell, &buy);
         let pool_id = Self::get_pool(e.clone(), token_a.clone(), token_b);
 
-        let reserves = liquidity_pool::get_rsrvs(&e, &pool_id);
+        let reserves = LiquidityPoolClient::new(&e, &pool_id).get_rsrvs();
 
         let reserve_sell: BigInt;
         let reserve_buy: BigInt;
@@ -210,15 +236,14 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
             panic!("in amount is over max")
         }
 
-        let nonce = token::nonce(&e, &sell, &get_contract_id(&e));
-        token::xfer_from(
-            &e,
-            &sell,
-            &Signature::Contract,
-            &nonce,
-            &to,
-            &Identifier::Contract(pool_id.clone()),
-            &xfer_amount,
+        let client = TokenClient::new(&e, &sell);
+        let nonce = client.nonce(get_contract_id(&e));
+        client.xfer_from(
+            Signature::Contract,
+            nonce,
+            to.clone(),
+            Identifier::Contract(pool_id.clone()),
+            xfer_amount,
         );
 
         let out_a: BigInt;
@@ -231,7 +256,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
             out_b = BigInt::from_u32(&e, 0);
         }
 
-        liquidity_pool::swap(&e, &pool_id, &to, &out_a, &out_b)
+        LiquidityPoolClient::new(&e, &pool_id).swap(to, out_a, out_b)
     }
 
     fn sf_withdrw(
@@ -245,20 +270,20 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
     ) {
         let pool_id = Self::get_pool(e.clone(), token_a.clone(), token_b);
 
-        let share_token = liquidity_pool::share_id(&e, &pool_id);
+        let pool_client = LiquidityPoolClient::new(&e, &pool_id);
+        let share_token = pool_client.share_id();
 
-        let nonce = token::nonce(&e, &share_token, &get_contract_id(&e));
-        token::xfer_from(
-            &e,
-            &share_token,
-            &Signature::Contract,
-            &nonce,
-            &to,
-            &Identifier::Contract(pool_id.clone()),
-            &share_amount,
+        let client = TokenClient::new(&e, &share_token);
+        let nonce = client.nonce(get_contract_id(&e));
+        client.xfer_from(
+            Signature::Contract,
+            nonce,
+            to.clone(),
+            Identifier::Contract(pool_id.clone()),
+            share_amount,
         );
 
-        let (amount_a, amount_b) = liquidity_pool::withdraw(&e, &pool_id, &to);
+        let (amount_a, amount_b) = pool_client.withdraw(to);
 
         if amount_a < min_a || amount_b < min_b {
             panic!("min not satisfied");

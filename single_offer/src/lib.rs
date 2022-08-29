@@ -6,15 +6,6 @@ extern crate std;
 mod test;
 pub mod testutils;
 
-pub use crate::get_buy::invoke as get_buy;
-pub use crate::get_price::invoke as get_price;
-pub use crate::get_sell::invoke as get_sell;
-pub use crate::initialize::invoke as initialize;
-pub use crate::nonce::invoke as nonce;
-pub use crate::trade::invoke as trade;
-pub use crate::updt_price::invoke as updt_price;
-pub use crate::withdraw::invoke as withdraw;
-
 use soroban_sdk::{contractimpl, contracttype, vec, BigInt, BytesN, Env, IntoVal, Symbol};
 use soroban_sdk_auth::{
     check_auth,
@@ -22,6 +13,7 @@ use soroban_sdk_auth::{
     NonceAuth,
 };
 use soroban_token_contract as token;
+use token::TokenClient;
 
 #[derive(Clone)]
 #[contracttype]
@@ -55,7 +47,7 @@ fn get_buy_token(e: &Env) -> BytesN<32> {
 }
 
 fn get_balance(e: &Env, contract_id: BytesN<32>) -> BigInt {
-    token::balance(e, &contract_id, &get_contract_id(e))
+    TokenClient::new(&e, contract_id).balance(get_contract_id(e))
 }
 
 fn get_balance_buy(e: &Env) -> BigInt {
@@ -79,8 +71,9 @@ fn load_price(e: &Env) -> Price {
 }
 
 fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
-    let nonce = token::nonce(&e, &contract_id, &get_contract_id(&e));
-    token::xfer(e, &contract_id, &Signature::Contract, &nonce, &to, &amount);
+    let client = TokenClient::new(&e, contract_id);
+    let nonce = client.nonce(get_contract_id(&e));
+    client.xfer(Signature::Contract, nonce, to, amount);
 }
 
 fn transfer_sell(e: &Env, to: Identifier, amount: BigInt) {
@@ -190,7 +183,8 @@ pub trait SingleOfferTrait {
 
 pub struct SingleOffer;
 
-#[contractimpl]
+#[cfg_attr(feature = "export", contractimpl)]
+#[cfg_attr(not(feature = "export"), contractimpl(export = false))]
 impl SingleOfferTrait for SingleOffer {
     fn initialize(
         e: Env,
