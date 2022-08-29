@@ -199,7 +199,8 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
 
             put_pool(&e, &salt, &pool_contract_id);
 
-            LiquidityPoolClient::new(&e, &pool_contract_id).initialize(token_a.clone(), token_b.clone());
+            LiquidityPoolClient::new(&e, &pool_contract_id)
+                .initialize(token_a.clone(), token_b.clone());
         }
 
         let pool_id = get_pool_id(&e, &salt);

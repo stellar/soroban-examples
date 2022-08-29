@@ -151,13 +151,8 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
 
         put_offer(&e, &salt, &offer_contract_id);
 
-        SingleOfferClient::new(&e, offer_contract_id).initialize(
-            admin,
-            sell_token,
-            buy_token,
-            n,
-            d,
-        );
+        SingleOfferClient::new(&e, offer_contract_id)
+            .initialize(admin, sell_token, buy_token, n, d);
     }
 
     fn safe_trade(
