@@ -10,9 +10,9 @@ pub mod testutils;
 use liquidity_pool::LiquidityPoolClient;
 use pool_contract::create_contract;
 use soroban_liquidity_pool_contract as liquidity_pool;
-use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env};
+use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env, IntoVal, Symbol};
 use soroban_sdk_auth::public_types::{Identifier, Signature};
-use soroban_sdk_auth::NonceAuth;
+use soroban_sdk_auth::{check_auth, NonceAuth};
 use soroban_token_contract as token;
 use token::TokenClient;
 
@@ -43,10 +43,10 @@ fn has_pool(e: &Env, salt: &BytesN<32>) -> bool {
 }
 
 pub trait LiquidityPoolRouterTrait {
-    // TODO: Add auth for deposit, swap, and withdraw
     fn sf_deposit(
         e: Env,
-        to: Identifier,
+        to: Signature,
+        nonce: BigInt,
         token_a: BytesN<32>,
         token_b: BytesN<32>,
         desired_a: BigInt,
@@ -59,7 +59,8 @@ pub trait LiquidityPoolRouterTrait {
     // allowance for from "to". "sell" amount swapped in must not be greater than "in_max"
     fn swap_out(
         e: Env,
-        to: Identifier,
+        to: Signature,
+        nonce: BigInt,
         sell: BytesN<32>,
         buy: BytesN<32>,
         out: BigInt,
@@ -68,7 +69,8 @@ pub trait LiquidityPoolRouterTrait {
 
     fn sf_withdrw(
         e: Env,
-        to: Identifier,
+        to: Signature,
+        nonce: BigInt,
         token_a: BytesN<32>,
         token_b: BytesN<32>,
         share_amount: BigInt,
@@ -78,6 +80,9 @@ pub trait LiquidityPoolRouterTrait {
 
     // returns the contract address for the specified token_a/token_b combo
     fn get_pool(e: Env, token_a: BytesN<32>, token_b: BytesN<32>) -> BytesN<32>;
+
+    // Returns the current nonce for "id"
+    fn nonce(e: Env, id: Identifier) -> BigInt;
 }
 
 fn sort(a: &BytesN<32>, b: &BytesN<32>) -> (BytesN<32>, BytesN<32>) {
@@ -160,7 +165,8 @@ struct LiquidityPoolRouter;
 impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
     fn sf_deposit(
         e: Env,
-        to: Identifier,
+        to: Signature,
+        nonce: BigInt,
         token_a: BytesN<32>,
         token_b: BytesN<32>,
         desired_a: BigInt,
@@ -168,14 +174,32 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         desired_b: BigInt,
         min_b: BigInt,
     ) {
+        let to_id = to.get_identifier(&e);
+
+        check_auth(
+            &e,
+            &WrappedAuth(to),
+            nonce.clone(),
+            Symbol::from_str("sf_deposit"),
+            (
+                nonce,
+                token_a.clone(),
+                token_b.clone(),
+                desired_a.clone(),
+                min_a.clone(),
+                desired_b.clone(),
+                min_b.clone(),
+            )
+                .into_val(&e),
+        );
+
         let salt = pool_salt(&e, &token_a, &token_b);
         if !has_pool(&e, &salt) {
             let pool_contract_id = create_contract(&e, &salt);
 
             put_pool(&e, &salt, &pool_contract_id);
 
-            LiquidityPoolClient::new(&e, &pool_contract_id)
-                .initialize(token_a.clone(), token_b.clone());
+            LiquidityPoolClient::new(&e, &pool_contract_id).initialize(&token_a, &token_b);
         }
 
         let pool_id = get_pool_id(&e, &salt);
@@ -184,36 +208,54 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         let amounts = get_deposit_amounts(desired_a, min_a, desired_b, min_b, reserves);
 
         let client_a = TokenClient::new(&e, token_a);
-        let nonce_a = client_a.nonce(get_contract_id(&e));
+        let nonce_a = client_a.nonce(&get_contract_id(&e));
         client_a.xfer_from(
-            Signature::Contract,
-            nonce_a,
-            to.clone(),
-            Identifier::Contract(pool_id.clone()),
-            amounts.0,
+            &Signature::Contract,
+            &nonce_a,
+            &to_id,
+            &Identifier::Contract(pool_id.clone()),
+            &amounts.0,
         );
 
         let client_b = TokenClient::new(&e, token_b);
-        let nonce_b = client_b.nonce(get_contract_id(&e));
+        let nonce_b = client_b.nonce(&get_contract_id(&e));
         client_b.xfer_from(
-            Signature::Contract,
-            nonce_b,
-            to.clone(),
-            Identifier::Contract(pool_id.clone()),
-            amounts.1,
+            &Signature::Contract,
+            &nonce_b,
+            &to_id,
+            &Identifier::Contract(pool_id.clone()),
+            &amounts.1,
         );
 
-        LiquidityPoolClient::new(&e, &pool_id).deposit(to);
+        LiquidityPoolClient::new(&e, &pool_id).deposit(&to_id);
     }
 
     fn swap_out(
         e: Env,
-        to: Identifier,
+        to: Signature,
+        nonce: BigInt,
         sell: BytesN<32>,
         buy: BytesN<32>,
         out: BigInt,
         in_max: BigInt,
     ) {
+        let to_id = to.get_identifier(&e);
+
+        check_auth(
+            &e,
+            &WrappedAuth(to),
+            nonce.clone(),
+            Symbol::from_str("swap_out"),
+            (
+                nonce,
+                sell.clone(),
+                buy.clone(),
+                out.clone(),
+                in_max.clone(),
+            )
+                .into_val(&e),
+        );
+
         let (token_a, token_b) = sort(&sell, &buy);
         let pool_id = Self::get_pool(e.clone(), token_a.clone(), token_b);
 
@@ -237,13 +279,13 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         }
 
         let client = TokenClient::new(&e, &sell);
-        let nonce = client.nonce(get_contract_id(&e));
+        let nonce = client.nonce(&get_contract_id(&e));
         client.xfer_from(
-            Signature::Contract,
-            nonce,
-            to.clone(),
-            Identifier::Contract(pool_id.clone()),
-            xfer_amount,
+            &Signature::Contract,
+            &nonce,
+            &to_id,
+            &Identifier::Contract(pool_id.clone()),
+            &xfer_amount,
         );
 
         let out_a: BigInt;
@@ -256,34 +298,53 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
             out_b = BigInt::from_u32(&e, 0);
         }
 
-        LiquidityPoolClient::new(&e, &pool_id).swap(to, out_a, out_b)
+        LiquidityPoolClient::new(&e, &pool_id).swap(&to_id, &out_a, &out_b)
     }
 
     fn sf_withdrw(
         e: Env,
-        to: Identifier,
+        to: Signature,
+        nonce: BigInt,
         token_a: BytesN<32>,
         token_b: BytesN<32>,
         share_amount: BigInt,
         min_a: BigInt,
         min_b: BigInt,
     ) {
+        let to_id = to.get_identifier(&e);
+
+        check_auth(
+            &e,
+            &WrappedAuth(to),
+            nonce.clone(),
+            Symbol::from_str("sf_withdrw"),
+            (
+                nonce,
+                token_a.clone(),
+                token_b.clone(),
+                share_amount.clone(),
+                min_a.clone(),
+                min_b.clone(),
+            )
+                .into_val(&e),
+        );
+
         let pool_id = Self::get_pool(e.clone(), token_a.clone(), token_b);
 
         let pool_client = LiquidityPoolClient::new(&e, &pool_id);
         let share_token = pool_client.share_id();
 
         let client = TokenClient::new(&e, &share_token);
-        let nonce = client.nonce(get_contract_id(&e));
+        let nonce = client.nonce(&get_contract_id(&e));
         client.xfer_from(
-            Signature::Contract,
-            nonce,
-            to.clone(),
-            Identifier::Contract(pool_id.clone()),
-            share_amount,
+            &Signature::Contract,
+            &nonce,
+            &to_id,
+            &Identifier::Contract(pool_id.clone()),
+            &share_amount,
         );
 
-        let (amount_a, amount_b) = pool_client.withdraw(to);
+        let (amount_a, amount_b) = pool_client.withdraw(&to_id);
 
         if amount_a < min_a || amount_b < min_b {
             panic!("min not satisfied");
@@ -293,5 +354,9 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
     fn get_pool(e: Env, token_a: BytesN<32>, token_b: BytesN<32>) -> BytesN<32> {
         let salt = pool_salt(&e, &token_a, &token_b);
         get_pool_id(&e, &salt)
+    }
+
+    fn nonce(e: Env, id: Identifier) -> BigInt {
+        read_nonce(&e, id)
     }
 }

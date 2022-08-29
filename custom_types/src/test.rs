@@ -12,7 +12,7 @@ fn test() {
     let client = CustomTypesContractClient::new(&env, &contract_id);
     assert_eq!(client.retrieve(), Name::None);
 
-    client.store(Name::FirstLast(FirstLast {
+    client.store(&Name::FirstLast(FirstLast {
         first: Symbol::from_str("first"),
         last: Symbol::from_str("last"),
     }));

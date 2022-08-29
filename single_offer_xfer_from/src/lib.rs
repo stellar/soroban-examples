@@ -70,14 +70,8 @@ fn transfer_from(
     amount: &BigInt,
 ) {
     let client = TokenClient::new(&e, &contract_id);
-    let nonce = client.nonce(get_contract_id(&e));
-    client.xfer_from(
-        Signature::Contract,
-        nonce,
-        from.clone(),
-        to.clone(),
-        amount.clone(),
-    )
+    let nonce = client.nonce(&get_contract_id(&e));
+    client.xfer_from(&Signature::Contract, &nonce, &from, &to, &amount)
 }
 
 fn transfer_sell(e: &Env, from: &Identifier, to: &Identifier, amount: &BigInt) {

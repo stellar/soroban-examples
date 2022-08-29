@@ -60,7 +60,7 @@ fn get_reserve_b(e: &Env) -> BigInt {
 }
 
 fn get_balance(e: &Env, contract_id: BytesN<32>) -> BigInt {
-    TokenClient::new(&e, contract_id).balance(get_contract_id(e))
+    TokenClient::new(&e, contract_id).balance(&get_contract_id(e))
 }
 
 fn get_balance_a(e: &Env) -> BigInt {
@@ -104,10 +104,10 @@ fn burn_shares(e: &Env, amount: BigInt) {
     let share_contract_id = get_token_share(e);
 
     TokenClient::new(&e, share_contract_id).burn(
-        Signature::Contract,
-        BigInt::from_u32(&e, 0),
-        get_contract_id(e),
-        amount.clone(),
+        &Signature::Contract,
+        &BigInt::from_u32(&e, 0),
+        &get_contract_id(e),
+        &amount,
     );
     put_total_shares(e, total - amount);
 }
@@ -117,10 +117,10 @@ fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
     let share_contract_id = get_token_share(e);
 
     TokenClient::new(&e, share_contract_id).mint(
-        Signature::Contract,
-        BigInt::from_u32(&e, 0),
-        to,
-        amount.clone(),
+        &Signature::Contract,
+        &BigInt::from_u32(&e, 0),
+        &to,
+        &amount,
     );
 
     put_total_shares(e, total + amount);
@@ -128,10 +128,10 @@ fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
 
 fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
     TokenClient::new(&e, contract_id).xfer(
-        Signature::Contract,
-        BigInt::from_u32(&e, 0),
-        to,
-        amount,
+        &Signature::Contract,
+        &BigInt::from_u32(&e, 0),
+        &to,
+        &amount,
     );
 }
 
@@ -194,10 +194,10 @@ impl LiquidityPoolTrait for LiquidityPool {
 
         let share_contract_id = create_contract(&e, &token_a, &token_b);
         TokenClient::new(&e, share_contract_id.clone()).initialize(
-            get_contract_id(&e),
-            7,
-            Bytes::from_slice(&e, b"name"),
-            Bytes::from_slice(&e, b"symbol"),
+            &get_contract_id(&e),
+            &7,
+            &Bytes::from_slice(&e, b"name"),
+            &Bytes::from_slice(&e, b"symbol"),
         );
 
         put_token_a(&e, token_a);

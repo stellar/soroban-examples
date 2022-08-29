@@ -16,6 +16,6 @@ fn test() {
     env.register_contract(&contract_b, ContractB);
 
     // Invoke 'add_with' on contract B.
-    let sum = ContractBClient::new(&env, &contract_b).add_with(5, 7, contract_a);
+    let sum = ContractBClient::new(&env, &contract_b).add_with(&5, &7, &contract_a);
     assert_eq!(sum, 12);
 }
