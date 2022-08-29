@@ -6,7 +6,7 @@ extern crate std;
 mod test;
 pub mod testutils;
 
-use soroban_sdk::{contractimpl, contracttype, vec, BigInt, BytesN, Env, IntoVal, Symbol};
+use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, IntoVal, Symbol};
 use soroban_sdk_auth::{
     check_auth,
     public_types::{Identifier, Signature},
@@ -205,13 +205,7 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
             &WrappedAuth(to),
             nonce.clone(),
             Symbol::from_str("trade"),
-            vec![
-                &e,
-                to_id.clone().into_val(&e),
-                nonce.into_val(&e),
-                amount_to_sell.clone().into_val(&e),
-                min.clone().into_val(&e),
-            ],
+            (to_id.clone(), nonce, amount_to_sell.clone(), min.clone()).into_val(&e),
         );
 
         let price = get_price(&e);
@@ -246,13 +240,7 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
             &WrappedAuth(admin),
             nonce.clone(),
             Symbol::from_str("updt_price"),
-            vec![
-                &e,
-                admin_id.into_val(&e),
-                nonce.into_val(&e),
-                n.clone().into_val(&e),
-                d.clone().into_val(&e),
-            ],
+            (admin_id, nonce, n.clone(), d.clone()).into_val(&e),
         );
 
         put_price(&e, Price { n, d });
