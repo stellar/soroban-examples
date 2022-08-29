@@ -38,8 +38,7 @@ impl SingleOffer {
     ) {
         let token_a = BytesN::from_array(&self.env, token_a);
         let token_b = BytesN::from_array(&self.env, token_b);
-        self.client()
-            .initialize(admin.clone(), token_a, token_b, n, d);
+        self.client().initialize(&admin, &token_a, &token_b, &n, &d);
     }
 
     pub fn nonce(&self) -> BigInt {
@@ -47,7 +46,7 @@ impl SingleOffer {
     }
 
     pub fn trade(&self, to: &Identifier, min: &BigInt) {
-        self.client().trade(to.clone(), min.clone())
+        self.client().trade(&to, &min)
     }
 
     pub fn withdraw(&self, admin: &Keypair, amount: &BigInt) {
@@ -67,7 +66,7 @@ impl SingleOffer {
             signature: admin.sign(msg).unwrap().into_val(&self.env),
         });
 
-        self.client().withdraw(auth, nonce, amount.clone())
+        self.client().withdraw(&auth, &nonce, &amount)
     }
 
     pub fn updt_price(&self, admin: &Keypair, n: u32, d: u32) {
@@ -87,7 +86,7 @@ impl SingleOffer {
             public_key: admin.public.to_bytes().into_val(&self.env),
             signature: admin.sign(msg).unwrap().into_val(&self.env),
         });
-        self.client().updt_price(auth, nonce, n, d)
+        self.client().updt_price(&auth, &nonce, &n, &d)
     }
 
     pub fn get_price(&self) -> Price {

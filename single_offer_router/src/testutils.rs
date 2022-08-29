@@ -35,7 +35,7 @@ impl SingleOfferRouter {
     pub fn init(&self, admin: &Identifier, token_a: &[u8; 32], token_b: &[u8; 32], n: u32, d: u32) {
         let token_a = BytesN::from_array(&self.env, token_a);
         let token_b = BytesN::from_array(&self.env, token_b);
-        self.client().init(admin.clone(), token_a, token_b, n, d)
+        self.client().init(&admin, &token_a, &token_b, &n, &d)
     }
 
     pub fn safe_trade(&self, to: &Keypair, offer: &[u8; 32], amount: &BigInt, min: &BigInt) {
@@ -60,7 +60,7 @@ impl SingleOfferRouter {
 
         let offer_addr = BytesN::from_array(&self.env, offer);
         self.client()
-            .safe_trade(auth, nonce, offer_addr, amount.clone(), min.clone())
+            .safe_trade(&auth, &nonce, &offer_addr, &amount, &min)
     }
 
     pub fn get_offer(
@@ -71,10 +71,10 @@ impl SingleOfferRouter {
     ) -> BytesN<32> {
         let token_a = BytesN::from_array(&self.env, token_a);
         let token_b = BytesN::from_array(&self.env, token_b);
-        self.client().get_offer(admin.clone(), token_a, token_b)
+        self.client().get_offer(&admin, &token_a, &token_b)
     }
 
     pub fn nonce(&self, id: &Identifier) -> BigInt {
-        self.client().nonce(id.clone())
+        self.client().nonce(&id)
     }
 }

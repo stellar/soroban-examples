@@ -199,8 +199,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
 
             put_pool(&e, &salt, &pool_contract_id);
 
-            LiquidityPoolClient::new(&e, &pool_contract_id)
-                .initialize(token_a.clone(), token_b.clone());
+            LiquidityPoolClient::new(&e, &pool_contract_id).initialize(&token_a, &token_b);
         }
 
         let pool_id = get_pool_id(&e, &salt);
@@ -209,26 +208,26 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         let amounts = get_deposit_amounts(desired_a, min_a, desired_b, min_b, reserves);
 
         let client_a = TokenClient::new(&e, token_a);
-        let nonce_a = client_a.nonce(get_contract_id(&e));
+        let nonce_a = client_a.nonce(&get_contract_id(&e));
         client_a.xfer_from(
-            Signature::Contract,
-            nonce_a,
-            to_id.clone(),
-            Identifier::Contract(pool_id.clone()),
-            amounts.0,
+            &Signature::Contract,
+            &nonce_a,
+            &to_id,
+            &Identifier::Contract(pool_id.clone()),
+            &amounts.0,
         );
 
         let client_b = TokenClient::new(&e, token_b);
-        let nonce_b = client_b.nonce(get_contract_id(&e));
+        let nonce_b = client_b.nonce(&get_contract_id(&e));
         client_b.xfer_from(
-            Signature::Contract,
-            nonce_b,
-            to_id.clone(),
-            Identifier::Contract(pool_id.clone()),
-            amounts.1,
+            &Signature::Contract,
+            &nonce_b,
+            &to_id,
+            &Identifier::Contract(pool_id.clone()),
+            &amounts.1,
         );
 
-        LiquidityPoolClient::new(&e, &pool_id).deposit(to_id);
+        LiquidityPoolClient::new(&e, &pool_id).deposit(&to_id);
     }
 
     fn swap_out(
@@ -280,13 +279,13 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         }
 
         let client = TokenClient::new(&e, &sell);
-        let nonce = client.nonce(get_contract_id(&e));
+        let nonce = client.nonce(&get_contract_id(&e));
         client.xfer_from(
-            Signature::Contract,
-            nonce,
-            to_id.clone(),
-            Identifier::Contract(pool_id.clone()),
-            xfer_amount,
+            &Signature::Contract,
+            &nonce,
+            &to_id,
+            &Identifier::Contract(pool_id.clone()),
+            &xfer_amount,
         );
 
         let out_a: BigInt;
@@ -299,7 +298,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
             out_b = BigInt::from_u32(&e, 0);
         }
 
-        LiquidityPoolClient::new(&e, &pool_id).swap(to_id, out_a, out_b)
+        LiquidityPoolClient::new(&e, &pool_id).swap(&to_id, &out_a, &out_b)
     }
 
     fn sf_withdrw(
@@ -336,16 +335,16 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         let share_token = pool_client.share_id();
 
         let client = TokenClient::new(&e, &share_token);
-        let nonce = client.nonce(get_contract_id(&e));
+        let nonce = client.nonce(&get_contract_id(&e));
         client.xfer_from(
-            Signature::Contract,
-            nonce,
-            to_id.clone(),
-            Identifier::Contract(pool_id.clone()),
-            share_amount,
+            &Signature::Contract,
+            &nonce,
+            &to_id,
+            &Identifier::Contract(pool_id.clone()),
+            &share_amount,
         );
 
-        let (amount_a, amount_b) = pool_client.withdraw(to_id);
+        let (amount_a, amount_b) = pool_client.withdraw(&to_id);
 
         if amount_a < min_a || amount_b < min_b {
             panic!("min not satisfied");

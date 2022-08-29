@@ -30,7 +30,7 @@ impl LiquidityPool {
     pub fn initialize(&self, token_a: &[u8; 32], token_b: &[u8; 32]) {
         let token_a = BytesN::from_array(&self.env, token_a);
         let token_b = BytesN::from_array(&self.env, token_b);
-        self.client().initialize(token_a, token_b)
+        self.client().initialize(&token_a, &token_b)
     }
 
     pub fn share_id(&self) -> BytesN<32> {
@@ -38,15 +38,15 @@ impl LiquidityPool {
     }
 
     pub fn deposit(&self, to: &Identifier) {
-        self.client().deposit(to.clone())
+        self.client().deposit(&to)
     }
 
     pub fn swap(&self, to: &Identifier, out_a: &BigInt, out_b: &BigInt) {
-        self.client().swap(to.clone(), out_a.clone(), out_b.clone())
+        self.client().swap(&to, &out_a, &out_b)
     }
 
     pub fn withdraw(&self, to: &Identifier) -> (BigInt, BigInt) {
-        self.client().withdraw(to.clone())
+        self.client().withdraw(&to)
     }
 
     pub fn get_rsrvs(&self) -> (BigInt, BigInt) {

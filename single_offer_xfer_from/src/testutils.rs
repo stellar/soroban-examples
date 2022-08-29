@@ -43,12 +43,11 @@ impl SingleOfferXferFrom {
         let token_a = BytesN::from_array(&self.env, token_a);
         let token_b = BytesN::from_array(&self.env, token_b);
 
-        self.client()
-            .initialize(admin.clone(), token_a, token_b, n, d)
+        self.client().initialize(&admin, &token_a, &token_b, &n, &d)
     }
 
     pub fn nonce(&self, id: &Identifier) -> BigInt {
-        self.client().nonce(id.clone())
+        self.client().nonce(&id)
     }
 
     pub fn trade(&self, to: &Keypair, amount_to_sell: &BigInt, min: &BigInt) {
@@ -70,8 +69,7 @@ impl SingleOfferXferFrom {
             signature: to.sign(msg).unwrap().into_val(&self.env),
         });
 
-        self.client()
-            .trade(auth, nonce, amount_to_sell.clone(), min.clone())
+        self.client().trade(&auth, &nonce, &amount_to_sell, &min)
     }
 
     pub fn updt_price(&self, admin: &Keypair, n: u32, d: u32) {
@@ -93,7 +91,7 @@ impl SingleOfferXferFrom {
             signature: admin.sign(msg).unwrap().into_val(&self.env),
         });
 
-        self.client().updt_price(auth, nonce, n, d)
+        self.client().updt_price(&auth, &nonce, &n, &d)
     }
 
     pub fn get_price(&self) -> Price {

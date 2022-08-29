@@ -47,7 +47,7 @@ fn get_buy_token(e: &Env) -> BytesN<32> {
 }
 
 fn get_balance(e: &Env, contract_id: BytesN<32>) -> BigInt {
-    TokenClient::new(&e, contract_id).balance(get_contract_id(e))
+    TokenClient::new(&e, contract_id).balance(&get_contract_id(e))
 }
 
 fn get_balance_buy(e: &Env) -> BigInt {
@@ -72,8 +72,8 @@ fn load_price(e: &Env) -> Price {
 
 fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
     let client = TokenClient::new(&e, contract_id);
-    let nonce = client.nonce(get_contract_id(&e));
-    client.xfer(Signature::Contract, nonce, to, amount);
+    let nonce = client.nonce(&get_contract_id(&e));
+    client.xfer(&Signature::Contract, &nonce, &to, &amount);
 }
 
 fn transfer_sell(e: &Env, to: Identifier, amount: BigInt) {

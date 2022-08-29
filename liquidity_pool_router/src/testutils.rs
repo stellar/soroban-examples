@@ -68,14 +68,7 @@ impl LiquidityPoolRouter {
         });
 
         self.client().sf_deposit(
-            auth,
-            nonce,
-            token_a,
-            token_b,
-            desired_a.clone(),
-            min_a.clone(),
-            desired_b.clone(),
-            min_b.clone(),
+            &auth, &nonce, &token_a, &token_b, &desired_a, &min_a, &desired_b, &min_b,
         )
     }
 
@@ -112,7 +105,7 @@ impl LiquidityPoolRouter {
         });
 
         self.client()
-            .swap_out(auth, nonce, sell, buy, out.clone(), in_max.clone())
+            .swap_out(&auth, &nonce, &sell, &buy, &out, &in_max)
     }
 
     pub fn sf_withdrw(
@@ -150,13 +143,13 @@ impl LiquidityPoolRouter {
         });
 
         self.client().sf_withdrw(
-            auth,
-            nonce,
-            token_a,
-            token_b,
-            share_amount.clone(),
-            min_a.clone(),
-            min_b.clone(),
+            &auth,
+            &nonce,
+            &token_a,
+            &token_b,
+            &share_amount,
+            &min_a,
+            &min_b,
         )
     }
 
@@ -164,10 +157,10 @@ impl LiquidityPoolRouter {
         let token_a = BytesN::from_array(&self.env, token_a);
         let token_b = BytesN::from_array(&self.env, token_b);
 
-        self.client().get_pool(token_a, token_b)
+        self.client().get_pool(&token_a, &token_b)
     }
 
     pub fn nonce(&self, id: &Identifier) -> BigInt {
-        self.client().nonce(id.clone())
+        self.client().nonce(&id)
     }
 }
