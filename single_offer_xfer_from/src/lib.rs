@@ -207,6 +207,7 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
             Symbol::from_str("trade"),
             vec![
                 &e,
+                to_id.clone().into_val(&e),
                 nonce.into_val(&e),
                 amount_to_sell.clone().into_val(&e),
                 min.clone().into_val(&e),
@@ -234,6 +235,7 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
 
     fn updt_price(e: Env, admin: Signature, nonce: BigInt, n: u32, d: u32) {
         check_admin(&e, &admin);
+        let admin_id = admin.get_identifier(&e);
 
         if d == 0 {
             panic!("d is zero but cannot be zero")
@@ -246,6 +248,7 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
             Symbol::from_str("updt_price"),
             vec![
                 &e,
+                admin_id.into_val(&e),
                 nonce.into_val(&e),
                 n.clone().into_val(&e),
                 d.clone().into_val(&e),

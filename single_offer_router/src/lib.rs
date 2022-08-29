@@ -175,7 +175,14 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
             &WrappedAuth(to),
             nonce.clone(),
             Symbol::from_str("safe_trade"),
-            (nonce, offer.clone(), amount.clone(), min.clone()).into_val(&e),
+            (
+                to_id.clone(),
+                nonce,
+                offer.clone(),
+                amount.clone(),
+                min.clone(),
+            )
+                .into_val(&e),
         );
 
         // TODO:specify buy token instead of calling into offer contract?

@@ -1,7 +1,9 @@
 #![cfg(any(test, feature = "testutils"))]
 use ed25519_dalek::Keypair;
 use soroban_sdk::{testutils::ed25519::Sign, BigInt, BytesN, Env, IntoVal, RawVal, Symbol, Vec};
-use soroban_sdk_auth::public_types::{Ed25519Signature, Identifier, Message, MessageV0, Signature};
+use soroban_sdk_auth::public_types::{
+    Ed25519Signature, Identifier, Signature, SignaturePayload, SignaturePayloadV0,
+};
 
 use crate::LiquidityPoolRouterClient;
 
@@ -48,6 +50,7 @@ impl LiquidityPoolRouter {
         let nonce = self.nonce(&to_id);
 
         let mut args: Vec<RawVal> = Vec::new(&self.env);
+        args.push(to_id.clone().into_val(&self.env));
         args.push(nonce.clone().into_val(&self.env));
         args.push(token_a.clone().into_val(&self.env));
         args.push(token_b.clone().into_val(&self.env));
@@ -56,10 +59,10 @@ impl LiquidityPoolRouter {
         args.push(desired_b.clone().into_val(&self.env));
         args.push(min_b.clone().into_val(&self.env));
 
-        let msg = Message::V0(MessageV0 {
+        let msg = SignaturePayload::V0(SignaturePayloadV0 {
             function: Symbol::from_str("sf_deposit"),
-            contrct_id: self.contract_id.clone(),
-            network_id: self.env.ledger().network_passphrase(),
+            contract: self.contract_id.clone(),
+            network: self.env.ledger().network_passphrase(),
             args,
         });
         let auth = Signature::Ed25519(Ed25519Signature {
@@ -87,16 +90,17 @@ impl LiquidityPoolRouter {
         let nonce = self.nonce(&to_id);
 
         let mut args: Vec<RawVal> = Vec::new(&self.env);
+        args.push(to_id.clone().into_val(&self.env));
         args.push(nonce.clone().into_val(&self.env));
         args.push(sell.clone().into_val(&self.env));
         args.push(buy.clone().into_val(&self.env));
         args.push(out.clone().into_val(&self.env));
         args.push(in_max.clone().into_val(&self.env));
 
-        let msg = Message::V0(MessageV0 {
+        let msg = SignaturePayload::V0(SignaturePayloadV0 {
             function: Symbol::from_str("swap_out"),
-            contrct_id: self.contract_id.clone(),
-            network_id: self.env.ledger().network_passphrase(),
+            contract: self.contract_id.clone(),
+            network: self.env.ledger().network_passphrase(),
             args,
         });
         let auth = Signature::Ed25519(Ed25519Signature {
@@ -124,6 +128,7 @@ impl LiquidityPoolRouter {
         let nonce = self.nonce(&to_id);
 
         let mut args: Vec<RawVal> = Vec::new(&self.env);
+        args.push(to_id.clone().into_val(&self.env));
         args.push(nonce.clone().into_val(&self.env));
         args.push(token_a.clone().into_val(&self.env));
         args.push(token_b.clone().into_val(&self.env));
@@ -131,10 +136,10 @@ impl LiquidityPoolRouter {
         args.push(min_a.clone().into_val(&self.env));
         args.push(min_b.clone().into_val(&self.env));
 
-        let msg = Message::V0(MessageV0 {
+        let msg = SignaturePayload::V0(SignaturePayloadV0 {
             function: Symbol::from_str("sf_withdrw"),
-            contrct_id: self.contract_id.clone(),
-            network_id: self.env.ledger().network_passphrase(),
+            contract: self.contract_id.clone(),
+            network: self.env.ledger().network_passphrase(),
             args,
         });
         let auth = Signature::Ed25519(Ed25519Signature {

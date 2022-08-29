@@ -89,7 +89,7 @@ checksum = "14c189c53d098945499cdfa7ecc63567cf3886b3332b312a5b4585d8d3a6a610"
 [[package]]
 name = "bytes-lit"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=6d525c7#6d525c72f545e89af614b29936995c239f25b9bf"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=b4cc8fc#b4cc8fc50da05586a54e2e83a6fba31807fdcbc8"
 dependencies = [
  "num-bigint",
  "pretty_assertions",
@@ -659,7 +659,7 @@ dependencies = [
 [[package]]
 name = "soroban-env-common"
 version = "0.0.3"
-source = "git+https://github.com/stellar/rs-soroban-env?rev=0d49a1b#0d49a1bb5065b6b434566456ee6041d286a3e04e"
+source = "git+https://github.com/stellar/rs-soroban-env?rev=2c084e9d#2c084e9d90c213414a66c5433dc0d4fcc05f5ebb"
 dependencies = [
  "soroban-env-macros",
  "soroban-wasmi",
@@ -670,7 +670,7 @@ dependencies = [
 [[package]]
 name = "soroban-env-guest"
 version = "0.0.3"
-source = "git+https://github.com/stellar/rs-soroban-env?rev=0d49a1b#0d49a1bb5065b6b434566456ee6041d286a3e04e"
+source = "git+https://github.com/stellar/rs-soroban-env?rev=2c084e9d#2c084e9d90c213414a66c5433dc0d4fcc05f5ebb"
 dependencies = [
  "soroban-env-common",
  "static_assertions",
@@ -679,7 +679,7 @@ dependencies = [
 [[package]]
 name = "soroban-env-host"
 version = "0.0.3"
-source = "git+https://github.com/stellar/rs-soroban-env?rev=0d49a1b#0d49a1bb5065b6b434566456ee6041d286a3e04e"
+source = "git+https://github.com/stellar/rs-soroban-env?rev=2c084e9d#2c084e9d90c213414a66c5433dc0d4fcc05f5ebb"
 dependencies = [
  "backtrace",
  "dyn-fmt",
@@ -702,7 +702,7 @@ dependencies = [
 [[package]]
 name = "soroban-env-macros"
 version = "0.0.3"
-source = "git+https://github.com/stellar/rs-soroban-env?rev=0d49a1b#0d49a1bb5065b6b434566456ee6041d286a3e04e"
+source = "git+https://github.com/stellar/rs-soroban-env?rev=2c084e9d#2c084e9d90c213414a66c5433dc0d4fcc05f5ebb"
 dependencies = [
  "itertools",
  "proc-macro2",
@@ -756,7 +756,7 @@ dependencies = [
 [[package]]
 name = "soroban-native-sdk-macros"
 version = "0.0.1"
-source = "git+https://github.com/stellar/rs-soroban-env?rev=0d49a1b#0d49a1bb5065b6b434566456ee6041d286a3e04e"
+source = "git+https://github.com/stellar/rs-soroban-env?rev=2c084e9d#2c084e9d90c213414a66c5433dc0d4fcc05f5ebb"
 dependencies = [
  "itertools",
  "proc-macro2",
@@ -767,7 +767,7 @@ dependencies = [
 [[package]]
 name = "soroban-sdk"
 version = "0.0.3"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=6d525c7#6d525c72f545e89af614b29936995c239f25b9bf"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=b4cc8fc#b4cc8fc50da05586a54e2e83a6fba31807fdcbc8"
 dependencies = [
  "bytes-lit",
  "ed25519-dalek",
@@ -779,7 +779,7 @@ dependencies = [
 [[package]]
 name = "soroban-sdk-auth"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=6d525c7#6d525c72f545e89af614b29936995c239f25b9bf"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=b4cc8fc#b4cc8fc50da05586a54e2e83a6fba31807fdcbc8"
 dependencies = [
  "soroban-sdk",
 ]
@@ -787,7 +787,7 @@ dependencies = [
 [[package]]
 name = "soroban-sdk-macros"
 version = "0.0.3"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=6d525c7#6d525c72f545e89af614b29936995c239f25b9bf"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=b4cc8fc#b4cc8fc50da05586a54e2e83a6fba31807fdcbc8"
 dependencies = [
  "darling",
  "itertools",
@@ -839,7 +839,7 @@ dependencies = [
 [[package]]
 name = "soroban-spec"
 version = "0.0.1"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=6d525c7#6d525c72f545e89af614b29936995c239f25b9bf"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=b4cc8fc#b4cc8fc50da05586a54e2e83a6fba31807fdcbc8"
 dependencies = [
  "base64",
  "darling",
@@ -860,7 +860,7 @@ dependencies = [
 [[package]]
 name = "soroban-token-contract"
 version = "0.0.2"
-source = "git+https://github.com/stellar/soroban-token-contract?rev=cd52041#cd5204154cdd36b9c527eaf646e06844e318cb6c"
+source = "git+https://github.com/stellar/soroban-token-contract?rev=ec0903f#ec0903f9ab44c318e587f1f71baa2d7500bf5515"
 dependencies = [
  "ed25519-dalek",
  "soroban-sdk",
