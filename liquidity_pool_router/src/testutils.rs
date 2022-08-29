@@ -50,6 +50,7 @@ impl LiquidityPoolRouter {
         let nonce = self.nonce(&to_id);
 
         let mut args: Vec<RawVal> = Vec::new(&self.env);
+        args.push(to_id.clone().into_val(&self.env));
         args.push(nonce.clone().into_val(&self.env));
         args.push(token_a.clone().into_val(&self.env));
         args.push(token_b.clone().into_val(&self.env));
@@ -89,6 +90,7 @@ impl LiquidityPoolRouter {
         let nonce = self.nonce(&to_id);
 
         let mut args: Vec<RawVal> = Vec::new(&self.env);
+        args.push(to_id.clone().into_val(&self.env));
         args.push(nonce.clone().into_val(&self.env));
         args.push(sell.clone().into_val(&self.env));
         args.push(buy.clone().into_val(&self.env));
@@ -126,6 +128,7 @@ impl LiquidityPoolRouter {
         let nonce = self.nonce(&to_id);
 
         let mut args: Vec<RawVal> = Vec::new(&self.env);
+        args.push(to_id.clone().into_val(&self.env));
         args.push(nonce.clone().into_val(&self.env));
         args.push(token_a.clone().into_val(&self.env));
         args.push(token_b.clone().into_val(&self.env));
