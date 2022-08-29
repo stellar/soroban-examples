@@ -152,11 +152,11 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
         put_offer(&e, &salt, &offer_contract_id);
 
         SingleOfferClient::new(&e, offer_contract_id).initialize(
-            &admin,
-            &sell_token,
-            &buy_token,
-            &n,
-            &d,
+            admin,
+            sell_token,
+            buy_token,
+            n,
+            d,
         );
     }
 
@@ -183,17 +183,17 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
         let buy = offer_client.get_buy();
 
         let token_client = TokenClient::new(&e, &buy);
-        let nonce = token_client.nonce(&get_contract_id(&e));
+        let nonce = token_client.nonce(get_contract_id(&e));
 
         token_client.xfer_from(
-            &Signature::Contract,
-            &nonce,
-            &to_id,
-            &Identifier::Contract(offer.clone()),
-            &amount,
+            Signature::Contract,
+            nonce,
+            to_id.clone(),
+            Identifier::Contract(offer.clone()),
+            amount,
         );
 
-        offer_client.trade(&to_id, &min);
+        offer_client.trade(to_id, min);
     }
 
     fn get_offer(

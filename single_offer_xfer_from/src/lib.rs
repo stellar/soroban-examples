@@ -65,20 +65,20 @@ fn get_price(e: &Env) -> Price {
 fn transfer_from(
     e: &Env,
     contract_id: BytesN<32>,
-    from: &Identifier,
-    to: &Identifier,
-    amount: &BigInt,
+    from: Identifier,
+    to: Identifier,
+    amount: BigInt,
 ) {
     let client = TokenClient::new(&e, &contract_id);
-    let nonce = client.nonce(&get_contract_id(&e));
-    client.xfer_from(&Signature::Contract, &nonce, &from, &to, &amount)
+    let nonce = client.nonce(get_contract_id(&e));
+    client.xfer_from(Signature::Contract, nonce, from, to, amount)
 }
 
-fn transfer_sell(e: &Env, from: &Identifier, to: &Identifier, amount: &BigInt) {
+fn transfer_sell(e: &Env, from: Identifier, to: Identifier, amount: BigInt) {
     transfer_from(&e, get_sell_token(&e), from, to, amount);
 }
 
-fn transfer_buy(e: &Env, from: &Identifier, to: &Identifier, amount: &BigInt) {
+fn transfer_buy(e: &Env, from: Identifier, to: Identifier, amount: BigInt) {
     transfer_from(&e, get_buy_token(&e), from, to, amount);
 }
 
@@ -224,8 +224,8 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
 
         let admin = read_administrator(&e);
 
-        transfer_sell(&e, &admin, &to_id, &amount);
-        transfer_buy(&e, &to_id, &admin, &amount_to_sell);
+        transfer_sell(&e, admin.clone(), to_id.clone(), amount);
+        transfer_buy(&e, to_id, admin, amount_to_sell);
     }
 
     fn nonce(e: Env, id: Identifier) -> BigInt {
