@@ -79,6 +79,7 @@ pub trait SingleOfferRouterTrait {
         buy_token: BytesN<32>,
     ) -> BytesN<32>;
 
+    // Returns the current nonce for "id"
     fn nonce(e: Env, id: Identifier) -> BigInt;
 }
 

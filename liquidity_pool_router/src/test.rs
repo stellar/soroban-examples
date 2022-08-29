@@ -74,7 +74,7 @@ fn test() {
     token2.approve(&user1, &router_id, &BigInt::from_u32(&e, 100));
 
     router.sf_deposit(
-        &user1_id,
+        &user1,
         &contract1,
         &contract2,
         &BigInt::from_u32(&e, 100),
@@ -99,7 +99,7 @@ fn test() {
     token1.approve(&user1, &router_id, &BigInt::from_u32(&e, 100));
 
     router.swap_out(
-        &user1_id,
+        &user1,
         &contract1,
         &contract2,
         &BigInt::from_u32(&e, 49),
@@ -113,7 +113,7 @@ fn test() {
 
     token_share.approve(&user1, &router_id, &BigInt::from_u32(&e, 100));
     router.sf_withdrw(
-        &user1_id,
+        &user1,
         &contract1,
         &contract2,
         &BigInt::from_u32(&e, 100),
