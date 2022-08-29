@@ -6,7 +6,7 @@ extern crate std;
 mod test;
 pub mod testutils;
 
-use soroban_sdk::{contractimpl, contracttype, vec, BigInt, BytesN, Env, IntoVal, Symbol};
+use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, IntoVal, Symbol};
 use soroban_sdk_auth::{
     check_auth,
     public_types::{Identifier, Signature},
