@@ -233,13 +233,19 @@ impl SingleOfferTrait for SingleOffer {
 
     fn withdraw(e: Env, admin: Signature, nonce: BigInt, amount: BigInt) {
         check_admin(&e, &admin);
+        let admin_id = admin.get_identifier(&e);
 
         check_auth(
             &e,
             &WrappedAuth(admin),
             nonce.clone(),
             Symbol::from_str("withdraw"),
-            vec![&e, nonce.into_val(&e), amount.clone().into_val(&e)],
+            vec![
+                &e,
+                admin_id.into_val(&e),
+                nonce.into_val(&e),
+                amount.clone().into_val(&e),
+            ],
         );
 
         transfer_sell(&e, read_administrator(&e), amount);
@@ -247,6 +253,7 @@ impl SingleOfferTrait for SingleOffer {
 
     fn updt_price(e: Env, admin: Signature, nonce: BigInt, n: u32, d: u32) {
         check_admin(&e, &admin);
+        let admin_id = admin.get_identifier(&e);
 
         if d == 0 {
             panic!("d is zero but cannot be zero")
@@ -259,6 +266,7 @@ impl SingleOfferTrait for SingleOffer {
             Symbol::from_str("updt_price"),
             vec![
                 &e,
+                admin_id.into_val(&e),
                 nonce.into_val(&e),
                 n.clone().into_val(&e),
                 d.clone().into_val(&e),

@@ -13,6 +13,10 @@ pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
     e.register_contract(&contract_id, crate::SingleOffer {});
 }
 
+pub fn to_ed25519(e: &Env, kp: &Keypair) -> Identifier {
+    Identifier::Ed25519(kp.public.to_bytes().into_val(e))
+}
+
 pub struct SingleOffer {
     env: Env,
     contract_id: BytesN<32>,
@@ -55,6 +59,7 @@ impl SingleOffer {
         let nonce = self.nonce();
 
         let mut args: Vec<RawVal> = Vec::new(&self.env);
+        args.push(to_ed25519(&self.env, admin).into_val(&self.env));
         args.push(nonce.clone().into_val(&self.env));
         args.push(amount.clone().into_val(&self.env));
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
@@ -75,6 +80,7 @@ impl SingleOffer {
         let nonce = self.nonce();
 
         let mut args: Vec<RawVal> = Vec::new(&self.env);
+        args.push(to_ed25519(&self.env, admin).into_val(&self.env));
         args.push(nonce.clone().into_val(&self.env));
         args.push(n.into_val(&self.env));
         args.push(d.into_val(&self.env));
