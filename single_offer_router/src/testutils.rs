@@ -45,6 +45,7 @@ impl SingleOfferRouter {
         let nonce = self.nonce(&to_id);
 
         let mut args: Vec<RawVal> = Vec::new(&self.env);
+        args.push(to_id.clone().into_val(&self.env));
         args.push(nonce.clone().into_val(&self.env));
         args.push(offer.clone().into_val(&self.env));
         args.push(amount.clone().into_val(&self.env));
