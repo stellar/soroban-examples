@@ -5,7 +5,7 @@ extern crate std;
 
 mod test;
 
-use soroban_sdk::{contractimpl, contracttype, vec, BigInt, Env, IntoVal, Symbol};
+use soroban_sdk::{contractimpl, contracttype, BigInt, Env, IntoVal, Symbol};
 use soroban_sdk_auth::{
     check_auth,
     public_types::{Identifier, Signature},
@@ -71,7 +71,7 @@ impl AuthContract {
             &WrappedAuth(auth),
             nonce.clone(),
             Symbol::from_str("save_data"),
-            (nonce, num.clone()).into_val(&e),
+            (auth_id.clone(), nonce, num.clone()).into_val(&e),
         );
 
         e.contract_data().set(DataKey::Acc(auth_id), num);
@@ -89,12 +89,7 @@ impl AuthContract {
             &WrappedAuth(auth),
             nonce.clone(),
             Symbol::from_str("overwrite"),
-            vec![
-                &e,
-                nonce.into_val(&e),
-                id.clone().into_val(&e),
-                num.clone().into_val(&e),
-            ],
+            (auth_id, nonce, id.clone(), num.clone()).into_val(&e),
         );
 
         e.contract_data().set(DataKey::Acc(id), num);
