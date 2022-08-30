@@ -25,13 +25,13 @@ codegen-units = 1
 lto = true
 
 [patch.crates-io]
-soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "b4cc8fc" }
-soroban-sdk-auth = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "b4cc8fc" }
-soroban-sdk-macros = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "b4cc8fc" }
-soroban-env-common = { git = "https://github.com/stellar/rs-soroban-env", rev = "2c084e9d" }
-soroban-env-guest = { git = "https://github.com/stellar/rs-soroban-env", rev = "2c084e9d" }
-soroban-env-host = { git = "https://github.com/stellar/rs-soroban-env", rev = "2c084e9d" }
-soroban-env-macros = { git = "https://github.com/stellar/rs-soroban-env", rev = "2c084e9d" }
-soroban-native-sdk-macros = { git = "https://github.com/stellar/rs-soroban-env", rev = "2c084e9d" }
+soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "0cb632cd" }
+soroban-sdk-auth = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "0cb632cd" }
+soroban-sdk-macros = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "0cb632cd" }
+soroban-env-common = { git = "https://github.com/stellar/rs-soroban-env", rev = "73a944a2" }
+soroban-env-guest = { git = "https://github.com/stellar/rs-soroban-env", rev = "73a944a2" }
+soroban-env-host = { git = "https://github.com/stellar/rs-soroban-env", rev = "73a944a2" }
+soroban-env-macros = { git = "https://github.com/stellar/rs-soroban-env", rev = "73a944a2" }
+soroban-native-sdk-macros = { git = "https://github.com/stellar/rs-soroban-env", rev = "73a944a2" }
 stellar-xdr = { git = "https://github.com/stellar/rs-stellar-xdr", rev = "5b129da" }
-soroban-token-contract = { git = "https://github.com/stellar/soroban-token-contract", rev = "ec0903f" }
+soroban-token-contract = { git = "https://github.com/stellar/soroban-token-contract", rev = "94040786" }

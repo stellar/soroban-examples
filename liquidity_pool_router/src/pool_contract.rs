@@ -7,7 +7,7 @@ pub const POOL_CONTRACT: &[u8] = include_bytes!("../../soroban_liquidity_pool_co
 pub fn create_contract(e: &Env, salt: &BytesN<32>) -> BytesN<32> {
     use soroban_sdk::Bytes;
     let bin = Bytes::from_slice(e, POOL_CONTRACT);
-    e.create_contract_from_contract(bin, salt.clone())
+    e.deployer().from_current_contract(salt).deploy(bin)
 }
 
 #[cfg(all(any(test, feature = "testutils"), not(feature = "token-wasm")))]

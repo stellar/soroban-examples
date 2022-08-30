@@ -43,7 +43,7 @@ impl NonceAuth for WrappedAuth {
         nonce
     }
 
-    fn get_keyed_auth(&self) -> &Signature {
+    fn signature(&self) -> &Signature {
         &self.0
     }
 }

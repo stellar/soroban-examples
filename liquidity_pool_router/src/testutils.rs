@@ -50,14 +50,14 @@ impl LiquidityPoolRouter {
         let nonce = self.nonce(&to_id);
 
         let mut args: Vec<RawVal> = Vec::new(&self.env);
-        args.push(to_id.clone().into_val(&self.env));
-        args.push(nonce.clone().into_val(&self.env));
-        args.push(token_a.clone().into_val(&self.env));
-        args.push(token_b.clone().into_val(&self.env));
-        args.push(desired_a.clone().into_val(&self.env));
-        args.push(min_a.clone().into_val(&self.env));
-        args.push(desired_b.clone().into_val(&self.env));
-        args.push(min_b.clone().into_val(&self.env));
+        args.push_back(to_id.clone().into_val(&self.env));
+        args.push_back(nonce.clone().into_val(&self.env));
+        args.push_back(token_a.clone().into_val(&self.env));
+        args.push_back(token_b.clone().into_val(&self.env));
+        args.push_back(desired_a.clone().into_val(&self.env));
+        args.push_back(min_a.clone().into_val(&self.env));
+        args.push_back(desired_b.clone().into_val(&self.env));
+        args.push_back(min_b.clone().into_val(&self.env));
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
             function: Symbol::from_str("sf_deposit"),
@@ -90,12 +90,12 @@ impl LiquidityPoolRouter {
         let nonce = self.nonce(&to_id);
 
         let mut args: Vec<RawVal> = Vec::new(&self.env);
-        args.push(to_id.clone().into_val(&self.env));
-        args.push(nonce.clone().into_val(&self.env));
-        args.push(sell.clone().into_val(&self.env));
-        args.push(buy.clone().into_val(&self.env));
-        args.push(out.clone().into_val(&self.env));
-        args.push(in_max.clone().into_val(&self.env));
+        args.push_back(to_id.clone().into_val(&self.env));
+        args.push_back(nonce.clone().into_val(&self.env));
+        args.push_back(sell.clone().into_val(&self.env));
+        args.push_back(buy.clone().into_val(&self.env));
+        args.push_back(out.clone().into_val(&self.env));
+        args.push_back(in_max.clone().into_val(&self.env));
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
             function: Symbol::from_str("swap_out"),
@@ -128,13 +128,13 @@ impl LiquidityPoolRouter {
         let nonce = self.nonce(&to_id);
 
         let mut args: Vec<RawVal> = Vec::new(&self.env);
-        args.push(to_id.clone().into_val(&self.env));
-        args.push(nonce.clone().into_val(&self.env));
-        args.push(token_a.clone().into_val(&self.env));
-        args.push(token_b.clone().into_val(&self.env));
-        args.push(share_amount.clone().into_val(&self.env));
-        args.push(min_a.clone().into_val(&self.env));
-        args.push(min_b.clone().into_val(&self.env));
+        args.push_back(to_id.clone().into_val(&self.env));
+        args.push_back(nonce.clone().into_val(&self.env));
+        args.push_back(token_a.clone().into_val(&self.env));
+        args.push_back(token_b.clone().into_val(&self.env));
+        args.push_back(share_amount.clone().into_val(&self.env));
+        args.push_back(min_a.clone().into_val(&self.env));
+        args.push_back(min_b.clone().into_val(&self.env));
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
             function: Symbol::from_str("sf_withdrw"),
