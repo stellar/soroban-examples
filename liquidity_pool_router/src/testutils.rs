@@ -1,7 +1,7 @@
 #![cfg(any(test, feature = "testutils"))]
 use ed25519_dalek::Keypair;
 use soroban_sdk::{testutils::ed25519::Sign, BigInt, BytesN, Env, IntoVal, RawVal, Symbol, Vec};
-use soroban_sdk_auth::public_types::{
+use soroban_sdk_auth::{
     Ed25519Signature, Identifier, Signature, SignaturePayload, SignaturePayloadV0,
 };
 

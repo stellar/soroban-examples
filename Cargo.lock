@@ -613,7 +613,7 @@ dependencies = [
 [[package]]
 name = "soroban-env-common"
 version = "0.0.3"
-source = "git+https://github.com/stellar/rs-soroban-env?rev=73a944a2#73a944a28051c99acb5e4b0ef549d22a75c35bf2"
+source = "git+https://github.com/stellar/rs-soroban-env?rev=16fcb333#16fcb333aab68cdba8711839c325b0010ef7525a"
 dependencies = [
  "soroban-env-macros",
  "soroban-wasmi",
@@ -624,7 +624,7 @@ dependencies = [
 [[package]]
 name = "soroban-env-guest"
 version = "0.0.3"
-source = "git+https://github.com/stellar/rs-soroban-env?rev=73a944a2#73a944a28051c99acb5e4b0ef549d22a75c35bf2"
+source = "git+https://github.com/stellar/rs-soroban-env?rev=16fcb333#16fcb333aab68cdba8711839c325b0010ef7525a"
 dependencies = [
  "soroban-env-common",
  "static_assertions",
@@ -633,7 +633,7 @@ dependencies = [
 [[package]]
 name = "soroban-env-host"
 version = "0.0.3"
-source = "git+https://github.com/stellar/rs-soroban-env?rev=73a944a2#73a944a28051c99acb5e4b0ef549d22a75c35bf2"
+source = "git+https://github.com/stellar/rs-soroban-env?rev=16fcb333#16fcb333aab68cdba8711839c325b0010ef7525a"
 dependencies = [
  "backtrace",
  "dyn-fmt",
@@ -656,7 +656,7 @@ dependencies = [
 [[package]]
 name = "soroban-env-macros"
 version = "0.0.3"
-source = "git+https://github.com/stellar/rs-soroban-env?rev=73a944a2#73a944a28051c99acb5e4b0ef549d22a75c35bf2"
+source = "git+https://github.com/stellar/rs-soroban-env?rev=16fcb333#16fcb333aab68cdba8711839c325b0010ef7525a"
 dependencies = [
  "itertools",
  "proc-macro2",
@@ -710,7 +710,7 @@ dependencies = [
 [[package]]
 name = "soroban-native-sdk-macros"
 version = "0.0.1"
-source = "git+https://github.com/stellar/rs-soroban-env?rev=73a944a2#73a944a28051c99acb5e4b0ef549d22a75c35bf2"
+source = "git+https://github.com/stellar/rs-soroban-env?rev=16fcb333#16fcb333aab68cdba8711839c325b0010ef7525a"
 dependencies = [
  "itertools",
  "proc-macro2",
@@ -721,7 +721,7 @@ dependencies = [
 [[package]]
 name = "soroban-sdk"
 version = "0.0.3"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=0cb632cd#0cb632cd651f380acfb852766b6487419e10665b"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=499c1013#499c10137e5e8561eb8f20fce8c8639c5991ef85"
 dependencies = [
  "bytes-lit",
  "ed25519-dalek",
@@ -733,7 +733,7 @@ dependencies = [
 [[package]]
 name = "soroban-sdk-auth"
 version = "0.0.0"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=0cb632cd#0cb632cd651f380acfb852766b6487419e10665b"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=499c1013#499c10137e5e8561eb8f20fce8c8639c5991ef85"
 dependencies = [
  "soroban-sdk",
 ]
@@ -741,7 +741,7 @@ dependencies = [
 [[package]]
 name = "soroban-sdk-macros"
 version = "0.0.3"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=0cb632cd#0cb632cd651f380acfb852766b6487419e10665b"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=499c1013#499c10137e5e8561eb8f20fce8c8639c5991ef85"
 dependencies = [
  "darling",
  "itertools",
@@ -793,7 +793,7 @@ dependencies = [
 [[package]]
 name = "soroban-spec"
 version = "0.0.1"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=0cb632cd#0cb632cd651f380acfb852766b6487419e10665b"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=499c1013#499c10137e5e8561eb8f20fce8c8639c5991ef85"
 dependencies = [
  "base64",
  "darling",
@@ -814,7 +814,7 @@ dependencies = [
 [[package]]
 name = "soroban-token-contract"
 version = "0.0.2"
-source = "git+https://github.com/stellar/soroban-token-contract?rev=94040786#940407868e89972e037f5dedeb06a8d3ace50301"
+source = "git+https://github.com/stellar/soroban-token-contract?rev=a1fb93b#a1fb93b64301520aeb99804416c5bb93aa3a2b68"
 dependencies = [
  "ed25519-dalek",
  "soroban-sdk",
@@ -864,7 +864,7 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 [[package]]
 name = "stellar-xdr"
 version = "0.0.1"
-source = "git+https://github.com/stellar/rs-stellar-xdr?rev=5b129da#5b129da05a4b0ad6b1a9e0ce0b7d80f2cc1b0e70"
+source = "git+https://github.com/stellar/rs-stellar-xdr?rev=d0fb666#d0fb66619630c64331a5e496e77fffd91219fb3b"
 dependencies = [
  "base64",
  "serde",

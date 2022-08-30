@@ -11,8 +11,8 @@ use liquidity_pool::LiquidityPoolClient;
 use pool_contract::create_contract;
 use soroban_liquidity_pool_contract as liquidity_pool;
 use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env, IntoVal, Symbol};
-use soroban_sdk_auth::public_types::{Identifier, Signature};
 use soroban_sdk_auth::{check_auth, NonceAuth};
+use soroban_sdk_auth::{Identifier, Signature};
 use soroban_token_contract as token;
 use token::TokenClient;
 

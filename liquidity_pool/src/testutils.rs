@@ -1,7 +1,7 @@
 #![cfg(any(test, feature = "testutils"))]
 
 use soroban_sdk::{BigInt, BytesN, Env};
-use soroban_sdk_auth::public_types::Identifier;
+use soroban_sdk_auth::Identifier;
 
 use crate::LiquidityPoolClient;
 

@@ -6,7 +6,7 @@ use rand::thread_rng;
 use soroban_sdk::testutils::ed25519::Sign;
 
 use soroban_sdk::{BytesN, Env, RawVal, Vec};
-use soroban_sdk_auth::public_types::{Ed25519Signature, SignaturePayload, SignaturePayloadV0};
+use soroban_sdk_auth::{Ed25519Signature, SignaturePayload, SignaturePayloadV0};
 
 pub fn to_ed25519(e: &Env, kp: &Keypair) -> Identifier {
     Identifier::Ed25519(kp.public.to_bytes().into_val(e))

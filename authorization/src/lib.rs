@@ -7,9 +7,7 @@ mod test;
 
 use soroban_sdk::{contractimpl, contracttype, BigInt, Env, IntoVal, Symbol};
 use soroban_sdk_auth::{
-    check_auth,
-    public_types::{Identifier, Signature},
-    NonceAuth,
+    check_auth, NonceAuth, {Identifier, Signature},
 };
 
 #[derive(Clone)]
