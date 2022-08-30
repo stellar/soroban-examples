@@ -6,7 +6,9 @@ extern crate std;
 mod test;
 
 use soroban_sdk::{contractimpl, contracttype, BigInt, Env, IntoVal, Symbol};
-use soroban_sdk_auth::{check_auth, Identifier, NonceAuth, Signature};
+use soroban_sdk_auth::{
+    check_auth, NonceAuth, {Identifier, Signature},
+};
 
 #[derive(Clone)]
 #[contracttype]
