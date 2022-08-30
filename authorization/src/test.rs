@@ -49,9 +49,9 @@ fn test() {
     let user1_nonce = client.nonce(&user1_id);
 
     let mut args: Vec<RawVal> = Vec::new(&env);
-    args.push(user1_id.clone().into_val(&env));
-    args.push(user1_nonce.clone().into_val(&env));
-    args.push(data.clone().into_val(&env));
+    args.push_back(user1_id.clone().into_val(&env));
+    args.push_back(user1_nonce.clone().into_val(&env));
+    args.push_back(data.clone().into_val(&env));
     let auth = make_auth(&env, &user1, args, "save_data");
     client.save_data(&auth, &user1_nonce, &data);
 
@@ -60,10 +60,10 @@ fn test() {
 
     let admin_nonce = client.nonce(&admin_id);
     let mut args: Vec<RawVal> = Vec::new(&env);
-    args.push(admin_id.into_val(&env));
-    args.push(admin_nonce.clone().into_val(&env));
-    args.push(user1_id.clone().into_val(&env));
-    args.push(new_data.clone().into_val(&env));
+    args.push_back(admin_id.into_val(&env));
+    args.push_back(admin_nonce.clone().into_val(&env));
+    args.push_back(user1_id.clone().into_val(&env));
+    args.push_back(new_data.clone().into_val(&env));
     let auth = make_auth(&env, &admin, args, "overwrite");
 
     client.overwrite(&auth, &admin_nonce, &user1_id, &new_data);
@@ -85,9 +85,9 @@ fn bad_data() {
     let nonce = client.nonce(&user1_id);
 
     let mut args: Vec<RawVal> = Vec::new(&env);
-    args.push(user1_id.into_val(&env));
-    args.push(nonce.clone().into_val(&env));
-    args.push(signed_data.clone().into_val(&env));
+    args.push_back(user1_id.into_val(&env));
+    args.push_back(nonce.clone().into_val(&env));
+    args.push_back(signed_data.clone().into_val(&env));
     let auth = make_auth(&env, &user1, args, "save_data");
 
     client.save_data(&auth, &nonce, &data);

@@ -59,9 +59,9 @@ impl SingleOffer {
         let nonce = self.nonce();
 
         let mut args: Vec<RawVal> = Vec::new(&self.env);
-        args.push(to_ed25519(&self.env, admin).into_val(&self.env));
-        args.push(nonce.clone().into_val(&self.env));
-        args.push(amount.clone().into_val(&self.env));
+        args.push_back(to_ed25519(&self.env, admin).into_val(&self.env));
+        args.push_back(nonce.clone().into_val(&self.env));
+        args.push_back(amount.clone().into_val(&self.env));
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
             function: Symbol::from_str("withdraw"),
             contract: self.contract_id.clone(),
@@ -80,10 +80,10 @@ impl SingleOffer {
         let nonce = self.nonce();
 
         let mut args: Vec<RawVal> = Vec::new(&self.env);
-        args.push(to_ed25519(&self.env, admin).into_val(&self.env));
-        args.push(nonce.clone().into_val(&self.env));
-        args.push(n.into_val(&self.env));
-        args.push(d.into_val(&self.env));
+        args.push_back(to_ed25519(&self.env, admin).into_val(&self.env));
+        args.push_back(nonce.clone().into_val(&self.env));
+        args.push_back(n.into_val(&self.env));
+        args.push_back(d.into_val(&self.env));
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
             function: Symbol::from_str("updt_price"),
             contract: self.contract_id.clone(),

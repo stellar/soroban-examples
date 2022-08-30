@@ -23,7 +23,7 @@ pub fn create_contract(e: &Env, token_a: &BytesN<32>, token_b: &BytesN<32>) -> B
     salt.append(&token_a.clone().into());
     salt.append(&token_b.clone().into());
     let salt = e.compute_hash_sha256(salt);
-    e.create_contract_from_contract(bin, salt)
+    e.deployer().from_current_contract(salt).deploy(bin)
 }
 
 #[cfg(all(any(test, feature = "testutils"), not(feature = "token-wasm")))]
