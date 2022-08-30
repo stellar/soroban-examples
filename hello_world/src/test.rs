@@ -10,6 +10,6 @@ fn test() {
     env.register_contract(&contract_id, HelloContract);
     let client = HelloContractClient::new(&env, &contract_id);
 
-    let words = client.hello(&symbol!("SourBun"));
-    assert_eq!(words, vec![&env, symbol!("Hello"), symbol!("SourBun"),]);
+    let words = client.hello(&symbol!("Dev"));
+    assert_eq!(words, vec![&env, symbol!("Hello"), symbol!("Dev"),]);
 }
