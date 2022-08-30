@@ -7,11 +7,7 @@ mod test;
 pub mod testutils;
 
 use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, IntoVal, Symbol};
-use soroban_sdk_auth::{
-    check_auth,
-    public_types::{Identifier, Signature},
-    NonceAuth,
-};
+use soroban_sdk_auth::{check_auth, Identifier, NonceAuth, Signature};
 use soroban_token_contract as token;
 use token::TokenClient;
 
