@@ -4,11 +4,9 @@ mod test;
 pub mod testutils;
 mod token_contract;
 
-use crate::token_contract::create_contract;
+use crate::token_contract::{create_contract, TokenClient};
 use soroban_sdk::{contractimpl, BigInt, Bytes, BytesN, Env, IntoVal, RawVal};
 use soroban_sdk_auth::{Identifier, Signature};
-use soroban_token_contract as token;
-use token::TokenClient;
 
 #[derive(Clone, Copy)]
 #[repr(u32)]

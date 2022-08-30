@@ -10,6 +10,7 @@ crate-type = ["cdylib", "rlib"]
 [features]
 default = ["export"]
 export = []
+token-wasm = []
 testutils = ["soroban-sdk/testutils", "soroban-token-contract/testutils", "dep:ed25519-dalek", "dep:sha2", "dep:stellar-xdr"]
 
 [dependencies]

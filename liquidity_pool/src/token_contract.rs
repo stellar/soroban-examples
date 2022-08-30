@@ -13,12 +13,12 @@ use soroban_sdk::{Bytes, BytesN, Env};
 //
 // Outside of tests and testutils, we use the embedded token wasm file.
 
-#[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
-pub const TOKEN_CONTRACT: &[u8] = include_bytes!("../../soroban_token_contract.wasm");
+soroban_sdk::contractimport!(file = "../soroban_token_contract.wasm");
+pub type TokenClient = ContractClient;
 
 #[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
 pub fn create_contract(e: &Env, token_a: &BytesN<32>, token_b: &BytesN<32>) -> BytesN<32> {
-    let bin = Bytes::from_slice(e, TOKEN_CONTRACT);
+    let bin = Bytes::from_slice(e, WASM);
     let mut salt = Bytes::new(&e);
     salt.append(&token_a.clone().into());
     salt.append(&token_b.clone().into());
