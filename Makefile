@@ -5,7 +5,7 @@ all: check build test
 export RUSTFLAGS=-Dwarnings
 
 test: build-normal
-	cargo test
+	cargo hack --feature-powerset test
 
 build: build-normal build-optimized
 

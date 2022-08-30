@@ -1,9 +1,6 @@
 #![cfg(test)]
 
-use crate::{
-    testutils::{register_test_contract as register_liqpool, LiquidityPool},
-    token_contract,
-};
+use crate::testutils::{register_test_contract as register_liqpool, LiquidityPool};
 use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
 use soroban_sdk::{BigInt, BytesN, Env};
@@ -33,8 +30,15 @@ fn generate_keypair() -> Keypair {
 }
 
 fn create_token_contract(e: &Env, id: &[u8; 32], admin: &Keypair) -> Token {
-    let contract_id = BytesN::from_array(e, &id);
-    e.register_contract_wasm(&contract_id, token_contract::WASM);
+    #[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
+    {
+        soroban_token_contract::testutils::register_test_contract(&e, id);
+    }
+    #[cfg(all(any(test, feature = "testutils"), not(feature = "token-wasm")))]
+    {
+        let contract_id = BytesN::from_array(e, &id);
+        e.register_contract_wasm(&contract_id, crate::token_contract::WASM);
+    }
     let token = Token::new(e, id);
     // decimals, name, symbol don't matter in tests
     token.initialize(&to_ed25519(&e, admin), 7, "name", "symbol");
