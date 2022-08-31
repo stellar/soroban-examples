@@ -1,5 +1,5 @@
 [package]
-name = "soroban-event-hello-contract"
+name = "soroban-event-contract"
 version = "0.0.0"
 authors = ["Stellar Development Foundation <info@stellar.org>"]
 license = "Apache-2.0"
@@ -11,8 +11,6 @@ crate-type = ["cdylib", "rlib"]
 doctest = false
 
 [features]
-default = ["export"]
-export = []
 testutils = ["soroban-sdk/testutils"]
 
 [dependencies]

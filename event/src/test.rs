@@ -1,12 +1,14 @@
 #![cfg(test)]
 
 use super::*;
-use soroban_sdk::{BytesN, Env};
+use soroban_sdk::{symbol, BytesN, Env};
 
 #[test]
 fn test() {
     let env = Env::default();
     let contract_id = BytesN::from_array(&env, &[0; 32]);
     env.register_contract(&contract_id, EventContract);
-    EventContractClient::new(&env, &contract_id).hello(&Symbol::from_str("SourBun"));
+    let client = EventContractClient::new(&env, &contract_id);
+
+    client.hello(&symbol!("Dev"));
 }
