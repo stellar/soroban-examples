@@ -203,7 +203,7 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
             &WrappedAuth(to),
             nonce.clone(),
             Symbol::from_str("trade"),
-            (to_id.clone(), nonce, amount_to_sell.clone(), min.clone()).into_val(&e),
+            (&to_id, nonce, &amount_to_sell, &min).into_val(&e),
         );
 
         let price = get_price(&e);
@@ -238,7 +238,7 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
             &WrappedAuth(admin),
             nonce.clone(),
             Symbol::from_str("updt_price"),
-            (admin_id, nonce, n.clone(), d.clone()).into_val(&e),
+            (admin_id, nonce, &n, &d).into_val(&e),
         );
 
         put_price(&e, Price { n, d });

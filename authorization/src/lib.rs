@@ -66,7 +66,7 @@ impl ExampleContract {
             &NonceForSignature(sig),
             nonce.clone(),
             symbol!("save_num"),
-            (auth_id.clone(), nonce, num.clone()).into_val(&e),
+            (&auth_id, nonce, &num).into_val(&e),
         );
 
         e.contract_data().set(DataKey::SavedNum(auth_id), num);
@@ -84,7 +84,7 @@ impl ExampleContract {
             &NonceForSignature(sig),
             nonce.clone(),
             symbol!("overwrite"),
-            (auth_id, nonce, id.clone(), num.clone()).into_val(&e),
+            (auth_id, nonce, &id, &num).into_val(&e),
         );
 
         e.contract_data().set(DataKey::SavedNum(id), num);

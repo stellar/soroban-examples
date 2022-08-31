@@ -182,14 +182,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
             nonce.clone(),
             Symbol::from_str("sf_deposit"),
             (
-                to_id.clone(),
-                nonce,
-                token_a.clone(),
-                token_b.clone(),
-                desired_a.clone(),
-                min_a.clone(),
-                desired_b.clone(),
-                min_b.clone(),
+                &to_id, nonce, &token_a, &token_b, &desired_a, &min_a, &desired_b, &min_b,
             )
                 .into_val(&e),
         );
@@ -247,15 +240,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
             &WrappedAuth(to),
             nonce.clone(),
             Symbol::from_str("swap_out"),
-            (
-                to_id.clone(),
-                nonce,
-                sell.clone(),
-                buy.clone(),
-                out.clone(),
-                in_max.clone(),
-            )
-                .into_val(&e),
+            (&to_id, nonce, &sell, &buy, &out, &in_max).into_val(&e),
         );
 
         let (token_a, token_b) = sort(&sell, &buy);
@@ -321,13 +306,13 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
             nonce.clone(),
             Symbol::from_str("sf_withdrw"),
             (
-                to_id.clone(),
+                &to_id,
                 nonce,
-                token_a.clone(),
-                token_b.clone(),
-                share_amount.clone(),
-                min_a.clone(),
-                min_b.clone(),
+                &token_a,
+                &token_b,
+                &share_amount,
+                &min_a,
+                &min_b,
             )
                 .into_val(&e),
         );

@@ -3,7 +3,7 @@
 use crate::{Price, SingleOfferClient};
 use ed25519_dalek::Keypair;
 use soroban_sdk::testutils::ed25519::Sign;
-use soroban_sdk::{BigInt, BytesN, Env, IntoVal, RawVal, Symbol, Vec};
+use soroban_sdk::{BigInt, BytesN, Env, IntoVal, Symbol};
 use soroban_sdk_auth::{
     Ed25519Signature, Identifier, Signature, SignaturePayload, SignaturePayloadV0,
 };
@@ -57,16 +57,13 @@ impl SingleOffer {
 
     pub fn withdraw(&self, admin: &Keypair, amount: &BigInt) {
         let nonce = self.nonce();
+        let admin_id = to_ed25519(&self.env, admin);
 
-        let mut args: Vec<RawVal> = Vec::new(&self.env);
-        args.push_back(to_ed25519(&self.env, admin).into_val(&self.env));
-        args.push_back(nonce.clone().into_val(&self.env));
-        args.push_back(amount.clone().into_val(&self.env));
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
             function: Symbol::from_str("withdraw"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
-            args,
+            args: (admin_id, &nonce, amount).into_val(&self.env),
         });
         let auth = Signature::Ed25519(Ed25519Signature {
             public_key: admin.public.to_bytes().into_val(&self.env),
@@ -78,17 +75,13 @@ impl SingleOffer {
 
     pub fn updt_price(&self, admin: &Keypair, n: u32, d: u32) {
         let nonce = self.nonce();
+        let admin_id = to_ed25519(&self.env, admin);
 
-        let mut args: Vec<RawVal> = Vec::new(&self.env);
-        args.push_back(to_ed25519(&self.env, admin).into_val(&self.env));
-        args.push_back(nonce.clone().into_val(&self.env));
-        args.push_back(n.into_val(&self.env));
-        args.push_back(d.into_val(&self.env));
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
             function: Symbol::from_str("updt_price"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
-            args,
+            args: (admin_id, &nonce, n, d).into_val(&self.env),
         });
         let auth = Signature::Ed25519(Ed25519Signature {
             public_key: admin.public.to_bytes().into_val(&self.env),
