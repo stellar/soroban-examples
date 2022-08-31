@@ -1,3 +1,5 @@
+#![no_std]
+
 use soroban_sdk::contractimpl;
 
 pub struct ContractA;
