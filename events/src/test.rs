@@ -7,8 +7,8 @@ use soroban_sdk::{symbol, BytesN, Env};
 fn test() {
     let env = Env::default();
     let contract_id = BytesN::from_array(&env, &[0; 32]);
-    env.register_contract(&contract_id, EventContract);
-    let client = EventContractClient::new(&env, &contract_id);
+    env.register_contract(&contract_id, EventsContract);
+    let client = EventsContractClient::new(&env, &contract_id);
 
     client.hello(&symbol!("Dev"));
 }

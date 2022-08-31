@@ -1,15 +1,15 @@
 #![no_std]
 use soroban_sdk::{contractimpl, map, symbol, Env, Symbol};
 
-pub struct EventContract;
+pub struct EventsContract;
 
 #[contractimpl]
-impl EventContract {
+impl EventsContract {
     pub fn hello(env: Env, to: Symbol) -> () {
-        let event = env.events();
+        let events = env.events();
         let topics = (symbol!("Hello"), to);
         let data = map![&env, (1u32, 2u32)];
-        event.publish(topics, data);
+        events.publish(topics, data);
     }
 }
 

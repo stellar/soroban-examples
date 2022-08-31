@@ -666,7 +666,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "soroban-event-contract"
+name = "soroban-events-contract"
 version = "0.0.0"
 dependencies = [
  "soroban-sdk",
