@@ -1,7 +1,7 @@
 #![cfg(any(test, feature = "testutils"))]
 use ed25519_dalek::Keypair;
 use soroban_sdk::testutils::ed25519::Sign;
-use soroban_sdk::{BigInt, BytesN, Env, IntoVal, RawVal, Symbol, Vec};
+use soroban_sdk::{BigInt, BytesN, Env, IntoVal, Symbol};
 use soroban_sdk_auth::{
     Ed25519Signature, Identifier, Signature, SignaturePayload, SignaturePayloadV0,
 };
@@ -44,17 +44,11 @@ impl SingleOfferRouter {
         let to_id = to_ed25519(&self.env, &to);
         let nonce = self.nonce(&to_id);
 
-        let mut args: Vec<RawVal> = Vec::new(&self.env);
-        args.push_back(to_id.clone().into_val(&self.env));
-        args.push_back(nonce.clone().into_val(&self.env));
-        args.push_back(offer.clone().into_val(&self.env));
-        args.push_back(amount.clone().into_val(&self.env));
-        args.push_back(min.clone().into_val(&self.env));
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
             function: Symbol::from_str("safe_trade"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
-            args,
+            args: (to_id, &nonce, offer, amount, min).into_val(&self.env),
         });
         let auth = Signature::Ed25519(Ed25519Signature {
             public_key: to.public.to_bytes().into_val(&self.env),
