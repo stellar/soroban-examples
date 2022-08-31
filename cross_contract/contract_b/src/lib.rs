@@ -1,6 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{contractimpl, vec, BytesN, Env, IntoVal, Symbol};
+use soroban_sdk::{contractimpl, BytesN, Env};
 
 mod contract_a {
     soroban_sdk::contractimport!(
@@ -13,11 +13,8 @@ pub struct ContractB;
 #[contractimpl]
 impl ContractB {
     pub fn add_with(env: Env, contract_id: BytesN<32>, x: u32, y: u32) -> u32 {
-        env.invoke_contract(
-            &contract_id,
-            &Symbol::from_str("add"),
-            vec![&env, x.into_env_val(&env), y.into_env_val(&env)],
-        )
+        let client = contract_a::ContractClient::new(&env, contract_id);
+        client.add(&x, &y)
     }
 }
 
