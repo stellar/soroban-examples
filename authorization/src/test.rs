@@ -16,15 +16,15 @@ fn make_identifier(e: &Env, kp: &Keypair) -> Identifier {
     Identifier::Ed25519(kp.public.to_bytes().into_val(e))
 }
 
-fn make_auth(e: &Env, kp: &Keypair, function: &str, args: Vec<RawVal>) -> Signature {
+fn make_signature(e: &Env, kp: &Keypair, function: &str, args: Vec<RawVal>) -> Signature {
     let msg = SignaturePayload::V0(SignaturePayloadV0 {
         function: Symbol::from_str(function),
-        contract: BytesN::from_array(&e, &[0; 32]),
+        contract: BytesN::from_array(e, &[0; 32]),
         network: e.ledger().network_passphrase(),
         args,
     });
     Signature::Ed25519(Ed25519Signature {
-        public_key: BytesN::from_array(&e, &kp.public.to_bytes()),
+        public_key: BytesN::from_array(e, &kp.public.to_bytes()),
         signature: kp.sign(msg).unwrap().into_val(e),
     })
 }
@@ -48,26 +48,26 @@ fn test() {
 
     let user1_nonce = client.nonce(&user1_id);
 
-    let auth = make_auth(
+    let sig = make_signature(
         &env,
         &user1_kp,
         "save_num",
         (&user1_id, &user1_nonce, &num).into_val(&env),
     );
-    client.save_num(&auth, &user1_nonce, &num);
+    client.save_num(&sig, &user1_nonce, &num);
 
     // 3. Overwrite user1's num using admin.
     let new_num = BigInt::from_u32(&env, 10);
 
     let admin_nonce = client.nonce(&admin_id);
-    let auth = make_auth(
+    let sig = make_signature(
         &env,
         &admin_kp,
         "overwrite",
         (&admin_id, &admin_nonce, &user1_id, &new_num).into_val(&env),
     );
 
-    client.overwrite(&auth, &admin_nonce, &user1_id, &new_num);
+    client.overwrite(&sig, &admin_nonce, &user1_id, &new_num);
 }
 
 #[test]
@@ -85,7 +85,7 @@ fn bad_data() {
 
     let nonce = client.nonce(&user1_id);
 
-    let auth = make_auth(
+    let sig = make_signature(
         &env,
         &user1_kp,
         "save_data",
@@ -95,5 +95,5 @@ fn bad_data() {
     // 2. Attempt to invoke with user1's signature, but with different
     // arguments. Expect panic.
     let bad_num = BigInt::from_u32(&env, 2);
-    client.save_num(&auth, &nonce, &bad_num);
+    client.save_num(&sig, &nonce, &bad_num);
 }

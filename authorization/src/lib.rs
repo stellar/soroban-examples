@@ -58,12 +58,12 @@ impl ExampleContract {
     }
 
     /// Save the number for an authenticated [Identifier].
-    pub fn save_num(e: Env, auth: Signature, nonce: BigInt, num: BigInt) {
-        let auth_id = auth.get_identifier(&e);
+    pub fn save_num(e: Env, sig: Signature, nonce: BigInt, num: BigInt) {
+        let auth_id = sig.get_identifier(&e);
 
         check_auth(
             &e,
-            &NonceForSignature(auth),
+            &NonceForSignature(sig),
             nonce.clone(),
             symbol!("save_num"),
             (auth_id.clone(), nonce, num.clone()).into_val(&e),
@@ -73,15 +73,15 @@ impl ExampleContract {
     }
 
     // The admin can write data for any Identifier
-    pub fn overwrite(e: Env, auth: Signature, nonce: BigInt, id: Identifier, num: BigInt) {
-        let auth_id = auth.get_identifier(&e);
+    pub fn overwrite(e: Env, sig: Signature, nonce: BigInt, id: Identifier, num: BigInt) {
+        let auth_id = sig.get_identifier(&e);
         if auth_id != e.contract_data().get_unchecked(DataKey::Admin).unwrap() {
             panic!("not authorized by admin")
         }
 
         check_auth(
             &e,
-            &NonceForSignature(auth),
+            &NonceForSignature(sig),
             nonce.clone(),
             symbol!("overwrite"),
             (auth_id, nonce, id.clone(), num.clone()).into_val(&e),
@@ -90,7 +90,7 @@ impl ExampleContract {
         e.contract_data().set(DataKey::SavedNum(id), num);
     }
 
-    pub fn nonce(e: Env, to: Identifier) -> BigInt {
-        read_nonce(&e, to)
+    pub fn nonce(e: Env, id: Identifier) -> BigInt {
+        read_nonce(&e, id)
     }
 }
