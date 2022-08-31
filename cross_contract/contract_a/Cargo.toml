@@ -1,5 +1,5 @@
 [package]
-name = "soroban-cross-contract-calls-contract"
+name = "soroban-cross-contract-a-contract"
 version = "0.0.0"
 authors = ["Stellar Development Foundation <info@stellar.org>"]
 license = "Apache-2.0"
