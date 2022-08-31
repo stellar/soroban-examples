@@ -11,8 +11,6 @@ crate-type = ["cdylib", "rlib"]
 doctest = false
 
 [features]
-default = ["export"]
-export = []
 testutils = ["soroban-sdk/testutils"]
 
 [dependencies]
