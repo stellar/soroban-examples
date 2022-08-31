@@ -13,6 +13,7 @@ members = [
     "single_offer",
     "single_offer_xfer_from",
     "single_offer_router",
+    "events",
 ]
 
 [profile.release]
