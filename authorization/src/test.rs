@@ -5,26 +5,26 @@ use ed25519_dalek::Keypair;
 use rand::thread_rng;
 use soroban_sdk::testutils::ed25519::Sign;
 
-use soroban_sdk::{BytesN, Env, RawVal, Vec};
+use soroban_sdk::{BytesN, Env, RawVal, Symbol, Vec};
 use soroban_sdk_auth::{Ed25519Signature, SignaturePayload, SignaturePayloadV0};
-
-pub fn to_ed25519(e: &Env, kp: &Keypair) -> Identifier {
-    Identifier::Ed25519(kp.public.to_bytes().into_val(e))
-}
 
 fn generate_keypair() -> Keypair {
     Keypair::generate(&mut thread_rng())
 }
 
-fn make_auth(e: &Env, kp: &Keypair, args: Vec<RawVal>, function: &str) -> Signature {
+fn make_identifier(e: &Env, kp: &Keypair) -> Identifier {
+    Identifier::Ed25519(kp.public.to_bytes().into_val(e))
+}
+
+fn make_signature(e: &Env, kp: &Keypair, function: &str, args: Vec<RawVal>) -> Signature {
     let msg = SignaturePayload::V0(SignaturePayloadV0 {
         function: Symbol::from_str(function),
-        contract: BytesN::from_array(&e, &[0; 32]),
+        contract: BytesN::from_array(e, &[0; 32]),
         network: e.ledger().network_passphrase(),
         args,
     });
     Signature::Ed25519(Ed25519Signature {
-        public_key: BytesN::from_array(&e, &kp.public.to_bytes()),
+        public_key: BytesN::from_array(e, &kp.public.to_bytes()),
         signature: kp.sign(msg).unwrap().into_val(e),
     })
 }
@@ -33,40 +33,41 @@ fn make_auth(e: &Env, kp: &Keypair, args: Vec<RawVal>, function: &str) -> Signat
 fn test() {
     let env = Env::default();
     let contract_id = BytesN::from_array(&env, &[0; 32]);
-    env.register_contract(&contract_id, AuthContract);
+    env.register_contract(&contract_id, ExampleContract);
+    let client = ExampleContractClient::new(&env, contract_id);
 
-    // 1. set the admin
-    let admin = generate_keypair();
-    let admin_id = to_ed25519(&env, &admin);
-    let client = AuthContractClient::new(&env, contract_id);
+    // 1. Initialize contract by setting the admin.
+    let admin_kp = generate_keypair();
+    let admin_id = make_identifier(&env, &admin_kp);
     client.set_admin(&admin_id);
 
-    // 2. store data with user1's auth
-    let user1 = generate_keypair();
-    let user1_id = to_ed25519(&env, &user1);
-    let data = BigInt::from_u32(&env, 2);
+    // 2. Store a num for user1.
+    let user1_kp = generate_keypair();
+    let user1_id = make_identifier(&env, &user1_kp);
+    let num = BigInt::from_u32(&env, 2);
 
     let user1_nonce = client.nonce(&user1_id);
 
-    let mut args: Vec<RawVal> = Vec::new(&env);
-    args.push_back(user1_id.clone().into_val(&env));
-    args.push_back(user1_nonce.clone().into_val(&env));
-    args.push_back(data.clone().into_val(&env));
-    let auth = make_auth(&env, &user1, args, "save_data");
-    client.save_data(&auth, &user1_nonce, &data);
+    let sig = make_signature(
+        &env,
+        &user1_kp,
+        "save_num",
+        (&user1_id, &user1_nonce, &num).into_val(&env),
+    );
+    client.save_num(&sig, &user1_nonce, &num);
 
-    // 3. Overwrite user1's data using admin
-    let new_data = BigInt::from_u32(&env, 10);
+    // 3. Overwrite user1's num using admin.
+    let new_num = BigInt::from_u32(&env, 10);
 
     let admin_nonce = client.nonce(&admin_id);
-    let mut args: Vec<RawVal> = Vec::new(&env);
-    args.push_back(admin_id.into_val(&env));
-    args.push_back(admin_nonce.clone().into_val(&env));
-    args.push_back(user1_id.clone().into_val(&env));
-    args.push_back(new_data.clone().into_val(&env));
-    let auth = make_auth(&env, &admin, args, "overwrite");
+    let sig = make_signature(
+        &env,
+        &admin_kp,
+        "overwrite",
+        (&admin_id, &admin_nonce, &user1_id, &new_num).into_val(&env),
+    );
 
-    client.overwrite(&auth, &admin_nonce, &user1_id, &new_data);
+    client.overwrite(&sig, &admin_nonce, &user1_id, &new_num);
 }
 
 #[test]
@@ -74,21 +75,25 @@ fn test() {
 fn bad_data() {
     let env = Env::default();
     let contract_id = BytesN::from_array(&env, &[0; 32]);
-    env.register_contract(&contract_id, AuthContract);
+    env.register_contract(&contract_id, ExampleContract);
+    let client = ExampleContractClient::new(&env, contract_id);
 
-    let user1 = generate_keypair();
-    let user1_id = to_ed25519(&env, &user1);
-    let signed_data = BigInt::from_u32(&env, 1);
-    let data = BigInt::from_u32(&env, 2);
+    // 1. Sign arguments with user1's keypair.
+    let user1_kp = generate_keypair();
+    let user1_id = make_identifier(&env, &user1_kp);
+    let signed_num = BigInt::from_u32(&env, 1);
 
-    let client = AuthContractClient::new(&env, contract_id);
     let nonce = client.nonce(&user1_id);
 
-    let mut args: Vec<RawVal> = Vec::new(&env);
-    args.push_back(user1_id.into_val(&env));
-    args.push_back(nonce.clone().into_val(&env));
-    args.push_back(signed_data.clone().into_val(&env));
-    let auth = make_auth(&env, &user1, args, "save_data");
+    let sig = make_signature(
+        &env,
+        &user1_kp,
+        "save_data",
+        (&user1_id, &nonce, &signed_num).into_val(&env),
+    );
 
-    client.save_data(&auth, &nonce, &data);
+    // 2. Attempt to invoke with user1's signature, but with different
+    // arguments. Expect panic.
+    let bad_num = BigInt::from_u32(&env, 2);
+    client.save_num(&sig, &nonce, &bad_num);
 }
