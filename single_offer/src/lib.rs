@@ -238,7 +238,7 @@ impl SingleOfferTrait for SingleOffer {
             &WrappedAuth(admin),
             nonce.clone(),
             Symbol::from_str("withdraw"),
-            (admin_id, nonce, amount.clone()).into_val(&e),
+            (admin_id, nonce, &amount).into_val(&e),
         );
 
         transfer_sell(&e, read_administrator(&e), amount);
@@ -257,7 +257,7 @@ impl SingleOfferTrait for SingleOffer {
             &WrappedAuth(admin),
             nonce.clone(),
             Symbol::from_str("updt_price"),
-            (admin_id, nonce, n.clone(), d.clone()).into_val(&e),
+            (admin_id, nonce, &n, &d).into_val(&e),
         );
 
         put_price(&e, Price { n, d });
