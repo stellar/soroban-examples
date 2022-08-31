@@ -5,30 +5,29 @@ extern crate std;
 
 mod test;
 
-use soroban_sdk::{contractimpl, contracttype, BigInt, Env, IntoVal, Symbol};
+use soroban_sdk::{contractimpl, contracttype, symbol, BigInt, Env, IntoVal};
 use soroban_sdk_auth::{
     check_auth, NonceAuth, {Identifier, Signature},
 };
 
-#[derive(Clone)]
 #[contracttype]
 pub enum DataKey {
-    Acc(Identifier),
+    SavedNum(Identifier),
     Nonce(Identifier),
     Admin,
 }
 
 fn read_nonce(e: &Env, id: Identifier) -> BigInt {
     let key = DataKey::Nonce(id);
-    if let Some(nonce) = e.contract_data().get(key) {
-        nonce.unwrap()
-    } else {
-        BigInt::zero(e)
-    }
+    e.contract_data()
+        .get(key)
+        .unwrap_or_else(|| Ok(BigInt::zero(e)))
+        .unwrap()
 }
-struct WrappedAuth(Signature);
 
-impl NonceAuth for WrappedAuth {
+struct NonceForSignature(Signature);
+
+impl NonceAuth for NonceForSignature {
     fn read_nonce(e: &Env, id: Identifier) -> BigInt {
         read_nonce(e, id)
     }
@@ -36,8 +35,7 @@ impl NonceAuth for WrappedAuth {
     fn read_and_increment_nonce(&self, e: &Env, id: Identifier) -> BigInt {
         let key = DataKey::Nonce(id.clone());
         let nonce = Self::read_nonce(e, id);
-        e.contract_data()
-            .set(key, nonce.clone() + BigInt::from_u32(e, 1));
+        e.contract_data().set(key, &nonce + 1);
         nonce
     }
 
@@ -46,12 +44,11 @@ impl NonceAuth for WrappedAuth {
     }
 }
 
-pub struct AuthContract;
+pub struct ExampleContract;
 
-#[cfg_attr(feature = "export", contractimpl)]
-#[cfg_attr(not(feature = "export"), contractimpl(export = false))]
-impl AuthContract {
-    // Sets the admin identifier
+#[contractimpl]
+impl ExampleContract {
+    /// Set the admin identifier. May be called only once.
     pub fn set_admin(e: Env, admin: Identifier) {
         if e.contract_data().has(DataKey::Admin) {
             panic!("admin is already set")
@@ -60,19 +57,19 @@ impl AuthContract {
         e.contract_data().set(DataKey::Admin, admin);
     }
 
-    // Saves data that corresponds to an Identifier, with that Identifiers authorization
-    pub fn save_data(e: Env, auth: Signature, nonce: BigInt, num: BigInt) {
+    /// Save the number for an authenticated [Identifier].
+    pub fn save_num(e: Env, auth: Signature, nonce: BigInt, num: BigInt) {
         let auth_id = auth.get_identifier(&e);
 
         check_auth(
             &e,
-            &WrappedAuth(auth),
+            &NonceForSignature(auth),
             nonce.clone(),
-            Symbol::from_str("save_data"),
+            symbol!("save_num"),
             (auth_id.clone(), nonce, num.clone()).into_val(&e),
         );
 
-        e.contract_data().set(DataKey::Acc(auth_id), num);
+        e.contract_data().set(DataKey::SavedNum(auth_id), num);
     }
 
     // The admin can write data for any Identifier
@@ -84,13 +81,13 @@ impl AuthContract {
 
         check_auth(
             &e,
-            &WrappedAuth(auth),
+            &NonceForSignature(auth),
             nonce.clone(),
-            Symbol::from_str("overwrite"),
+            symbol!("overwrite"),
             (auth_id, nonce, id.clone(), num.clone()).into_val(&e),
         );
 
-        e.contract_data().set(DataKey::Acc(id), num);
+        e.contract_data().set(DataKey::SavedNum(id), num);
     }
 
     pub fn nonce(e: Env, to: Identifier) -> BigInt {

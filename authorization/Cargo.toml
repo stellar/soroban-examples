@@ -8,8 +8,6 @@ publish = false
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["export"]
-export = []
 testutils = ["soroban-sdk/testutils", "soroban-sdk-auth/testutils", "dep:ed25519-dalek"]
 
 [dependencies]
