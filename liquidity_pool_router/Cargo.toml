@@ -1,5 +1,5 @@
 [package]
-name = "soroban-liquidity-pool-contract"
+name = "soroban-liquidity-pool-router-contract"
 version = "0.0.0"
 edition = "2021"
 publish = false
@@ -10,21 +10,22 @@ crate-type = ["cdylib", "rlib"]
 [features]
 default = ["export"]
 export = []
-token-wasm = []
-testutils = ["soroban-sdk/testutils", "soroban-token-contract/testutils", "dep:ed25519-dalek", "dep:sha2", "dep:stellar-xdr"]
+testutils = ["soroban-sdk/testutils", "soroban-token-contract/testutils","soroban-liquidity-pool-contract/testutils","dep:ed25519-dalek", "dep:sha2", "dep:stellar-xdr"]
 
 [dependencies]
 soroban-sdk = "0.0.4"
 soroban-auth = "0.0.4"
 soroban-token-contract = { git = "https://github.com/stellar/soroban-token-contract", rev = "46ca69b8", default-features = false }
-stellar-xdr = { version = "0.0.2", features = ["next", "std"], optional = true }
+soroban-liquidity-pool-contract = { path = "../liquidity_pool", version = "0.0.0", default-features = false }
 ed25519-dalek = { version = "1.0.1", optional = true }
+stellar-xdr = { version = "0.0.2", features = ["next", "std"], optional = true }
 sha2 = { version = "0.10.2", optional = true }
 
 [dev_dependencies]
-soroban-env-host = { version = "0.0.4" }
 soroban-sdk = { version = "0.0.4", features = ["testutils"] }
+soroban-auth = { version = "0.0.4", features = ["testutils"] }
 soroban-token-contract = { git = "https://github.com/stellar/soroban-token-contract", rev = "46ca69b8", default-features = false, features = ["testutils"] }
+soroban-liquidity-pool-contract = { path = "../liquidity_pool", version = "0.0.0", default-features = false, features = ["testutils"] }
 stellar-xdr = { version = "0.0.2", features = ["next", "std"] }
 ed25519-dalek = { version = "1.0.1" }
 sha2 = { version = "0.10.2" }

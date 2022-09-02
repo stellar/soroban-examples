@@ -2,12 +2,18 @@
 resolver = "2"
 
 members = [
+    "authorization",
     "hello_world",
     "increment",
     "custom_types",
-    "cross_contract_calls",
+    "cross_contract/contract_a",
+    "cross_contract/contract_b",
     "liquidity_pool",
+    "liquidity_pool_router",
     "single_offer",
+    "single_offer_xfer_from",
+    "single_offer_router",
+    "events",
 ]
 
 [profile.release]
@@ -19,3 +25,14 @@ debug-assertions = false
 panic = "abort"
 codegen-units = 1
 lto = true
+
+[patch.crates-io]
+soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "06e73968" }
+soroban-auth = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "06e73968" }
+soroban-sdk-macros = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "06e73968" }
+soroban-env-common = { git = "https://github.com/stellar/rs-soroban-env", rev = "c8bc71d" }
+soroban-env-guest = { git = "https://github.com/stellar/rs-soroban-env", rev = "c8bc71d" }
+soroban-env-host = { git = "https://github.com/stellar/rs-soroban-env", rev = "c8bc71d" }
+soroban-env-macros = { git = "https://github.com/stellar/rs-soroban-env", rev = "c8bc71d" }
+soroban-native-sdk-macros = { git = "https://github.com/stellar/rs-soroban-env", rev = "c8bc71d" }
+stellar-xdr = { git = "https://github.com/stellar/rs-stellar-xdr", rev = "fee9a43" }

@@ -1,29 +1,43 @@
-use soroban_sdk::{Binary, Env, FixedBinary};
-use soroban_token_contract::public_types::U256;
+#![allow(unused)]
+use soroban_sdk::{Bytes, BytesN, Env};
 
-#[cfg(not(feature = "testutils"))]
-pub const TOKEN_CONTRACT: &[u8] = include_bytes!("../../soroban_token_contract.wasm");
+// Creating the token contract happens a couple different ways depending on the
+// situation:
+//
+// In tests, or when imported with testutils, without the token-wasm
+// feature, we use the imported token contract library and register it manually
+// as a test contract.
+//
+// In tests, when token-wasm feature is enabled, we use the embedded token wasm
+// file.
+//
+// Outside of tests and testutils, we use the embedded token wasm file.
 
-#[cfg(not(feature = "testutils"))]
-pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> FixedBinary<32> {
-    let bin = Binary::from_slice(e, TOKEN_CONTRACT);
-    let mut salt = Binary::new(&e);
+soroban_sdk::contractimport!(file = "../soroban_token_contract.wasm");
+pub type TokenClient = ContractClient;
+
+#[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
+pub fn create_contract(e: &Env, token_a: &BytesN<32>, token_b: &BytesN<32>) -> BytesN<32> {
+    let bin = Bytes::from_slice(e, WASM);
+    let mut salt = Bytes::new(&e);
     salt.append(&token_a.clone().into());
     salt.append(&token_b.clone().into());
     let salt = e.compute_hash_sha256(salt);
-    e.create_contract_from_contract(bin, salt)
+    e.deployer().from_current_contract(salt).deploy(bin)
 }
 
-#[cfg(feature = "testutils")]
-use soroban_sdk::IntoVal;
-#[cfg(feature = "testutils")]
-pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> FixedBinary<32> {
+#[cfg(all(any(test, feature = "testutils"), not(feature = "token-wasm")))]
+extern crate std;
+
+#[cfg(all(any(test, feature = "testutils"), not(feature = "token-wasm")))]
+pub fn create_contract(e: &Env, token_a: &BytesN<32>, token_b: &BytesN<32>) -> BytesN<32> {
     use sha2::{Digest, Sha256};
+    use soroban_sdk::IntoVal;
     use std::vec::Vec;
     use stellar_xdr::{Hash, HashIdPreimage, HashIdPreimageContractId, Uint256, WriteXdr};
 
     let salt = {
-        let mut salt_bin = Binary::new(&e);
+        let mut salt_bin = Bytes::new(&e);
         salt_bin.append(&token_a.clone().into());
         salt_bin.append(&token_b.clone().into());
         Uint256(e.compute_hash_sha256(salt_bin).into())
@@ -31,14 +45,13 @@ pub fn create_contract(e: &Env, token_a: &U256, token_b: &U256) -> FixedBinary<3
 
     let contract_id = Hash(e.get_current_contract().into());
 
-    let new_contract_id = {
-        let pre_image =
-            HashIdPreimage::ContractIdFromContract(HashIdPreimageContractId { contract_id, salt });
-        let mut buf = Vec::new();
-        pre_image.write_xdr(&mut buf).unwrap();
-        Sha256::digest(buf).into_val(e)
-    };
+    let pre_image =
+        HashIdPreimage::ContractIdFromContract(HashIdPreimageContractId { contract_id, salt });
+
+    let mut buf = Vec::new();
+    pre_image.write_xdr(&mut buf).unwrap();
+    let new_contract_id = Sha256::digest(buf).into();
 
     soroban_token_contract::testutils::register_test_contract(e, &new_contract_id);
-    FixedBinary::from_array(e, new_contract_id)
+    BytesN::from_array(e, &new_contract_id)
 }

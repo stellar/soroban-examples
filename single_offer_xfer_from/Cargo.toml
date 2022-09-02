@@ -1,5 +1,5 @@
 [package]
-name = "soroban-single-offer-contract"
+name = "soroban-single-offer-contract-xfer-from"
 version = "0.0.0"
 edition = "2021"
 publish = false
@@ -8,6 +8,7 @@ publish = false
 crate-type = ["cdylib", "rlib"]
 
 [features]
+default = ["export"]
 export = []
 testutils = ["soroban-sdk/testutils", "soroban-token-contract/testutils", "dep:ed25519-dalek"]
 

@@ -44,14 +44,6 @@ fn get_buy_token(e: &Env) -> BytesN<32> {
     e.contract_data().get_unchecked(DataKey::BuyToken).unwrap()
 }
 
-fn get_balance(e: &Env, contract_id: BytesN<32>) -> BigInt {
-    TokenClient::new(&e, contract_id).balance(&get_contract_id(e))
-}
-
-fn get_balance_buy(e: &Env) -> BigInt {
-    get_balance(&e, get_buy_token(&e))
-}
-
 fn put_sell_token(e: &Env, contract_id: BytesN<32>) {
     e.contract_data().set(DataKey::SellToken, contract_id);
 }
@@ -64,22 +56,28 @@ fn put_price(e: &Env, price: Price) {
     e.contract_data().set(DataKey::Price, price);
 }
 
-fn load_price(e: &Env) -> Price {
+fn get_price(e: &Env) -> Price {
     e.contract_data().get_unchecked(DataKey::Price).unwrap()
 }
 
-fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
-    let client = TokenClient::new(&e, contract_id);
+fn transfer_from(
+    e: &Env,
+    contract_id: BytesN<32>,
+    from: &Identifier,
+    to: &Identifier,
+    amount: &BigInt,
+) {
+    let client = TokenClient::new(&e, &contract_id);
     let nonce = client.nonce(&get_contract_id(&e));
-    client.xfer(&Signature::Contract, &nonce, &to, &amount);
+    client.xfer_from(&Signature::Contract, &nonce, &from, &to, &amount)
 }
 
-fn transfer_sell(e: &Env, to: Identifier, amount: BigInt) {
-    transfer(&e, get_sell_token(&e), to, amount);
+fn transfer_sell(e: &Env, from: &Identifier, to: &Identifier, amount: &BigInt) {
+    transfer_from(&e, get_sell_token(&e), from, to, amount);
 }
 
-fn transfer_buy(e: &Env, to: Identifier, amount: BigInt) {
-    transfer(&e, get_buy_token(&e), to, amount);
+fn transfer_buy(e: &Env, from: &Identifier, to: &Identifier, amount: &BigInt) {
+    transfer_from(&e, get_buy_token(&e), from, to, amount);
 }
 
 fn has_administrator(e: &Env) -> bool {
@@ -136,16 +134,14 @@ impl NonceAuth for WrappedAuth {
 How to use this contract to trade
 
 1. call initialize(seller, USDC_ADDR, BTC_ADDR, 1, 10). Seller is now the admin
-2. seller sends 20 USDC to this contracts address.
-3. buyer sends 1 BTC to this contracts address AND calls trade(buyer, 10). This contract will send 1 BTC to
-   seller and 10 USDC to buyer. If these two actions are not done atomically, then the 1 BTC sent to this
-   address can be taken by another user calling trade.
-4. call withdraw(sellerAuth, 10). This will send the remaining 10 USDC in the contract back to seller.
-   The sellers nonce is required to create the Authorization, which can be retrieved by calling nonce()
+2. seller calls USDC.approve(seller_auth, offer_contract, 10)
+3. buyer calls BTC.approve(buyer_auth, offer_contract, 1)
+4. buyer calls trade(buyer_auth, 1, 10). This contract will send 1 BTC to
+   seller and 10 USDC to buyer.
 */
-pub trait SingleOfferTrait {
+
+pub trait SingleOfferXferFromTrait {
     // See comment above the Price struct for information on pricing
-    // Sets the admin, the sell/buy tokens, and the price
     fn initialize(
         e: Env,
         admin: Identifier,
@@ -155,35 +151,28 @@ pub trait SingleOfferTrait {
         d: u32,
     );
 
-    // Returns the nonce for the admin
-    fn nonce(e: Env) -> BigInt;
+    // Returns the current nonce for "id"
+    fn nonce(e: Env, id: Identifier) -> BigInt;
 
-    // Sends the full balance of this contracts buy_token balance (let's call this BuyB) to the admin, and
-    // also sends buyB * d / n of the sell_token to the "to" identifier specified in trade call. Note that
-    // the seller and the buyer need to transfer the sell_token and buy_token to this contract prior to calling
-    // trade. Due to this and the fact that the buyer is a parameter to trade, the buyer must tranfer the buy_token
-    // to the contract and call trade in the same transaction for safety.
-    fn trade(e: Env, to: Identifier, min: BigInt);
-
-    // Sends amount of sell_token from this contract to the admin. Must be authorized by admin
-    fn withdraw(e: Env, admin: Signature, nonce: BigInt, amount: BigInt);
+    // Sends amount_to_sell of buy_token to the admin, and sends amount_to_sell * d / n of
+    // sell_token to "to". Allowances must be sufficient for this contract address to send
+    // sell_token from admin and buy_token from "to". Needs to be authorized by "to".
+    // (Signature is required because a different entity
+    // could submit the trade with a bad min, or the admin could change the price and then
+    // call trade).
+    fn trade(e: Env, to: Signature, nonce: BigInt, amount_to_sell: BigInt, min: BigInt);
 
     // Updates the price. Must be authorized by admin
     fn updt_price(e: Env, admin: Signature, nonce: BigInt, n: u32, d: u32);
 
     // Get the current price
     fn get_price(e: Env) -> Price;
-
-    fn get_sell(e: Env) -> BytesN<32>;
-
-    fn get_buy(e: Env) -> BytesN<32>;
 }
 
-pub struct SingleOffer;
+struct SingleOfferXferFrom;
 
-#[cfg_attr(feature = "export", contractimpl)]
-#[cfg_attr(not(feature = "export"), contractimpl(export = false))]
-impl SingleOfferTrait for SingleOffer {
+#[contractimpl]
+impl SingleOfferXferFromTrait for SingleOfferXferFrom {
     fn initialize(
         e: Env,
         admin: Identifier,
@@ -207,41 +196,33 @@ impl SingleOfferTrait for SingleOffer {
         put_price(&e, Price { n, d });
     }
 
-    fn trade(e: Env, to: Identifier, min: BigInt) {
-        let balance_buy_token = get_balance_buy(&e);
+    fn trade(e: Env, to: Signature, nonce: BigInt, amount_to_sell: BigInt, min: BigInt) {
+        let to_id = to.get_identifier(&e);
+        check_auth(
+            &e,
+            &WrappedAuth(to),
+            nonce.clone(),
+            Symbol::from_str("trade"),
+            (&to_id, nonce, &amount_to_sell, &min).into_val(&e),
+        );
 
-        let price = load_price(&e);
+        let price = get_price(&e);
 
-        let amount = balance_buy_token.clone() * BigInt::from_u32(&e, price.d)
-            / BigInt::from_u32(&e, price.n);
+        let amount =
+            amount_to_sell.clone() * BigInt::from_u32(&e, price.d) / BigInt::from_u32(&e, price.n);
 
         if amount < min {
             panic!("will receive less than min");
         }
 
-        transfer_sell(&e, to, amount);
-
         let admin = read_administrator(&e);
-        transfer_buy(&e, admin, balance_buy_token);
+
+        transfer_sell(&e, &admin, &to_id, &amount);
+        transfer_buy(&e, &to_id, &admin, &amount_to_sell);
     }
 
-    fn nonce(e: Env) -> BigInt {
-        read_nonce(&e, read_administrator(&e))
-    }
-
-    fn withdraw(e: Env, admin: Signature, nonce: BigInt, amount: BigInt) {
-        check_admin(&e, &admin);
-        let admin_id = admin.get_identifier(&e);
-
-        check_auth(
-            &e,
-            &WrappedAuth(admin),
-            nonce.clone(),
-            Symbol::from_str("withdraw"),
-            (admin_id, nonce, &amount).into_val(&e),
-        );
-
-        transfer_sell(&e, read_administrator(&e), amount);
+    fn nonce(e: Env, id: Identifier) -> BigInt {
+        read_nonce(&e, id)
     }
 
     fn updt_price(e: Env, admin: Signature, nonce: BigInt, n: u32, d: u32) {
@@ -264,14 +245,6 @@ impl SingleOfferTrait for SingleOffer {
     }
 
     fn get_price(e: Env) -> Price {
-        load_price(&e)
-    }
-
-    fn get_sell(e: Env) -> BytesN<32> {
-        get_sell_token(&e)
-    }
-
-    fn get_buy(e: Env) -> BytesN<32> {
-        get_buy_token(&e)
+        get_price(&e)
     }
 }

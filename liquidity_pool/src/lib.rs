@@ -1,16 +1,12 @@
 #![no_std]
 
-#[cfg(feature = "testutils")]
-extern crate std;
-
 mod test;
 pub mod testutils;
 mod token_contract;
 
-use crate::token_contract::create_contract;
-use soroban_sdk::{contractimpl, BigInt, Binary, Env, FixedBinary, IntoVal, RawVal};
-use soroban_token_contract as token;
-use token::public_types::{Authorization, Identifier, KeyedAuthorization, U256};
+use crate::token_contract::{create_contract, TokenClient};
+use soroban_auth::{Identifier, Signature};
+use soroban_sdk::{contractimpl, BigInt, Bytes, BytesN, Env, IntoVal, RawVal};
 
 #[derive(Clone, Copy)]
 #[repr(u32)]
@@ -33,15 +29,15 @@ fn get_contract_id(e: &Env) -> Identifier {
     Identifier::Contract(e.get_current_contract().into())
 }
 
-fn get_token_a(e: &Env) -> FixedBinary<32> {
+fn get_token_a(e: &Env) -> BytesN<32> {
     e.contract_data().get_unchecked(DataKey::TokenA).unwrap()
 }
 
-fn get_token_b(e: &Env) -> FixedBinary<32> {
+fn get_token_b(e: &Env) -> BytesN<32> {
     e.contract_data().get_unchecked(DataKey::TokenB).unwrap()
 }
 
-fn get_token_share(e: &Env) -> FixedBinary<32> {
+fn get_token_share(e: &Env) -> BytesN<32> {
     e.contract_data()
         .get_unchecked(DataKey::TokenShare)
         .unwrap()
@@ -61,8 +57,8 @@ fn get_reserve_b(e: &Env) -> BigInt {
     e.contract_data().get_unchecked(DataKey::ReserveB).unwrap()
 }
 
-fn get_balance(e: &Env, contract_id: FixedBinary<32>) -> BigInt {
-    token::balance(e, &contract_id, &get_contract_id(e))
+fn get_balance(e: &Env, contract_id: BytesN<32>) -> BigInt {
+    TokenClient::new(&e, contract_id).balance(&get_contract_id(e))
 }
 
 fn get_balance_a(e: &Env) -> BigInt {
@@ -77,15 +73,15 @@ fn get_balance_shares(e: &Env) -> BigInt {
     get_balance(&e, get_token_share(&e))
 }
 
-fn put_token_a(e: &Env, contract_id: U256) {
+fn put_token_a(e: &Env, contract_id: BytesN<32>) {
     e.contract_data().set(DataKey::TokenA, contract_id);
 }
 
-fn put_token_b(e: &Env, contract_id: U256) {
+fn put_token_b(e: &Env, contract_id: BytesN<32>) {
     e.contract_data().set(DataKey::TokenB, contract_id);
 }
 
-fn put_token_share(e: &Env, contract_id: U256) {
+fn put_token_share(e: &Env, contract_id: BytesN<32>) {
     e.contract_data().set(DataKey::TokenShare, contract_id);
 }
 
@@ -104,10 +100,10 @@ fn put_reserve_b(e: &Env, amount: BigInt) {
 fn burn_shares(e: &Env, amount: BigInt) {
     let total = get_total_shares(e);
     let share_contract_id = get_token_share(e);
-    token::burn(
-        e,
-        &share_contract_id,
-        &Authorization::Contract,
+
+    TokenClient::new(&e, share_contract_id).burn(
+        &Signature::Contract,
+        &BigInt::from_u32(&e, 0),
         &get_contract_id(e),
         &amount,
     );
@@ -117,18 +113,24 @@ fn burn_shares(e: &Env, amount: BigInt) {
 fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
     let total = get_total_shares(e);
     let share_contract_id = get_token_share(e);
-    token::mint(
-        e,
-        &share_contract_id,
-        &Authorization::Contract,
+
+    TokenClient::new(&e, share_contract_id).mint(
+        &Signature::Contract,
+        &BigInt::from_u32(&e, 0),
         &to,
         &amount,
     );
+
     put_total_shares(e, total + amount);
 }
 
-fn transfer(e: &Env, contract_id: FixedBinary<32>, to: Identifier, amount: BigInt) {
-    token::xfer(e, &contract_id, &KeyedAuthorization::Contract, &to, &amount);
+fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
+    TokenClient::new(&e, contract_id).xfer(
+        &Signature::Contract,
+        &BigInt::from_u32(&e, 0),
+        &to,
+        &amount,
+    );
 }
 
 fn transfer_a(e: &Env, to: Identifier, amount: BigInt) {
@@ -151,10 +153,10 @@ How to use this contract to swap
 */
 pub trait LiquidityPoolTrait {
     // Sets the token contract addresses for this pool
-    fn initialize(e: Env, token_a: U256, token_b: U256);
+    fn initialize(e: Env, token_a: BytesN<32>, token_b: BytesN<32>);
 
     // Returns the token contract address for the pool share token
-    fn share_id(e: Env) -> FixedBinary<32>;
+    fn share_id(e: Env) -> BytesN<32>;
 
     // Mints pool shares for the "to" Identifier. The amount minted is determined based on the difference
     // between the reserves stored by this contract, and the actual balance of token_a and token_b for this
@@ -173,26 +175,27 @@ pub trait LiquidityPoolTrait {
     // "to". For this to be used safely, the withdrawer must send the pool share token to this contract and call
     // withdraw in the same transaction. If these steps aren't done atomically, then the withdrawer
     // could lose their tokens.
-    fn withdraw(e: Env, to: Identifier);
+    // Returns amount of both tokens withdrawn
+    fn withdraw(e: Env, to: Identifier) -> (BigInt, BigInt);
+
+    fn get_rsrvs(e: Env) -> (BigInt, BigInt);
 }
 
 struct LiquidityPool;
 
-#[contractimpl(export_if = "export")]
+#[contractimpl]
 impl LiquidityPoolTrait for LiquidityPool {
-    fn initialize(e: Env, token_a: U256, token_b: U256) {
+    fn initialize(e: Env, token_a: BytesN<32>, token_b: BytesN<32>) {
         if token_a >= token_b {
             panic!("token_a must be less than token_b");
         }
 
         let share_contract_id = create_contract(&e, &token_a, &token_b);
-        token::initialize(
-            &e,
-            &share_contract_id,
+        TokenClient::new(&e, share_contract_id.clone()).initialize(
             &get_contract_id(&e),
             &7,
-            &Binary::from_slice(&e, b"name"),
-            &Binary::from_slice(&e, b"symbol"),
+            &Bytes::from_slice(&e, b"name"),
+            &Bytes::from_slice(&e, b"symbol"),
         );
 
         put_token_a(&e, token_a);
@@ -203,7 +206,7 @@ impl LiquidityPoolTrait for LiquidityPool {
         put_reserve_b(&e, BigInt::from_u32(&e, 0));
     }
 
-    fn share_id(e: Env) -> FixedBinary<32> {
+    fn share_id(e: Env) -> BytesN<32> {
         get_token_share(&e)
     }
 
@@ -249,6 +252,7 @@ impl LiquidityPoolTrait for LiquidityPool {
         let new_inv_b = new_invariant_factor(balance_b.clone(), reserve_b.clone(), out_b.clone());
         let old_inv_a = residue_denominator.clone() * reserve_a.clone();
         let old_inv_b = residue_denominator.clone() * reserve_b.clone();
+
         if new_inv_a * new_inv_b < old_inv_a * old_inv_b {
             panic!("constant product invariant does not hold");
         }
@@ -259,7 +263,7 @@ impl LiquidityPoolTrait for LiquidityPool {
         put_reserve_b(&e, balance_b - out_b);
     }
 
-    fn withdraw(e: Env, to: Identifier) {
+    fn withdraw(e: Env, to: Identifier) -> (BigInt, BigInt) {
         let (balance_a, balance_b) = (get_balance_a(&e), get_balance_b(&e));
         let balance_shares = get_balance_shares(&e);
         let total_shares = get_total_shares(&e);
@@ -270,7 +274,13 @@ impl LiquidityPoolTrait for LiquidityPool {
         burn_shares(&e, balance_shares);
         transfer_a(&e, to.clone(), out_a.clone());
         transfer_b(&e, to, out_b.clone());
-        put_reserve_a(&e, balance_a - out_a);
-        put_reserve_b(&e, balance_b - out_b);
+        put_reserve_a(&e, balance_a - out_a.clone());
+        put_reserve_b(&e, balance_b - out_b.clone());
+
+        (out_a, out_b)
+    }
+
+    fn get_rsrvs(e: Env) -> (BigInt, BigInt) {
+        (get_reserve_a(&e), get_reserve_b(&e))
     }
 }

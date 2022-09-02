@@ -1,13 +1,12 @@
 #![no_std]
-use soroban_sdk::{contractimpl, vec, Env, Symbol, Vec};
+use soroban_sdk::{contractimpl, symbol, vec, Env, Symbol, Vec};
 
 pub struct HelloContract;
 
-#[contractimpl(export_if = "export")]
+#[contractimpl]
 impl HelloContract {
     pub fn hello(env: Env, to: Symbol) -> Vec<Symbol> {
-        const GREETING: Symbol = Symbol::from_str("Hello");
-        vec![&env, GREETING, to]
+        vec![&env, symbol!("Hello"), to]
     }
 }
 

@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contractimpl, contracttype, Env, Symbol};
+use soroban_sdk::{contractimpl, contracttype, symbol, Env, Symbol};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -17,9 +17,9 @@ pub struct FirstLast {
 
 pub struct CustomTypesContract;
 
-const NAME: Symbol = Symbol::from_str("NAME");
+const NAME: Symbol = symbol!("NAME");
 
-#[contractimpl(export_if = "export")]
+#[contractimpl]
 impl CustomTypesContract {
     pub fn store(env: Env, name: Name) {
         env.contract_data().set(NAME, name);

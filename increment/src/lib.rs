@@ -1,11 +1,11 @@
 #![no_std]
-use soroban_sdk::{contractimpl, Env, Symbol};
+use soroban_sdk::{contractimpl, symbol, Env, Symbol};
 
-const COUNTER: Symbol = Symbol::from_str("COUNTER");
+const COUNTER: Symbol = symbol!("COUNTER");
 
 pub struct IncrementContract;
 
-#[contractimpl(export_if = "export")]
+#[contractimpl]
 impl IncrementContract {
     /// Increment increments an internal counter, and returns the value.
     pub fn increment(env: Env) -> u32 {

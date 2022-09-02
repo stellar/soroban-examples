@@ -1,17 +1,17 @@
 #![cfg(test)]
 
-use crate::testutils::{register_test_contract as register_liqpool, LiquidityPool};
+use crate::testutils::{
+    register_test_contract as register_liquidity_pool_router, LiquidityPoolRouter,
+};
 use ed25519_dalek::Keypair;
+use liquidity_pool::LiquidityPoolClient;
 use rand::{thread_rng, RngCore};
 use soroban_auth::Identifier;
+use soroban_liquidity_pool_contract as liquidity_pool;
 use soroban_sdk::{BigInt, BytesN, Env};
-use soroban_token_contract::testutils::{to_ed25519, Token};
-
-fn generate_contract_id() -> [u8; 32] {
-    let mut id: [u8; 32] = Default::default();
-    thread_rng().fill_bytes(&mut id);
-    id
-}
+use soroban_token_contract::testutils::{
+    register_test_contract as register_token, to_ed25519, Token,
+};
 
 fn generate_sorted_contract_ids() -> ([u8; 32], [u8; 32]) {
     let a = generate_contract_id();
@@ -25,36 +25,29 @@ fn generate_sorted_contract_ids() -> ([u8; 32], [u8; 32]) {
     }
 }
 
-fn generate_keypair() -> Keypair {
-    Keypair::generate(&mut thread_rng())
-}
-
 fn create_token_contract(e: &Env, id: &[u8; 32], admin: &Keypair) -> Token {
-    #[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
-    {
-        soroban_token_contract::testutils::register_test_contract(&e, id);
-    }
-    #[cfg(all(any(test, feature = "testutils"), not(feature = "token-wasm")))]
-    {
-        let contract_id = BytesN::from_array(e, &id);
-        e.register_contract_wasm(&contract_id, crate::token_contract::WASM);
-    }
+    register_token(&e, id);
     let token = Token::new(e, id);
     // decimals, name, symbol don't matter in tests
     token.initialize(&to_ed25519(&e, admin), 7, "name", "symbol");
     token
 }
 
-fn create_liqpool_contract(
-    e: &Env,
-    token_a: &[u8; 32],
-    token_b: &[u8; 32],
-) -> ([u8; 32], LiquidityPool) {
+fn generate_contract_id() -> [u8; 32] {
+    let mut id: [u8; 32] = Default::default();
+    thread_rng().fill_bytes(&mut id);
+    id
+}
+
+fn generate_keypair() -> Keypair {
+    Keypair::generate(&mut thread_rng())
+}
+
+fn create_liquidity_pool_router_contract(e: &Env) -> ([u8; 32], LiquidityPoolRouter) {
     let id = generate_contract_id();
-    register_liqpool(&e, &id);
-    let liqpool = LiquidityPool::new(e, &id);
-    liqpool.initialize(token_a, token_b);
-    (id, liqpool)
+    register_liquidity_pool_router(&e, &id);
+    let pool = LiquidityPoolRouter::new(e, &id);
+    (id, pool)
 }
 
 #[test]
@@ -69,43 +62,64 @@ fn test() {
     let (contract1, contract2) = generate_sorted_contract_ids();
     let token1 = create_token_contract(&e, &contract1, &admin1);
     let token2 = create_token_contract(&e, &contract2, &admin2);
-    let (contract_pool, liqpool) = create_liqpool_contract(&e, &contract1, &contract2);
-    let pool_id = Identifier::Contract(BytesN::from_array(&e, &contract_pool));
-    let contract_share: [u8; 32] = liqpool.share_id().into();
-    let token_share = Token::new(&e, &contract_share);
+    let (contract_router, router) = create_liquidity_pool_router_contract(&e);
+    let router_id = Identifier::Contract(BytesN::from_array(&e, &contract_router));
 
     token1.mint(&admin1, &user1_id, &BigInt::from_u32(&e, 1000));
     assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 1000));
     token2.mint(&admin2, &user1_id, &BigInt::from_u32(&e, 1000));
     assert_eq!(token2.balance(&user1_id), BigInt::from_u32(&e, 1000));
 
-    token1.xfer(&user1, &pool_id, &BigInt::from_u32(&e, 100));
+    token1.approve(&user1, &router_id, &BigInt::from_u32(&e, 100));
+    token2.approve(&user1, &router_id, &BigInt::from_u32(&e, 100));
+
+    router.sf_deposit(
+        &user1,
+        &contract1,
+        &contract2,
+        &BigInt::from_u32(&e, 100),
+        &BigInt::from_u32(&e, 100),
+        &BigInt::from_u32(&e, 100),
+        &BigInt::from_u32(&e, 100),
+    );
+
+    let contract_pool = router.get_pool(&contract1, &contract2);
+    let pool_id = Identifier::Contract(contract_pool.clone());
+
+    let share_id = LiquidityPoolClient::new(&e, &contract_pool).share_id();
+    let token_share = Token::new(&e, &share_id.into());
+
     assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 900));
     assert_eq!(token1.balance(&pool_id), BigInt::from_u32(&e, 100));
-    token2.xfer(&user1, &pool_id, &BigInt::from_u32(&e, 100));
     assert_eq!(token2.balance(&user1_id), BigInt::from_u32(&e, 900));
     assert_eq!(token2.balance(&pool_id), BigInt::from_u32(&e, 100));
-    liqpool.deposit(&user1_id);
     assert_eq!(token_share.balance(&user1_id), BigInt::from_u32(&e, 100));
     assert_eq!(token_share.balance(&pool_id), BigInt::from_u32(&e, 0));
 
-    token1.xfer(&user1, &pool_id, &BigInt::from_u32(&e, 100));
-    assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 800));
-    assert_eq!(token1.balance(&pool_id), BigInt::from_u32(&e, 200));
-    liqpool.swap(
-        &user1_id,
-        &BigInt::from_u32(&e, 0),
+    token1.approve(&user1, &router_id, &BigInt::from_u32(&e, 100));
+
+    router.swap_out(
+        &user1,
+        &contract1,
+        &contract2,
         &BigInt::from_u32(&e, 49),
+        &BigInt::from_u32(&e, 100),
     );
-    assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 800));
-    assert_eq!(token1.balance(&pool_id), BigInt::from_u32(&e, 200));
+
+    assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 803));
+    assert_eq!(token1.balance(&pool_id), BigInt::from_u32(&e, 197));
     assert_eq!(token2.balance(&user1_id), BigInt::from_u32(&e, 949));
     assert_eq!(token2.balance(&pool_id), BigInt::from_u32(&e, 51));
 
-    token_share.xfer(&user1, &pool_id, &BigInt::from_u32(&e, 100));
-    assert_eq!(token_share.balance(&user1_id), BigInt::from_u32(&e, 0));
-    assert_eq!(token_share.balance(&pool_id), BigInt::from_u32(&e, 100));
-    liqpool.withdraw(&user1_id);
+    token_share.approve(&user1, &router_id, &BigInt::from_u32(&e, 100));
+    router.sf_withdrw(
+        &user1,
+        &contract1,
+        &contract2,
+        &BigInt::from_u32(&e, 100),
+        &BigInt::from_u32(&e, 197),
+        &BigInt::from_u32(&e, 51),
+    );
     assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 1000));
     assert_eq!(token2.balance(&user1_id), BigInt::from_u32(&e, 1000));
     assert_eq!(token_share.balance(&user1_id), BigInt::from_u32(&e, 0));

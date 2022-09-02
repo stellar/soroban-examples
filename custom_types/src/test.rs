@@ -1,30 +1,27 @@
 #![cfg(test)]
 
 use super::*;
-use soroban_sdk::{Env, FixedBinary};
+use soroban_sdk::{BytesN, Env};
 
 #[test]
 fn test() {
     let env = Env::default();
-    let contract_id = FixedBinary::from_array(&env, [0; 32]);
+    let contract_id = BytesN::from_array(&env, &[0; 32]);
     env.register_contract(&contract_id, CustomTypesContract);
+    let client = CustomTypesContractClient::new(&env, &contract_id);
 
-    assert_eq!(retrieve::invoke(&env, &contract_id), Name::None);
+    assert_eq!(client.retrieve(), Name::None);
 
-    store::invoke(
-        &env,
-        &contract_id,
-        &Name::FirstLast(FirstLast {
-            first: Symbol::from_str("first"),
-            last: Symbol::from_str("last"),
-        }),
-    );
+    client.store(&Name::FirstLast(FirstLast {
+        first: symbol!("first"),
+        last: symbol!("last"),
+    }));
 
     assert_eq!(
-        retrieve::invoke(&env, &contract_id),
+        client.retrieve(),
         Name::FirstLast(FirstLast {
-            first: Symbol::from_str("first"),
-            last: Symbol::from_str("last"),
+            first: symbol!("first"),
+            last: symbol!("last"),
         }),
     );
 }
