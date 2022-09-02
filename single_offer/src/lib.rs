@@ -6,10 +6,10 @@ extern crate std;
 mod test;
 pub mod testutils;
 
-use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, IntoVal, Symbol};
-use soroban_sdk_auth::{
+use soroban_auth::{
     check_auth, NonceAuth, {Identifier, Signature},
 };
+use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, IntoVal, Symbol};
 use soroban_token_contract as token;
 use token::TokenClient;
 

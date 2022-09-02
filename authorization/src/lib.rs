@@ -5,10 +5,10 @@ extern crate std;
 
 mod test;
 
-use soroban_sdk::{contractimpl, contracttype, symbol, BigInt, Env, IntoVal};
-use soroban_sdk_auth::{
+use soroban_auth::{
     check_auth, NonceAuth, {Identifier, Signature},
 };
+use soroban_sdk::{contractimpl, contracttype, symbol, BigInt, Env, IntoVal};
 
 #[contracttype]
 pub enum DataKey {

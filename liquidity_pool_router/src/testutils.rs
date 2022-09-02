@@ -1,9 +1,7 @@
 #![cfg(any(test, feature = "testutils"))]
 use ed25519_dalek::Keypair;
+use soroban_auth::{Ed25519Signature, Identifier, Signature, SignaturePayload, SignaturePayloadV0};
 use soroban_sdk::{testutils::ed25519::Sign, BigInt, BytesN, Env, IntoVal, Symbol};
-use soroban_sdk_auth::{
-    Ed25519Signature, Identifier, Signature, SignaturePayload, SignaturePayloadV0,
-};
 
 use crate::LiquidityPoolRouterClient;
 

@@ -79,9 +79,9 @@ checksum = "14c189c53d098945499cdfa7ecc63567cf3886b3332b312a5b4585d8d3a6a610"
 
 [[package]]
 name = "bytes-lit"
-version = "0.0.2"
+version = "0.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75651e281e98fa84907ea7704dde00b1970f611d803caeb0ee5619d4a1afc3cb"
+checksum = "f3a949b8abd1d84c29a91f4c8480dac1b426d53cebc9a31a8424a5cbe5be32f6"
 dependencies = [
  "num-bigint",
  "proc-macro2",
@@ -587,13 +587,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "soroban-auth"
+version = "0.0.4"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=06e73968#06e739681616a3a85d1986944165c47a68b61223"
+dependencies = [
+ "soroban-sdk",
+]
+
+[[package]]
 name = "soroban-authorization-contract"
 version = "0.0.0"
 dependencies = [
  "ed25519-dalek",
  "rand",
+ "soroban-auth",
  "soroban-sdk",
- "soroban-sdk-auth",
 ]
 
 [[package]]
@@ -623,19 +631,28 @@ version = "0.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f2a07a2f4c8f684b5e0bc1013937339300d6c8112b76c6c46bbefc47bdd5905"
 dependencies = [
- "soroban-env-macros",
+ "soroban-env-macros 0.0.3",
+ "static_assertions",
+ "stellar-xdr 0.0.1",
+]
+
+[[package]]
+name = "soroban-env-common"
+version = "0.0.4"
+source = "git+https://github.com/stellar/rs-soroban-env?rev=c8bc71d#c8bc71d530ad912c2b4129ca60be4348db22b287"
+dependencies = [
+ "soroban-env-macros 0.0.4",
  "soroban-wasmi",
  "static_assertions",
- "stellar-xdr",
+ "stellar-xdr 0.0.2",
 ]
 
 [[package]]
 name = "soroban-env-guest"
-version = "0.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b23a935c79be02a5ef0d0d069427caa14d3464c22659366683dc6f7a52fcc4d0"
+version = "0.0.4"
+source = "git+https://github.com/stellar/rs-soroban-env?rev=c8bc71d#c8bc71d530ad912c2b4129ca60be4348db22b287"
 dependencies = [
- "soroban-env-common",
+ "soroban-env-common 0.0.4",
  "static_assertions",
 ]
 
@@ -654,12 +671,33 @@ dependencies = [
  "num-bigint",
  "num-integer",
  "num-traits",
- "parity-wasm",
  "sha2 0.10.2",
- "soroban-env-common",
- "soroban-wasmi",
+ "soroban-env-common 0.0.3",
  "static_assertions",
  "thiserror",
+ "tinyvec",
+]
+
+[[package]]
+name = "soroban-env-host"
+version = "0.0.4"
+source = "git+https://github.com/stellar/rs-soroban-env?rev=c8bc71d#c8bc71d530ad912c2b4129ca60be4348db22b287"
+dependencies = [
+ "backtrace",
+ "dyn-fmt",
+ "ed25519-dalek",
+ "hex",
+ "im-rc",
+ "log",
+ "num-bigint",
+ "num-integer",
+ "num-traits",
+ "parity-wasm",
+ "sha2 0.10.2",
+ "soroban-env-common 0.0.4",
+ "soroban-native-sdk-macros",
+ "soroban-wasmi",
+ "static_assertions",
  "tinyvec",
 ]
 
@@ -671,7 +709,19 @@ checksum = "92e07a8cf5452fce96ce19df1ba6874e6f92b2dc64302c71aa8460349c08cedc"
 dependencies = [
  "proc-macro2",
  "quote",
- "stellar-xdr",
+ "stellar-xdr 0.0.1",
+ "syn",
+]
+
+[[package]]
+name = "soroban-env-macros"
+version = "0.0.4"
+source = "git+https://github.com/stellar/rs-soroban-env?rev=c8bc71d#c8bc71d530ad912c2b4129ca60be4348db22b287"
+dependencies = [
+ "itertools",
+ "proc-macro2",
+ "quote",
+ "stellar-xdr 0.0.2",
  "syn",
 ]
 
@@ -703,11 +753,11 @@ dependencies = [
  "ed25519-dalek",
  "rand",
  "sha2 0.10.2",
- "soroban-env-host",
+ "soroban-auth",
+ "soroban-env-host 0.0.3",
  "soroban-sdk",
- "soroban-sdk-auth",
  "soroban-token-contract",
- "stellar-xdr",
+ "stellar-xdr 0.0.2",
 ]
 
 [[package]]
@@ -717,46 +767,49 @@ dependencies = [
  "ed25519-dalek",
  "rand",
  "sha2 0.10.2",
+ "soroban-auth",
  "soroban-liquidity-pool-contract",
  "soroban-sdk",
- "soroban-sdk-auth",
  "soroban-token-contract",
- "stellar-xdr",
+ "stellar-xdr 0.0.2",
+]
+
+[[package]]
+name = "soroban-native-sdk-macros"
+version = "0.0.4"
+source = "git+https://github.com/stellar/rs-soroban-env?rev=c8bc71d#c8bc71d530ad912c2b4129ca60be4348db22b287"
+dependencies = [
+ "itertools",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
 name = "soroban-sdk"
-version = "0.0.3"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=5dc90214#5dc902149ed3f76abb81fcc6032f46853f37e5dc"
+version = "0.0.4"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=06e73968#06e739681616a3a85d1986944165c47a68b61223"
 dependencies = [
  "bytes-lit",
  "ed25519-dalek",
  "soroban-env-guest",
- "soroban-env-host",
+ "soroban-env-host 0.0.4",
  "soroban-sdk-macros",
 ]
 
 [[package]]
-name = "soroban-sdk-auth"
-version = "0.0.0"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=5dc90214#5dc902149ed3f76abb81fcc6032f46853f37e5dc"
-dependencies = [
- "soroban-sdk",
-]
-
-[[package]]
 name = "soroban-sdk-macros"
-version = "0.0.3"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=5dc90214#5dc902149ed3f76abb81fcc6032f46853f37e5dc"
+version = "0.0.4"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=06e73968#06e739681616a3a85d1986944165c47a68b61223"
 dependencies = [
  "darling",
  "itertools",
  "proc-macro2",
  "quote",
  "sha2 0.10.2",
- "soroban-env-common",
+ "soroban-env-common 0.0.4",
  "soroban-spec",
- "stellar-xdr",
+ "stellar-xdr 0.0.2",
  "syn",
 ]
 
@@ -766,8 +819,8 @@ version = "0.0.0"
 dependencies = [
  "ed25519-dalek",
  "rand",
+ "soroban-auth",
  "soroban-sdk",
- "soroban-sdk-auth",
  "soroban-token-contract",
 ]
 
@@ -777,8 +830,8 @@ version = "0.0.0"
 dependencies = [
  "ed25519-dalek",
  "rand",
+ "soroban-auth",
  "soroban-sdk",
- "soroban-sdk-auth",
  "soroban-token-contract",
 ]
 
@@ -789,17 +842,18 @@ dependencies = [
  "ed25519-dalek",
  "rand",
  "sha2 0.10.2",
+ "soroban-auth",
  "soroban-sdk",
- "soroban-sdk-auth",
  "soroban-single-offer-contract",
  "soroban-token-contract",
- "stellar-xdr",
+ "stellar-xdr 0.0.2",
 ]
 
 [[package]]
 name = "soroban-spec"
-version = "0.0.1"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=5dc90214#5dc902149ed3f76abb81fcc6032f46853f37e5dc"
+version = "0.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "81c656e53b7b18e559f86d2657e051948f670d89404074c1e7f6094e9546c205"
 dependencies = [
  "base64",
  "darling",
@@ -810,8 +864,8 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sha2 0.10.2",
- "soroban-env-host",
- "stellar-xdr",
+ "soroban-env-host 0.0.4",
+ "stellar-xdr 0.0.2",
  "syn",
  "thiserror",
  "wasmparser",
@@ -820,11 +874,11 @@ dependencies = [
 [[package]]
 name = "soroban-token-contract"
 version = "0.0.2"
-source = "git+https://github.com/stellar/soroban-token-contract?rev=d24fbeaa#d24fbeaa3cad5406bee8b64e748a71fa38c7c2f3"
+source = "git+https://github.com/stellar/soroban-token-contract?rev=46ca69b8#46ca69b84c7a04150b9369550bc31a6ee3b17cb0"
 dependencies = [
  "ed25519-dalek",
+ "soroban-auth",
  "soroban-sdk",
- "soroban-sdk-auth",
 ]
 
 [[package]]
@@ -872,7 +926,13 @@ name = "stellar-xdr"
 version = "0.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "015594b09942b9f9cbe6972ba8c7de3a05a25c4994bbc7282f5f2fa6d28a81c4"
+
+[[package]]
+name = "stellar-xdr"
+version = "0.0.2"
+source = "git+https://github.com/stellar/rs-stellar-xdr?rev=fee9a43#fee9a436be1af3a0c99c2f967758f39f958e5ff4"
 dependencies = [
+ "base64",
  "serde",
 ]
 
@@ -1005,33 +1065,3 @@ dependencies = [
  "syn",
  "synstructure",
 ]
-
-[[patch.unused]]
-name = "soroban-env-common"
-version = "0.0.4"
-source = "git+https://github.com/stellar/rs-soroban-env?rev=c8bc71d#c8bc71d530ad912c2b4129ca60be4348db22b287"
-
-[[patch.unused]]
-name = "soroban-env-guest"
-version = "0.0.4"
-source = "git+https://github.com/stellar/rs-soroban-env?rev=c8bc71d#c8bc71d530ad912c2b4129ca60be4348db22b287"
-
-[[patch.unused]]
-name = "soroban-env-host"
-version = "0.0.4"
-source = "git+https://github.com/stellar/rs-soroban-env?rev=c8bc71d#c8bc71d530ad912c2b4129ca60be4348db22b287"
-
-[[patch.unused]]
-name = "soroban-env-macros"
-version = "0.0.4"
-source = "git+https://github.com/stellar/rs-soroban-env?rev=c8bc71d#c8bc71d530ad912c2b4129ca60be4348db22b287"
-
-[[patch.unused]]
-name = "soroban-native-sdk-macros"
-version = "0.0.4"
-source = "git+https://github.com/stellar/rs-soroban-env?rev=c8bc71d#c8bc71d530ad912c2b4129ca60be4348db22b287"
-
-[[patch.unused]]
-name = "stellar-xdr"
-version = "0.0.2"
-source = "git+https://github.com/stellar/rs-stellar-xdr?rev=fee9a43#fee9a436be1af3a0c99c2f967758f39f958e5ff4"
