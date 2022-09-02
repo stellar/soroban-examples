@@ -23,10 +23,6 @@ pub enum DataKey {
     Nonce(Identifier),
 }
 
-fn get_contract_id(e: &Env) -> Identifier {
-    Identifier::Contract(e.get_current_contract().into())
-}
-
 fn get_pool_id(e: &Env, salt: &BytesN<32>) -> BytesN<32> {
     e.contract_data()
         .get_unchecked(DataKey::Pool(salt.clone()))
@@ -202,20 +198,18 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         let amounts = get_deposit_amounts(desired_a, min_a, desired_b, min_b, reserves);
 
         let client_a = TokenClient::new(&e, token_a);
-        let nonce_a = client_a.nonce(&get_contract_id(&e));
         client_a.xfer_from(
             &Signature::Contract,
-            &nonce_a,
+            &BigInt::zero(&e),
             &to_id,
             &Identifier::Contract(pool_id.clone()),
             &amounts.0,
         );
 
         let client_b = TokenClient::new(&e, token_b);
-        let nonce_b = client_b.nonce(&get_contract_id(&e));
         client_b.xfer_from(
             &Signature::Contract,
-            &nonce_b,
+            &BigInt::zero(&e),
             &to_id,
             &Identifier::Contract(pool_id.clone()),
             &amounts.1,
@@ -266,10 +260,9 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         }
 
         let client = TokenClient::new(&e, &sell);
-        let nonce = client.nonce(&get_contract_id(&e));
         client.xfer_from(
             &Signature::Contract,
-            &nonce,
+            &BigInt::zero(&e),
             &to_id,
             &Identifier::Contract(pool_id.clone()),
             &xfer_amount,
@@ -323,10 +316,9 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         let share_token = pool_client.share_id();
 
         let client = TokenClient::new(&e, &share_token);
-        let nonce = client.nonce(&get_contract_id(&e));
         client.xfer_from(
             &Signature::Contract,
-            &nonce,
+            &BigInt::zero(&e),
             &to_id,
             &Identifier::Contract(pool_id.clone()),
             &share_amount,

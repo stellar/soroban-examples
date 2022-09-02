@@ -70,8 +70,7 @@ fn load_price(e: &Env) -> Price {
 
 fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
     let client = TokenClient::new(&e, contract_id);
-    let nonce = client.nonce(&get_contract_id(&e));
-    client.xfer(&Signature::Contract, &nonce, &to, &amount);
+    client.xfer(&Signature::Contract, &BigInt::zero(&e), &to, &amount);
 }
 
 fn transfer_sell(e: &Env, to: Identifier, amount: BigInt) {
