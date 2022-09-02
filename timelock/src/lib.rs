@@ -158,14 +158,12 @@ fn transfer_from(
     amount: &BigInt,
 ) {
     let client = TokenClient::new(&e, token_id);
-    let nonce = client.nonce(&get_contract_id(&e));
-    client.xfer_from(&Signature::Contract, &nonce, &from, &to, &amount);
+    client.xfer_from(&Signature::Contract, &BigInt::zero(&e), &from, &to, &amount);
 }
 
 fn transfer_to(e: &Env, token_id: &BytesN<32>, to: &Identifier, amount: &BigInt) {
     let client = TokenClient::new(&e, token_id);
-    let nonce = client.nonce(&get_contract_id(&e));
-    client.xfer(&Signature::Contract, &nonce, to, amount);
+    client.xfer(&Signature::Contract, &BigInt::zero(&e), to, amount);
 }
 
 struct NonceForSignature(Signature);
