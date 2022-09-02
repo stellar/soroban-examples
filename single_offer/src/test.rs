@@ -3,8 +3,8 @@
 use crate::testutils::{register_test_contract as register_single_offer, SingleOffer};
 use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
+use soroban_auth::Identifier;
 use soroban_sdk::{BigInt, BytesN, Env};
-use soroban_sdk_auth::Identifier;
 use soroban_token_contract::testutils::{
     register_test_contract as register_token, to_ed25519, Token,
 };

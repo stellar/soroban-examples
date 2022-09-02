@@ -5,8 +5,8 @@ use ed25519_dalek::Keypair;
 use rand::thread_rng;
 use soroban_sdk::testutils::ed25519::Sign;
 
+use soroban_auth::{Ed25519Signature, SignaturePayload, SignaturePayloadV0};
 use soroban_sdk::{BytesN, Env, RawVal, Symbol, Vec};
-use soroban_sdk_auth::{Ed25519Signature, SignaturePayload, SignaturePayloadV0};
 
 fn generate_keypair() -> Keypair {
     Keypair::generate(&mut thread_rng())

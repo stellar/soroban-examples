@@ -8,15 +8,15 @@ publish = false
 crate-type = ["cdylib", "rlib"]
 
 [features]
-testutils = ["soroban-sdk/testutils", "soroban-sdk-auth/testutils", "dep:ed25519-dalek"]
+testutils = ["soroban-sdk/testutils", "soroban-auth/testutils", "dep:ed25519-dalek"]
 
 [dependencies]
-soroban-sdk = "0.0.3"
-soroban-sdk-auth = "0.0.0"
+soroban-sdk = "0.0.4"
+soroban-auth = "0.0.4"
 ed25519-dalek = { version = "1.0.1", optional = true }
 
 [dev_dependencies]
-soroban-sdk = { version = "0.0.3", features = ["testutils"] }
-soroban-sdk-auth = { version = "0.0.0", features = ["testutils"] }
+soroban-sdk = { version = "0.0.4", features = ["testutils"] }
+soroban-auth = { version = "0.0.4", features = ["testutils"] }
 ed25519-dalek = { version = "1.0.1" }
 rand = { version = "0.7.3" }
