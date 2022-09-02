@@ -36,4 +36,3 @@ soroban-env-host = { git = "https://github.com/stellar/rs-soroban-env", rev = "c
 soroban-env-macros = { git = "https://github.com/stellar/rs-soroban-env", rev = "c8bc71d" }
 soroban-native-sdk-macros = { git = "https://github.com/stellar/rs-soroban-env", rev = "c8bc71d" }
 stellar-xdr = { git = "https://github.com/stellar/rs-stellar-xdr", rev = "fee9a43" }
-soroban-token-contract = { git = "https://github.com/stellar/soroban-token-contract", rev = "46ca69b8" }
