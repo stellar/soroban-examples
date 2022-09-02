@@ -81,7 +81,7 @@ fn test() {
     assert_eq!(token1.balance(&offer_id), BigInt::from_u32(&e, 80));
     assert_eq!(token2.balance(&user1_id), BigInt::from_u32(&e, 10));
     assert_eq!(token2.balance(&user2_id), BigInt::from_u32(&e, 990));
-    assert_eq!(token2.balance(&offer_id), BigInt::from_u32(&e, 0));
+    assert_eq!(token2.balance(&offer_id), BigInt::zero(&e));
 
     // Withdraw 70 token1 from offer
     offer.withdraw(&user1, &BigInt::from_u32(&e, 70));
@@ -90,7 +90,7 @@ fn test() {
     assert_eq!(token1.balance(&offer_id), BigInt::from_u32(&e, 10));
     assert_eq!(token2.balance(&user1_id), BigInt::from_u32(&e, 10));
     assert_eq!(token2.balance(&user2_id), BigInt::from_u32(&e, 990));
-    assert_eq!(token2.balance(&offer_id), BigInt::from_u32(&e, 0));
+    assert_eq!(token2.balance(&offer_id), BigInt::zero(&e));
 
     // The price here is 1 A = 1 B
     offer.updt_price(&user1, 1, 1);
@@ -105,5 +105,5 @@ fn test() {
     assert_eq!(token1.balance(&offer_id), BigInt::from_u32(&e, 00));
     assert_eq!(token2.balance(&user1_id), BigInt::from_u32(&e, 20));
     assert_eq!(token2.balance(&user2_id), BigInt::from_u32(&e, 980));
-    assert_eq!(token2.balance(&offer_id), BigInt::from_u32(&e, 0));
+    assert_eq!(token2.balance(&offer_id), BigInt::zero(&e));
 }

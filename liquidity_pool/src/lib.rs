@@ -103,7 +103,7 @@ fn burn_shares(e: &Env, amount: BigInt) {
 
     TokenClient::new(&e, share_contract_id).burn(
         &Signature::Contract,
-        &BigInt::from_u32(&e, 0),
+        &BigInt::zero(&e),
         &get_contract_id(e),
         &amount,
     );
@@ -116,7 +116,7 @@ fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
 
     TokenClient::new(&e, share_contract_id).mint(
         &Signature::Contract,
-        &BigInt::from_u32(&e, 0),
+        &BigInt::zero(&e),
         &to,
         &amount,
     );
@@ -125,12 +125,7 @@ fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
 }
 
 fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
-    TokenClient::new(&e, contract_id).xfer(
-        &Signature::Contract,
-        &BigInt::from_u32(&e, 0),
-        &to,
-        &amount,
-    );
+    TokenClient::new(&e, contract_id).xfer(&Signature::Contract, &BigInt::zero(&e), &to, &amount);
 }
 
 fn transfer_a(e: &Env, to: Identifier, amount: BigInt) {
@@ -201,9 +196,9 @@ impl LiquidityPoolTrait for LiquidityPool {
         put_token_a(&e, token_a);
         put_token_b(&e, token_b);
         put_token_share(&e, share_contract_id.try_into().unwrap());
-        put_total_shares(&e, BigInt::from_u32(&e, 0));
-        put_reserve_a(&e, BigInt::from_u32(&e, 0));
-        put_reserve_b(&e, BigInt::from_u32(&e, 0));
+        put_total_shares(&e, BigInt::zero(&e));
+        put_reserve_a(&e, BigInt::zero(&e));
+        put_reserve_b(&e, BigInt::zero(&e));
     }
 
     fn share_id(e: Env) -> BytesN<32> {
@@ -215,7 +210,7 @@ impl LiquidityPoolTrait for LiquidityPool {
         let (balance_a, balance_b) = (get_balance_a(&e), get_balance_b(&e));
         let total_shares = get_total_shares(&e);
 
-        let zero = BigInt::from_u32(&e, 0);
+        let zero = BigInt::zero(&e);
         let new_total_shares = if reserve_a > zero.clone() && reserve_b > zero {
             let shares_a = (balance_a.clone() * total_shares.clone()) / reserve_a;
             let shares_b = (balance_b.clone() * total_shares.clone()) / reserve_b;
@@ -237,7 +232,7 @@ impl LiquidityPoolTrait for LiquidityPool {
         // deducting the fee, scaled up by 1000 to avoid fractions
         let residue_numerator = BigInt::from_u32(&e, 997);
         let residue_denominator = BigInt::from_u32(&e, 1000);
-        let zero = BigInt::from_u32(&e, 0);
+        let zero = BigInt::zero(&e);
 
         let new_invariant_factor = |balance: BigInt, reserve: BigInt, out: BigInt| {
             let delta = balance - reserve.clone() - out;

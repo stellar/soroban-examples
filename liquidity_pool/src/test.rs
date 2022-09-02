@@ -87,29 +87,25 @@ fn test() {
     assert_eq!(token2.balance(&pool_id), BigInt::from_u32(&e, 100));
     liqpool.deposit(&user1_id);
     assert_eq!(token_share.balance(&user1_id), BigInt::from_u32(&e, 100));
-    assert_eq!(token_share.balance(&pool_id), BigInt::from_u32(&e, 0));
+    assert_eq!(token_share.balance(&pool_id), BigInt::zero(&e));
 
     token1.xfer(&user1, &pool_id, &BigInt::from_u32(&e, 100));
     assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 800));
     assert_eq!(token1.balance(&pool_id), BigInt::from_u32(&e, 200));
-    liqpool.swap(
-        &user1_id,
-        &BigInt::from_u32(&e, 0),
-        &BigInt::from_u32(&e, 49),
-    );
+    liqpool.swap(&user1_id, &BigInt::zero(&e), &BigInt::from_u32(&e, 49));
     assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 800));
     assert_eq!(token1.balance(&pool_id), BigInt::from_u32(&e, 200));
     assert_eq!(token2.balance(&user1_id), BigInt::from_u32(&e, 949));
     assert_eq!(token2.balance(&pool_id), BigInt::from_u32(&e, 51));
 
     token_share.xfer(&user1, &pool_id, &BigInt::from_u32(&e, 100));
-    assert_eq!(token_share.balance(&user1_id), BigInt::from_u32(&e, 0));
+    assert_eq!(token_share.balance(&user1_id), BigInt::zero(&e));
     assert_eq!(token_share.balance(&pool_id), BigInt::from_u32(&e, 100));
     liqpool.withdraw(&user1_id);
     assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 1000));
     assert_eq!(token2.balance(&user1_id), BigInt::from_u32(&e, 1000));
-    assert_eq!(token_share.balance(&user1_id), BigInt::from_u32(&e, 0));
-    assert_eq!(token1.balance(&pool_id), BigInt::from_u32(&e, 0));
-    assert_eq!(token2.balance(&pool_id), BigInt::from_u32(&e, 0));
-    assert_eq!(token_share.balance(&pool_id), BigInt::from_u32(&e, 0));
+    assert_eq!(token_share.balance(&user1_id), BigInt::zero(&e));
+    assert_eq!(token1.balance(&pool_id), BigInt::zero(&e));
+    assert_eq!(token2.balance(&pool_id), BigInt::zero(&e));
+    assert_eq!(token_share.balance(&pool_id), BigInt::zero(&e));
 }

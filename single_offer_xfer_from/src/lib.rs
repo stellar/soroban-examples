@@ -32,10 +32,6 @@ pub struct Price {
     pub d: u32,
 }
 
-fn get_contract_id(e: &Env) -> Identifier {
-    Identifier::Contract(e.get_current_contract().into())
-}
-
 fn get_sell_token(e: &Env) -> BytesN<32> {
     e.contract_data().get_unchecked(DataKey::SellToken).unwrap()
 }
@@ -68,8 +64,7 @@ fn transfer_from(
     amount: &BigInt,
 ) {
     let client = TokenClient::new(&e, &contract_id);
-    let nonce = client.nonce(&get_contract_id(&e));
-    client.xfer_from(&Signature::Contract, &nonce, &from, &to, &amount)
+    client.xfer_from(&Signature::Contract, &BigInt::zero(&e), &from, &to, &amount)
 }
 
 fn transfer_sell(e: &Env, from: &Identifier, to: &Identifier, amount: &BigInt) {
