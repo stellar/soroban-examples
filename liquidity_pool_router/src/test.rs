@@ -94,7 +94,7 @@ fn test() {
     assert_eq!(token2.balance(&user1_id), BigInt::from_u32(&e, 900));
     assert_eq!(token2.balance(&pool_id), BigInt::from_u32(&e, 100));
     assert_eq!(token_share.balance(&user1_id), BigInt::from_u32(&e, 100));
-    assert_eq!(token_share.balance(&pool_id), BigInt::from_u32(&e, 0));
+    assert_eq!(token_share.balance(&pool_id), BigInt::zero(&e));
 
     token1.approve(&user1, &router_id, &BigInt::from_u32(&e, 100));
 
@@ -122,8 +122,8 @@ fn test() {
     );
     assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 1000));
     assert_eq!(token2.balance(&user1_id), BigInt::from_u32(&e, 1000));
-    assert_eq!(token_share.balance(&user1_id), BigInt::from_u32(&e, 0));
-    assert_eq!(token1.balance(&pool_id), BigInt::from_u32(&e, 0));
-    assert_eq!(token2.balance(&pool_id), BigInt::from_u32(&e, 0));
-    assert_eq!(token_share.balance(&pool_id), BigInt::from_u32(&e, 0));
+    assert_eq!(token_share.balance(&user1_id), BigInt::zero(&e));
+    assert_eq!(token1.balance(&pool_id), BigInt::zero(&e));
+    assert_eq!(token2.balance(&pool_id), BigInt::zero(&e));
+    assert_eq!(token_share.balance(&pool_id), BigInt::zero(&e));
 }

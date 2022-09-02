@@ -271,11 +271,11 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         let out_a: BigInt;
         let out_b: BigInt;
         if sell == token_a {
-            out_a = BigInt::from_u32(&e, 0);
+            out_a = BigInt::zero(&e);
             out_b = out;
         } else {
             out_a = out;
-            out_b = BigInt::from_u32(&e, 0);
+            out_b = BigInt::zero(&e);
         }
 
         LiquidityPoolClient::new(&e, &pool_id).swap(&to_id, &out_a, &out_b)
