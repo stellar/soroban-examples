@@ -849,6 +849,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "soroban-wallet-contract"
+version = "0.0.0"
+dependencies = [
+ "ed25519-dalek",
+ "rand",
+ "soroban-auth",
+ "soroban-sdk",
+ "soroban-token-contract",
+]
+
+[[package]]
 name = "soroban-wasmi"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
