@@ -26,13 +26,13 @@ jobs:
     - run: cargo fmt --all --check
 
   rust-analyzer-compat:
-     runs-on: ubuntu-latest
-     steps:
-     - uses: actions/checkout@v3
-     - run: rustup update
-     - run: rustup +nightly component add rust-analyzer
-     - name: Check if rust-analyzer encounters any errors parsing project
-       run: rustup run nightly rust-analyzer analysis-stats . 2>&1 | (! grep ERROR)
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - run: rustup update
+    - run: rustup +nightly component add rust-analyzer
+    - name: Check if rust-analyzer encounters any errors parsing project
+      run: rustup run nightly rust-analyzer analysis-stats . 2>&1 | (! grep ERROR)
 
   build-and-test:
     strategy:
@@ -43,26 +43,10 @@ jobs:
     runs-on: ${{ matrix.sys.os }}
     steps:
     - uses: actions/checkout@v3
+    - uses: stellar/actions/rust-cache@main
     - run: rustup update
     - run: rustup target add ${{ matrix.sys.target }}
-    - uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-        key: cargo-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: cargo-
-    - uses: actions/cache@v3
-      with:
-        path: target/
-        key: ${{ github.job }}-target-${{ strategy.job-index }}-${{ github.sha }}
-        restore-keys: |
-          ${{ github.job }}-target-${{ strategy.job-index }}
-          ${{ github.job }}-target-
-    - if: github.ref_protected
-      run: rm -fr target
-    - run: cargo install --locked --version 0.5.16 cargo-hack
+    - run: cargo install --target-dir ~/.cargo/target --locked --version 0.5.16 cargo-hack
     - run: cargo hack build --target wasm32-unknown-unknown --profile release
     - run: cargo hack --feature-powerset --exclude-features docs check --target ${{ matrix.sys.target }}
     - run: cargo hack --feature-powerset --exclude-features docs test --target ${{ matrix.sys.target }}
