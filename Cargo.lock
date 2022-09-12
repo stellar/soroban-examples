@@ -856,7 +856,6 @@ dependencies = [
  "rand",
  "soroban-auth",
  "soroban-sdk",
- "soroban-token-contract 0.0.4",
 ]
 
 [[package]]

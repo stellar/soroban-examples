@@ -19,7 +19,7 @@ soroban-sdk = { version = "0.0.4" }
 soroban-auth = { version = "0.0.4" }
 
 [dev-dependencies]
-soroban-token-contract = { path = ".", features = ["export", "testutils"] }
 soroban-sdk = { version = "0.0.4", features = ["testutils"] }
+soroban-auth = { version = "0.0.4", features = ["testutils"] }
 ed25519-dalek = { version = "1.0.1" }
 rand = { version = "0.7.3" }

@@ -1,4 +1,4 @@
-#![cfg(feature = "testutils")]
+#![cfg(any(test, feature = "testutils"))]
 
 use crate::contract::TokenClient;
 use ed25519_dalek::Keypair;
