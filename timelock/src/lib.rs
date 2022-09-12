@@ -19,6 +19,7 @@ mod token {
 #[derive(Clone)]
 #[contracttype]
 pub enum DataKey {
+    Init,
     Balance,
     Nonce(Identifier),
 }
@@ -80,6 +81,9 @@ impl ClaimableBalanceContract {
         if claimants.len() > 10 {
             panic!("too many claimants");
         }
+        if is_initialized(&env) {
+            panic!("contract has been already initialized");
+        }
 
         let from_id = from.get_identifier(&env);
         // Authenticate depositor with nonce of zero, so that this may
@@ -103,12 +107,10 @@ impl ClaimableBalanceContract {
                 claimants,
             },
         );
+        env.contract_data().set(DataKey::Init, ());
     }
 
     pub fn claim(env: Env, claimant: Signature) {
-        if !is_initialized(&env) {
-            panic!("contract hasn't been initialized");
-        }
         let claimable_balance: ClaimableBalance =
             env.contract_data().get_unchecked(DataKey::Balance).unwrap();
 
@@ -145,7 +147,7 @@ impl ClaimableBalanceContract {
 }
 
 fn is_initialized(env: &Env) -> bool {
-    env.contract_data().has(DataKey::Balance)
+    env.contract_data().has(DataKey::Init)
 }
 
 fn get_contract_id(e: &Env) -> Identifier {

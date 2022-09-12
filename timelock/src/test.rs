@@ -223,7 +223,7 @@ fn test_deposit_above_allowance_not_possible() {
 }
 
 #[test]
-#[should_panic(expected = "incorrect nonce")]
+#[should_panic(expected = "contract has been already initialized")]
 fn test_double_deposit_not_possible() {
     let test = ClaimableBalanceTest::setup();
     test.approve_deposit(800);
@@ -284,7 +284,7 @@ fn test_out_of_time_bound_claim_not_possible() {
 }
 
 #[test]
-#[should_panic(expected = "contract hasn't been initialized")]
+#[should_panic(expected = "HostStorageError")]
 fn test_double_claim_not_possible() {
     let test = ClaimableBalanceTest::setup();
     test.approve_deposit(800);
@@ -306,7 +306,7 @@ fn test_double_claim_not_possible() {
 }
 
 #[test]
-#[should_panic(expected = "incorrect nonce")]
+#[should_panic(expected = "contract has been already initialized")]
 fn test_deposit_after_claim_not_possible() {
     let test = ClaimableBalanceTest::setup();
     test.approve_deposit(1000);
