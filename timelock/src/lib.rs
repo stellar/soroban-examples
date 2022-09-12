@@ -11,8 +11,10 @@ use soroban_auth::{
     check_auth, NonceAuth, {Identifier, Signature},
 };
 use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, IntoVal, Symbol, Vec};
-use soroban_token_contract as token;
-use token::TokenClient;
+
+mod token {
+    soroban_sdk::contractimport!(file = "../soroban_token_contract.wasm");
+}
 
 #[derive(Clone)]
 #[contracttype]
@@ -157,12 +159,12 @@ fn transfer_from(
     to: &Identifier,
     amount: &BigInt,
 ) {
-    let client = TokenClient::new(&e, token_id);
+    let client = token::ContractClient::new(&e, token_id);
     client.xfer_from(&Signature::Contract, &BigInt::zero(&e), &from, &to, &amount);
 }
 
 fn transfer_to(e: &Env, token_id: &BytesN<32>, to: &Identifier, amount: &BigInt) {
-    let client = TokenClient::new(&e, token_id);
+    let client = token::ContractClient::new(&e, token_id);
     client.xfer(&Signature::Contract, &BigInt::zero(&e), to, amount);
 }
 
