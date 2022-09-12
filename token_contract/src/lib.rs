@@ -10,6 +10,7 @@ mod balance;
 mod contract;
 mod metadata;
 mod storage_types;
+mod test;
 pub mod testutils;
 
 pub use crate::contract::TokenClient;

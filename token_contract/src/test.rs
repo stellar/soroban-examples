@@ -1,11 +1,11 @@
+#![cfg(test)]
+
+use crate::testutils::{register_test_contract as register_token, to_ed25519, Token};
+use crate::TokenClient;
 use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
 use soroban_auth::{Ed25519Signature, Signature};
 use soroban_sdk::{BigInt, BytesN, Env, IntoVal};
-use soroban_token_contract::testutils::{
-    register_test_contract as register_token, to_ed25519, Token,
-};
-use soroban_token_contract::TokenClient;
 
 fn generate_contract_id() -> [u8; 32] {
     let mut id: [u8; 32] = Default::default();
