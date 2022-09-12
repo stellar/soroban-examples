@@ -24,10 +24,6 @@ pub enum DataKey {
     Nonce(Identifier),
 }
 
-fn get_contract_id(e: &Env) -> Identifier {
-    Identifier::Contract(e.get_current_contract().into())
-}
-
 fn get_offer(e: &Env, salt: &BytesN<32>) -> BytesN<32> {
     e.contract_data()
         .get_unchecked(DataKey::Offer(salt.clone()))
@@ -181,11 +177,10 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
         let buy = offer_client.get_buy();
 
         let token_client = TokenClient::new(&e, &buy);
-        let nonce = token_client.nonce(&get_contract_id(&e));
 
         token_client.xfer_from(
             &Signature::Contract,
-            &nonce,
+            &BigInt::zero(&e),
             &to_id,
             &Identifier::Contract(offer.clone()),
             &amount,

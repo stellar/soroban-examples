@@ -83,8 +83,8 @@ fn test() {
 
     // Trade 10 token2 for 10 token1
     offer.trade(&user2, &BigInt::from_u32(&e, 10), &BigInt::from_u32(&e, 10));
-    assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 0));
+    assert_eq!(token1.balance(&user1_id), BigInt::zero(&e));
     assert_eq!(token1.balance(&user2_id), BigInt::from_u32(&e, 30));
     assert_eq!(token2.balance(&user1_id), BigInt::from_u32(&e, 20));
-    assert_eq!(token2.balance(&user2_id), BigInt::from_u32(&e, 0));
+    assert_eq!(token2.balance(&user2_id), BigInt::zero(&e));
 }
