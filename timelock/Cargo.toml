@@ -1,0 +1,26 @@
+[package]
+name = "soroban-timelock-contract"
+version = "0.0.0"
+authors = ["Stellar Development Foundation <info@stellar.org>"]
+license = "Apache-2.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+doctest = false
+
+[features]
+testutils = ["soroban-sdk/testutils", "soroban-token-contract/testutils"]
+
+[dependencies]
+soroban-sdk = "0.0.4"
+soroban-auth = "0.0.4"
+soroban-token-contract = { git = "https://github.com/stellar/soroban-token-contract", rev = "46ca69b8", default-features = false }
+
+[dev_dependencies]
+soroban-sdk = { version = "0.0.4", features = ["testutils"] }
+soroban-auth = { version = "0.0.4", features = ["testutils"] }
+soroban-token-contract = { git = "https://github.com/stellar/soroban-token-contract", rev = "46ca69b8", default-features = false, features = ["testutils"] }
+rand = { version = "0.7.3" }
+ed25519-dalek = { version = "1.0.1" }
