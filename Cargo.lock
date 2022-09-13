@@ -839,10 +839,11 @@ dependencies = [
 
 [[package]]
 name = "soroban-token-contract"
-version = "0.0.2"
-source = "git+https://github.com/stellar/soroban-token-contract?rev=46ca69b8#46ca69b84c7a04150b9369550bc31a6ee3b17cb0"
+version = "0.0.4"
 dependencies = [
  "ed25519-dalek",
+ "num-bigint",
+ "rand",
  "soroban-auth",
  "soroban-sdk",
 ]

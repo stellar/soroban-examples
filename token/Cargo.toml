@@ -1,0 +1,24 @@
+[package]
+name = "soroban-token-contract"
+description = "Soroban standard token contract"
+version = "0.0.4"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+export = []
+testutils = ["soroban-sdk/testutils", "soroban-auth/testutils", "dep:ed25519-dalek"]
+
+[dependencies]
+ed25519-dalek = { version = "1.0.1", optional = true }
+num-bigint = { version = "0.4", optional = true }
+soroban-sdk = { version = "0.0.4" }
+soroban-auth = { version = "0.0.4" }
+
+[dev-dependencies]
+soroban-sdk = { version = "0.0.4", features = ["testutils"] }
+soroban-auth = { version = "0.0.4", features = ["testutils"] }
+ed25519-dalek = { version = "1.0.1" }
+rand = { version = "0.7.3" }
