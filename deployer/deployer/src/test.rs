@@ -22,11 +22,12 @@ fn test() {
     let wasm: Bytes = contract::WASM.into_val(&env);
     let init_fn = symbol!("init");
     let init_fn_args = (5u32,).into_val(&env);
-    let contract_id = client.deploy(&salt, &wasm, &init_fn, &init_fn_args);
+    let (contract_id, init_result) = client.deploy(&salt, &wasm, &init_fn, &init_fn_args);
     assert_eq!(
         contract_id,
         bytesn!(&env, 0xead19f55aec09bfcb555e09f230149ba7f72744a5fd639804ce1e934e8fe9c5d)
     );
+    assert!(init_result.is_void());
 
     // Invoke contract to check that it is initialized.
     let client = contract::ContractClient::new(&env, &contract_id);
