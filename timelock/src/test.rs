@@ -78,7 +78,8 @@ impl ClaimableBalanceTest {
             timestamp: 12345,
             protocol_version: 1,
             sequence_number: 10,
-            network_id: Default::default(),
+            network_passphrase: Default::default(),
+            base_reserve: 10,
         });
 
         let deposit_user = generate_keypair();
