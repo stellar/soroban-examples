@@ -8,6 +8,8 @@ members = [
     "custom_types",
     "cross_contract/contract_a",
     "cross_contract/contract_b",
+    "deployer/contract",
+    "deployer/deployer",
     "liquidity_pool",
     "liquidity_pool_router",
     "single_offer",

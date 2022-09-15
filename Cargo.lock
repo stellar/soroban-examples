@@ -632,6 +632,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "soroban-deployer-contract"
+version = "0.0.0"
+dependencies = [
+ "soroban-sdk",
+]
+
+[[package]]
+name = "soroban-deployer-test-contract"
+version = "0.0.0"
+dependencies = [
+ "soroban-sdk",
+]
+
+[[package]]
 name = "soroban-env-common"
 version = "0.0.5"
 source = "git+https://github.com/stellar/rs-soroban-env?rev=0a826765#0a826765e9728e263ec3eafa3ed81a1d38a8716a"
