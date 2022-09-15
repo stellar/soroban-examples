@@ -7,7 +7,7 @@ mod test;
 pub mod testutils;
 
 use soroban_auth::{
-    check_auth, NonceAuth, {Identifier, Signature},
+    check_auth, {Identifier, Signature},
 };
 use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, IntoVal, Symbol};
 use soroban_token_contract as token;
@@ -97,32 +97,32 @@ pub fn check_admin(e: &Env, auth: &Signature) {
     }
 }
 
-fn read_nonce(e: &Env, id: Identifier) -> BigInt {
-    let key = DataKey::Nonce(id);
-    if let Some(nonce) = e.contract_data().get(key) {
-        nonce.unwrap()
-    } else {
-        BigInt::zero(e)
-    }
+fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
+    let key = DataKey::Nonce(id.clone());
+    e.contract_data()
+        .get(key)
+        .unwrap_or_else(|| Ok(BigInt::zero(e)))
+        .unwrap()
 }
-struct WrappedAuth(Signature);
 
-impl NonceAuth for WrappedAuth {
-    fn read_nonce(e: &Env, id: Identifier) -> BigInt {
-        read_nonce(e, id)
+fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
+    match id {
+        Identifier::Contract(_) => {
+            if BigInt::zero(&e) != expected_nonce {
+                panic!("nonce should be zero for Contract")
+            }
+            return;
+        }
+        _ => {}
     }
 
-    fn read_and_increment_nonce(&self, e: &Env, id: Identifier) -> BigInt {
-        let key = DataKey::Nonce(id.clone());
-        let nonce = Self::read_nonce(e, id);
-        e.contract_data()
-            .set(key, nonce.clone() + BigInt::from_u32(e, 1));
-        nonce
-    }
+    let key = DataKey::Nonce(id.clone());
+    let nonce = read_nonce(e, id);
 
-    fn signature(&self) -> &Signature {
-        &self.0
+    if nonce != expected_nonce {
+        panic!("incorrect nonce")
     }
+    e.contract_data().set(key, &nonce + 1);
 }
 
 /*
@@ -193,10 +193,12 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
 
     fn trade(e: Env, to: Signature, nonce: BigInt, amount_to_sell: BigInt, min: BigInt) {
         let to_id = to.get_identifier(&e);
+
+        verify_and_consume_nonce(&e, &to_id, &nonce);
+
         check_auth(
             &e,
-            &WrappedAuth(to),
-            nonce.clone(),
+            &to,
             Symbol::from_str("trade"),
             (&to_id, nonce, &amount_to_sell, &min).into_val(&e),
         );
@@ -217,7 +219,7 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
     }
 
     fn nonce(e: Env, id: Identifier) -> BigInt {
-        read_nonce(&e, id)
+        read_nonce(&e, &id)
     }
 
     fn updt_price(e: Env, admin: Signature, nonce: BigInt, n: u32, d: u32) {
@@ -228,10 +230,11 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
             panic!("d is zero but cannot be zero")
         }
 
+        verify_and_consume_nonce(&e, &admin_id, &nonce);
+
         check_auth(
             &e,
-            &WrappedAuth(admin),
-            nonce.clone(),
+            &admin,
             Symbol::from_str("updt_price"),
             (admin_id, nonce, &n, &d).into_val(&e),
         );
