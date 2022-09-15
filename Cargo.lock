@@ -611,6 +611,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "soroban-cross-contract-a-contract"
+version = "0.0.0"
+dependencies = [
+ "soroban-sdk",
+]
+
+[[package]]
+name = "soroban-cross-contract-b-contract"
+version = "0.0.0"
+dependencies = [
+ "soroban-sdk",
+]
+
+[[package]]
 name = "soroban-custom-types-contract"
 version = "0.0.0"
 dependencies = [
@@ -701,6 +715,20 @@ dependencies = [
  "rand",
  "sha2 0.10.5",
  "soroban-auth",
+ "soroban-sdk",
+ "soroban-token-contract",
+ "stellar-xdr",
+]
+
+[[package]]
+name = "soroban-liquidity-pool-router-contract"
+version = "0.0.0"
+dependencies = [
+ "ed25519-dalek",
+ "rand",
+ "sha2 0.10.5",
+ "soroban-auth",
+ "soroban-liquidity-pool-contract",
  "soroban-sdk",
  "soroban-token-contract",
  "stellar-xdr",
