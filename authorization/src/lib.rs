@@ -6,7 +6,7 @@ extern crate std;
 mod test;
 
 use soroban_auth::{
-    check_auth, NonceAuth, {Identifier, Signature},
+    check_auth, {Identifier, Signature},
 };
 use soroban_sdk::{contractimpl, contracttype, symbol, BigInt, Env, IntoVal};
 
@@ -17,31 +17,32 @@ pub enum DataKey {
     Admin,
 }
 
-fn read_nonce(e: &Env, id: Identifier) -> BigInt {
-    let key = DataKey::Nonce(id);
+fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
+    let key = DataKey::Nonce(id.clone());
     e.contract_data()
         .get(key)
         .unwrap_or_else(|| Ok(BigInt::zero(e)))
         .unwrap()
 }
 
-struct NonceForSignature(Signature);
-
-impl NonceAuth for NonceForSignature {
-    fn read_nonce(e: &Env, id: Identifier) -> BigInt {
-        read_nonce(e, id)
+fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
+    match id {
+        Identifier::Contract(_) => {
+            if BigInt::zero(&e) != expected_nonce {
+                panic!("nonce should be zero for Contract")
+            }
+            return;
+        }
+        _ => {}
     }
 
-    fn read_and_increment_nonce(&self, e: &Env, id: Identifier) -> BigInt {
-        let key = DataKey::Nonce(id.clone());
-        let nonce = Self::read_nonce(e, id);
-        e.contract_data().set(key, &nonce + 1);
-        nonce
-    }
+    let key = DataKey::Nonce(id.clone());
+    let nonce = read_nonce(e, id);
 
-    fn signature(&self) -> &Signature {
-        &self.0
+    if nonce != expected_nonce {
+        panic!("incorrect nonce")
     }
+    e.contract_data().set(key, &nonce + 1);
 }
 
 pub struct ExampleContract;
@@ -61,10 +62,11 @@ impl ExampleContract {
     pub fn save_num(e: Env, sig: Signature, nonce: BigInt, num: BigInt) {
         let auth_id = sig.get_identifier(&e);
 
+        verify_and_consume_nonce(&e, &auth_id, &nonce);
+
         check_auth(
             &e,
-            &NonceForSignature(sig),
-            nonce.clone(),
+            &sig,
             symbol!("save_num"),
             (&auth_id, nonce, &num).into_val(&e),
         );
@@ -79,10 +81,11 @@ impl ExampleContract {
             panic!("not authorized by admin")
         }
 
+        verify_and_consume_nonce(&e, &auth_id, &nonce);
+
         check_auth(
             &e,
-            &NonceForSignature(sig),
-            nonce.clone(),
+            &sig,
             symbol!("overwrite"),
             (auth_id, nonce, &id, &num).into_val(&e),
         );
@@ -91,6 +94,6 @@ impl ExampleContract {
     }
 
     pub fn nonce(e: Env, id: Identifier) -> BigInt {
-        read_nonce(&e, id)
+        read_nonce(&e, &id)
     }
 }

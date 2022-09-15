@@ -10,10 +10,16 @@ test: build-normal
 build: build-normal build-optimized
 
 build-normal:
-	cargo build --target wasm32-unknown-unknown --release
+	cargo build --target wasm32-unknown-unknown --release -p soroban-token-contract
+	cp target/wasm32-unknown-unknown/release/soroban_token_contract.wasm ./
+	cargo build --target wasm32-unknown-unknown --release -p soroban-liquidity-pool-contract
+	cp target/wasm32-unknown-unknown/release/soroban_liquidity_pool_contract.wasm ./
+	cargo build --target wasm32-unknown-unknown --release -p soroban-single-offer-contract
+	cp target/wasm32-unknown-unknown/release/soroban_single_offer_contract.wasm ./
+	cargo hack build --target wasm32-unknown-unknown --release
 
 build-optimized:
-	CARGO_TARGET_DIR=target-tiny cargo +nightly build --target wasm32-unknown-unknown --release \
+	CARGO_TARGET_DIR=target-tiny cargo +nightly hack build --target wasm32-unknown-unknown --release \
 		-Z build-std=std,panic_abort \
 		-Z build-std-features=panic_immediate_abort
 	cd target/wasm32-unknown-unknown/release/ && \

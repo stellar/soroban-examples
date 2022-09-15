@@ -8,7 +8,7 @@
 extern crate std;
 
 use soroban_auth::{
-    check_auth, NonceAuth, {Identifier, Signature},
+    check_auth, {Identifier, Signature},
 };
 use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, IntoVal, Symbol, Vec};
 
@@ -86,12 +86,14 @@ impl ClaimableBalanceContract {
         }
 
         let from_id = from.get_identifier(&env);
+
+        verify_and_consume_nonce(&env, &from_id, &BigInt::zero(&env));
+
         // Authenticate depositor with nonce of zero, so that this may
         // be successfully called just once.
         check_auth(
             &env,
-            &NonceForSignature(from),
-            BigInt::zero(&env),
+            &from,
             Symbol::from_str("deposit"),
             (&from_id, &token, &amount, &claimants, &time_bound).into_val(&env),
         );
@@ -123,13 +125,15 @@ impl ClaimableBalanceContract {
         if !claimants.contains(&claimant_id) {
             panic!("claimant is not allowed to claim this balance");
         }
+
+        verify_and_consume_nonce(&env, &claimant_id, &BigInt::zero(&env));
+
         // Authenticate claimant with nonce of zero, so that this may be
         // successfully called just once.
         // For simplicity, depositor can't be the claimant.
         check_auth(
             &env,
-            &NonceForSignature(claimant),
-            BigInt::zero(&env),
+            &claimant,
             Symbol::from_str("claim"),
             (&claimant_id,).into_val(&env),
         );
@@ -170,29 +174,32 @@ fn transfer_to(e: &Env, token_id: &BytesN<32>, to: &Identifier, amount: &BigInt)
     client.xfer(&Signature::Contract, &BigInt::zero(&e), to, amount);
 }
 
-struct NonceForSignature(Signature);
+fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
+    let key = DataKey::Nonce(id.clone());
+    e.contract_data()
+        .get(key)
+        .unwrap_or_else(|| Ok(BigInt::zero(e)))
+        .unwrap()
+}
 
-impl NonceAuth for NonceForSignature {
-    fn read_nonce(e: &Env, id: Identifier) -> BigInt {
-        let key = DataKey::Nonce(id);
-        if let Some(nonce) = e.contract_data().get(key) {
-            nonce.unwrap()
-        } else {
-            BigInt::zero(e)
+fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
+    match id {
+        Identifier::Contract(_) => {
+            if BigInt::zero(&e) != expected_nonce {
+                panic!("nonce should be zero for Contract")
+            }
+            return;
         }
+        _ => {}
     }
 
-    fn read_and_increment_nonce(&self, e: &Env, id: Identifier) -> BigInt {
-        let key = DataKey::Nonce(id.clone());
-        let nonce = Self::read_nonce(e, id);
-        e.contract_data()
-            .set(key, nonce.clone() + BigInt::from_u32(e, 1));
-        nonce
-    }
+    let key = DataKey::Nonce(id.clone());
+    let nonce = read_nonce(e, id);
 
-    fn signature(&self) -> &Signature {
-        &self.0
+    if nonce != expected_nonce {
+        panic!("incorrect nonce")
     }
+    e.contract_data().set(key, &nonce + 1);
 }
 
 mod test;

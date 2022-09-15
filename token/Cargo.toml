@@ -8,6 +8,7 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [features]
+default = ["export"]
 export = []
 testutils = ["soroban-sdk/testutils", "soroban-auth/testutils", "dep:ed25519-dalek"]
 

@@ -10,7 +10,7 @@ pub mod testutils;
 use offer::SingleOfferClient;
 use offer_contract::create_contract;
 use soroban_auth::{
-    check_auth, NonceAuth, {Identifier, Signature},
+    check_auth, {Identifier, Signature},
 };
 use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env, IntoVal, Symbol};
 use soroban_single_offer_contract as offer;
@@ -95,32 +95,32 @@ pub fn offer_salt(
     e.compute_hash_sha256(salt_bin)
 }
 
-fn read_nonce(e: &Env, id: Identifier) -> BigInt {
-    let key = DataKey::Nonce(id);
-    if let Some(nonce) = e.contract_data().get(key) {
-        nonce.unwrap()
-    } else {
-        BigInt::zero(e)
-    }
+fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
+    let key = DataKey::Nonce(id.clone());
+    e.contract_data()
+        .get(key)
+        .unwrap_or_else(|| Ok(BigInt::zero(e)))
+        .unwrap()
 }
-struct WrappedAuth(Signature);
 
-impl NonceAuth for WrappedAuth {
-    fn read_nonce(e: &Env, id: Identifier) -> BigInt {
-        read_nonce(e, id)
+fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
+    match id {
+        Identifier::Contract(_) => {
+            if BigInt::zero(&e) != expected_nonce {
+                panic!("nonce should be zero for Contract")
+            }
+            return;
+        }
+        _ => {}
     }
 
-    fn read_and_increment_nonce(&self, e: &Env, id: Identifier) -> BigInt {
-        let key = DataKey::Nonce(id.clone());
-        let nonce = Self::read_nonce(e, id);
-        e.contract_data()
-            .set(key, nonce.clone() + BigInt::from_u32(e, 1));
-        nonce
-    }
+    let key = DataKey::Nonce(id.clone());
+    let nonce = read_nonce(e, id);
 
-    fn signature(&self) -> &Signature {
-        &self.0
+    if nonce != expected_nonce {
+        panic!("incorrect nonce")
     }
+    e.contract_data().set(key, &nonce + 1);
 }
 
 struct SingleOfferRouter;
@@ -164,10 +164,11 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
     ) {
         let to_id = to.get_identifier(&e);
 
+        verify_and_consume_nonce(&e, &to_id, &nonce);
+
         check_auth(
             &e,
-            &WrappedAuth(to),
-            nonce.clone(),
+            &to,
             Symbol::from_str("safe_trade"),
             (&to_id, nonce, &offer, &amount, &min).into_val(&e),
         );
@@ -200,6 +201,6 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
     }
 
     fn nonce(e: Env, id: Identifier) -> BigInt {
-        read_nonce(&e, id)
+        read_nonce(&e, &id)
     }
 }

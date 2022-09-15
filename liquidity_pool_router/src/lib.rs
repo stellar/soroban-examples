@@ -9,7 +9,7 @@ pub mod testutils;
 
 use liquidity_pool::LiquidityPoolClient;
 use pool_contract::create_contract;
-use soroban_auth::{check_auth, NonceAuth};
+use soroban_auth::check_auth;
 use soroban_auth::{Identifier, Signature};
 use soroban_liquidity_pool_contract as liquidity_pool;
 use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env, IntoVal, Symbol};
@@ -127,32 +127,32 @@ fn get_deposit_amounts(
     }
 }
 
-fn read_nonce(e: &Env, id: Identifier) -> BigInt {
-    let key = DataKey::Nonce(id);
-    if let Some(nonce) = e.contract_data().get(key) {
-        nonce.unwrap()
-    } else {
-        BigInt::zero(e)
-    }
+fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
+    let key = DataKey::Nonce(id.clone());
+    e.contract_data()
+        .get(key)
+        .unwrap_or_else(|| Ok(BigInt::zero(e)))
+        .unwrap()
 }
-struct WrappedAuth(Signature);
 
-impl NonceAuth for WrappedAuth {
-    fn read_nonce(e: &Env, id: Identifier) -> BigInt {
-        read_nonce(e, id)
+fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
+    match id {
+        Identifier::Contract(_) => {
+            if BigInt::zero(&e) != expected_nonce {
+                panic!("nonce should be zero for Contract")
+            }
+            return;
+        }
+        _ => {}
     }
 
-    fn read_and_increment_nonce(&self, e: &Env, id: Identifier) -> BigInt {
-        let key = DataKey::Nonce(id.clone());
-        let nonce = Self::read_nonce(e, id);
-        e.contract_data()
-            .set(key, nonce.clone() + BigInt::from_u32(e, 1));
-        nonce
-    }
+    let key = DataKey::Nonce(id.clone());
+    let nonce = read_nonce(e, id);
 
-    fn signature(&self) -> &Signature {
-        &self.0
+    if nonce != expected_nonce {
+        panic!("incorrect nonce")
     }
+    e.contract_data().set(key, &nonce + 1);
 }
 
 struct LiquidityPoolRouter;
@@ -172,10 +172,11 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
     ) {
         let to_id = to.get_identifier(&e);
 
+        verify_and_consume_nonce(&e, &to_id, &nonce);
+
         check_auth(
             &e,
-            &WrappedAuth(to),
-            nonce.clone(),
+            &to,
             Symbol::from_str("sf_deposit"),
             (
                 &to_id, nonce, &token_a, &token_b, &desired_a, &min_a, &desired_b, &min_b,
@@ -229,10 +230,11 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
     ) {
         let to_id = to.get_identifier(&e);
 
+        verify_and_consume_nonce(&e, &to_id, &nonce);
+
         check_auth(
             &e,
-            &WrappedAuth(to),
-            nonce.clone(),
+            &to,
             Symbol::from_str("swap_out"),
             (&to_id, nonce, &sell, &buy, &out, &in_max).into_val(&e),
         );
@@ -293,10 +295,11 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
     ) {
         let to_id = to.get_identifier(&e);
 
+        verify_and_consume_nonce(&e, &to_id, &nonce);
+
         check_auth(
             &e,
-            &WrappedAuth(to),
-            nonce.clone(),
+            &to,
             Symbol::from_str("sf_withdrw"),
             (
                 &to_id,
@@ -337,6 +340,6 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
     }
 
     fn nonce(e: Env, id: Identifier) -> BigInt {
-        read_nonce(&e, id)
+        read_nonce(&e, &id)
     }
 }
