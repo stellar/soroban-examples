@@ -13,7 +13,9 @@ use soroban_auth::{
 use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, IntoVal, Symbol, Vec};
 
 mod token {
-    soroban_sdk::contractimport!(file = "../soroban_token_contract.wasm");
+    soroban_sdk::contractimport!(
+        file = "../target/wasm32-unknown-unknown/release/soroban_token_contract.wasm"
+    );
 }
 
 #[derive(Clone)]

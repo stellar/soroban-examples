@@ -13,7 +13,9 @@ use soroban_sdk::{Bytes, BytesN, Env};
 //
 // Outside of tests and testutils, we use the embedded token wasm file.
 
-soroban_sdk::contractimport!(file = "../soroban_token_contract.wasm");
+soroban_sdk::contractimport!(
+    file = "../target/wasm32-unknown-unknown/release/soroban_token_contract.wasm"
+);
 pub type TokenClient = ContractClient;
 
 #[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
