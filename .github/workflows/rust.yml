@@ -62,6 +62,7 @@ jobs:
     - uses: actions/checkout@v3
     - uses: stellar/actions/rust-cache@main
     - run: rustup update nightly
+    - run: rustup component add rust-src --toolchain nightly-${{ matrix.sys.target }}
     - run: rustup target add ${{ matrix.sys.target }}
     - run: cargo install --target-dir ~/.cargo/target --locked --version 0.5.16 cargo-hack
     - run: make test-optimized
