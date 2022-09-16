@@ -16,7 +16,9 @@ testutils = ["soroban-sdk/testutils", "soroban-token-contract/testutils"]
 [dependencies]
 soroban-sdk = "0.0.4"
 soroban-auth = "0.0.4"
-soroban-token-contract = { path = "../token", version = "0.0.4", default-features = false }
+
+[target.'cfg(not(target_family="wasm"))'.dependencies]
+soroban-token-contract = { path = "../token", version = "0.0.4", default-features = false, optional = true }
 
 [dev_dependencies]
 soroban-sdk = { version = "0.0.4", features = ["testutils"] }
