@@ -1,6 +1,8 @@
 use soroban_sdk::{BytesN, Env};
 
-soroban_sdk::contractimport!(file = "../soroban_liquidity_pool_contract.wasm");
+soroban_sdk::contractimport!(
+    file = "../target/wasm32-unknown-unknown/release/soroban_liquidity_pool_contract.wasm"
+);
 pub type LiquidityPoolClient = ContractClient;
 
 #[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
