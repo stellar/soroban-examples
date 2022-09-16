@@ -6,15 +6,14 @@ extern crate std;
 mod pool_contract;
 mod test;
 pub mod testutils;
+mod token_contract;
 
-use liquidity_pool::LiquidityPoolClient;
-use pool_contract::create_contract;
+use pool_contract::{create_contract, LiquidityPoolClient};
+use token_contract::TokenClient;
+
 use soroban_auth::check_auth;
 use soroban_auth::{Identifier, Signature};
-use soroban_liquidity_pool_contract as liquidity_pool;
 use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env, IntoVal, Symbol};
-use soroban_token_contract as token;
-use token::TokenClient;
 
 #[derive(Clone)]
 #[contracttype]
