@@ -1,12 +1,12 @@
 use soroban_sdk::{BytesN, Env};
 
-#[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
-pub const POOL_CONTRACT: &[u8] = include_bytes!("../../soroban_liquidity_pool_contract.wasm");
+soroban_sdk::contractimport!(file = "../soroban_liquidity_pool_contract.wasm");
+pub type LiquidityPoolClient = ContractClient;
 
 #[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
 pub fn create_contract(e: &Env, salt: &BytesN<32>) -> BytesN<32> {
     use soroban_sdk::Bytes;
-    let bin = Bytes::from_slice(e, POOL_CONTRACT);
+    let bin = Bytes::from_slice(e, WASM);
     e.deployer().from_current_contract(salt).deploy(bin)
 }
 
