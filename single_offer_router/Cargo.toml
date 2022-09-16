@@ -15,11 +15,13 @@ testutils = ["soroban-sdk/testutils", "soroban-token-contract/testutils","soroba
 [dependencies]
 soroban-sdk = "0.0.4"
 soroban-auth = "0.0.4"
-soroban-token-contract = { path = "../token", version = "0.0.4", default-features = false }
-soroban-single-offer-contract = { path = "../single_offer", version = "0.0.0", default-features = false }
 ed25519-dalek = { version = "1.0.1", optional = true }
 stellar-xdr = { version = "0.0.2", features = ["next", "std"], optional = true }
 sha2 = { version = "0.10.2", optional = true }
+
+[target.'cfg(not(target_family="wasm"))'.dependencies]
+soroban-token-contract = { path = "../token", version = "0.0.4", default-features = false, optional = true }
+soroban-single-offer-contract = { path = "../single_offer", version = "0.0.0", default-features = false, optional = true }
 
 [dev_dependencies]
 soroban-sdk = { version = "0.0.4", features = ["testutils"] }
