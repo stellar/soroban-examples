@@ -31,10 +31,10 @@ codegen-units = 1
 lto = true
 
 [patch.crates-io]
-soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "06335904" }
-soroban-spec = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "06335904" }
-soroban-auth = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "06335904" }
-soroban-sdk-macros = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "06335904" }
+soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "3b299468" }
+soroban-spec = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "3b299468" }
+soroban-auth = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "3b299468" }
+soroban-sdk-macros = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "3b299468" }
 soroban-env-common = { git = "https://github.com/stellar/rs-soroban-env", rev = "a51888cf" }
 soroban-env-guest = { git = "https://github.com/stellar/rs-soroban-env", rev = "a51888cf" }
 soroban-env-host = { git = "https://github.com/stellar/rs-soroban-env", rev = "a51888cf" }
