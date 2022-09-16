@@ -6,16 +6,15 @@ extern crate std;
 mod offer_contract;
 mod test;
 pub mod testutils;
+mod token_contract;
 
-use offer::SingleOfferClient;
-use offer_contract::create_contract;
+use offer_contract::{create_contract, SingleOfferClient};
+use token_contract::TokenClient;
+
 use soroban_auth::{
     check_auth, {Identifier, Signature},
 };
 use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env, IntoVal, Symbol};
-use soroban_single_offer_contract as offer;
-use soroban_token_contract as token;
-use token::TokenClient;
 
 #[derive(Clone)]
 #[contracttype]
