@@ -14,6 +14,10 @@ build-normal:
 	cargo build --target wasm32-unknown-unknown --release -p soroban-liquidity-pool-contract
 	cargo build --target wasm32-unknown-unknown --release -p soroban-single-offer-contract
 	cargo hack build --target wasm32-unknown-unknown --release
+	cd target/wasm32-unknown-unknown/release/ && \
+		for i in *.wasm ; do \
+			ls -l "$$i"; \
+		done
 
 build-optimized:
 	cargo +nightly build --target wasm32-unknown-unknown --release -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort -p soroban-token-contract
