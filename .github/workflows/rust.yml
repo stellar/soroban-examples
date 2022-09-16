@@ -51,7 +51,6 @@ jobs:
       env:
         CARGO_BUILD_TARGET: ${{ matrix.sys.target }}
 
-
   build-and-test-optimized:
     strategy:
       matrix:
