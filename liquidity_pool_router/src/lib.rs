@@ -9,10 +9,11 @@ pub mod testutils;
 mod token_contract;
 
 use pool_contract::{create_contract, LiquidityPoolClient};
+use token_contract::TokenClient;
+
 use soroban_auth::check_auth;
 use soroban_auth::{Identifier, Signature};
 use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env, IntoVal, Symbol};
-use token_contract::TokenClient;
 
 #[derive(Clone)]
 #[contracttype]
