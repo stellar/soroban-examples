@@ -7,6 +7,9 @@ export RUSTFLAGS=-Dwarnings
 test: build-normal
 	cargo hack --feature-powerset test
 
+test-optimized: build-optimized
+	cargo hack --feature-powerset test
+
 build: build-normal build-optimized
 
 build-normal:
