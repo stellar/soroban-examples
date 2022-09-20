@@ -867,6 +867,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "soroban-token-with-payload"
+version = "0.0.4"
+dependencies = [
+ "ed25519-dalek",
+ "num-bigint",
+ "rand",
+ "soroban-auth",
+ "soroban-sdk",
+]
+
+[[package]]
 name = "soroban-wasmi"
 version = "0.16.0"
 source = "git+https://github.com/stellar/wasmi?rev=a61b6df#a61b6dffa0a13aca70b046fc11e379a3fde31147"
