@@ -749,6 +749,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "soroban-liquidity-pool-router-with-payload"
+version = "0.0.0"
+dependencies = [
+ "soroban-auth",
+ "soroban-sdk",
+]
+
+[[package]]
 name = "soroban-native-sdk-macros"
 version = "0.0.5"
 source = "git+https://github.com/stellar/rs-soroban-env?rev=5d57d88#5d57d8814c3f7e2f6c10954435b8057221313106"

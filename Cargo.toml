@@ -18,7 +18,8 @@ members = [
     "events",
     "timelock",
     "token",
-    "token_with_payload"
+    "token_with_payload",
+    "liquidity_pool_router_with_payload"
 ]
 
 [profile.release]

@@ -1,0 +1,21 @@
+[package]
+name = "soroban-liquidity-pool-router-with-payload"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["export"]
+export = []
+testutils = ["soroban-sdk/testutils", "soroban-auth/testutils"]
+
+[dependencies]
+soroban-sdk = "0.0.4"
+soroban-auth = "0.0.4"
+
+[dev_dependencies]
+soroban-sdk = { version = "0.0.4", features = ["testutils"] }
+soroban-auth = { version = "0.0.4", features = ["testutils"] }
