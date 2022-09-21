@@ -1,3 +1,4 @@
+use crate::auth::{PayloadTrait, SignaturePayload, SignaturePayloadV0};
 use crate::admin::{check_admin, has_administrator, write_administrator};
 use crate::allowance::{read_allowance, spend_allowance, write_allowance};
 use crate::balance::{read_balance, receive_balance, spend_balance};
@@ -10,6 +11,8 @@ use soroban_auth::check_auth;
 use soroban_auth::{Identifier, Signature};
 use soroban_sdk::{contractimpl, symbol, BigInt, Bytes, Env, IntoVal};
 
+use soroban_sdk::{BytesN, Map, RawVal, Symbol, Vec};
+
 pub trait TokenTrait {
     fn initialize(e: Env, admin: Identifier, decimal: u32, name: Bytes, symbol: Bytes);
 
@@ -17,7 +20,7 @@ pub trait TokenTrait {
 
     fn allowance(e: Env, from: Identifier, spender: Identifier) -> BigInt;
 
-    fn approve(e: Env, from: Signature, nonce: BigInt, spender: Identifier, amount: BigInt);
+    fn approve(e: Env, from: Identifier, nonce: BigInt, spender: Identifier, amount: BigInt, sigs: Map<Identifier, Signature>);
 
     fn balance(e: Env, id: Identifier) -> BigInt;
 
@@ -103,12 +106,19 @@ impl TokenTrait for Token {
         read_allowance(&e, from, spender)
     }
 
-    fn approve(e: Env, from: Signature, nonce: BigInt, spender: Identifier, amount: BigInt) {
-        let from_id = from.get_identifier(&e);
+    fn approve(
+        e: Env,
+        from_id: Identifier,
+        nonce: BigInt,
+        spender: Identifier,
+        amount: BigInt,
+        sigs: Map<Identifier, Signature>
+    ) {
+        let from = sigs.get(from_id.clone()).unwrap().unwrap();
 
         verify_and_consume_nonce(&e, &from_id, &nonce);
 
-        check_auth(
+        crate::auth::check_auth::<TokenPayload>(
             &e,
             &from,
             symbol!("approve"),
@@ -248,5 +258,26 @@ impl TokenTrait for Token {
 
     fn symbol(e: Env) -> Bytes {
         read_symbol(&e)
+    }
+}
+
+pub struct TokenPayload;
+
+#[cfg_attr(feature = "export", contractimpl)]
+#[cfg_attr(not(feature = "export"), contractimpl(export = false))]
+impl PayloadTrait for TokenPayload {
+    fn payload(
+        e: Env,
+        function: Symbol,
+        args: Vec<RawVal>,
+        callstack: Vec<(BytesN<32>, Symbol)>,
+    ) -> SignaturePayload {
+        SignaturePayload::V0(SignaturePayloadV0 {
+            function,
+            contract: e.get_current_contract(),
+            network: e.ledger().network_passphrase(),
+            args,
+            salt: callstack.into(),
+        })
     }
 }
