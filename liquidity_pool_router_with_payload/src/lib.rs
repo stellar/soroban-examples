@@ -160,7 +160,7 @@ pub trait PayloadTrait {
         function: Symbol,
         args: Vec<RawVal>,
         callstack: Vec<(BytesN<32>, Symbol)>,
-    ) -> Map<Symbol, SaltedSignaturePayload>;
+    ) -> Map<Symbol, (Identifier, SaltedSignaturePayload)>;
 }
 
 pub struct LiquidityPoolRouterPayload;
@@ -172,7 +172,7 @@ impl PayloadTrait for LiquidityPoolRouterPayload {
         function: Symbol,
         args: Vec<RawVal>,
         callstack: Vec<(BytesN<32>, Symbol)>,
-    ) -> Map<Symbol, SaltedSignaturePayload> {
+    ) -> Map<Symbol, (Identifier, SaltedSignaturePayload)> {
         const DEPOSIT_RAW: u64 = symbol!("deposit").to_raw().get_payload();
         match function.to_raw().get_payload() {
             DEPOSIT_RAW => {
@@ -223,7 +223,7 @@ impl PayloadTrait for LiquidityPoolRouterPayload {
                 let mut res = Map::new(&e);
                 res.set(symbol!("xfer_a"), to_forward_a);
                 res.set(symbol!("xfer_b"), to_forward_b);
-                res.set(symbol!("deposit"), to_verify);
+                res.set(symbol!("deposit"), (to, to_verify));
             }
             _ => panic!(),
         }

@@ -11,7 +11,7 @@ use soroban_auth::check_auth;
 use soroban_auth::{Identifier, Signature};
 use soroban_sdk::{contractimpl, symbol, BigInt, Bytes, Env, IntoVal};
 
-use soroban_sdk::{BytesN, Map, RawVal, Symbol, Vec};
+use soroban_sdk::{BytesN, Map, RawVal, Symbol, TryIntoVal, Vec};
 
 pub trait TokenTrait {
     fn initialize(e: Env, admin: Identifier, decimal: u32, name: Bytes, symbol: Bytes);
@@ -295,7 +295,7 @@ pub trait PayloadTrait {
         function: Symbol,
         args: Vec<RawVal>,
         callstack: Vec<(BytesN<32>, Symbol)>,
-    ) -> Map<Symbol, SaltedSignaturePayload>;
+    ) -> Map<Symbol, (Identifier, SaltedSignaturePayload)>;
 }
 
 pub struct TokenPayload;
@@ -308,17 +308,17 @@ impl PayloadTrait for TokenPayload {
         function: Symbol,
         args: Vec<RawVal>,
         callstack: Vec<(BytesN<32>, Symbol)>,
-    ) -> Map<Symbol, SaltedSignaturePayload> {
+    ) -> Map<Symbol, (Identifier, SaltedSignaturePayload)> {
         let to_verify = SaltedSignaturePayload::V0(SaltedSignaturePayloadV0 {
             function,
             contract: e.get_current_contract(),
             network: e.ledger().network_passphrase(),
-            args,
+            args: args.clone(),
             salt: callstack.into(),
         });
 
         let mut res = Map::new(&e);
-        res.set(symbol!("sig"), to_verify);
+        res.set(symbol!("sig"), (args.get_unchecked(0).unwrap().try_into_val(&e).unwrap(), to_verify));
         res
     }
 }
