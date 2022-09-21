@@ -1,19 +1,10 @@
 use soroban_auth::{AccountSignatures, Ed25519Signature, Signature};
 use soroban_sdk::serde::Serialize;
-use soroban_sdk::{contracttype, Account, Bytes, BytesN, Env, RawVal, Symbol, Vec};
-
-pub trait PayloadTrait {
-    fn payload(
-        e: Env,
-        function: Symbol,
-        args: Vec<RawVal>,
-        callstack: Vec<(BytesN<32>, Symbol)>,
-    ) -> SignaturePayload;
-}
+use soroban_sdk::{contracttype, Account, Bytes, BytesN, Env, IntoVal, RawVal, Symbol, Vec};
 
 #[derive(Clone)]
 #[contracttype]
-pub struct SignaturePayloadV0 {
+pub struct SaltedSignaturePayloadV0 {
     pub function: Symbol,
     pub contract: BytesN<32>,
     pub network: Bytes,
@@ -23,19 +14,47 @@ pub struct SignaturePayloadV0 {
 
 #[derive(Clone)]
 #[contracttype]
-pub enum SignaturePayload {
-    V0(SignaturePayloadV0),
+pub enum SaltedSignaturePayload {
+    V0(SaltedSignaturePayloadV0),
 }
 
-fn check_ed25519_auth(env: &Env, auth: &Ed25519Signature, payload: SignaturePayload) {
-    let msg_bytes = payload.serialize(env);
-    env.verify_sig_ed25519(auth.public_key.clone(), msg_bytes, auth.signature.clone());
+fn verify_ed25519_signature(
+    env: &Env,
+    auth: Ed25519Signature,
+    function: Symbol,
+    args: Vec<RawVal>,
+    salt: RawVal,
+) {
+    let msg = SaltedSignaturePayloadV0 {
+        function,
+        contract: env.get_current_contract(),
+        network: env.ledger().network_passphrase(),
+        args,
+        salt,
+    };
+    let msg_bin = SaltedSignaturePayload::V0(msg).serialize(env);
+
+    env.verify_sig_ed25519(auth.public_key, msg_bin, auth.signature);
 }
 
-fn check_account_auth(env: &Env, auth: &AccountSignatures, payload: SignaturePayload) {
-    let msg_bytes = payload.serialize(env);
-
+fn verify_account_signatures(
+    env: &Env,
+    auth: AccountSignatures,
+    function: Symbol,
+    args: Vec<RawVal>,
+    salt: RawVal,
+) {
     let acc = Account::from_public_key(&auth.account_id).unwrap();
+
+    let msg = SaltedSignaturePayloadV0 {
+        function,
+        contract: env.get_current_contract(),
+        network: env.ledger().network_passphrase(),
+        args,
+        salt,
+    };
+    let msg_bytes = SaltedSignaturePayload::V0(msg).serialize(env);
+
     let threshold = acc.medium_threshold();
     let mut weight = 0u32;
 
@@ -52,7 +71,11 @@ fn check_account_auth(env: &Env, auth: &AccountSignatures, payload: SignaturePay
             }
         }
 
-        env.verify_sig_ed25519(sig.public_key.clone(), msg_bytes.clone(), sig.signature);
+        env.verify_sig_ed25519(
+            sig.public_key.clone(),
+            msg_bytes.clone(),
+            sig.signature.clone(),
+        );
 
         weight = weight
             .checked_add(acc.signer_weight(&sig.public_key))
@@ -66,26 +89,49 @@ fn check_account_auth(env: &Env, auth: &AccountSignatures, payload: SignaturePay
     }
 }
 
-/// Verifies a Signature. It's important to note that this module does
-/// not provide replay protection. That will need to be implemented by
-/// the user.
-pub fn check_auth<T: PayloadTrait>(
+/// Verify that a [`Signature`] is a valid signature of a [`SignaturePayload`]
+/// containing the provided arguments by the [`Identifier`] contained within the
+/// [`Signature`].
+///
+/// Verify that the given signature is a signature of the [`SignaturePayload`]
+/// that contain `function`, and `args`.
+///
+/// Three types of signature are accepted:
+///
+/// - Contract Signature
+///
+///   An invoking contract can sign the message by simply making the invocation.
+///   No actual signature of [`SignaturePayload`] is required.
+///
+/// - Ed25519 Signature
+///
+///   An ed25519 key can sign [`SignaturePayload`] and include that signature in
+///   the `sig` field.
+///
+/// - Account Signatures
+///
+///   An account's signers can sign [`SignaturePayload`] and include those
+///   signatures in the `sig` field.
+///
+/// **This function provides no replay protection. Contracts must provide their
+/// own mechanism suitable for replay prevention that prevents contract
+/// invocations to be replayable if it is important they are not.**
+pub fn verify(
     env: &Env,
-    sig: &Signature,
+    sig: Signature,
     function: Symbol,
-    args: Vec<RawVal>,
+    args: impl IntoVal<Env, Vec<RawVal>>,
+    salt: RawVal,
 ) {
     match sig {
         Signature::Contract => {
             env.get_invoking_contract();
         }
-        Signature::Ed25519(kea) => {
-            let payload = T::payload(env.clone(), function, args, env.get_current_call_stack());
-            check_ed25519_auth(env, &kea, payload);
+        Signature::Ed25519(e) => {
+            verify_ed25519_signature(env, e, function, args.into_val(env), salt)
         }
-        Signature::Account(kaa) => {
-            let payload = T::payload(env.clone(), function, args, env.get_current_call_stack());
-            check_account_auth(env, &kaa, payload);
+        Signature::Account(a) => {
+            verify_account_signatures(env, a, function, args.into_val(env), salt)
         }
     }
 }

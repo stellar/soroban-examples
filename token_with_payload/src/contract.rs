@@ -1,6 +1,6 @@
 use crate::admin::{check_admin, has_administrator, write_administrator};
 use crate::allowance::{read_allowance, spend_allowance, write_allowance};
-use crate::auth::{PayloadTrait, SignaturePayload, SignaturePayloadV0};
+use crate::auth::{SaltedSignaturePayload, SaltedSignaturePayloadV0};
 use crate::balance::{read_balance, receive_balance, spend_balance};
 use crate::balance::{read_state, write_state};
 use crate::metadata::{
@@ -26,14 +26,21 @@ pub trait TokenTrait {
         nonce: BigInt,
         spender: Identifier,
         amount: BigInt,
-        sigs: Map<Identifier, Signature>,
+        sigs: Map<Symbol, Signature>,
     );
 
     fn balance(e: Env, id: Identifier) -> BigInt;
 
     fn is_frozen(e: Env, id: Identifier) -> bool;
 
-    fn xfer(e: Env, from: Signature, nonce: BigInt, to: Identifier, amount: BigInt);
+    fn xfer(
+        e: Env,
+        from: Identifier,
+        nonce: BigInt,
+        to: Identifier,
+        amount: BigInt,
+        sigs: Map<Symbol, Signature>,
+    );
 
     fn xfer_from(
         e: Env,
@@ -115,23 +122,27 @@ impl TokenTrait for Token {
 
     fn approve(
         e: Env,
-        from_id: Identifier,
+        from: Identifier,
         nonce: BigInt,
         spender: Identifier,
         amount: BigInt,
-        sigs: Map<Identifier, Signature>,
+        sigs: Map<Symbol, Signature>,
     ) {
-        let from = sigs.get(from_id.clone()).unwrap().unwrap();
+        let from_sig = sigs.get_unchecked(symbol!("from")).unwrap();
+        if from != from_sig.get_identifier(&e) {
+            panic!();
+        }
 
-        verify_and_consume_nonce(&e, &from_id, &nonce);
+        verify_and_consume_nonce(&e, &from, &nonce);
 
-        crate::auth::check_auth::<TokenPayload>(
+        crate::auth::verify(
             &e,
-            &from,
+            from_sig,
             symbol!("approve"),
-            (&from_id, nonce, &spender, &amount).into_val(&e),
+            (&from, nonce, &spender, &amount),
+            e.get_current_call_stack().into_val(&e),
         );
-        write_allowance(&e, from_id, spender, amount);
+        write_allowance(&e, from, spender, amount);
     }
 
     fn balance(e: Env, id: Identifier) -> BigInt {
@@ -142,18 +153,28 @@ impl TokenTrait for Token {
         read_state(&e, id)
     }
 
-    fn xfer(e: Env, from: Signature, nonce: BigInt, to: Identifier, amount: BigInt) {
-        let from_id = from.get_identifier(&e);
+    fn xfer(
+        e: Env,
+        from: Identifier,
+        nonce: BigInt,
+        to: Identifier,
+        amount: BigInt,
+        sigs: Map<Symbol, Signature>,
+    ) {
+        let from_sig = sigs.get_unchecked(symbol!("from")).unwrap();
+        if from != from_sig.get_identifier(&e) {
+            panic!();
+        }
 
-        verify_and_consume_nonce(&e, &from_id, &nonce);
+        verify_and_consume_nonce(&e, &from, &nonce);
 
         check_auth(
             &e,
-            &from,
+            &from_sig,
             symbol!("xfer"),
-            (&from_id, nonce, &to, &amount).into_val(&e),
+            (&from, nonce, &to, &amount).into_val(&e),
         );
-        spend_balance(&e, from_id, amount.clone());
+        spend_balance(&e, from, amount.clone());
         receive_balance(&e, to, amount);
     }
 
@@ -268,6 +289,15 @@ impl TokenTrait for Token {
     }
 }
 
+pub trait PayloadTrait {
+    fn payload(
+        e: Env,
+        function: Symbol,
+        args: Vec<RawVal>,
+        callstack: Vec<(BytesN<32>, Symbol)>,
+    ) -> Map<Symbol, SaltedSignaturePayload>;
+}
+
 pub struct TokenPayload;
 
 #[cfg_attr(feature = "export", contractimpl)]
@@ -278,13 +308,17 @@ impl PayloadTrait for TokenPayload {
         function: Symbol,
         args: Vec<RawVal>,
         callstack: Vec<(BytesN<32>, Symbol)>,
-    ) -> SignaturePayload {
-        SignaturePayload::V0(SignaturePayloadV0 {
+    ) -> Map<Symbol, SaltedSignaturePayload> {
+        let to_verify = SaltedSignaturePayload::V0(SaltedSignaturePayloadV0 {
             function,
             contract: e.get_current_contract(),
             network: e.ledger().network_passphrase(),
             args,
             salt: callstack.into(),
-        })
+        });
+
+        let mut res = Map::new(&e);
+        res.set(symbol!("sig"), to_verify);
+        res
     }
 }
