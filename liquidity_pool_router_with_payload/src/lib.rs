@@ -169,7 +169,7 @@ pub struct LiquidityPoolRouterPayload;
 
 #[contractimpl]
 impl PayloadTrait for LiquidityPoolRouterPayload {
-    fn has_sig(e: Env, function: Symbol) -> bool {
+    fn has_sig(_e: Env, function: Symbol) -> bool {
         const DEPOSIT_RAW: u64 = symbol!("deposit").to_raw().get_payload();
         match function.to_raw().get_payload() {
             DEPOSIT_RAW => true,
