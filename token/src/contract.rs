@@ -81,8 +81,7 @@ fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
 
 pub struct Token;
 
-#[cfg_attr(feature = "export", contractimpl)]
-#[cfg_attr(not(feature = "export"), contractimpl(export = false))]
+#[contractimpl]
 impl TokenTrait for Token {
     fn initialize(e: Env, admin: Identifier, decimal: u32, name: Bytes, symbol: Bytes) {
         if has_administrator(&e) {
