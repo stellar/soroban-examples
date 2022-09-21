@@ -329,7 +329,13 @@ impl PayloadTrait for TokenPayload {
         });
 
         let mut res = Map::new(&e);
-        res.set(symbol!("sig"), (args.get_unchecked(0).unwrap().try_into_val(&e).unwrap(), to_verify));
+        res.set(
+            symbol!("sig"),
+            (
+                args.get_unchecked(0).unwrap().try_into_val(&e).unwrap(),
+                to_verify,
+            ),
+        );
         res
     }
 }
