@@ -190,7 +190,7 @@ impl PayloadTrait for LiquidityPoolRouterPayload {
                     reserves,
                 );
 
-                let mut callstack_a = e.get_current_call_stack();
+                let mut callstack_a = callstack.clone();
                 callstack_a.push_back((deposit_a.token.clone(), symbol!("xfer")));
                 let to_forward_a = token_contract::Client::new(&e, &deposit_a.token)
                     .payload(
@@ -201,7 +201,7 @@ impl PayloadTrait for LiquidityPoolRouterPayload {
                     .get_unchecked(symbol!("sig"))
                     .unwrap();
 
-                let mut callstack_b = e.get_current_call_stack();
+                let mut callstack_b = callstack.clone();
                 callstack_b.push_back((deposit_b.token.clone(), symbol!("xfer")));
                 let to_forward_b = token_contract::Client::new(&e, &deposit_b.token)
                     .payload(
