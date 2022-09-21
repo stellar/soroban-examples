@@ -290,6 +290,8 @@ impl TokenTrait for Token {
 }
 
 pub trait PayloadTrait {
+    fn has_sig(e: Env, function: Symbol) -> bool;
+
     fn payload(
         e: Env,
         function: Symbol,
@@ -303,6 +305,15 @@ pub struct TokenPayload;
 #[cfg_attr(feature = "export", contractimpl)]
 #[cfg_attr(not(feature = "export"), contractimpl(export = false))]
 impl PayloadTrait for TokenPayload {
+    fn has_sig(e: Env, function: Symbol) -> bool {
+        const APPROVE_RAW: u64 = symbol!("approve").to_raw().get_payload();
+        const XFER_RAW: u64 = symbol!("xfer").to_raw().get_payload();
+        match function.to_raw().get_payload() {
+            APPROVE_RAW | XFER_RAW => true,
+            _ => false,
+        }
+    }
+
     fn payload(
         e: Env,
         function: Symbol,

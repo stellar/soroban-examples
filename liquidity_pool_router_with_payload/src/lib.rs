@@ -155,6 +155,8 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
 }
 
 pub trait PayloadTrait {
+    fn has_sig(e: Env, function: Symbol) -> bool;
+
     fn payload(
         e: Env,
         function: Symbol,
@@ -167,6 +169,14 @@ pub struct LiquidityPoolRouterPayload;
 
 #[contractimpl]
 impl PayloadTrait for LiquidityPoolRouterPayload {
+    fn has_sig(e: Env, function: Symbol) -> bool {
+        const DEPOSIT_RAW: u64 = symbol!("deposit").to_raw().get_payload();
+        match function.to_raw().get_payload() {
+            DEPOSIT_RAW => true,
+            _ => false,
+        }
+    }
+
     fn payload(
         e: Env,
         function: Symbol,
