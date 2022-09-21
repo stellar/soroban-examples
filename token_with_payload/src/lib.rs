@@ -1,8 +1,8 @@
 #![no_std]
 
 mod admin;
-mod auth;
 mod allowance;
+mod auth;
 mod balance;
 mod contract;
 mod metadata;

@@ -1,9 +1,14 @@
 use soroban_auth::{AccountSignatures, Ed25519Signature, Signature};
-use soroban_sdk::{contracttype, Account, Bytes, BytesN, Env, RawVal, Symbol, Vec};
 use soroban_sdk::serde::Serialize;
+use soroban_sdk::{contracttype, Account, Bytes, BytesN, Env, RawVal, Symbol, Vec};
 
 pub trait PayloadTrait {
-    fn payload(e: Env, function: Symbol, args: Vec<RawVal>, callstack: Vec<(BytesN<32>, Symbol)>) -> SignaturePayload;
+    fn payload(
+        e: Env,
+        function: Symbol,
+        args: Vec<RawVal>,
+        callstack: Vec<(BytesN<32>, Symbol)>,
+    ) -> SignaturePayload;
 }
 
 #[derive(Clone)]
@@ -64,7 +69,12 @@ fn check_account_auth(env: &Env, auth: &AccountSignatures, payload: SignaturePay
 /// Verifies a Signature. It's important to note that this module does
 /// not provide replay protection. That will need to be implemented by
 /// the user.
-pub fn check_auth<T: PayloadTrait>(env: &Env, sig: &Signature, function: Symbol, args: Vec<RawVal>) {
+pub fn check_auth<T: PayloadTrait>(
+    env: &Env,
+    sig: &Signature,
+    function: Symbol,
+    args: Vec<RawVal>,
+) {
     match sig {
         Signature::Contract => {
             env.get_invoking_contract();

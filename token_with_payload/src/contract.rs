@@ -1,6 +1,6 @@
-use crate::auth::{PayloadTrait, SignaturePayload, SignaturePayloadV0};
 use crate::admin::{check_admin, has_administrator, write_administrator};
 use crate::allowance::{read_allowance, spend_allowance, write_allowance};
+use crate::auth::{PayloadTrait, SignaturePayload, SignaturePayloadV0};
 use crate::balance::{read_balance, receive_balance, spend_balance};
 use crate::balance::{read_state, write_state};
 use crate::metadata::{
@@ -20,7 +20,14 @@ pub trait TokenTrait {
 
     fn allowance(e: Env, from: Identifier, spender: Identifier) -> BigInt;
 
-    fn approve(e: Env, from: Identifier, nonce: BigInt, spender: Identifier, amount: BigInt, sigs: Map<Identifier, Signature>);
+    fn approve(
+        e: Env,
+        from: Identifier,
+        nonce: BigInt,
+        spender: Identifier,
+        amount: BigInt,
+        sigs: Map<Identifier, Signature>,
+    );
 
     fn balance(e: Env, id: Identifier) -> BigInt;
 
@@ -112,7 +119,7 @@ impl TokenTrait for Token {
         nonce: BigInt,
         spender: Identifier,
         amount: BigInt,
-        sigs: Map<Identifier, Signature>
+        sigs: Map<Identifier, Signature>,
     ) {
         let from = sigs.get(from_id.clone()).unwrap().unwrap();
 
