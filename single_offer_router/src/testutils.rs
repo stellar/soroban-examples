@@ -41,19 +41,19 @@ impl SingleOfferRouter {
     pub fn safe_trade(&self, to: &Keypair, offer: &[u8; 32], amount: &BigInt, min: &BigInt) {
         let to_id = to_ed25519(&self.env, &to);
         let nonce = self.nonce(&to_id);
+        let offer_addr = BytesN::from_array(&self.env, offer);
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            function: Symbol::from_str("safe_trade"),
+            name: Symbol::from_str("safe_trade"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
-            args: (to_id, &nonce, offer, amount, min).into_val(&self.env),
+            args: (to_id, &nonce, &offer_addr, amount, min).into_val(&self.env),
         });
         let auth = Signature::Ed25519(Ed25519Signature {
             public_key: to.public.to_bytes().into_val(&self.env),
             signature: to.sign(msg).unwrap().into_val(&self.env),
         });
 
-        let offer_addr = BytesN::from_array(&self.env, offer);
         self.client()
             .safe_trade(&auth, &nonce, &offer_addr, &amount, &min)
     }

@@ -13,7 +13,7 @@ impl Deployer {
         init_fn: Symbol,
         init_args: Vec<RawVal>,
     ) -> (BytesN<32>, RawVal) {
-        let id = env.deployer().from_current_contract(salt).deploy(wasm);
+        let id = env.deployer().with_current_contract(salt).deploy(wasm);
         let res: RawVal = env.invoke_contract(&id, &init_fn, init_args);
         (id, res)
     }

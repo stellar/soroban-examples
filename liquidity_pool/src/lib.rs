@@ -30,31 +30,27 @@ fn get_contract_id(e: &Env) -> Identifier {
 }
 
 fn get_token_a(e: &Env) -> BytesN<32> {
-    e.contract_data().get_unchecked(DataKey::TokenA).unwrap()
+    e.data().get_unchecked(DataKey::TokenA).unwrap()
 }
 
 fn get_token_b(e: &Env) -> BytesN<32> {
-    e.contract_data().get_unchecked(DataKey::TokenB).unwrap()
+    e.data().get_unchecked(DataKey::TokenB).unwrap()
 }
 
 fn get_token_share(e: &Env) -> BytesN<32> {
-    e.contract_data()
-        .get_unchecked(DataKey::TokenShare)
-        .unwrap()
+    e.data().get_unchecked(DataKey::TokenShare).unwrap()
 }
 
 fn get_total_shares(e: &Env) -> BigInt {
-    e.contract_data()
-        .get_unchecked(DataKey::TotalShares)
-        .unwrap()
+    e.data().get_unchecked(DataKey::TotalShares).unwrap()
 }
 
 fn get_reserve_a(e: &Env) -> BigInt {
-    e.contract_data().get_unchecked(DataKey::ReserveA).unwrap()
+    e.data().get_unchecked(DataKey::ReserveA).unwrap()
 }
 
 fn get_reserve_b(e: &Env) -> BigInt {
-    e.contract_data().get_unchecked(DataKey::ReserveB).unwrap()
+    e.data().get_unchecked(DataKey::ReserveB).unwrap()
 }
 
 fn get_balance(e: &Env, contract_id: BytesN<32>) -> BigInt {
@@ -74,27 +70,27 @@ fn get_balance_shares(e: &Env) -> BigInt {
 }
 
 fn put_token_a(e: &Env, contract_id: BytesN<32>) {
-    e.contract_data().set(DataKey::TokenA, contract_id);
+    e.data().set(DataKey::TokenA, contract_id);
 }
 
 fn put_token_b(e: &Env, contract_id: BytesN<32>) {
-    e.contract_data().set(DataKey::TokenB, contract_id);
+    e.data().set(DataKey::TokenB, contract_id);
 }
 
 fn put_token_share(e: &Env, contract_id: BytesN<32>) {
-    e.contract_data().set(DataKey::TokenShare, contract_id);
+    e.data().set(DataKey::TokenShare, contract_id);
 }
 
 fn put_total_shares(e: &Env, amount: BigInt) {
-    e.contract_data().set(DataKey::TotalShares, amount)
+    e.data().set(DataKey::TotalShares, amount)
 }
 
 fn put_reserve_a(e: &Env, amount: BigInt) {
-    e.contract_data().set(DataKey::ReserveA, amount)
+    e.data().set(DataKey::ReserveA, amount)
 }
 
 fn put_reserve_b(e: &Env, amount: BigInt) {
-    e.contract_data().set(DataKey::ReserveB, amount)
+    e.data().set(DataKey::ReserveB, amount)
 }
 
 fn burn_shares(e: &Env, amount: BigInt) {
@@ -102,7 +98,7 @@ fn burn_shares(e: &Env, amount: BigInt) {
     let share_contract_id = get_token_share(e);
 
     TokenClient::new(&e, share_contract_id).burn(
-        &Signature::Contract,
+        &Signature::Invoker,
         &BigInt::zero(&e),
         &get_contract_id(e),
         &amount,
@@ -115,7 +111,7 @@ fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
     let share_contract_id = get_token_share(e);
 
     TokenClient::new(&e, share_contract_id).mint(
-        &Signature::Contract,
+        &Signature::Invoker,
         &BigInt::zero(&e),
         &to,
         &amount,
@@ -125,7 +121,7 @@ fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
 }
 
 fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
-    TokenClient::new(&e, contract_id).xfer(&Signature::Contract, &BigInt::zero(&e), &to, &amount);
+    TokenClient::new(&e, contract_id).xfer(&Signature::Invoker, &BigInt::zero(&e), &to, &amount);
 }
 
 fn transfer_a(e: &Env, to: Identifier, amount: BigInt) {

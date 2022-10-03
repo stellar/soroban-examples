@@ -48,7 +48,7 @@ impl LiquidityPoolRouter {
         let nonce = self.nonce(&to_id);
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            function: Symbol::from_str("sf_deposit"),
+            name: Symbol::from_str("sf_deposit"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
             args: (
@@ -81,7 +81,7 @@ impl LiquidityPoolRouter {
         let nonce = self.nonce(&to_id);
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            function: Symbol::from_str("swap_out"),
+            name: Symbol::from_str("swap_out"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
             args: (to_id, &nonce, &sell, &buy, out, in_max).into_val(&self.env),
@@ -111,7 +111,7 @@ impl LiquidityPoolRouter {
         let nonce = self.nonce(&to_id);
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            function: Symbol::from_str("sf_withdrw"),
+            name: Symbol::from_str("sf_withdrw"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
             args: (

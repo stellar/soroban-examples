@@ -6,7 +6,7 @@ use rand::thread_rng;
 use soroban_sdk::testutils::ed25519::Sign;
 
 use soroban_auth::{Ed25519Signature, SignaturePayload, SignaturePayloadV0};
-use soroban_sdk::{BytesN, Env, RawVal, Symbol, Vec};
+use soroban_sdk::{BytesN, Env, IntoVal, RawVal, Symbol, Vec};
 
 fn generate_keypair() -> Keypair {
     Keypair::generate(&mut thread_rng())
@@ -18,7 +18,7 @@ fn make_identifier(e: &Env, kp: &Keypair) -> Identifier {
 
 fn make_signature(e: &Env, kp: &Keypair, function: &str, args: Vec<RawVal>) -> Signature {
     let msg = SignaturePayload::V0(SignaturePayloadV0 {
-        function: Symbol::from_str(function),
+        name: Symbol::from_str(function),
         contract: BytesN::from_array(e, &[0; 32]),
         network: e.ledger().network_passphrase(),
         args,

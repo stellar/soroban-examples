@@ -22,11 +22,11 @@ const NAME: Symbol = symbol!("NAME");
 #[contractimpl]
 impl CustomTypesContract {
     pub fn store(env: Env, name: Name) {
-        env.contract_data().set(NAME, name);
+        env.data().set(NAME, name);
     }
 
     pub fn retrieve(env: Env) -> Name {
-        env.contract_data()
+        env.data()
             .get(NAME) // Get the value associated with key NAME.
             .unwrap_or(Ok(Name::None)) // If no value, use None instead.
             .unwrap()

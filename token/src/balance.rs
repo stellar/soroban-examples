@@ -4,7 +4,7 @@ use soroban_sdk::{BigInt, Env};
 
 pub fn read_balance(e: &Env, id: Identifier) -> BigInt {
     let key = DataKey::Balance(id);
-    if let Some(balance) = e.contract_data().get(key) {
+    if let Some(balance) = e.data().get(key) {
         balance.unwrap()
     } else {
         BigInt::zero(e)
@@ -13,7 +13,7 @@ pub fn read_balance(e: &Env, id: Identifier) -> BigInt {
 
 fn write_balance(e: &Env, id: Identifier, amount: BigInt) {
     let key = DataKey::Balance(id);
-    e.contract_data().set(key, amount);
+    e.data().set(key, amount);
 }
 
 pub fn receive_balance(e: &Env, id: Identifier, amount: BigInt) {
@@ -39,7 +39,7 @@ pub fn spend_balance(e: &Env, id: Identifier, amount: BigInt) {
 
 pub fn read_state(e: &Env, id: Identifier) -> bool {
     let key = DataKey::State(id);
-    if let Some(state) = e.contract_data().get(key) {
+    if let Some(state) = e.data().get(key) {
         state.unwrap()
     } else {
         false
@@ -48,5 +48,5 @@ pub fn read_state(e: &Env, id: Identifier) -> bool {
 
 pub fn write_state(e: &Env, id: Identifier, is_frozen: bool) {
     let key = DataKey::State(id);
-    e.contract_data().set(key, is_frozen);
+    e.data().set(key, is_frozen);
 }

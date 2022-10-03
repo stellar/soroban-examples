@@ -6,9 +6,9 @@ use crate::metadata::{
     read_decimal, read_name, read_symbol, write_decimal, write_name, write_symbol,
 };
 use crate::storage_types::DataKey;
-use soroban_auth::check_auth;
+use soroban_auth::verify;
 use soroban_auth::{Identifier, Signature};
-use soroban_sdk::{contractimpl, symbol, BigInt, Bytes, Env, IntoVal};
+use soroban_sdk::{contractimpl, symbol, BigInt, Bytes, Env};
 
 pub trait TokenTrait {
     fn initialize(e: Env, admin: Identifier, decimal: u32, name: Bytes, symbol: Bytes);
@@ -53,7 +53,7 @@ pub trait TokenTrait {
 
 fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
     let key = DataKey::Nonce(id.clone());
-    e.contract_data()
+    e.data()
         .get(key)
         .unwrap_or_else(|| Ok(BigInt::zero(e)))
         .unwrap()
@@ -76,7 +76,7 @@ fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
     if nonce != expected_nonce {
         panic!("incorrect nonce")
     }
-    e.contract_data().set(key, &nonce + 1);
+    e.data().set(key, &nonce + 1);
 }
 
 pub struct Token;
@@ -103,15 +103,15 @@ impl TokenTrait for Token {
     }
 
     fn approve(e: Env, from: Signature, nonce: BigInt, spender: Identifier, amount: BigInt) {
-        let from_id = from.get_identifier(&e);
+        let from_id = from.identifier(&e);
 
         verify_and_consume_nonce(&e, &from_id, &nonce);
 
-        check_auth(
+        verify(
             &e,
             &from,
             symbol!("approve"),
-            (&from_id, nonce, &spender, &amount).into_val(&e),
+            (&from_id, nonce, &spender, &amount),
         );
         write_allowance(&e, from_id, spender, amount);
     }
@@ -125,16 +125,11 @@ impl TokenTrait for Token {
     }
 
     fn xfer(e: Env, from: Signature, nonce: BigInt, to: Identifier, amount: BigInt) {
-        let from_id = from.get_identifier(&e);
+        let from_id = from.identifier(&e);
 
         verify_and_consume_nonce(&e, &from_id, &nonce);
 
-        check_auth(
-            &e,
-            &from,
-            symbol!("xfer"),
-            (&from_id, nonce, &to, &amount).into_val(&e),
-        );
+        verify(&e, &from, symbol!("xfer"), (&from_id, nonce, &to, &amount));
         spend_balance(&e, from_id, amount.clone());
         receive_balance(&e, to, amount);
     }
@@ -147,15 +142,15 @@ impl TokenTrait for Token {
         to: Identifier,
         amount: BigInt,
     ) {
-        let spender_id = spender.get_identifier(&e);
+        let spender_id = spender.identifier(&e);
 
         verify_and_consume_nonce(&e, &spender_id, &nonce);
 
-        check_auth(
+        verify(
             &e,
             &spender,
             symbol!("xfer_from"),
-            (&spender_id, nonce, &from, &to, &amount).into_val(&e),
+            (&spender_id, nonce, &from, &to, &amount),
         );
         spend_allowance(&e, from.clone(), spender_id, amount.clone());
         spend_balance(&e, from, amount.clone());
@@ -164,76 +159,61 @@ impl TokenTrait for Token {
 
     fn burn(e: Env, admin: Signature, nonce: BigInt, from: Identifier, amount: BigInt) {
         check_admin(&e, &admin);
-        let admin_id = admin.get_identifier(&e);
+        let admin_id = admin.identifier(&e);
 
         verify_and_consume_nonce(&e, &admin_id, &nonce);
 
-        check_auth(
+        verify(
             &e,
             &admin,
             symbol!("burn"),
-            (admin_id, nonce, &from, &amount).into_val(&e),
+            (admin_id, nonce, &from, &amount),
         );
         spend_balance(&e, from, amount);
     }
 
     fn freeze(e: Env, admin: Signature, nonce: BigInt, id: Identifier) {
         check_admin(&e, &admin);
-        let admin_id = admin.get_identifier(&e);
+        let admin_id = admin.identifier(&e);
 
         verify_and_consume_nonce(&e, &admin_id, &nonce);
 
-        check_auth(
-            &e,
-            &admin,
-            symbol!("freeze"),
-            (admin_id, nonce, &id).into_val(&e),
-        );
+        verify(&e, &admin, symbol!("freeze"), (admin_id, nonce, &id));
         write_state(&e, id, true);
     }
 
     fn mint(e: Env, admin: Signature, nonce: BigInt, to: Identifier, amount: BigInt) {
         check_admin(&e, &admin);
-        let admin_id = admin.get_identifier(&e);
+        let admin_id = admin.identifier(&e);
 
         verify_and_consume_nonce(&e, &admin_id, &nonce);
 
-        check_auth(
-            &e,
-            &admin,
-            symbol!("mint"),
-            (admin_id, nonce, &to, &amount).into_val(&e),
-        );
+        verify(&e, &admin, symbol!("mint"), (admin_id, nonce, &to, &amount));
         receive_balance(&e, to, amount);
     }
 
     fn set_admin(e: Env, admin: Signature, nonce: BigInt, new_admin: Identifier) {
         check_admin(&e, &admin);
-        let admin_id = admin.get_identifier(&e);
+        let admin_id = admin.identifier(&e);
 
         verify_and_consume_nonce(&e, &admin_id, &nonce);
 
-        check_auth(
+        verify(
             &e,
             &admin,
             symbol!("set_admin"),
-            (admin_id, nonce, &new_admin).into_val(&e),
+            (admin_id, nonce, &new_admin),
         );
         write_administrator(&e, new_admin);
     }
 
     fn unfreeze(e: Env, admin: Signature, nonce: BigInt, id: Identifier) {
         check_admin(&e, &admin);
-        let admin_id = admin.get_identifier(&e);
+        let admin_id = admin.identifier(&e);
 
         verify_and_consume_nonce(&e, &admin_id, &nonce);
 
-        check_auth(
-            &e,
-            &admin,
-            symbol!("unfreeze"),
-            (admin_id, nonce, &id).into_val(&e),
-        );
+        verify(&e, &admin, symbol!("unfreeze"), (admin_id, nonce, &id));
         write_state(&e, id, false);
     }
 

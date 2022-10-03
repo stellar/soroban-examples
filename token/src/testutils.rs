@@ -48,7 +48,7 @@ impl Token {
         let nonce = self.nonce(&from_id);
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            function: symbol!("approve"),
+            name: symbol!("approve"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
             args: (from_id, &nonce, spender, amount).into_val(&self.env),
@@ -74,7 +74,7 @@ impl Token {
         let nonce = self.nonce(&from_id);
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            function: symbol!("xfer"),
+            name: symbol!("xfer"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
             args: (from_id, &nonce, to, amount).into_val(&self.env),
@@ -99,7 +99,7 @@ impl Token {
         let nonce = self.nonce(&spender_id);
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            function: symbol!("xfer_from"),
+            name: symbol!("xfer_from"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
             args: (spender_id, &nonce, from, to, amount).into_val(&self.env),
@@ -118,7 +118,7 @@ impl Token {
         let nonce = self.nonce(&admin_id);
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            function: symbol!("burn"),
+            name: symbol!("burn"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
             args: (admin_id, &nonce, from, amount).into_val(&self.env),
@@ -135,7 +135,7 @@ impl Token {
         let nonce = self.nonce(&admin_id);
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            function: symbol!("freeze"),
+            name: symbol!("freeze"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
             args: (admin_id, &nonce, id).into_val(&self.env),
@@ -152,7 +152,7 @@ impl Token {
         let nonce = self.nonce(&admin_id);
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            function: symbol!("mint"),
+            name: symbol!("mint"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
             args: (admin_id, &nonce, to, amount).into_val(&self.env),
@@ -169,7 +169,7 @@ impl Token {
         let nonce = self.nonce(&admin_id);
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            function: symbol!("set_admin"),
+            name: symbol!("set_admin"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
             args: (admin_id, &nonce, new_admin).into_val(&self.env),
@@ -186,7 +186,7 @@ impl Token {
         let nonce = self.nonce(&admin_id);
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            function: symbol!("unfreeze"),
+            name: symbol!("unfreeze"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
             args: (admin_id, &nonce, id).into_val(&self.env),

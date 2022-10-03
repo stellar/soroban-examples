@@ -16,7 +16,7 @@ use soroban_sdk::{Bytes, BytesN, Env};
 soroban_sdk::contractimport!(
     file = "../target/wasm32-unknown-unknown/release/soroban_token_contract.wasm"
 );
-pub type TokenClient = ContractClient;
+pub type TokenClient = Client;
 
 #[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
 pub fn create_contract(e: &Env, token_a: &BytesN<32>, token_b: &BytesN<32>) -> BytesN<32> {
@@ -24,8 +24,8 @@ pub fn create_contract(e: &Env, token_a: &BytesN<32>, token_b: &BytesN<32>) -> B
     let mut salt = Bytes::new(&e);
     salt.append(&token_a.clone().into());
     salt.append(&token_b.clone().into());
-    let salt = e.compute_hash_sha256(salt);
-    e.deployer().from_current_contract(salt).deploy(bin)
+    let salt = e.compute_hash_sha256(&salt);
+    e.deployer().with_current_contract(salt).deploy(bin)
 }
 
 #[cfg(all(any(test, feature = "testutils"), not(feature = "token-wasm")))]
@@ -42,7 +42,7 @@ pub fn create_contract(e: &Env, token_a: &BytesN<32>, token_b: &BytesN<32>) -> B
         let mut salt_bin = Bytes::new(&e);
         salt_bin.append(&token_a.clone().into());
         salt_bin.append(&token_b.clone().into());
-        Uint256(e.compute_hash_sha256(salt_bin).into())
+        Uint256(e.compute_hash_sha256(&salt_bin).into())
     };
 
     let contract_id = Hash(e.get_current_contract().into());

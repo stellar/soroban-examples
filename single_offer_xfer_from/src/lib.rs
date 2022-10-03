@@ -10,9 +10,9 @@ mod token_contract;
 use token_contract::TokenClient;
 
 use soroban_auth::{
-    check_auth, {Identifier, Signature},
+    verify, {Identifier, Signature},
 };
-use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, IntoVal, Symbol};
+use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, Symbol};
 
 #[derive(Clone)]
 #[contracttype]
@@ -34,27 +34,27 @@ pub struct Price {
 }
 
 fn get_sell_token(e: &Env) -> BytesN<32> {
-    e.contract_data().get_unchecked(DataKey::SellToken).unwrap()
+    e.data().get_unchecked(DataKey::SellToken).unwrap()
 }
 
 fn get_buy_token(e: &Env) -> BytesN<32> {
-    e.contract_data().get_unchecked(DataKey::BuyToken).unwrap()
+    e.data().get_unchecked(DataKey::BuyToken).unwrap()
 }
 
 fn put_sell_token(e: &Env, contract_id: BytesN<32>) {
-    e.contract_data().set(DataKey::SellToken, contract_id);
+    e.data().set(DataKey::SellToken, contract_id);
 }
 
 fn put_buy_token(e: &Env, contract_id: BytesN<32>) {
-    e.contract_data().set(DataKey::BuyToken, contract_id);
+    e.data().set(DataKey::BuyToken, contract_id);
 }
 
 fn put_price(e: &Env, price: Price) {
-    e.contract_data().set(DataKey::Price, price);
+    e.data().set(DataKey::Price, price);
 }
 
 fn get_price(e: &Env) -> Price {
-    e.contract_data().get_unchecked(DataKey::Price).unwrap()
+    e.data().get_unchecked(DataKey::Price).unwrap()
 }
 
 fn transfer_from(
@@ -65,7 +65,7 @@ fn transfer_from(
     amount: &BigInt,
 ) {
     let client = TokenClient::new(&e, &contract_id);
-    client.xfer_from(&Signature::Contract, &BigInt::zero(&e), &from, &to, &amount)
+    client.xfer_from(&Signature::Invoker, &BigInt::zero(&e), &from, &to, &amount)
 }
 
 fn transfer_sell(e: &Env, from: &Identifier, to: &Identifier, amount: &BigInt) {
@@ -78,21 +78,21 @@ fn transfer_buy(e: &Env, from: &Identifier, to: &Identifier, amount: &BigInt) {
 
 fn has_administrator(e: &Env) -> bool {
     let key = DataKey::Admin;
-    e.contract_data().has(key)
+    e.data().has(key)
 }
 
 fn read_administrator(e: &Env) -> Identifier {
     let key = DataKey::Admin;
-    e.contract_data().get_unchecked(key).unwrap()
+    e.data().get_unchecked(key).unwrap()
 }
 
 fn write_administrator(e: &Env, id: Identifier) {
     let key = DataKey::Admin;
-    e.contract_data().set(key, id);
+    e.data().set(key, id);
 }
 
 pub fn check_admin(e: &Env, auth: &Signature) {
-    let auth_id = auth.get_identifier(&e);
+    let auth_id = auth.identifier(&e);
     if auth_id != read_administrator(&e) {
         panic!("not authorized by admin")
     }
@@ -100,7 +100,7 @@ pub fn check_admin(e: &Env, auth: &Signature) {
 
 fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
     let key = DataKey::Nonce(id.clone());
-    e.contract_data()
+    e.data()
         .get(key)
         .unwrap_or_else(|| Ok(BigInt::zero(e)))
         .unwrap()
@@ -123,7 +123,7 @@ fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
     if nonce != expected_nonce {
         panic!("incorrect nonce")
     }
-    e.contract_data().set(key, &nonce + 1);
+    e.data().set(key, &nonce + 1);
 }
 
 /*
@@ -193,15 +193,15 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
     }
 
     fn trade(e: Env, to: Signature, nonce: BigInt, amount_to_sell: BigInt, min: BigInt) {
-        let to_id = to.get_identifier(&e);
+        let to_id = to.identifier(&e);
 
         verify_and_consume_nonce(&e, &to_id, &nonce);
 
-        check_auth(
+        verify(
             &e,
             &to,
             Symbol::from_str("trade"),
-            (&to_id, nonce, &amount_to_sell, &min).into_val(&e),
+            (&to_id, nonce, &amount_to_sell, &min),
         );
 
         let price = get_price(&e);
@@ -225,7 +225,7 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
 
     fn updt_price(e: Env, admin: Signature, nonce: BigInt, n: u32, d: u32) {
         check_admin(&e, &admin);
-        let admin_id = admin.get_identifier(&e);
+        let admin_id = admin.identifier(&e);
 
         if d == 0 {
             panic!("d is zero but cannot be zero")
@@ -233,11 +233,11 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
 
         verify_and_consume_nonce(&e, &admin_id, &nonce);
 
-        check_auth(
+        verify(
             &e,
             &admin,
             Symbol::from_str("updt_price"),
-            (admin_id, nonce, &n, &d).into_val(&e),
+            (admin_id, nonce, &n, &d),
         );
 
         put_price(&e, Price { n, d });

@@ -8,9 +8,9 @@
 extern crate std;
 
 use soroban_auth::{
-    check_auth, {Identifier, Signature},
+    verify, {Identifier, Signature},
 };
-use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, IntoVal, Symbol, Vec};
+use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, Symbol, Vec};
 
 mod token {
     soroban_sdk::contractimport!(
@@ -87,22 +87,22 @@ impl ClaimableBalanceContract {
             panic!("contract has been already initialized");
         }
 
-        let from_id = from.get_identifier(&env);
+        let from_id = from.identifier(&env);
 
         verify_and_consume_nonce(&env, &from_id, &BigInt::zero(&env));
 
         // Authenticate depositor with nonce of zero, so that this may
         // be successfully called just once.
-        check_auth(
+        verify(
             &env,
             &from,
             Symbol::from_str("deposit"),
-            (&from_id, &token, &amount, &claimants, &time_bound).into_val(&env),
+            (&from_id, &token, &amount, &claimants, &time_bound),
         );
         // Transfer token to this contract address.
         transfer_from(&env, &token, &from_id, &get_contract_id(&env), &amount);
         // Store all the necessary balance to allow one of the claimants to claim it.
-        env.contract_data().set(
+        env.data().set(
             DataKey::Balance,
             ClaimableBalance {
                 token,
@@ -111,18 +111,18 @@ impl ClaimableBalanceContract {
                 claimants,
             },
         );
-        env.contract_data().set(DataKey::Init, ());
+        env.data().set(DataKey::Init, ());
     }
 
     pub fn claim(env: Env, claimant: Signature) {
         let claimable_balance: ClaimableBalance =
-            env.contract_data().get_unchecked(DataKey::Balance).unwrap();
+            env.data().get_unchecked(DataKey::Balance).unwrap();
 
         if !check_time_bound(&env, &claimable_balance.time_bound) {
             panic!("time predicate is not fulfilled");
         }
 
-        let claimant_id = claimant.get_identifier(&env);
+        let claimant_id = claimant.identifier(&env);
         let claimants = &claimable_balance.claimants;
         if !claimants.contains(&claimant_id) {
             panic!("claimant is not allowed to claim this balance");
@@ -133,12 +133,7 @@ impl ClaimableBalanceContract {
         // Authenticate claimant with nonce of zero, so that this may be
         // successfully called just once.
         // For simplicity, depositor can't be the claimant.
-        check_auth(
-            &env,
-            &claimant,
-            Symbol::from_str("claim"),
-            (&claimant_id,).into_val(&env),
-        );
+        verify(&env, &claimant, Symbol::from_str("claim"), (&claimant_id,));
         // Transfer the stored amount of token to claimant after passing
         // all the checks.
         transfer_to(
@@ -148,12 +143,12 @@ impl ClaimableBalanceContract {
             &claimable_balance.amount,
         );
         // Cleanup unnecessary balance entry.
-        env.contract_data().remove(DataKey::Balance);
+        env.data().remove(DataKey::Balance);
     }
 }
 
 fn is_initialized(env: &Env) -> bool {
-    env.contract_data().has(DataKey::Init)
+    env.data().has(DataKey::Init)
 }
 
 fn get_contract_id(e: &Env) -> Identifier {
@@ -167,18 +162,18 @@ fn transfer_from(
     to: &Identifier,
     amount: &BigInt,
 ) {
-    let client = token::ContractClient::new(&e, token_id);
-    client.xfer_from(&Signature::Contract, &BigInt::zero(&e), &from, &to, &amount);
+    let client = token::Client::new(&e, token_id);
+    client.xfer_from(&Signature::Invoker, &BigInt::zero(&e), &from, &to, &amount);
 }
 
 fn transfer_to(e: &Env, token_id: &BytesN<32>, to: &Identifier, amount: &BigInt) {
-    let client = token::ContractClient::new(&e, token_id);
-    client.xfer(&Signature::Contract, &BigInt::zero(&e), to, amount);
+    let client = token::Client::new(&e, token_id);
+    client.xfer(&Signature::Invoker, &BigInt::zero(&e), to, amount);
 }
 
 fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
     let key = DataKey::Nonce(id.clone());
-    e.contract_data()
+    e.data()
         .get(key)
         .unwrap_or_else(|| Ok(BigInt::zero(e)))
         .unwrap()
@@ -201,7 +196,7 @@ fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
     if nonce != expected_nonce {
         panic!("incorrect nonce")
     }
-    e.contract_data().set(key, &nonce + 1);
+    e.data().set(key, &nonce + 1);
 }
 
 mod test;
