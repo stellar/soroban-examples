@@ -30,7 +30,7 @@ fn test() {
     assert!(init_result.is_void());
 
     // Invoke contract to check that it is initialized.
-    let client = contract::ContractClient::new(&env, &contract_id);
+    let client = contract::Client::new(&env, &contract_id);
     let sum = client.value();
     assert_eq!(sum, 5);
 }

@@ -10,7 +10,7 @@ extern crate std;
 use soroban_auth::{
     verify, {Identifier, Signature},
 };
-use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, IntoVal, Symbol, Vec};
+use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, Symbol, Vec};
 
 mod token {
     soroban_sdk::contractimport!(
@@ -162,12 +162,12 @@ fn transfer_from(
     to: &Identifier,
     amount: &BigInt,
 ) {
-    let client = token::ContractClient::new(&e, token_id);
+    let client = token::Client::new(&e, token_id);
     client.xfer_from(&Signature::Invoker, &BigInt::zero(&e), &from, &to, &amount);
 }
 
 fn transfer_to(e: &Env, token_id: &BytesN<32>, to: &Identifier, amount: &BigInt) {
-    let client = token::ContractClient::new(&e, token_id);
+    let client = token::Client::new(&e, token_id);
     client.xfer(&Signature::Invoker, &BigInt::zero(&e), to, amount);
 }
 
