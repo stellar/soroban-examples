@@ -14,7 +14,9 @@ use token_contract::TokenClient;
 use soroban_auth::{
     verify, {Identifier, Signature},
 };
-use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env, Symbol};
+use soroban_sdk::{
+    contractimpl, contracttype, serde::Serialize, BigInt, Bytes, BytesN, Env, Symbol,
+};
 
 #[derive(Clone)]
 #[contracttype]
@@ -86,7 +88,7 @@ pub fn offer_salt(
     match admin {
         Identifier::Contract(a) => salt_bin.append(&a.clone().into()),
         Identifier::Ed25519(a) => salt_bin.append(&a.clone().into()),
-        Identifier::Account(a) => salt_bin.append(&a.clone().into()),
+        Identifier::Account(a) => salt_bin.append(&a.serialize(&e)),
     }
     salt_bin.append(&sell_token.clone().into());
     salt_bin.append(&buy_token.clone().into());
