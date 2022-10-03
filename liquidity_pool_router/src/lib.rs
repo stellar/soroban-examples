@@ -13,7 +13,7 @@ use token_contract::TokenClient;
 
 use soroban_auth::verify;
 use soroban_auth::{Identifier, Signature};
-use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env, IntoVal, Symbol};
+use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env, Symbol};
 
 #[derive(Clone)]
 #[contracttype]
@@ -94,7 +94,7 @@ pub fn pool_salt(e: &Env, token_a: &BytesN<32>, token_b: &BytesN<32>) -> BytesN<
     let mut salt_bin = Bytes::new(&e);
     salt_bin.append(&token_a.clone().into());
     salt_bin.append(&token_b.clone().into());
-    e.compute_hash_sha256(salt_bin)
+    e.compute_hash_sha256(&salt_bin)
 }
 
 fn get_deposit_amounts(
@@ -176,8 +176,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
             Symbol::from_str("sf_deposit"),
             (
                 &to_id, nonce, &token_a, &token_b, &desired_a, &min_a, &desired_b, &min_b,
-            )
-                .into_val(&e),
+            ),
         );
 
         let salt = pool_salt(&e, &token_a, &token_b);
@@ -196,7 +195,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
 
         let client_a = TokenClient::new(&e, token_a);
         client_a.xfer_from(
-            &Signature::Contract,
+            &Signature::Invoker,
             &BigInt::zero(&e),
             &to_id,
             &Identifier::Contract(pool_id.clone()),
@@ -205,7 +204,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
 
         let client_b = TokenClient::new(&e, token_b);
         client_b.xfer_from(
-            &Signature::Contract,
+            &Signature::Invoker,
             &BigInt::zero(&e),
             &to_id,
             &Identifier::Contract(pool_id.clone()),
@@ -232,7 +231,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
             &e,
             &to,
             Symbol::from_str("swap_out"),
-            (&to_id, nonce, &sell, &buy, &out, &in_max).into_val(&e),
+            (&to_id, nonce, &sell, &buy, &out, &in_max),
         );
 
         let (token_a, token_b) = sort(&sell, &buy);
@@ -259,7 +258,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
 
         let client = TokenClient::new(&e, &sell);
         client.xfer_from(
-            &Signature::Contract,
+            &Signature::Invoker,
             &BigInt::zero(&e),
             &to_id,
             &Identifier::Contract(pool_id.clone()),
@@ -305,8 +304,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
                 &share_amount,
                 &min_a,
                 &min_b,
-            )
-                .into_val(&e),
+            ),
         );
 
         let pool_id = Self::get_pool(e.clone(), token_a.clone(), token_b);
@@ -316,7 +314,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
 
         let client = TokenClient::new(&e, &share_token);
         client.xfer_from(
-            &Signature::Contract,
+            &Signature::Invoker,
             &BigInt::zero(&e),
             &to_id,
             &Identifier::Contract(pool_id.clone()),

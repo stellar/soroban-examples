@@ -8,7 +8,7 @@ mod test;
 use soroban_auth::{
     verify, {Identifier, Signature},
 };
-use soroban_sdk::{contractimpl, contracttype, symbol, BigInt, Env, IntoVal};
+use soroban_sdk::{contractimpl, contracttype, symbol, BigInt, Env};
 
 #[contracttype]
 pub enum DataKey {
@@ -68,7 +68,7 @@ impl ExampleContract {
             &e,
             &sig,
             symbol!("save_num"),
-            (&auth_id, nonce, &num).into_val(&e),
+            (&auth_id, nonce, &num),
         );
 
         e.data().set(DataKey::SavedNum(auth_id), num);
@@ -87,7 +87,7 @@ impl ExampleContract {
             &e,
             &sig,
             symbol!("overwrite"),
-            (auth_id, nonce, &id, &num).into_val(&e),
+            (auth_id, nonce, &id, &num),
         );
 
         e.data().set(DataKey::SavedNum(id), num);

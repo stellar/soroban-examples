@@ -7,12 +7,12 @@ mod test;
 pub mod testutils;
 mod token_contract;
 
-use token_contract::TokenClient;
+use token_contract::Client;
 
 use soroban_auth::{
     verify, {Identifier, Signature},
 };
-use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, IntoVal, Symbol};
+use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, Symbol};
 
 #[derive(Clone)]
 #[contracttype]
@@ -46,7 +46,7 @@ fn get_buy_token(e: &Env) -> BytesN<32> {
 }
 
 fn get_balance(e: &Env, contract_id: BytesN<32>) -> BigInt {
-    TokenClient::new(&e, contract_id).balance(&get_contract_id(e))
+    Client::new(&e, contract_id).balance(&get_contract_id(e))
 }
 
 fn get_balance_buy(e: &Env) -> BigInt {
@@ -70,8 +70,8 @@ fn load_price(e: &Env) -> Price {
 }
 
 fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
-    let client = TokenClient::new(&e, contract_id);
-    client.xfer(&Signature::Contract, &BigInt::zero(&e), &to, &amount);
+    let client = Client::new(&e, contract_id);
+    client.xfer(&Signature::Invoker, &BigInt::zero(&e), &to, &amount);
 }
 
 fn transfer_sell(e: &Env, to: Identifier, amount: BigInt) {
@@ -238,7 +238,7 @@ impl SingleOfferTrait for SingleOffer {
             &e,
             &admin,
             Symbol::from_str("withdraw"),
-            (admin_id, nonce, &amount).into_val(&e),
+            (admin_id, nonce, &amount),
         );
 
         transfer_sell(&e, read_administrator(&e), amount);
@@ -258,7 +258,7 @@ impl SingleOfferTrait for SingleOffer {
             &e,
             &admin,
             Symbol::from_str("updt_price"),
-            (admin_id, nonce, &n, &d).into_val(&e),
+            (admin_id, nonce, &n, &d),
         );
 
         put_price(&e, Price { n, d });

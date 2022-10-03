@@ -12,7 +12,7 @@ use token_contract::TokenClient;
 use soroban_auth::{
     verify, {Identifier, Signature},
 };
-use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, IntoVal, Symbol};
+use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, Symbol};
 
 #[derive(Clone)]
 #[contracttype]
@@ -65,7 +65,7 @@ fn transfer_from(
     amount: &BigInt,
 ) {
     let client = TokenClient::new(&e, &contract_id);
-    client.xfer_from(&Signature::Contract, &BigInt::zero(&e), &from, &to, &amount)
+    client.xfer_from(&Signature::Invoker, &BigInt::zero(&e), &from, &to, &amount)
 }
 
 fn transfer_sell(e: &Env, from: &Identifier, to: &Identifier, amount: &BigInt) {
@@ -201,7 +201,7 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
             &e,
             &to,
             Symbol::from_str("trade"),
-            (&to_id, nonce, &amount_to_sell, &min).into_val(&e),
+            (&to_id, nonce, &amount_to_sell, &min),
         );
 
         let price = get_price(&e);
@@ -237,7 +237,7 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
             &e,
             &admin,
             Symbol::from_str("updt_price"),
-            (admin_id, nonce, &n, &d).into_val(&e),
+            (admin_id, nonce, &n, &d),
         );
 
         put_price(&e, Price { n, d });

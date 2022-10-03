@@ -14,7 +14,7 @@ use token_contract::TokenClient;
 use soroban_auth::{
     verify, {Identifier, Signature},
 };
-use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env, IntoVal, Symbol};
+use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env, Symbol};
 
 #[derive(Clone)]
 #[contracttype]
@@ -90,7 +90,7 @@ pub fn offer_salt(
     }
     salt_bin.append(&sell_token.clone().into());
     salt_bin.append(&buy_token.clone().into());
-    e.compute_hash_sha256(salt_bin)
+    e.compute_hash_sha256(&salt_bin)
 }
 
 fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
@@ -168,7 +168,7 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
             &e,
             &to,
             Symbol::from_str("safe_trade"),
-            (&to_id, nonce, &offer, &amount, &min).into_val(&e),
+            (&to_id, nonce, &offer, &amount, &min),
         );
 
         // TODO:specify buy token instead of calling into offer contract?
@@ -178,7 +178,7 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
         let token_client = TokenClient::new(&e, &buy);
 
         token_client.xfer_from(
-            &Signature::Contract,
+            &Signature::Invoker,
             &BigInt::zero(&e),
             &to_id,
             &Identifier::Contract(offer.clone()),

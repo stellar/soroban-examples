@@ -98,7 +98,7 @@ fn burn_shares(e: &Env, amount: BigInt) {
     let share_contract_id = get_token_share(e);
 
     TokenClient::new(&e, share_contract_id).burn(
-        &Signature::Contract,
+        &Signature::Invoker,
         &BigInt::zero(&e),
         &get_contract_id(e),
         &amount,
@@ -111,7 +111,7 @@ fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
     let share_contract_id = get_token_share(e);
 
     TokenClient::new(&e, share_contract_id).mint(
-        &Signature::Contract,
+        &Signature::Invoker,
         &BigInt::zero(&e),
         &to,
         &amount,
@@ -121,7 +121,7 @@ fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
 }
 
 fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
-    TokenClient::new(&e, contract_id).xfer(&Signature::Contract, &BigInt::zero(&e), &to, &amount);
+    TokenClient::new(&e, contract_id).xfer(&Signature::Invoker, &BigInt::zero(&e), &to, &amount);
 }
 
 fn transfer_a(e: &Env, to: Identifier, amount: BigInt) {

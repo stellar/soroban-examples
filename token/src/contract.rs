@@ -8,7 +8,7 @@ use crate::metadata::{
 use crate::storage_types::DataKey;
 use soroban_auth::verify;
 use soroban_auth::{Identifier, Signature};
-use soroban_sdk::{contractimpl, symbol, BigInt, Bytes, Env, IntoVal};
+use soroban_sdk::{contractimpl, symbol, BigInt, Bytes, Env};
 
 pub trait TokenTrait {
     fn initialize(e: Env, admin: Identifier, decimal: u32, name: Bytes, symbol: Bytes);
@@ -111,7 +111,7 @@ impl TokenTrait for Token {
             &e,
             &from,
             symbol!("approve"),
-            (&from_id, nonce, &spender, &amount).into_val(&e),
+            (&from_id, nonce, &spender, &amount),
         );
         write_allowance(&e, from_id, spender, amount);
     }
@@ -133,7 +133,7 @@ impl TokenTrait for Token {
             &e,
             &from,
             symbol!("xfer"),
-            (&from_id, nonce, &to, &amount).into_val(&e),
+            (&from_id, nonce, &to, &amount),
         );
         spend_balance(&e, from_id, amount.clone());
         receive_balance(&e, to, amount);
@@ -155,7 +155,7 @@ impl TokenTrait for Token {
             &e,
             &spender,
             symbol!("xfer_from"),
-            (&spender_id, nonce, &from, &to, &amount).into_val(&e),
+            (&spender_id, nonce, &from, &to, &amount),
         );
         spend_allowance(&e, from.clone(), spender_id, amount.clone());
         spend_balance(&e, from, amount.clone());
@@ -172,7 +172,7 @@ impl TokenTrait for Token {
             &e,
             &admin,
             symbol!("burn"),
-            (admin_id, nonce, &from, &amount).into_val(&e),
+            (admin_id, nonce, &from, &amount),
         );
         spend_balance(&e, from, amount);
     }
@@ -187,7 +187,7 @@ impl TokenTrait for Token {
             &e,
             &admin,
             symbol!("freeze"),
-            (admin_id, nonce, &id).into_val(&e),
+            (admin_id, nonce, &id),
         );
         write_state(&e, id, true);
     }
@@ -202,7 +202,7 @@ impl TokenTrait for Token {
             &e,
             &admin,
             symbol!("mint"),
-            (admin_id, nonce, &to, &amount).into_val(&e),
+            (admin_id, nonce, &to, &amount),
         );
         receive_balance(&e, to, amount);
     }
@@ -217,7 +217,7 @@ impl TokenTrait for Token {
             &e,
             &admin,
             symbol!("set_admin"),
-            (admin_id, nonce, &new_admin).into_val(&e),
+            (admin_id, nonce, &new_admin),
         );
         write_administrator(&e, new_admin);
     }
@@ -232,7 +232,7 @@ impl TokenTrait for Token {
             &e,
             &admin,
             symbol!("unfreeze"),
-            (admin_id, nonce, &id).into_val(&e),
+            (admin_id, nonce, &id),
         );
         write_state(&e, id, false);
     }

@@ -97,7 +97,7 @@ impl ClaimableBalanceContract {
             &env,
             &from,
             Symbol::from_str("deposit"),
-            (&from_id, &token, &amount, &claimants, &time_bound).into_val(&env),
+            (&from_id, &token, &amount, &claimants, &time_bound),
         );
         // Transfer token to this contract address.
         transfer_from(&env, &token, &from_id, &get_contract_id(&env), &amount);
@@ -137,7 +137,7 @@ impl ClaimableBalanceContract {
             &env,
             &claimant,
             Symbol::from_str("claim"),
-            (&claimant_id,).into_val(&env),
+            (&claimant_id,),
         );
         // Transfer the stored amount of token to claimant after passing
         // all the checks.
@@ -168,12 +168,12 @@ fn transfer_from(
     amount: &BigInt,
 ) {
     let client = token::ContractClient::new(&e, token_id);
-    client.xfer_from(&Signature::Contract, &BigInt::zero(&e), &from, &to, &amount);
+    client.xfer_from(&Signature::Invoker, &BigInt::zero(&e), &from, &to, &amount);
 }
 
 fn transfer_to(e: &Env, token_id: &BytesN<32>, to: &Identifier, amount: &BigInt) {
     let client = token::ContractClient::new(&e, token_id);
-    client.xfer(&Signature::Contract, &BigInt::zero(&e), to, amount);
+    client.xfer(&Signature::Invoker, &BigInt::zero(&e), to, amount);
 }
 
 fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
