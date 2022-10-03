@@ -18,7 +18,7 @@ fn make_identifier(e: &Env, kp: &Keypair) -> Identifier {
 
 fn make_signature(e: &Env, kp: &Keypair, function: &str, args: Vec<RawVal>) -> Signature {
     let msg = SignaturePayload::V0(SignaturePayloadV0 {
-        function: Symbol::from_str(function),
+        name: Symbol::from_str(function),
         contract: BytesN::from_array(e, &[0; 32]),
         network: e.ledger().network_passphrase(),
         args,

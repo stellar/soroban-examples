@@ -46,7 +46,7 @@ fn sign_args(
     args: Vec<RawVal>,
 ) -> Signature {
     let msg = SignaturePayload::V0(SignaturePayloadV0 {
-        function: Symbol::from_str(fn_name),
+        name: Symbol::from_str(fn_name),
         contract: contract_id.clone(),
         network: env.ledger().network_passphrase(),
         args,

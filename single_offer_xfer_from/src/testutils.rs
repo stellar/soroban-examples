@@ -60,7 +60,7 @@ impl SingleOfferXferFrom {
         args.push_back(amount_to_sell.clone().into_val(&self.env));
         args.push_back(min.clone().into_val(&self.env));
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            function: Symbol::from_str("trade"),
+            name: Symbol::from_str("trade"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
             args,
@@ -83,7 +83,7 @@ impl SingleOfferXferFrom {
         args.push_back(n.into_val(&self.env));
         args.push_back(d.into_val(&self.env));
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            function: Symbol::from_str("updt_price"),
+            name: Symbol::from_str("updt_price"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
             args,

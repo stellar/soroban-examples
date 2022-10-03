@@ -58,7 +58,7 @@ impl SingleOffer {
         let admin_id = to_ed25519(&self.env, admin);
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            function: Symbol::from_str("withdraw"),
+            name: Symbol::from_str("withdraw"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
             args: (admin_id, &nonce, amount).into_val(&self.env),
@@ -76,7 +76,7 @@ impl SingleOffer {
         let admin_id = to_ed25519(&self.env, admin);
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            function: Symbol::from_str("updt_price"),
+            name: Symbol::from_str("updt_price"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
             args: (admin_id, &nonce, n, d).into_val(&self.env),

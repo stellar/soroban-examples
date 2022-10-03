@@ -43,7 +43,7 @@ impl SingleOfferRouter {
         let nonce = self.nonce(&to_id);
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            function: Symbol::from_str("safe_trade"),
+            name: Symbol::from_str("safe_trade"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
             args: (to_id, &nonce, offer, amount, min).into_val(&self.env),
