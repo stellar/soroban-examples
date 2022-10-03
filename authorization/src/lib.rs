@@ -64,12 +64,7 @@ impl ExampleContract {
 
         verify_and_consume_nonce(&e, &auth_id, &nonce);
 
-        verify(
-            &e,
-            &sig,
-            symbol!("save_num"),
-            (&auth_id, nonce, &num),
-        );
+        verify(&e, &sig, symbol!("save_num"), (&auth_id, nonce, &num));
 
         e.data().set(DataKey::SavedNum(auth_id), num);
     }
@@ -83,12 +78,7 @@ impl ExampleContract {
 
         verify_and_consume_nonce(&e, &auth_id, &nonce);
 
-        verify(
-            &e,
-            &sig,
-            symbol!("overwrite"),
-            (auth_id, nonce, &id, &num),
-        );
+        verify(&e, &sig, symbol!("overwrite"), (auth_id, nonce, &id, &num));
 
         e.data().set(DataKey::SavedNum(id), num);
     }

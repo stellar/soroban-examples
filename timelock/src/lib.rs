@@ -133,12 +133,7 @@ impl ClaimableBalanceContract {
         // Authenticate claimant with nonce of zero, so that this may be
         // successfully called just once.
         // For simplicity, depositor can't be the claimant.
-        verify(
-            &env,
-            &claimant,
-            Symbol::from_str("claim"),
-            (&claimant_id,),
-        );
+        verify(&env, &claimant, Symbol::from_str("claim"), (&claimant_id,));
         // Transfer the stored amount of token to claimant after passing
         // all the checks.
         transfer_to(

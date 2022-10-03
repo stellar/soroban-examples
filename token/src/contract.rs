@@ -129,12 +129,7 @@ impl TokenTrait for Token {
 
         verify_and_consume_nonce(&e, &from_id, &nonce);
 
-        verify(
-            &e,
-            &from,
-            symbol!("xfer"),
-            (&from_id, nonce, &to, &amount),
-        );
+        verify(&e, &from, symbol!("xfer"), (&from_id, nonce, &to, &amount));
         spend_balance(&e, from_id, amount.clone());
         receive_balance(&e, to, amount);
     }
@@ -183,12 +178,7 @@ impl TokenTrait for Token {
 
         verify_and_consume_nonce(&e, &admin_id, &nonce);
 
-        verify(
-            &e,
-            &admin,
-            symbol!("freeze"),
-            (admin_id, nonce, &id),
-        );
+        verify(&e, &admin, symbol!("freeze"), (admin_id, nonce, &id));
         write_state(&e, id, true);
     }
 
@@ -198,12 +188,7 @@ impl TokenTrait for Token {
 
         verify_and_consume_nonce(&e, &admin_id, &nonce);
 
-        verify(
-            &e,
-            &admin,
-            symbol!("mint"),
-            (admin_id, nonce, &to, &amount),
-        );
+        verify(&e, &admin, symbol!("mint"), (admin_id, nonce, &to, &amount));
         receive_balance(&e, to, amount);
     }
 
@@ -228,12 +213,7 @@ impl TokenTrait for Token {
 
         verify_and_consume_nonce(&e, &admin_id, &nonce);
 
-        verify(
-            &e,
-            &admin,
-            symbol!("unfreeze"),
-            (admin_id, nonce, &id),
-        );
+        verify(&e, &admin, symbol!("unfreeze"), (admin_id, nonce, &id));
         write_state(&e, id, false);
     }
 
