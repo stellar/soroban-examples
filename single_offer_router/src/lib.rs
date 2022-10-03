@@ -25,18 +25,19 @@ pub enum DataKey {
     Nonce(Identifier),
 }
 
-fn get_offer(e: &Env, salt: &BytesN<32>) -> BytesN<32> {
+fn get_offer(e: &Env, offer_key: &BytesN<32>) -> BytesN<32> {
     e.data()
-        .get_unchecked(DataKey::Offer(salt.clone()))
+        .get_unchecked(DataKey::Offer(offer_key.clone()))
         .unwrap()
 }
 
-fn put_offer(e: &Env, salt: &BytesN<32>, offer: &BytesN<32>) {
-    e.data().set(DataKey::Offer(salt.clone()), offer.clone())
+fn put_offer(e: &Env, offer_key: &BytesN<32>, offer: &BytesN<32>) {
+    e.data()
+        .set(DataKey::Offer(offer_key.clone()), offer.clone())
 }
 
-fn has_offer(e: &Env, salt: &BytesN<32>) -> bool {
-    e.data().has(DataKey::Offer(salt.clone()))
+fn has_offer(e: &Env, offer_key: &BytesN<32>) -> bool {
+    e.data().has(DataKey::Offer(offer_key.clone()))
 }
 
 pub trait SingleOfferRouterTrait {
@@ -77,22 +78,22 @@ pub trait SingleOfferRouterTrait {
     fn nonce(e: Env, id: Identifier) -> BigInt;
 }
 
-pub fn offer_salt(
+pub fn offer_key(
     e: &Env,
     admin: &Identifier,
     sell_token: &BytesN<32>,
     buy_token: &BytesN<32>,
 ) -> BytesN<32> {
-    let mut salt_bin = Bytes::new(&e);
+    let mut offer_key_bin = Bytes::new(&e);
 
     match admin {
-        Identifier::Contract(a) => salt_bin.append(&a.clone().into()),
-        Identifier::Ed25519(a) => salt_bin.append(&a.clone().into()),
-        Identifier::Account(a) => salt_bin.append(&a.serialize(&e)),
+        Identifier::Contract(a) => offer_key_bin.append(&a.clone().into()),
+        Identifier::Ed25519(a) => offer_key_bin.append(&a.clone().into()),
+        Identifier::Account(a) => offer_key_bin.append(&a.serialize(&e)),
     }
-    salt_bin.append(&sell_token.clone().into());
-    salt_bin.append(&buy_token.clone().into());
-    e.compute_hash_sha256(&salt_bin)
+    offer_key_bin.append(&sell_token.clone().into());
+    offer_key_bin.append(&buy_token.clone().into());
+    e.compute_hash_sha256(&offer_key_bin)
 }
 
 fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
@@ -135,15 +136,15 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
         n: u32,
         d: u32,
     ) {
-        let salt = offer_salt(&e, &admin, &sell_token, &buy_token);
+        let offer_key = offer_key(&e, &admin, &sell_token, &buy_token);
 
-        if has_offer(&e, &salt) {
+        if has_offer(&e, &offer_key) {
             panic!("contract already exists");
         }
 
-        let offer_contract_id = create_contract(&e, &salt);
+        let offer_contract_id = create_contract(&e, &offer_key);
 
-        put_offer(&e, &salt, &offer_contract_id);
+        put_offer(&e, &offer_key, &offer_contract_id);
 
         SingleOfferClient::new(&e, offer_contract_id).initialize(
             &admin,
@@ -196,8 +197,8 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
         sell_token: BytesN<32>,
         buy_token: BytesN<32>,
     ) -> BytesN<32> {
-        let salt = offer_salt(&e, &admin, &sell_token, &buy_token);
-        get_offer(&e, &salt)
+        let offer_key = offer_key(&e, &admin, &sell_token, &buy_token);
+        get_offer(&e, &offer_key)
     }
 
     fn nonce(e: Env, id: Identifier) -> BigInt {
