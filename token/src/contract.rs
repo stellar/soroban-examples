@@ -6,7 +6,7 @@ use crate::metadata::{
     read_decimal, read_name, read_symbol, write_decimal, write_name, write_symbol,
 };
 use crate::storage_types::DataKey;
-use soroban_auth::check_auth;
+use soroban_auth::verify;
 use soroban_auth::{Identifier, Signature};
 use soroban_sdk::{contractimpl, symbol, BigInt, Bytes, Env, IntoVal};
 
@@ -53,7 +53,7 @@ pub trait TokenTrait {
 
 fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
     let key = DataKey::Nonce(id.clone());
-    e.contract_data()
+    e.data()
         .get(key)
         .unwrap_or_else(|| Ok(BigInt::zero(e)))
         .unwrap()
@@ -76,7 +76,7 @@ fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
     if nonce != expected_nonce {
         panic!("incorrect nonce")
     }
-    e.contract_data().set(key, &nonce + 1);
+    e.data().set(key, &nonce + 1);
 }
 
 pub struct Token;
@@ -103,11 +103,11 @@ impl TokenTrait for Token {
     }
 
     fn approve(e: Env, from: Signature, nonce: BigInt, spender: Identifier, amount: BigInt) {
-        let from_id = from.get_identifier(&e);
+        let from_id = from.identifier(&e);
 
         verify_and_consume_nonce(&e, &from_id, &nonce);
 
-        check_auth(
+        verify(
             &e,
             &from,
             symbol!("approve"),
@@ -125,11 +125,11 @@ impl TokenTrait for Token {
     }
 
     fn xfer(e: Env, from: Signature, nonce: BigInt, to: Identifier, amount: BigInt) {
-        let from_id = from.get_identifier(&e);
+        let from_id = from.identifier(&e);
 
         verify_and_consume_nonce(&e, &from_id, &nonce);
 
-        check_auth(
+        verify(
             &e,
             &from,
             symbol!("xfer"),
@@ -147,11 +147,11 @@ impl TokenTrait for Token {
         to: Identifier,
         amount: BigInt,
     ) {
-        let spender_id = spender.get_identifier(&e);
+        let spender_id = spender.identifier(&e);
 
         verify_and_consume_nonce(&e, &spender_id, &nonce);
 
-        check_auth(
+        verify(
             &e,
             &spender,
             symbol!("xfer_from"),
@@ -164,11 +164,11 @@ impl TokenTrait for Token {
 
     fn burn(e: Env, admin: Signature, nonce: BigInt, from: Identifier, amount: BigInt) {
         check_admin(&e, &admin);
-        let admin_id = admin.get_identifier(&e);
+        let admin_id = admin.identifier(&e);
 
         verify_and_consume_nonce(&e, &admin_id, &nonce);
 
-        check_auth(
+        verify(
             &e,
             &admin,
             symbol!("burn"),
@@ -179,11 +179,11 @@ impl TokenTrait for Token {
 
     fn freeze(e: Env, admin: Signature, nonce: BigInt, id: Identifier) {
         check_admin(&e, &admin);
-        let admin_id = admin.get_identifier(&e);
+        let admin_id = admin.identifier(&e);
 
         verify_and_consume_nonce(&e, &admin_id, &nonce);
 
-        check_auth(
+        verify(
             &e,
             &admin,
             symbol!("freeze"),
@@ -194,11 +194,11 @@ impl TokenTrait for Token {
 
     fn mint(e: Env, admin: Signature, nonce: BigInt, to: Identifier, amount: BigInt) {
         check_admin(&e, &admin);
-        let admin_id = admin.get_identifier(&e);
+        let admin_id = admin.identifier(&e);
 
         verify_and_consume_nonce(&e, &admin_id, &nonce);
 
-        check_auth(
+        verify(
             &e,
             &admin,
             symbol!("mint"),
@@ -209,11 +209,11 @@ impl TokenTrait for Token {
 
     fn set_admin(e: Env, admin: Signature, nonce: BigInt, new_admin: Identifier) {
         check_admin(&e, &admin);
-        let admin_id = admin.get_identifier(&e);
+        let admin_id = admin.identifier(&e);
 
         verify_and_consume_nonce(&e, &admin_id, &nonce);
 
-        check_auth(
+        verify(
             &e,
             &admin,
             symbol!("set_admin"),
@@ -224,11 +224,11 @@ impl TokenTrait for Token {
 
     fn unfreeze(e: Env, admin: Signature, nonce: BigInt, id: Identifier) {
         check_admin(&e, &admin);
-        let admin_id = admin.get_identifier(&e);
+        let admin_id = admin.identifier(&e);
 
         verify_and_consume_nonce(&e, &admin_id, &nonce);
 
-        check_auth(
+        verify(
             &e,
             &admin,
             symbol!("unfreeze"),
