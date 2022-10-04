@@ -3,7 +3,7 @@
 use crate::testutils::{register_test_contract as register_single_offer, SingleOfferXferFrom};
 use crate::token::{self, TokenMetadata};
 use rand::{thread_rng, RngCore};
-use soroban_auth::Identifier;
+use soroban_auth::{Identifier, Signature};
 use soroban_sdk::{testutils::Accounts, AccountId, BigInt, BytesN, Env, IntoVal};
 
 fn generate_contract_id() -> [u8; 32] {
