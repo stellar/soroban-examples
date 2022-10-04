@@ -4,9 +4,10 @@ mod test;
 pub mod testutils;
 mod token_contract;
 
-use crate::token_contract::{create_contract, TokenClient};
+use crate::token_contract::TokenClient;
 use soroban_auth::{Identifier, Signature};
 use soroban_sdk::{contractimpl, BigInt, Bytes, BytesN, Env, IntoVal, RawVal};
+use token_contract::{create_contract, TokenMetadata};
 
 #[derive(Clone, Copy)]
 #[repr(u32)]
@@ -182,11 +183,13 @@ impl LiquidityPoolTrait for LiquidityPool {
         }
 
         let share_contract_id = create_contract(&e, &token_a, &token_b);
-        TokenClient::new(&e, share_contract_id.clone()).initialize(
+        TokenClient::new(&e, share_contract_id.clone()).init(
             &get_contract_id(&e),
-            &7,
-            &Bytes::from_slice(&e, b"name"),
-            &Bytes::from_slice(&e, b"symbol"),
+            &TokenMetadata {
+                name: Bytes::from_slice(&e, b"name"),
+                symbol: Bytes::from_slice(&e, b"symbol"),
+                decimals: 7,
+            },
         );
 
         put_token_a(&e, token_a);

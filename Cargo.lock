@@ -783,7 +783,7 @@ dependencies = [
  "sha2 0.10.5",
  "soroban-auth",
  "soroban-sdk",
- "soroban-token-contract",
+ "soroban-token-spec",
  "stellar-xdr",
 ]
 
