@@ -1,4 +1,2 @@
-soroban_sdk::contractimport!(
-    file = "../target/wasm32-unknown-unknown/release/soroban_token_contract.wasm"
-);
+soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
 pub type TokenClient = Client;
