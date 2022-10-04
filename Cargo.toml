@@ -4,7 +4,7 @@ resolver = "2"
 members = [
     "hello_world",
     "increment",
-    "auth_simple",
+    "auth",
     "auth_advanced",
     "custom_types",
     "cross_contract/contract_a",

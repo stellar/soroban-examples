@@ -664,7 +664,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "soroban-auth-simple-contract"
+name = "soroban-auth-contract"
 version = "0.0.0"
 dependencies = [
  "soroban-sdk",
