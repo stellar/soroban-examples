@@ -2,9 +2,10 @@
 resolver = "2"
 
 members = [
-    "authorization",
     "hello_world",
     "increment",
+    "auth_simple",
+    "auth_advanced",
     "custom_types",
     "cross_contract/contract_a",
     "cross_contract/contract_b",
