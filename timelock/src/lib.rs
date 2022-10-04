@@ -89,8 +89,6 @@ impl ClaimableBalanceContract {
 
         let from_id = from.identifier(&env);
 
-        // Authenticate depositor with nonce of zero, so that this may
-        // be successfully called just once.
         verify(
             &env,
             &from,
