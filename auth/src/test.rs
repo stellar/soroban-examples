@@ -14,7 +14,7 @@ fn test() {
     // Initialize contract by setting the admin.
     let admin = env.accounts().generate();
     let admin_invoker = &Invoker::Account(admin.clone());
-    client.init(admin_invoker);
+    client.set_admin(admin_invoker);
 
     // Check if user 1 has a num, it doesn't yet.
     let user1 = env.accounts().generate();
