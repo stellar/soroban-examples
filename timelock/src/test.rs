@@ -5,7 +5,7 @@ use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
 use soroban_auth::{Ed25519Signature, Identifier, SignaturePayload, SignaturePayloadV0};
 use soroban_sdk::testutils::ed25519::Sign;
-use soroban_sdk::testutils::LedgerInfo;
+use soroban_sdk::testutils::{Ledger, LedgerInfo};
 use soroban_sdk::{vec, Env, IntoVal, RawVal};
 use soroban_token_contract::testutils::{
     register_test_contract as register_token, to_ed25519, Token,
@@ -74,7 +74,7 @@ struct ClaimableBalanceTest {
 impl ClaimableBalanceTest {
     fn setup() -> Self {
         let env: Env = Default::default();
-        env.set_ledger(LedgerInfo {
+        env.ledger().set(LedgerInfo {
             timestamp: 12345,
             protocol_version: 1,
             sequence_number: 10,
