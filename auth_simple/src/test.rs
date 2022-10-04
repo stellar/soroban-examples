@@ -28,6 +28,8 @@ fn test() {
 
     // Have admin overwrite user 1's num.
     let ten = BigInt::from_u32(&env, 10);
-    client.with_source_account(&admin).overwrite(user1_invoker, &ten);
+    client
+        .with_source_account(&admin)
+        .overwrite(user1_invoker, &ten);
     assert_eq!(client.num(user1_invoker), Some(ten));
 }

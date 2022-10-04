@@ -14,13 +14,16 @@ pub struct ExampleContract;
 
 #[contractimpl]
 impl ExampleContract {
-    /// Set the admin invoker. May be called only once.
-    pub fn init(env: Env, admin: Invoker) {
-        if env.data().has(DataKey::Admin) {
-            panic!("admin is already set")
+    /// Set the admin invoker.
+    ///
+    /// May be called only once unauthenticated, and
+    /// then only by current admin.
+    pub fn init(env: Env, new_admin: Invoker) {
+        let admin = Self::admin(&env);
+        if let Some(admin) = admin {
+            assert_eq!(env.invoker(), admin);
         }
-
-        env.data().set(DataKey::Admin, admin);
+        env.data().set(DataKey::Admin, new_admin);
     }
 
     /// Set the number for an authenticated invoker.
@@ -37,10 +40,13 @@ impl ExampleContract {
     /// Overwrite any number for an invoker.
     /// Callable only by admin.
     pub fn overwrite(env: Env, id: Invoker, num: BigInt) {
-        if env.invoker() != env.data().get(DataKey::Admin).unwrap().unwrap() {
-            panic!("invoker is not admin")
-        }
+        let admin = Self::admin(&env);
+        assert_eq!(Some(env.invoker()), admin);
 
         env.data().set(DataKey::SavedNum(id), num);
+    }
+
+    fn admin(env: &Env) -> Option<Invoker> {
+        env.data().get(DataKey::Admin).map(Result::unwrap)
     }
 }
