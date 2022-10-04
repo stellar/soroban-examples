@@ -790,7 +790,6 @@ dependencies = [
  "sha2 0.10.6",
  "soroban-auth",
  "soroban-sdk",
- "soroban-token-spec",
  "stellar-xdr",
 ]
 
@@ -804,7 +803,6 @@ dependencies = [
  "soroban-auth",
  "soroban-liquidity-pool-contract",
  "soroban-sdk",
- "soroban-token-spec",
  "stellar-xdr",
 ]
 
@@ -857,7 +855,6 @@ dependencies = [
  "rand 0.7.3",
  "soroban-auth",
  "soroban-sdk",
- "soroban-token-spec",
  "stellar-xdr",
 ]
 
@@ -869,7 +866,6 @@ dependencies = [
  "rand 0.7.3",
  "soroban-auth",
  "soroban-sdk",
- "soroban-token-spec",
 ]
 
 [[package]]
@@ -882,7 +878,6 @@ dependencies = [
  "soroban-auth",
  "soroban-sdk",
  "soroban-single-offer-contract",
- "soroban-token-spec",
  "stellar-xdr",
 ]
 
@@ -916,7 +911,6 @@ dependencies = [
  "rand 0.7.3",
  "soroban-auth",
  "soroban-sdk",
- "soroban-token-spec",
 ]
 
 [[package]]
@@ -926,15 +920,6 @@ dependencies = [
  "ed25519-dalek",
  "num-bigint",
  "rand 0.7.3",
- "soroban-auth",
- "soroban-sdk",
-]
-
-[[package]]
-name = "soroban-token-spec"
-version = "0.0.4"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=864a309b#864a309bca7ad91d6c7189fe87e018f64ad6ba06"
-dependencies = [
  "soroban-auth",
  "soroban-sdk",
 ]

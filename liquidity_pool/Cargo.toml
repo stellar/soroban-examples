@@ -14,7 +14,6 @@ testutils = ["soroban-sdk/testutils", "soroban-auth/testutils", "dep:ed25519-dal
 [dependencies]
 soroban-sdk = "0.0.4"
 soroban-auth = "0.0.4"
-soroban-token-spec = "0.0.4"
 stellar-xdr = { version = "0.0.2", features = ["next", "std"], optional = true }
 ed25519-dalek = { version = "1.0.1", optional = true }
 sha2 = { version = "0.10.2", optional = true }

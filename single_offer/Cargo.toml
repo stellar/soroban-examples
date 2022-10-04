@@ -13,7 +13,6 @@ testutils = ["soroban-sdk/testutils", "soroban-auth/testutils", "dep:ed25519-dal
 [dependencies]
 soroban-sdk = "0.0.4"
 soroban-auth = "0.0.4"
-soroban-token-spec = "0.0.4"
 ed25519-dalek = { version = "1.0.1", optional = true }
 
 [dev_dependencies]

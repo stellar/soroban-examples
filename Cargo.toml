@@ -35,7 +35,6 @@ lto = true
 soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "864a309b" }
 soroban-spec = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "864a309b" }
 soroban-auth = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "864a309b" }
-soroban-token-spec = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "864a309b" }
 soroban-sdk-macros = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "864a309b" }
 soroban-env-common = { git = "https://github.com/stellar/rs-soroban-env", rev = "fb8a384e" }
 soroban-env-guest = { git = "https://github.com/stellar/rs-soroban-env", rev = "fb8a384e" }
