@@ -25,19 +25,20 @@ fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
         .unwrap()
 }
 
-fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
-    match id {
-        Identifier::Contract(_) => {
+fn verify_and_consume_nonce(e: &Env, auth: &Signature, expected_nonce: &BigInt) {
+    match auth {
+        Signature::Invoker => {
             if BigInt::zero(&e) != expected_nonce {
-                panic!("nonce should be zero for Contract")
+                panic!("nonce should be zero for Invoker")
             }
             return;
         }
         _ => {}
     }
 
+    let id = auth.identifier(&e);
     let key = DataKey::Nonce(id.clone());
-    let nonce = read_nonce(e, id);
+    let nonce = read_nonce(e, &id);
 
     if nonce != expected_nonce {
         panic!("incorrect nonce")
@@ -60,9 +61,9 @@ impl ExampleContract {
 
     /// Save the number for an authenticated [Identifier].
     pub fn save_num(e: Env, sig: Signature, nonce: BigInt, num: BigInt) {
-        let auth_id = sig.identifier(&e);
+        verify_and_consume_nonce(&e, &sig, &nonce);
 
-        verify_and_consume_nonce(&e, &auth_id, &nonce);
+        let auth_id = sig.identifier(&e);
 
         verify(&e, &sig, symbol!("save_num"), (&auth_id, nonce, &num));
 
@@ -76,7 +77,7 @@ impl ExampleContract {
             panic!("not authorized by admin")
         }
 
-        verify_and_consume_nonce(&e, &auth_id, &nonce);
+        verify_and_consume_nonce(&e, &sig, &nonce);
 
         verify(&e, &sig, symbol!("overwrite"), (auth_id, nonce, &id, &num));
 

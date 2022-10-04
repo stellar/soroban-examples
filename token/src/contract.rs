@@ -59,19 +59,20 @@ fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
         .unwrap()
 }
 
-fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
-    match id {
-        Identifier::Contract(_) => {
+fn verify_and_consume_nonce(e: &Env, auth: &Signature, expected_nonce: &BigInt) {
+    match auth {
+        Signature::Invoker => {
             if BigInt::zero(&e) != expected_nonce {
-                panic!("nonce should be zero for Contract")
+                panic!("nonce should be zero for Invoker")
             }
             return;
         }
         _ => {}
     }
 
+    let id = auth.identifier(&e);
     let key = DataKey::Nonce(id.clone());
-    let nonce = read_nonce(e, id);
+    let nonce = read_nonce(e, &id);
 
     if nonce != expected_nonce {
         panic!("incorrect nonce")
@@ -103,9 +104,9 @@ impl TokenTrait for Token {
     }
 
     fn approve(e: Env, from: Signature, nonce: BigInt, spender: Identifier, amount: BigInt) {
-        let from_id = from.identifier(&e);
+        verify_and_consume_nonce(&e, &from, &nonce);
 
-        verify_and_consume_nonce(&e, &from_id, &nonce);
+        let from_id = from.identifier(&e);
 
         verify(
             &e,
@@ -125,9 +126,9 @@ impl TokenTrait for Token {
     }
 
     fn xfer(e: Env, from: Signature, nonce: BigInt, to: Identifier, amount: BigInt) {
-        let from_id = from.identifier(&e);
+        verify_and_consume_nonce(&e, &from, &nonce);
 
-        verify_and_consume_nonce(&e, &from_id, &nonce);
+        let from_id = from.identifier(&e);
 
         verify(&e, &from, symbol!("xfer"), (&from_id, nonce, &to, &amount));
         spend_balance(&e, from_id, amount.clone());
@@ -142,9 +143,9 @@ impl TokenTrait for Token {
         to: Identifier,
         amount: BigInt,
     ) {
-        let spender_id = spender.identifier(&e);
+        verify_and_consume_nonce(&e, &spender, &nonce);
 
-        verify_and_consume_nonce(&e, &spender_id, &nonce);
+        let spender_id = spender.identifier(&e);
 
         verify(
             &e,
@@ -159,9 +160,9 @@ impl TokenTrait for Token {
 
     fn burn(e: Env, admin: Signature, nonce: BigInt, from: Identifier, amount: BigInt) {
         check_admin(&e, &admin);
-        let admin_id = admin.identifier(&e);
+        verify_and_consume_nonce(&e, &admin, &nonce);
 
-        verify_and_consume_nonce(&e, &admin_id, &nonce);
+        let admin_id = admin.identifier(&e);
 
         verify(
             &e,
@@ -174,9 +175,10 @@ impl TokenTrait for Token {
 
     fn freeze(e: Env, admin: Signature, nonce: BigInt, id: Identifier) {
         check_admin(&e, &admin);
-        let admin_id = admin.identifier(&e);
 
-        verify_and_consume_nonce(&e, &admin_id, &nonce);
+        verify_and_consume_nonce(&e, &admin, &nonce);
+
+        let admin_id = admin.identifier(&e);
 
         verify(&e, &admin, symbol!("freeze"), (admin_id, nonce, &id));
         write_state(&e, id, true);
@@ -184,9 +186,10 @@ impl TokenTrait for Token {
 
     fn mint(e: Env, admin: Signature, nonce: BigInt, to: Identifier, amount: BigInt) {
         check_admin(&e, &admin);
-        let admin_id = admin.identifier(&e);
 
-        verify_and_consume_nonce(&e, &admin_id, &nonce);
+        verify_and_consume_nonce(&e, &admin, &nonce);
+
+        let admin_id = admin.identifier(&e);
 
         verify(&e, &admin, symbol!("mint"), (admin_id, nonce, &to, &amount));
         receive_balance(&e, to, amount);
@@ -194,9 +197,10 @@ impl TokenTrait for Token {
 
     fn set_admin(e: Env, admin: Signature, nonce: BigInt, new_admin: Identifier) {
         check_admin(&e, &admin);
-        let admin_id = admin.identifier(&e);
 
-        verify_and_consume_nonce(&e, &admin_id, &nonce);
+        verify_and_consume_nonce(&e, &admin, &nonce);
+
+        let admin_id = admin.identifier(&e);
 
         verify(
             &e,
@@ -209,9 +213,10 @@ impl TokenTrait for Token {
 
     fn unfreeze(e: Env, admin: Signature, nonce: BigInt, id: Identifier) {
         check_admin(&e, &admin);
-        let admin_id = admin.identifier(&e);
 
-        verify_and_consume_nonce(&e, &admin_id, &nonce);
+        verify_and_consume_nonce(&e, &admin, &nonce);
+
+        let admin_id = admin.identifier(&e);
 
         verify(&e, &admin, symbol!("unfreeze"), (admin_id, nonce, &id));
         write_state(&e, id, false);

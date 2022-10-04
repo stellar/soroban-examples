@@ -104,19 +104,20 @@ fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
         .unwrap()
 }
 
-fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
-    match id {
-        Identifier::Contract(_) => {
+fn verify_and_consume_nonce(e: &Env, auth: &Signature, expected_nonce: &BigInt) {
+    match auth {
+        Signature::Invoker => {
             if BigInt::zero(&e) != expected_nonce {
-                panic!("nonce should be zero for Contract")
+                panic!("nonce should be zero for Invoker")
             }
             return;
         }
         _ => {}
     }
 
+    let id = auth.identifier(&e);
     let key = DataKey::Nonce(id.clone());
-    let nonce = read_nonce(e, id);
+    let nonce = read_nonce(e, &id);
 
     if nonce != expected_nonce {
         panic!("incorrect nonce")
@@ -163,9 +164,9 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
         amount: BigInt,
         min: BigInt,
     ) {
-        let to_id = to.identifier(&e);
+        verify_and_consume_nonce(&e, &to, &nonce);
 
-        verify_and_consume_nonce(&e, &to_id, &nonce);
+        let to_id = to.identifier(&e);
 
         verify(
             &e,
