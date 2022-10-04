@@ -2,9 +2,10 @@
 resolver = "2"
 
 members = [
-    "authorization",
     "hello_world",
     "increment",
+    "auth",
+    "auth_advanced",
     "custom_types",
     "cross_contract/contract_a",
     "cross_contract/contract_b",
@@ -31,16 +32,15 @@ codegen-units = 1
 lto = true
 
 [patch.crates-io]
-soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "864a309" }
-soroban-spec = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "864a309" }
-soroban-token-spec = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "864a309" }
-
-soroban-auth = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "864a309" }
-soroban-sdk-macros = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "864a309" }
-soroban-env-common = { git = "https://github.com/stellar/rs-soroban-env", rev = "fb8a384" }
-soroban-env-guest = { git = "https://github.com/stellar/rs-soroban-env", rev = "fb8a384" }
-soroban-env-host = { git = "https://github.com/stellar/rs-soroban-env", rev = "fb8a384" }
-soroban-env-macros = { git = "https://github.com/stellar/rs-soroban-env", rev = "fb8a384" }
-soroban-native-sdk-macros = { git = "https://github.com/stellar/rs-soroban-env", rev = "fb8a384" }
+soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "864a309b" }
+soroban-spec = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "864a309b" }
+soroban-auth = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "864a309b" }
+soroban-token-spec = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "864a309b" }
+soroban-sdk-macros = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "864a309b" }
+soroban-env-common = { git = "https://github.com/stellar/rs-soroban-env", rev = "fb8a384e" }
+soroban-env-guest = { git = "https://github.com/stellar/rs-soroban-env", rev = "fb8a384e" }
+soroban-env-host = { git = "https://github.com/stellar/rs-soroban-env", rev = "fb8a384e" }
+soroban-env-macros = { git = "https://github.com/stellar/rs-soroban-env", rev = "fb8a384e" }
+soroban-native-sdk-macros = { git = "https://github.com/stellar/rs-soroban-env", rev = "fb8a384e" }
 stellar-xdr = { git = "https://github.com/stellar/rs-stellar-xdr", rev = "88ded341" }
 wasmi = { package = "soroban-wasmi", git = "https://github.com/stellar/wasmi", rev = "a61b6df" }
