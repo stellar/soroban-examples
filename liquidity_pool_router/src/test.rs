@@ -1,8 +1,9 @@
 #![cfg(test)]
 
-use crate::{
-    testutils::{register_test_contract as register_liquidity_pool_router, LiquidityPoolRouter},
-    token_contract::{TokenClient, TokenMetadata},
+use crate::token::{self, TokenMetadata};
+
+use crate::testutils::{
+    register_test_contract as register_liquidity_pool_router, LiquidityPoolRouter,
 };
 use liquidity_pool::LiquidityPoolClient;
 use rand::{thread_rng, RngCore};
@@ -22,10 +23,10 @@ fn generate_sorted_contract_ids() -> ([u8; 32], [u8; 32]) {
     }
 }
 
-fn create_token_contract(e: &Env, id: &[u8; 32], admin: &AccountId) -> TokenClient {
+fn create_token_contract(e: &Env, id: &[u8; 32], admin: &AccountId) -> token::Client {
     let contract_id = BytesN::from_array(e, &id);
     e.register_contract_token(&contract_id);
-    let token = TokenClient::new(e, id);
+    let token = token::Client::new(e, id);
 
     // decimals, name, symbol don't matter in tests
     token.init(
@@ -109,7 +110,7 @@ fn test() {
     let pool_id = Identifier::Contract(contract_pool.clone());
 
     let share_id = LiquidityPoolClient::new(&e, &contract_pool).share_id();
-    let token_share = TokenClient::new(&e, &share_id);
+    let token_share = token::Client::new(&e, &share_id);
 
     assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 900));
     assert_eq!(token1.balance(&pool_id), BigInt::from_u32(&e, 100));

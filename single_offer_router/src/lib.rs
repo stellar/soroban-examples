@@ -6,10 +6,8 @@ extern crate std;
 mod offer_contract;
 mod test;
 pub mod testutils;
-mod token_contract;
 
 use offer_contract::{create_contract, SingleOfferClient};
-use token_contract::TokenClient;
 
 use soroban_auth::{
     verify, {Identifier, Signature},
@@ -17,6 +15,10 @@ use soroban_auth::{
 use soroban_sdk::{
     contractimpl, contracttype, serde::Serialize, BigInt, Bytes, BytesN, Env, Symbol,
 };
+
+mod token {
+    soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
+}
 
 #[derive(Clone)]
 #[contracttype]
@@ -179,7 +181,7 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
         let offer_client = SingleOfferClient::new(&e, &offer);
         let buy = offer_client.get_buy();
 
-        let token_client = TokenClient::new(&e, &buy);
+        let token_client = token::Client::new(&e, &buy);
 
         token_client.xfer_from(
             &Signature::Invoker,

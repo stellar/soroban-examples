@@ -5,14 +5,15 @@ extern crate std;
 
 mod test;
 pub mod testutils;
-mod token_contract;
-
-use token_contract::Client;
 
 use soroban_auth::{
     verify, {Identifier, Signature},
 };
 use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, Symbol};
+
+mod token {
+    soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
+}
 
 #[derive(Clone)]
 #[contracttype]
@@ -46,7 +47,7 @@ fn get_buy_token(e: &Env) -> BytesN<32> {
 }
 
 fn get_balance(e: &Env, contract_id: BytesN<32>) -> BigInt {
-    Client::new(&e, contract_id).balance(&get_contract_id(e))
+    token::Client::new(&e, contract_id).balance(&get_contract_id(e))
 }
 
 fn get_balance_buy(e: &Env) -> BigInt {
@@ -70,7 +71,7 @@ fn load_price(e: &Env) -> Price {
 }
 
 fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
-    let client = Client::new(&e, contract_id);
+    let client = token::Client::new(&e, contract_id);
     client.xfer(&Signature::Invoker, &BigInt::zero(&e), &to, &amount);
 }
 

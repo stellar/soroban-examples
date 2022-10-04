@@ -1,9 +1,7 @@
 #![cfg(test)]
 
-use crate::{
-    testutils::{register_test_contract as register_liqpool, LiquidityPool},
-    token_contract::{TokenClient, TokenMetadata},
-};
+use crate::testutils::{register_test_contract as register_liqpool, LiquidityPool};
+use crate::token::{self, TokenMetadata};
 use rand::{thread_rng, RngCore};
 use soroban_auth::{Identifier, Signature};
 use soroban_sdk::{testutils::Accounts, AccountId, BigInt, BytesN, Env, IntoVal};
@@ -26,11 +24,11 @@ fn generate_sorted_contract_ids() -> ([u8; 32], [u8; 32]) {
     }
 }
 
-fn create_token_contract(e: &Env, id: &[u8; 32], admin: &AccountId) -> TokenClient {
+fn create_token_contract(e: &Env, id: &[u8; 32], admin: &AccountId) -> token::Client {
     let contract_id = BytesN::from_array(e, &id);
     e.register_contract_token(&contract_id);
 
-    let token = TokenClient::new(e, id);
+    let token = token::Client::new(e, id);
     // decimals, name, symbol don't matter in tests
     token.init(
         &Identifier::Account(admin.clone()),
@@ -70,7 +68,7 @@ fn test() {
     let (contract_pool, liqpool) = create_liqpool_contract(&e, &contract1, &contract2);
     let pool_id = Identifier::Contract(BytesN::from_array(&e, &contract_pool));
     let contract_share: [u8; 32] = liqpool.share_id().into();
-    let token_share = TokenClient::new(&e, &contract_share);
+    let token_share = token::Client::new(&e, &contract_share);
 
     token1.with_source_account(&admin1).mint(
         &Signature::Invoker,

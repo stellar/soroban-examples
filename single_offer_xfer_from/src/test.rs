@@ -1,9 +1,7 @@
 #![cfg(test)]
 
-use crate::{
-    testutils::{register_test_contract as register_single_offer, SingleOfferXferFrom},
-    token_contract::{Signature, TokenClient, TokenMetadata},
-};
+use crate::testutils::{register_test_contract as register_single_offer, SingleOfferXferFrom};
+use crate::token::{self, TokenMetadata};
 use rand::{thread_rng, RngCore};
 use soroban_auth::Identifier;
 use soroban_sdk::{testutils::Accounts, AccountId, BigInt, BytesN, Env, IntoVal};
@@ -14,11 +12,11 @@ fn generate_contract_id() -> [u8; 32] {
     id
 }
 
-fn create_token_contract(e: &Env, admin: &AccountId) -> ([u8; 32], TokenClient) {
+fn create_token_contract(e: &Env, admin: &AccountId) -> ([u8; 32], token::Client) {
     let id = generate_contract_id();
     let contract_id = BytesN::from_array(e, &id);
     e.register_contract_token(&contract_id);
-    let token = TokenClient::new(e, &id);
+    let token = token::Client::new(e, &id);
     // decimals, name, symbol don't matter in tests
     token.init(
         &Identifier::Account(admin.clone()),
