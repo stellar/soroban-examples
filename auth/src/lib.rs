@@ -18,7 +18,7 @@ impl ExampleContract {
     ///
     /// May be called only once unauthenticated, and
     /// then only by current admin.
-    pub fn init(env: Env, new_admin: Invoker) {
+    pub fn set_admin(env: Env, new_admin: Invoker) {
         let admin = Self::admin(&env);
         if let Some(admin) = admin {
             assert_eq!(env.invoker(), admin);
