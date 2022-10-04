@@ -112,19 +112,20 @@ fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
         .unwrap()
 }
 
-fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
-    match id {
-        Identifier::Contract(_) => {
+fn verify_and_consume_nonce(e: &Env, auth: &Signature, expected_nonce: &BigInt) {
+    match auth {
+        Signature::Invoker => {
             if BigInt::zero(&e) != expected_nonce {
-                panic!("nonce should be zero for Contract")
+                panic!("nonce should be zero for Invoker")
             }
             return;
         }
         _ => {}
     }
 
+    let id = auth.identifier(&e);
     let key = DataKey::Nonce(id.clone());
-    let nonce = read_nonce(e, id);
+    let nonce = read_nonce(e, &id);
 
     if nonce != expected_nonce {
         panic!("incorrect nonce")
@@ -230,10 +231,10 @@ impl SingleOfferTrait for SingleOffer {
 
     fn withdraw(e: Env, admin: Signature, nonce: BigInt, amount: BigInt) {
         check_admin(&e, &admin);
+
+        verify_and_consume_nonce(&e, &admin, &nonce);
+
         let admin_id = admin.identifier(&e);
-
-        verify_and_consume_nonce(&e, &admin_id, &nonce);
-
         verify(
             &e,
             &admin,
@@ -246,13 +247,13 @@ impl SingleOfferTrait for SingleOffer {
 
     fn updt_price(e: Env, admin: Signature, nonce: BigInt, n: u32, d: u32) {
         check_admin(&e, &admin);
-        let admin_id = admin.identifier(&e);
 
         if d == 0 {
             panic!("d is zero but cannot be zero")
         }
 
-        verify_and_consume_nonce(&e, &admin_id, &nonce);
+        verify_and_consume_nonce(&e, &admin, &nonce);
+        let admin_id = admin.identifier(&e);
 
         verify(
             &e,
