@@ -6,14 +6,16 @@ extern crate std;
 mod pool_contract;
 mod test;
 pub mod testutils;
-mod token_contract;
 
 use pool_contract::{create_contract, LiquidityPoolClient};
-use token_contract::TokenClient;
 
 use soroban_auth::verify;
 use soroban_auth::{Identifier, Signature};
 use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env, Symbol};
+
+mod token {
+    soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
+}
 
 #[derive(Clone)]
 #[contracttype]
@@ -131,19 +133,20 @@ fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
         .unwrap()
 }
 
-fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
-    match id {
-        Identifier::Contract(_) => {
+fn verify_and_consume_nonce(e: &Env, auth: &Signature, expected_nonce: &BigInt) {
+    match auth {
+        Signature::Invoker => {
             if BigInt::zero(&e) != expected_nonce {
-                panic!("nonce should be zero for Contract")
+                panic!("nonce should be zero for Invoker")
             }
             return;
         }
         _ => {}
     }
 
+    let id = auth.identifier(&e);
     let key = DataKey::Nonce(id.clone());
-    let nonce = read_nonce(e, id);
+    let nonce = read_nonce(e, &id);
 
     if nonce != expected_nonce {
         panic!("incorrect nonce")
@@ -166,9 +169,9 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         desired_b: BigInt,
         min_b: BigInt,
     ) {
-        let to_id = to.identifier(&e);
+        verify_and_consume_nonce(&e, &to, &nonce);
 
-        verify_and_consume_nonce(&e, &to_id, &nonce);
+        let to_id = to.identifier(&e);
 
         verify(
             &e,
@@ -193,7 +196,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         let reserves = LiquidityPoolClient::new(&e, &pool_id).get_rsrvs();
         let amounts = get_deposit_amounts(desired_a, min_a, desired_b, min_b, reserves);
 
-        let client_a = TokenClient::new(&e, token_a);
+        let client_a = token::Client::new(&e, token_a);
         client_a.xfer_from(
             &Signature::Invoker,
             &BigInt::zero(&e),
@@ -202,7 +205,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
             &amounts.0,
         );
 
-        let client_b = TokenClient::new(&e, token_b);
+        let client_b = token::Client::new(&e, token_b);
         client_b.xfer_from(
             &Signature::Invoker,
             &BigInt::zero(&e),
@@ -223,9 +226,9 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         out: BigInt,
         in_max: BigInt,
     ) {
-        let to_id = to.identifier(&e);
+        verify_and_consume_nonce(&e, &to, &nonce);
 
-        verify_and_consume_nonce(&e, &to_id, &nonce);
+        let to_id = to.identifier(&e);
 
         verify(
             &e,
@@ -256,7 +259,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
             panic!("in amount is over max")
         }
 
-        let client = TokenClient::new(&e, &sell);
+        let client = token::Client::new(&e, &sell);
         client.xfer_from(
             &Signature::Invoker,
             &BigInt::zero(&e),
@@ -288,9 +291,9 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         min_a: BigInt,
         min_b: BigInt,
     ) {
-        let to_id = to.identifier(&e);
+        verify_and_consume_nonce(&e, &to, &nonce);
 
-        verify_and_consume_nonce(&e, &to_id, &nonce);
+        let to_id = to.identifier(&e);
 
         verify(
             &e,
@@ -312,7 +315,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         let pool_client = LiquidityPoolClient::new(&e, &pool_id);
         let share_token = pool_client.share_id();
 
-        let client = TokenClient::new(&e, &share_token);
+        let client = token::Client::new(&e, &share_token);
         client.xfer_from(
             &Signature::Invoker,
             &BigInt::zero(&e),

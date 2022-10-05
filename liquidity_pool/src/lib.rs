@@ -2,11 +2,11 @@
 
 mod test;
 pub mod testutils;
-mod token_contract;
+mod token;
 
-use crate::token_contract::{create_contract, TokenClient};
 use soroban_auth::{Identifier, Signature};
 use soroban_sdk::{contractimpl, BigInt, Bytes, BytesN, Env, IntoVal, RawVal};
+use token::{create_contract, TokenMetadata};
 
 #[derive(Clone, Copy)]
 #[repr(u32)]
@@ -54,7 +54,7 @@ fn get_reserve_b(e: &Env) -> BigInt {
 }
 
 fn get_balance(e: &Env, contract_id: BytesN<32>) -> BigInt {
-    TokenClient::new(&e, contract_id).balance(&get_contract_id(e))
+    token::Client::new(&e, contract_id).balance(&get_contract_id(e))
 }
 
 fn get_balance_a(e: &Env) -> BigInt {
@@ -97,7 +97,7 @@ fn burn_shares(e: &Env, amount: BigInt) {
     let total = get_total_shares(e);
     let share_contract_id = get_token_share(e);
 
-    TokenClient::new(&e, share_contract_id).burn(
+    token::Client::new(&e, share_contract_id).burn(
         &Signature::Invoker,
         &BigInt::zero(&e),
         &get_contract_id(e),
@@ -110,7 +110,7 @@ fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
     let total = get_total_shares(e);
     let share_contract_id = get_token_share(e);
 
-    TokenClient::new(&e, share_contract_id).mint(
+    token::Client::new(&e, share_contract_id).mint(
         &Signature::Invoker,
         &BigInt::zero(&e),
         &to,
@@ -121,7 +121,7 @@ fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
 }
 
 fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
-    TokenClient::new(&e, contract_id).xfer(&Signature::Invoker, &BigInt::zero(&e), &to, &amount);
+    token::Client::new(&e, contract_id).xfer(&Signature::Invoker, &BigInt::zero(&e), &to, &amount);
 }
 
 fn transfer_a(e: &Env, to: Identifier, amount: BigInt) {
@@ -182,11 +182,13 @@ impl LiquidityPoolTrait for LiquidityPool {
         }
 
         let share_contract_id = create_contract(&e, &token_a, &token_b);
-        TokenClient::new(&e, share_contract_id.clone()).initialize(
+        token::Client::new(&e, share_contract_id.clone()).init(
             &get_contract_id(&e),
-            &7,
-            &Bytes::from_slice(&e, b"name"),
-            &Bytes::from_slice(&e, b"symbol"),
+            &TokenMetadata {
+                name: Bytes::from_slice(&e, b"name"),
+                symbol: Bytes::from_slice(&e, b"symbol"),
+                decimals: 7,
+            },
         );
 
         put_token_a(&e, token_a);

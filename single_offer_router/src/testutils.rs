@@ -1,18 +1,12 @@
 #![cfg(any(test, feature = "testutils"))]
-use ed25519_dalek::Keypair;
-use soroban_auth::{Ed25519Signature, Identifier, Signature, SignaturePayload, SignaturePayloadV0};
-use soroban_sdk::testutils::ed25519::Sign;
-use soroban_sdk::{BigInt, BytesN, Env, IntoVal, Symbol};
+use soroban_auth::{Identifier, Signature};
+use soroban_sdk::{AccountId, BigInt, BytesN, Env};
 
 use crate::SingleOfferRouterClient;
 
 pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
     let contract_id = BytesN::from_array(e, contract_id);
     e.register_contract(&contract_id, crate::SingleOfferRouter {});
-}
-
-fn to_ed25519(e: &Env, kp: &Keypair) -> Identifier {
-    Identifier::Ed25519(kp.public.to_bytes().into_val(e))
 }
 
 pub struct SingleOfferRouter {
@@ -38,24 +32,15 @@ impl SingleOfferRouter {
         self.client().init(&admin, &token_a, &token_b, &n, &d)
     }
 
-    pub fn safe_trade(&self, to: &Keypair, offer: &[u8; 32], amount: &BigInt, min: &BigInt) {
-        let to_id = to_ed25519(&self.env, &to);
-        let nonce = self.nonce(&to_id);
+    pub fn safe_trade(&self, to: &AccountId, offer: &[u8; 32], amount: &BigInt, min: &BigInt) {
         let offer_addr = BytesN::from_array(&self.env, offer);
-
-        let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            name: Symbol::from_str("safe_trade"),
-            contract: self.contract_id.clone(),
-            network: self.env.ledger().network_passphrase(),
-            args: (to_id, &nonce, &offer_addr, amount, min).into_val(&self.env),
-        });
-        let auth = Signature::Ed25519(Ed25519Signature {
-            public_key: to.public.to_bytes().into_val(&self.env),
-            signature: to.sign(msg).unwrap().into_val(&self.env),
-        });
-
-        self.client()
-            .safe_trade(&auth, &nonce, &offer_addr, &amount, &min)
+        self.client().with_source_account(&to).safe_trade(
+            &Signature::Invoker,
+            &BigInt::zero(&self.env),
+            &offer_addr,
+            &amount,
+            &min,
+        )
     }
 
     pub fn get_offer(

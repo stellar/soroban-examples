@@ -8,7 +8,7 @@ publish = false
 crate-type = ["cdylib", "rlib"]
 
 [features]
-testutils = ["soroban-sdk/testutils", "soroban-token-contract/testutils","soroban-single-offer-contract/testutils","dep:ed25519-dalek", "dep:sha2", "dep:stellar-xdr"]
+testutils = ["soroban-sdk/testutils", "soroban-auth/testutils","soroban-single-offer-contract/testutils","dep:ed25519-dalek", "dep:sha2", "dep:stellar-xdr"]
 
 [dependencies]
 soroban-sdk = "0.0.4"
@@ -18,13 +18,11 @@ stellar-xdr = { version = "0.0.2", features = ["next", "std"], optional = true }
 sha2 = { version = "0.10.2", optional = true }
 
 [target.'cfg(not(target_family="wasm"))'.dependencies]
-soroban-token-contract = { path = "../token", version = "0.0.4", default-features = false, optional = true }
 soroban-single-offer-contract = { path = "../single_offer", version = "0.0.0", default-features = false, optional = true }
 
 [dev_dependencies]
 soroban-sdk = { version = "0.0.4", features = ["testutils"] }
 soroban-auth = { version = "0.0.4", features = ["testutils"] }
-soroban-token-contract = { path = "../token", version = "0.0.4", default-features = false, features = ["testutils"] }
 soroban-single-offer-contract = { path = "../single_offer", version = "0.0.0", default-features = false, features = ["testutils"] }
 stellar-xdr = { version = "0.0.2", features = ["next", "std"] }
 ed25519-dalek = { version = "1.0.1" }

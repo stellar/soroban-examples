@@ -6,10 +6,8 @@ extern crate std;
 mod offer_contract;
 mod test;
 pub mod testutils;
-mod token_contract;
 
 use offer_contract::{create_contract, SingleOfferClient};
-use token_contract::TokenClient;
 
 use soroban_auth::{
     verify, {Identifier, Signature},
@@ -18,6 +16,10 @@ use soroban_sdk::{
     contractimpl, contracttype, serde::Serialize, BigInt, Bytes, BytesN, Env, Symbol,
 };
 
+mod token {
+    soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
+}
+
 #[derive(Clone)]
 #[contracttype]
 pub enum DataKey {
@@ -25,18 +27,19 @@ pub enum DataKey {
     Nonce(Identifier),
 }
 
-fn get_offer(e: &Env, salt: &BytesN<32>) -> BytesN<32> {
+fn get_offer(e: &Env, offer_key: &BytesN<32>) -> BytesN<32> {
     e.data()
-        .get_unchecked(DataKey::Offer(salt.clone()))
+        .get_unchecked(DataKey::Offer(offer_key.clone()))
         .unwrap()
 }
 
-fn put_offer(e: &Env, salt: &BytesN<32>, offer: &BytesN<32>) {
-    e.data().set(DataKey::Offer(salt.clone()), offer.clone())
+fn put_offer(e: &Env, offer_key: &BytesN<32>, offer: &BytesN<32>) {
+    e.data()
+        .set(DataKey::Offer(offer_key.clone()), offer.clone())
 }
 
-fn has_offer(e: &Env, salt: &BytesN<32>) -> bool {
-    e.data().has(DataKey::Offer(salt.clone()))
+fn has_offer(e: &Env, offer_key: &BytesN<32>) -> bool {
+    e.data().has(DataKey::Offer(offer_key.clone()))
 }
 
 pub trait SingleOfferRouterTrait {
@@ -77,22 +80,22 @@ pub trait SingleOfferRouterTrait {
     fn nonce(e: Env, id: Identifier) -> BigInt;
 }
 
-pub fn offer_salt(
+pub fn offer_key(
     e: &Env,
     admin: &Identifier,
     sell_token: &BytesN<32>,
     buy_token: &BytesN<32>,
 ) -> BytesN<32> {
-    let mut salt_bin = Bytes::new(&e);
+    let mut offer_key_bin = Bytes::new(&e);
 
     match admin {
-        Identifier::Contract(a) => salt_bin.append(&a.clone().into()),
-        Identifier::Ed25519(a) => salt_bin.append(&a.clone().into()),
-        Identifier::Account(a) => salt_bin.append(&a.serialize(&e)),
+        Identifier::Contract(a) => offer_key_bin.append(&a.clone().into()),
+        Identifier::Ed25519(a) => offer_key_bin.append(&a.clone().into()),
+        Identifier::Account(a) => offer_key_bin.append(&a.serialize(&e)),
     }
-    salt_bin.append(&sell_token.clone().into());
-    salt_bin.append(&buy_token.clone().into());
-    e.compute_hash_sha256(&salt_bin)
+    offer_key_bin.append(&sell_token.clone().into());
+    offer_key_bin.append(&buy_token.clone().into());
+    e.compute_hash_sha256(&offer_key_bin)
 }
 
 fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
@@ -103,19 +106,20 @@ fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
         .unwrap()
 }
 
-fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
-    match id {
-        Identifier::Contract(_) => {
+fn verify_and_consume_nonce(e: &Env, auth: &Signature, expected_nonce: &BigInt) {
+    match auth {
+        Signature::Invoker => {
             if BigInt::zero(&e) != expected_nonce {
-                panic!("nonce should be zero for Contract")
+                panic!("nonce should be zero for Invoker")
             }
             return;
         }
         _ => {}
     }
 
+    let id = auth.identifier(&e);
     let key = DataKey::Nonce(id.clone());
-    let nonce = read_nonce(e, id);
+    let nonce = read_nonce(e, &id);
 
     if nonce != expected_nonce {
         panic!("incorrect nonce")
@@ -135,15 +139,15 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
         n: u32,
         d: u32,
     ) {
-        let salt = offer_salt(&e, &admin, &sell_token, &buy_token);
+        let offer_key = offer_key(&e, &admin, &sell_token, &buy_token);
 
-        if has_offer(&e, &salt) {
+        if has_offer(&e, &offer_key) {
             panic!("contract already exists");
         }
 
-        let offer_contract_id = create_contract(&e, &salt);
+        let offer_contract_id = create_contract(&e, &offer_key);
 
-        put_offer(&e, &salt, &offer_contract_id);
+        put_offer(&e, &offer_key, &offer_contract_id);
 
         SingleOfferClient::new(&e, offer_contract_id).initialize(
             &admin,
@@ -162,9 +166,9 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
         amount: BigInt,
         min: BigInt,
     ) {
-        let to_id = to.identifier(&e);
+        verify_and_consume_nonce(&e, &to, &nonce);
 
-        verify_and_consume_nonce(&e, &to_id, &nonce);
+        let to_id = to.identifier(&e);
 
         verify(
             &e,
@@ -177,7 +181,7 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
         let offer_client = SingleOfferClient::new(&e, &offer);
         let buy = offer_client.get_buy();
 
-        let token_client = TokenClient::new(&e, &buy);
+        let token_client = token::Client::new(&e, &buy);
 
         token_client.xfer_from(
             &Signature::Invoker,
@@ -196,8 +200,8 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
         sell_token: BytesN<32>,
         buy_token: BytesN<32>,
     ) -> BytesN<32> {
-        let salt = offer_salt(&e, &admin, &sell_token, &buy_token);
-        get_offer(&e, &salt)
+        let offer_key = offer_key(&e, &admin, &sell_token, &buy_token);
+        get_offer(&e, &offer_key)
     }
 
     fn nonce(e: Env, id: Identifier) -> BigInt {

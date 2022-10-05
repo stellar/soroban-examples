@@ -9,7 +9,7 @@ crate-type = ["cdylib", "rlib"]
 
 [features]
 token-wasm = []
-testutils = ["soroban-sdk/testutils", "soroban-token-contract/testutils", "dep:ed25519-dalek", "dep:sha2", "dep:stellar-xdr"]
+testutils = ["soroban-sdk/testutils", "soroban-auth/testutils", "dep:ed25519-dalek", "dep:sha2", "dep:stellar-xdr"]
 
 [dependencies]
 soroban-sdk = "0.0.4"
@@ -18,12 +18,8 @@ stellar-xdr = { version = "0.0.2", features = ["next", "std"], optional = true }
 ed25519-dalek = { version = "1.0.1", optional = true }
 sha2 = { version = "0.10.2", optional = true }
 
-[target.'cfg(not(target_family="wasm"))'.dependencies]
-soroban-token-contract = { path = "../token", version = "0.0.4", default-features = false, optional = true }
-
 [dev_dependencies]
 soroban-sdk = { version = "0.0.4", features = ["testutils"] }
-soroban-token-contract = { path = "../token", version = "0.0.4", default-features = false, features = ["testutils"] }
 stellar-xdr = { version = "0.0.2", features = ["next", "std"] }
 ed25519-dalek = { version = "1.0.1" }
 sha2 = { version = "0.10.2" }

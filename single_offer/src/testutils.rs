@@ -1,18 +1,13 @@
 #![cfg(any(test, feature = "testutils"))]
 
 use crate::{Price, SingleOfferClient};
-use ed25519_dalek::Keypair;
-use soroban_auth::{Ed25519Signature, Identifier, Signature, SignaturePayload, SignaturePayloadV0};
-use soroban_sdk::testutils::ed25519::Sign;
-use soroban_sdk::{BigInt, BytesN, Env, IntoVal, Symbol};
+use soroban_auth::{Identifier, Signature};
+
+use soroban_sdk::{AccountId, BigInt, BytesN, Env};
 
 pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
     let contract_id = BytesN::from_array(e, contract_id);
     e.register_contract(&contract_id, crate::SingleOffer {});
-}
-
-pub fn to_ed25519(e: &Env, kp: &Keypair) -> Identifier {
-    Identifier::Ed25519(kp.public.to_bytes().into_val(e))
 }
 
 pub struct SingleOffer {
@@ -53,39 +48,16 @@ impl SingleOffer {
         self.client().trade(&to, &min)
     }
 
-    pub fn withdraw(&self, admin: &Keypair, amount: &BigInt) {
-        let nonce = self.nonce();
-        let admin_id = to_ed25519(&self.env, admin);
-
-        let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            name: Symbol::from_str("withdraw"),
-            contract: self.contract_id.clone(),
-            network: self.env.ledger().network_passphrase(),
-            args: (admin_id, &nonce, amount).into_val(&self.env),
-        });
-        let auth = Signature::Ed25519(Ed25519Signature {
-            public_key: admin.public.to_bytes().into_val(&self.env),
-            signature: admin.sign(msg).unwrap().into_val(&self.env),
-        });
-
-        self.client().withdraw(&auth, &nonce, &amount)
+    pub fn withdraw(&self, admin: &AccountId, amount: &BigInt) {
+        self.env.set_source_account(&admin);
+        self.client()
+            .withdraw(&Signature::Invoker, &BigInt::zero(&self.env), &amount)
     }
 
-    pub fn updt_price(&self, admin: &Keypair, n: u32, d: u32) {
-        let nonce = self.nonce();
-        let admin_id = to_ed25519(&self.env, admin);
-
-        let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            name: Symbol::from_str("updt_price"),
-            contract: self.contract_id.clone(),
-            network: self.env.ledger().network_passphrase(),
-            args: (admin_id, &nonce, n, d).into_val(&self.env),
-        });
-        let auth = Signature::Ed25519(Ed25519Signature {
-            public_key: admin.public.to_bytes().into_val(&self.env),
-            signature: admin.sign(msg).unwrap().into_val(&self.env),
-        });
-        self.client().updt_price(&auth, &nonce, &n, &d)
+    pub fn updt_price(&self, admin: &AccountId, n: u32, d: u32) {
+        self.env.set_source_account(&admin);
+        self.client()
+            .updt_price(&Signature::Invoker, &BigInt::zero(&self.env), &n, &d)
     }
 
     pub fn get_price(&self) -> Price {

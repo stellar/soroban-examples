@@ -1,13 +1,10 @@
 #![cfg(test)]
 
 use crate::testutils::{register_test_contract as register_single_offer, SingleOfferXferFrom};
-use ed25519_dalek::Keypair;
+use crate::token::{self, TokenMetadata};
 use rand::{thread_rng, RngCore};
-use soroban_auth::Identifier;
-use soroban_sdk::{BigInt, BytesN, Env};
-use soroban_token_contract::testutils::{
-    register_test_contract as register_token, to_ed25519, Token,
-};
+use soroban_auth::{Identifier, Signature};
+use soroban_sdk::{testutils::Accounts, AccountId, BigInt, BytesN, Env, IntoVal};
 
 fn generate_contract_id() -> [u8; 32] {
     let mut id: [u8; 32] = Default::default();
@@ -15,22 +12,26 @@ fn generate_contract_id() -> [u8; 32] {
     id
 }
 
-fn generate_keypair() -> Keypair {
-    Keypair::generate(&mut thread_rng())
-}
-
-fn create_token_contract(e: &Env, admin: &Keypair) -> ([u8; 32], Token) {
+fn create_token_contract(e: &Env, admin: &AccountId) -> ([u8; 32], token::Client) {
     let id = generate_contract_id();
-    register_token(&e, &id);
-    let token = Token::new(e, &id);
+    let contract_id = BytesN::from_array(e, &id);
+    e.register_contract_token(&contract_id);
+    let token = token::Client::new(e, &id);
     // decimals, name, symbol don't matter in tests
-    token.initialize(&to_ed25519(&e, admin), 7, "name", "symbol");
+    token.init(
+        &Identifier::Account(admin.clone()),
+        &TokenMetadata {
+            name: "name".into_val(e),
+            symbol: "symbol".into_val(e),
+            decimals: 7,
+        },
+    );
     (id, token)
 }
 
 fn create_single_offer_contract(
     e: &Env,
-    admin: &Keypair,
+    admin: &AccountId,
     token_a: &[u8; 32],
     token_b: &[u8; 32],
     n: u32,
@@ -39,7 +40,7 @@ fn create_single_offer_contract(
     let id = generate_contract_id();
     register_single_offer(&e, &id);
     let single_offer = SingleOfferXferFrom::new(e, &id);
-    single_offer.initialize(&to_ed25519(&e, admin), token_a, token_b, n, d);
+    single_offer.initialize(&Identifier::Account(admin.clone()), token_a, token_b, n, d);
     (id, single_offer)
 }
 
@@ -47,12 +48,12 @@ fn create_single_offer_contract(
 fn test() {
     let e: Env = Default::default();
 
-    let admin1 = generate_keypair();
-    let admin2 = generate_keypair();
-    let user1 = generate_keypair();
-    let user1_id = to_ed25519(&e, &user1);
-    let user2 = generate_keypair();
-    let user2_id = to_ed25519(&e, &user2);
+    let admin1 = e.accounts().generate();
+    let admin2 = e.accounts().generate();
+    let user1 = e.accounts().generate();
+    let user2 = e.accounts().generate();
+    let user1_id = Identifier::Account(user1.clone());
+    let user2_id = Identifier::Account(user2.clone());
 
     let (contract1, token1) = create_token_contract(&e, &admin1);
     let (contract2, token2) = create_token_contract(&e, &admin2);
@@ -63,14 +64,34 @@ fn test() {
     let offer_id = Identifier::Contract(BytesN::from_array(&e, &contract_offer));
 
     // mint tokens that will be traded
-    token1.mint(&admin1, &user1_id, &BigInt::from_u32(&e, 30));
+    token1.with_source_account(&admin1).mint(
+        &Signature::Invoker,
+        &BigInt::zero(&e),
+        &user1_id,
+        &BigInt::from_u32(&e, 30),
+    );
     assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 30));
-    token2.mint(&admin2, &user2_id, &BigInt::from_u32(&e, 20));
+    token2.with_source_account(&admin2).mint(
+        &Signature::Invoker,
+        &BigInt::zero(&e),
+        &user2_id,
+        &BigInt::from_u32(&e, 20),
+    );
     assert_eq!(token2.balance(&user2_id), BigInt::from_u32(&e, 20));
 
     // set required allowances before trading
-    token1.approve(&user1, &offer_id, &BigInt::from_u32(&e, 30));
-    token2.approve(&user2, &offer_id, &BigInt::from_u32(&e, 20));
+    token1.with_source_account(&user1).approve(
+        &Signature::Invoker,
+        &BigInt::zero(&e),
+        &offer_id,
+        &BigInt::from_u32(&e, 30),
+    );
+    token2.with_source_account(&user2).approve(
+        &Signature::Invoker,
+        &BigInt::zero(&e),
+        &offer_id,
+        &BigInt::from_u32(&e, 20),
+    );
 
     offer.trade(&user2, &BigInt::from_u32(&e, 10), &BigInt::from_u32(&e, 20));
     assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 10));

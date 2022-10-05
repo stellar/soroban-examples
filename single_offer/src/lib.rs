@@ -5,14 +5,15 @@ extern crate std;
 
 mod test;
 pub mod testutils;
-mod token_contract;
-
-use token_contract::Client;
 
 use soroban_auth::{
     verify, {Identifier, Signature},
 };
 use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, Symbol};
+
+mod token {
+    soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
+}
 
 #[derive(Clone)]
 #[contracttype]
@@ -46,7 +47,7 @@ fn get_buy_token(e: &Env) -> BytesN<32> {
 }
 
 fn get_balance(e: &Env, contract_id: BytesN<32>) -> BigInt {
-    Client::new(&e, contract_id).balance(&get_contract_id(e))
+    token::Client::new(&e, contract_id).balance(&get_contract_id(e))
 }
 
 fn get_balance_buy(e: &Env) -> BigInt {
@@ -70,7 +71,7 @@ fn load_price(e: &Env) -> Price {
 }
 
 fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
-    let client = Client::new(&e, contract_id);
+    let client = token::Client::new(&e, contract_id);
     client.xfer(&Signature::Invoker, &BigInt::zero(&e), &to, &amount);
 }
 
@@ -112,19 +113,20 @@ fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
         .unwrap()
 }
 
-fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
-    match id {
-        Identifier::Contract(_) => {
+fn verify_and_consume_nonce(e: &Env, auth: &Signature, expected_nonce: &BigInt) {
+    match auth {
+        Signature::Invoker => {
             if BigInt::zero(&e) != expected_nonce {
-                panic!("nonce should be zero for Contract")
+                panic!("nonce should be zero for Invoker")
             }
             return;
         }
         _ => {}
     }
 
+    let id = auth.identifier(&e);
     let key = DataKey::Nonce(id.clone());
-    let nonce = read_nonce(e, id);
+    let nonce = read_nonce(e, &id);
 
     if nonce != expected_nonce {
         panic!("incorrect nonce")
@@ -230,10 +232,10 @@ impl SingleOfferTrait for SingleOffer {
 
     fn withdraw(e: Env, admin: Signature, nonce: BigInt, amount: BigInt) {
         check_admin(&e, &admin);
+
+        verify_and_consume_nonce(&e, &admin, &nonce);
+
         let admin_id = admin.identifier(&e);
-
-        verify_and_consume_nonce(&e, &admin_id, &nonce);
-
         verify(
             &e,
             &admin,
@@ -246,13 +248,13 @@ impl SingleOfferTrait for SingleOffer {
 
     fn updt_price(e: Env, admin: Signature, nonce: BigInt, n: u32, d: u32) {
         check_admin(&e, &admin);
-        let admin_id = admin.identifier(&e);
 
         if d == 0 {
             panic!("d is zero but cannot be zero")
         }
 
-        verify_and_consume_nonce(&e, &admin_id, &nonce);
+        verify_and_consume_nonce(&e, &admin, &nonce);
+        let admin_id = admin.identifier(&e);
 
         verify(
             &e,

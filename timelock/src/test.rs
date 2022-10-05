@@ -1,19 +1,11 @@
 #![cfg(test)]
 
 use super::*;
-use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
-use soroban_auth::{Ed25519Signature, Identifier, SignaturePayload, SignaturePayloadV0};
-use soroban_sdk::testutils::ed25519::Sign;
-use soroban_sdk::testutils::{Ledger, LedgerInfo};
-use soroban_sdk::{vec, Env, IntoVal, RawVal};
-use soroban_token_contract::testutils::{
-    register_test_contract as register_token, to_ed25519, Token,
-};
-
-fn generate_keypair() -> Keypair {
-    Keypair::generate(&mut thread_rng())
-}
+use soroban_auth::Identifier;
+use soroban_sdk::testutils::{Accounts, Ledger, LedgerInfo};
+use soroban_sdk::{vec, AccountId, Env, IntoVal};
+use token::{Client as TokenClient, TokenMetadata};
 
 fn generate_contract_id() -> [u8; 32] {
     let mut id: [u8; 32] = Default::default();
@@ -21,13 +13,20 @@ fn generate_contract_id() -> [u8; 32] {
     id
 }
 
-fn create_token_contract(e: &Env, admin: &Keypair) -> (BytesN<32>, Token) {
+fn create_token_contract(e: &Env, admin: &AccountId) -> (BytesN<32>, TokenClient) {
     let id = generate_contract_id();
-    register_token(&e, &id);
-    let token = Token::new(e, &id);
+    let contract_id = BytesN::from_array(e, &id);
+    e.register_contract_token(&contract_id);
+    let token = TokenClient::new(e, &id);
     // decimals, name, symbol don't matter in tests
-    token.initialize(&to_ed25519(&e, admin), 7, "name", "symbol");
-
+    token.init(
+        &Identifier::Account(admin.clone()),
+        &TokenMetadata {
+            name: "name".into_val(e),
+            symbol: "symbol".into_val(e),
+            decimals: 7,
+        },
+    );
     (BytesN::from_array(&e, &id), token)
 }
 
@@ -38,34 +37,11 @@ fn create_claimable_balance_contract(e: &Env) -> ClaimableBalanceContractClient 
     ClaimableBalanceContractClient::new(e, contract_id)
 }
 
-fn sign_args(
-    env: &Env,
-    signer: &Keypair,
-    fn_name: &str,
-    contract_id: &BytesN<32>,
-    args: Vec<RawVal>,
-) -> Signature {
-    let msg = SignaturePayload::V0(SignaturePayloadV0 {
-        name: Symbol::from_str(fn_name),
-        contract: contract_id.clone(),
-        network: env.ledger().network_passphrase(),
-        args,
-    });
-    sign_payload(env, signer, msg)
-}
-
-fn sign_payload(env: &Env, signer: &Keypair, payload: SignaturePayload) -> Signature {
-    Signature::Ed25519(Ed25519Signature {
-        public_key: signer.public.to_bytes().into_val(env),
-        signature: signer.sign(payload).unwrap().into_val(env),
-    })
-}
-
 struct ClaimableBalanceTest {
     env: Env,
-    deposit_user: Keypair,
-    claim_users: [Keypair; 3],
-    token: Token,
+    deposit_user: AccountId,
+    claim_users: [AccountId; 3],
+    token: TokenClient,
     token_id: BytesN<32>,
     contract: ClaimableBalanceContractClient,
     contract_id: Identifier,
@@ -82,15 +58,22 @@ impl ClaimableBalanceTest {
             base_reserve: 10,
         });
 
-        let deposit_user = generate_keypair();
+        let deposit_user = env.accounts().generate();
+        let deposit_user_id = Identifier::Account(deposit_user.clone());
 
-        let claim_users = [generate_keypair(), generate_keypair(), generate_keypair()];
+        let claim_users = [
+            env.accounts().generate(),
+            env.accounts().generate(),
+            env.accounts().generate(),
+        ];
 
-        let token_admin = generate_keypair();
+        let token_admin = env.accounts().generate();
+
         let (token_id, token) = create_token_contract(&env, &token_admin);
-        token.mint(
-            &token_admin,
-            &to_ed25519(&env, &deposit_user),
+        token.with_source_account(&token_admin).mint(
+            &Signature::Invoker,
+            &BigInt::zero(&env),
+            &deposit_user_id,
             &BigInt::from_u32(&env, 1000),
         );
 
@@ -108,8 +91,9 @@ impl ClaimableBalanceTest {
     }
 
     fn approve_deposit(&self, amount: u32) {
-        self.token.approve(
-            &self.deposit_user,
+        self.token.with_source_account(&self.deposit_user).approve(
+            &Signature::Invoker,
+            &BigInt::zero(&self.env),
             &Identifier::Contract(self.contract.contract_id.clone()),
             &BigInt::from_u32(&self.env, amount),
         );
@@ -125,41 +109,35 @@ impl ClaimableBalanceTest {
         );
     }
 
-    fn claim(&self, claim_user: &Keypair) {
+    fn claim(&self, claim_user: &AccountId) {
         self.call_claim(claim_user);
     }
 
-    fn signer_to_id(&self, signer: &Keypair) -> Identifier {
-        to_ed25519(&self.env, &signer)
+    fn account_id_to_identifier(&self, account_id: &AccountId) -> Identifier {
+        Identifier::Account(account_id.clone())
     }
 
     fn call_deposit(
         &self,
-        signer: &Keypair,
+        account_id: &AccountId,
         token: &BytesN<32>,
         amount: &BigInt,
         claimants: &Vec<Identifier>,
         time_bound: &TimeBound,
     ) {
-        let signer_id = self.signer_to_id(signer);
-        let args: Vec<RawVal> =
-            (&signer_id, token, amount, claimants, time_bound).into_val(&self.env);
-        let signature = sign_args(
-            &self.env,
-            signer,
-            "deposit",
-            &self.contract.contract_id,
-            args,
+        self.contract.with_source_account(account_id).deposit(
+            &Signature::Invoker,
+            token,
+            amount,
+            claimants,
+            time_bound,
         );
-        self.contract
-            .deposit(&signature, token, amount, claimants, time_bound);
     }
 
-    fn call_claim(&self, signer: &Keypair) {
-        let signer_id = self.signer_to_id(signer);
-        let args: Vec<RawVal> = (&signer_id,).into_val(&self.env);
-        let signature = sign_args(&self.env, signer, "claim", &self.contract.contract_id, args);
-        self.contract.claim(&signature);
+    fn call_claim(&self, account_id: &AccountId) {
+        self.contract
+            .with_source_account(account_id)
+            .claim(&Signature::Invoker);
     }
 }
 
@@ -171,8 +149,8 @@ fn test_deposit_and_claim() {
         800,
         &vec![
             &test.env,
-            test.signer_to_id(&test.claim_users[0]),
-            test.signer_to_id(&test.claim_users[1]),
+            test.account_id_to_identifier(&test.claim_users[0]),
+            test.account_id_to_identifier(&test.claim_users[1]),
         ],
         TimeBound {
             kind: TimeBoundKind::Before,
@@ -181,7 +159,8 @@ fn test_deposit_and_claim() {
     );
 
     assert_eq!(
-        test.token.balance(&test.signer_to_id(&test.deposit_user)),
+        test.token
+            .balance(&test.account_id_to_identifier(&test.deposit_user)),
         BigInt::from_u32(&test.env, 200)
     );
     assert_eq!(
@@ -189,13 +168,15 @@ fn test_deposit_and_claim() {
         BigInt::from_u32(&test.env, 800)
     );
     assert_eq!(
-        test.token.balance(&test.signer_to_id(&test.claim_users[1])),
+        test.token
+            .balance(&test.account_id_to_identifier(&test.claim_users[1])),
         BigInt::from_u32(&test.env, 0)
     );
 
     test.claim(&test.claim_users[1]);
     assert_eq!(
-        test.token.balance(&test.signer_to_id(&test.deposit_user)),
+        test.token
+            .balance(&test.account_id_to_identifier(&test.deposit_user)),
         BigInt::from_u32(&test.env, 200)
     );
     assert_eq!(
@@ -203,19 +184,23 @@ fn test_deposit_and_claim() {
         BigInt::from_u32(&test.env, 0)
     );
     assert_eq!(
-        test.token.balance(&test.signer_to_id(&test.claim_users[1])),
+        test.token
+            .balance(&test.account_id_to_identifier(&test.claim_users[1])),
         BigInt::from_u32(&test.env, 800)
     );
 }
 
 #[test]
-#[should_panic(expected = "insufficient allowance")]
+#[should_panic]
 fn test_deposit_above_allowance_not_possible() {
     let test = ClaimableBalanceTest::setup();
     test.approve_deposit(800);
     test.deposit(
         801,
-        &vec![&test.env, test.signer_to_id(&test.claim_users[0])],
+        &vec![
+            &test.env,
+            test.account_id_to_identifier(&test.claim_users[0]),
+        ],
         TimeBound {
             kind: TimeBoundKind::Before,
             timestamp: 12346,
@@ -230,7 +215,10 @@ fn test_double_deposit_not_possible() {
     test.approve_deposit(800);
     test.deposit(
         1,
-        &vec![&test.env, test.signer_to_id(&test.claim_users[0])],
+        &vec![
+            &test.env,
+            test.account_id_to_identifier(&test.claim_users[0]),
+        ],
         TimeBound {
             kind: TimeBoundKind::Before,
             timestamp: 12346,
@@ -238,7 +226,10 @@ fn test_double_deposit_not_possible() {
     );
     test.deposit(
         1,
-        &vec![&test.env, test.signer_to_id(&test.claim_users[0])],
+        &vec![
+            &test.env,
+            test.account_id_to_identifier(&test.claim_users[0]),
+        ],
         TimeBound {
             kind: TimeBoundKind::Before,
             timestamp: 12346,
@@ -255,8 +246,8 @@ fn test_unauthorized_claim_not_possible() {
         800,
         &vec![
             &test.env,
-            test.signer_to_id(&test.claim_users[0]),
-            test.signer_to_id(&test.claim_users[1]),
+            test.account_id_to_identifier(&test.claim_users[0]),
+            test.account_id_to_identifier(&test.claim_users[1]),
         ],
         TimeBound {
             kind: TimeBoundKind::Before,
@@ -274,7 +265,10 @@ fn test_out_of_time_bound_claim_not_possible() {
     test.approve_deposit(800);
     test.deposit(
         800,
-        &vec![&test.env, test.signer_to_id(&test.claim_users[0])],
+        &vec![
+            &test.env,
+            test.account_id_to_identifier(&test.claim_users[0]),
+        ],
         TimeBound {
             kind: TimeBoundKind::After,
             timestamp: 12346,
@@ -291,7 +285,10 @@ fn test_double_claim_not_possible() {
     test.approve_deposit(800);
     test.deposit(
         800,
-        &vec![&test.env, test.signer_to_id(&test.claim_users[0])],
+        &vec![
+            &test.env,
+            test.account_id_to_identifier(&test.claim_users[0]),
+        ],
         TimeBound {
             kind: TimeBoundKind::Before,
             timestamp: 12346,
@@ -300,7 +297,8 @@ fn test_double_claim_not_possible() {
 
     test.claim(&test.claim_users[0]);
     assert_eq!(
-        test.token.balance(&test.signer_to_id(&test.claim_users[0])),
+        test.token
+            .balance(&test.account_id_to_identifier(&test.claim_users[0])),
         BigInt::from_u32(&test.env, 800)
     );
     test.claim(&test.claim_users[0]);
@@ -313,7 +311,10 @@ fn test_deposit_after_claim_not_possible() {
     test.approve_deposit(1000);
     test.deposit(
         800,
-        &vec![&test.env, test.signer_to_id(&test.claim_users[0])],
+        &vec![
+            &test.env,
+            test.account_id_to_identifier(&test.claim_users[0]),
+        ],
         TimeBound {
             kind: TimeBoundKind::After,
             timestamp: 12344,
@@ -322,12 +323,16 @@ fn test_deposit_after_claim_not_possible() {
 
     test.claim(&test.claim_users[0]);
     assert_eq!(
-        test.token.balance(&test.signer_to_id(&test.claim_users[0])),
+        test.token
+            .balance(&test.account_id_to_identifier(&test.claim_users[0])),
         BigInt::from_u32(&test.env, 800)
     );
     test.deposit(
         200,
-        &vec![&test.env, test.signer_to_id(&test.claim_users[0])],
+        &vec![
+            &test.env,
+            test.account_id_to_identifier(&test.claim_users[0]),
+        ],
         TimeBound {
             kind: TimeBoundKind::After,
             timestamp: 12344,

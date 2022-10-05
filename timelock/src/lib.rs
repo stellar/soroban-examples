@@ -13,9 +13,7 @@ use soroban_auth::{
 use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, Symbol, Vec};
 
 mod token {
-    soroban_sdk::contractimport!(
-        file = "../target/wasm32-unknown-unknown/release/soroban_token_contract.wasm"
-    );
+    soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
 }
 
 #[derive(Clone)]
@@ -87,12 +85,10 @@ impl ClaimableBalanceContract {
             panic!("contract has been already initialized");
         }
 
+        verify_and_consume_nonce(&env, &from, &BigInt::zero(&env));
+
         let from_id = from.identifier(&env);
 
-        verify_and_consume_nonce(&env, &from_id, &BigInt::zero(&env));
-
-        // Authenticate depositor with nonce of zero, so that this may
-        // be successfully called just once.
         verify(
             &env,
             &from,
@@ -128,7 +124,7 @@ impl ClaimableBalanceContract {
             panic!("claimant is not allowed to claim this balance");
         }
 
-        verify_and_consume_nonce(&env, &claimant_id, &BigInt::zero(&env));
+        verify_and_consume_nonce(&env, &claimant, &BigInt::zero(&env));
 
         // Authenticate claimant with nonce of zero, so that this may be
         // successfully called just once.
@@ -179,19 +175,20 @@ fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
         .unwrap()
 }
 
-fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
-    match id {
-        Identifier::Contract(_) => {
+fn verify_and_consume_nonce(e: &Env, auth: &Signature, expected_nonce: &BigInt) {
+    match auth {
+        Signature::Invoker => {
             if BigInt::zero(&e) != expected_nonce {
-                panic!("nonce should be zero for Contract")
+                panic!("nonce should be zero for Invoker")
             }
             return;
         }
         _ => {}
     }
 
+    let id = auth.identifier(&e);
     let key = DataKey::Nonce(id.clone());
-    let nonce = read_nonce(e, id);
+    let nonce = read_nonce(e, &id);
 
     if nonce != expected_nonce {
         panic!("incorrect nonce")

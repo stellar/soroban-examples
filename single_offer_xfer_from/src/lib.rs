@@ -5,14 +5,15 @@ extern crate std;
 
 mod test;
 pub mod testutils;
-mod token_contract;
-
-use token_contract::TokenClient;
 
 use soroban_auth::{
     verify, {Identifier, Signature},
 };
 use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, Symbol};
+
+mod token {
+    soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
+}
 
 #[derive(Clone)]
 #[contracttype]
@@ -64,7 +65,7 @@ fn transfer_from(
     to: &Identifier,
     amount: &BigInt,
 ) {
-    let client = TokenClient::new(&e, &contract_id);
+    let client = token::Client::new(&e, &contract_id);
     client.xfer_from(&Signature::Invoker, &BigInt::zero(&e), &from, &to, &amount)
 }
 
@@ -106,19 +107,20 @@ fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
         .unwrap()
 }
 
-fn verify_and_consume_nonce(e: &Env, id: &Identifier, expected_nonce: &BigInt) {
-    match id {
-        Identifier::Contract(_) => {
+fn verify_and_consume_nonce(e: &Env, auth: &Signature, expected_nonce: &BigInt) {
+    match auth {
+        Signature::Invoker => {
             if BigInt::zero(&e) != expected_nonce {
-                panic!("nonce should be zero for Contract")
+                panic!("nonce should be zero for Invoker")
             }
             return;
         }
         _ => {}
     }
 
+    let id = auth.identifier(&e);
     let key = DataKey::Nonce(id.clone());
-    let nonce = read_nonce(e, id);
+    let nonce = read_nonce(e, &id);
 
     if nonce != expected_nonce {
         panic!("incorrect nonce")
@@ -193,10 +195,9 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
     }
 
     fn trade(e: Env, to: Signature, nonce: BigInt, amount_to_sell: BigInt, min: BigInt) {
+        verify_and_consume_nonce(&e, &to, &nonce);
+
         let to_id = to.identifier(&e);
-
-        verify_and_consume_nonce(&e, &to_id, &nonce);
-
         verify(
             &e,
             &to,
@@ -225,14 +226,13 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
 
     fn updt_price(e: Env, admin: Signature, nonce: BigInt, n: u32, d: u32) {
         check_admin(&e, &admin);
-        let admin_id = admin.identifier(&e);
-
         if d == 0 {
             panic!("d is zero but cannot be zero")
         }
 
-        verify_and_consume_nonce(&e, &admin_id, &nonce);
+        verify_and_consume_nonce(&e, &admin, &nonce);
 
+        let admin_id = admin.identifier(&e);
         verify(
             &e,
             &admin,
