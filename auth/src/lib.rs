@@ -26,7 +26,7 @@ impl ExampleContract {
         env.data().set(DataKey::Admin, new_admin);
     }
 
-    /// Set the number for an authenticated Address.
+    /// Set the number for an authenticated address.
     pub fn set_num(env: Env, num: BigInt) {
         let id = env.invoker();
         env.data().set(DataKey::SavedNum(id), num);
