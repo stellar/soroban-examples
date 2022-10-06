@@ -28,22 +28,22 @@ impl ExampleContract {
 
     /// Set the number for an authenticated address.
     pub fn set_num(env: Env, num: BigInt) {
-        let id = env.invoker();
-        env.data().set(DataKey::SavedNum(id), num);
+        let addr = env.invoker();
+        env.data().set(DataKey::SavedNum(addr), num);
     }
 
     /// Get the number for an Address.
-    pub fn num(env: Env, id: Address) -> Option<BigInt> {
-        env.data().get(DataKey::SavedNum(id)).map(Result::unwrap)
+    pub fn num(env: Env, addr: Address) -> Option<BigInt> {
+        env.data().get(DataKey::SavedNum(addr)).map(Result::unwrap)
     }
 
     /// Overwrite any number for an Address.
     /// Callable only by admin.
-    pub fn overwrite(env: Env, id: Address, num: BigInt) {
+    pub fn overwrite(env: Env, addr: Address, num: BigInt) {
         let admin = Self::admin(&env);
         assert_eq!(Some(env.invoker()), admin);
 
-        env.data().set(DataKey::SavedNum(id), num);
+        env.data().set(DataKey::SavedNum(addr), num);
     }
 
     fn admin(env: &Env) -> Option<Address> {
