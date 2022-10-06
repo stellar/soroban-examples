@@ -22,6 +22,10 @@ members = [
     "logging",
 ]
 
+[profile.release-with-logs]
+inherits = "release"
+debug-assertions = true
+
 [profile.release]
 opt-level = "z"
 overflow-checks = true
