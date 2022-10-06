@@ -14,9 +14,7 @@ fn generate_contract_id() -> [u8; 32] {
 }
 
 fn create_token_contract(e: &Env, admin: &AccountId) -> (BytesN<32>, TokenClient) {
-    let id = generate_contract_id();
-    let contract_id = BytesN::from_array(e, &id);
-    e.register_contract_token(&contract_id);
+    let id = e.register_contract_token(None);
     let token = TokenClient::new(e, &id);
     // decimals, name, symbol don't matter in tests
     token.init(
@@ -27,7 +25,7 @@ fn create_token_contract(e: &Env, admin: &AccountId) -> (BytesN<32>, TokenClient
             decimals: 7,
         },
     );
-    (BytesN::from_array(&e, &id), token)
+    (id, token)
 }
 
 fn create_claimable_balance_contract(e: &Env) -> ClaimableBalanceContractClient {

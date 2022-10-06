@@ -1,15 +1,14 @@
 #![cfg(test)]
 
 use super::*;
-use soroban_sdk::{symbol, testutils::Logger, BytesN, Env};
+use soroban_sdk::{symbol, testutils::Logger, Env};
 
 extern crate std;
 
 #[test]
 fn test() {
     let env = Env::default();
-    let contract_id = BytesN::from_array(&env, &[0; 32]);
-    env.register_contract(&contract_id, Contract);
+    let contract_id = env.register_contract(None, Contract);
     let client = ContractClient::new(&env, &contract_id);
 
     client.hello(&symbol!("Dev"));
