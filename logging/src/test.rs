@@ -14,5 +14,7 @@ fn test() {
 
     client.hello(&symbol!("Dev"));
 
-    assert_eq!(env.logger().all(), std::vec!["Hello Symbol(Dev)"]);
+    let logs = env.logger().all();
+    assert_eq!(logs, std::vec!["Hello Symbol(Dev)"]);
+    std::println!("{}", logs.join("\n"));
 }
