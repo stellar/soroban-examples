@@ -18,8 +18,13 @@ members = [
     "single_offer_router",
     "events",
     "timelock",
-    "token"
+    "token",
+    "logging",
 ]
+
+[profile.release-with-logs]
+inherits = "release"
+debug-assertions = true
 
 [profile.release]
 opt-level = "z"
