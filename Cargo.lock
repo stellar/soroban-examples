@@ -807,6 +807,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "soroban-logging-contract"
+version = "0.0.0"
+dependencies = [
+ "soroban-sdk",
+]
+
+[[package]]
 name = "soroban-native-sdk-macros"
 version = "0.0.5"
 source = "git+https://github.com/stellar/rs-soroban-env?rev=fb8a384e#fb8a384eb73b1d157c13b073efa9c82ff490119f"

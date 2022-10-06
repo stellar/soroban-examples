@@ -18,7 +18,8 @@ members = [
     "single_offer_router",
     "events",
     "timelock",
-    "token"
+    "token",
+    "logging",
 ]
 
 [profile.release]
