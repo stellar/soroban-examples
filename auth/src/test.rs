@@ -2,13 +2,12 @@
 
 use super::*;
 
-use soroban_sdk::{testutils::Accounts, Address, BytesN, Env};
+use soroban_sdk::{testutils::Accounts, Address, Env};
 
 #[test]
 fn test() {
     let env = Env::default();
-    let contract_id = BytesN::from_array(&env, &[0; 32]);
-    env.register_contract(&contract_id, ExampleContract);
+    let contract_id = env.register_contract(None, ExampleContract);
     let client = ExampleContractClient::new(&env, contract_id);
 
     // Initialize contract by setting the admin.

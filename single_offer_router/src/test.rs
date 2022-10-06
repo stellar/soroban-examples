@@ -13,9 +13,7 @@ fn generate_contract_id() -> [u8; 32] {
 }
 
 fn create_token_contract(e: &Env, admin: &AccountId) -> ([u8; 32], token::Client) {
-    let id = generate_contract_id();
-    let contract_id = BytesN::from_array(e, &id);
-    e.register_contract_token(&contract_id);
+    let id = e.register_contract_token(None);
     let token = token::Client::new(e, &id);
     // decimals, name, symbol don't matter in tests
     token.init(
@@ -26,7 +24,7 @@ fn create_token_contract(e: &Env, admin: &AccountId) -> ([u8; 32], token::Client
             decimals: 7,
         },
     );
-    (id, token)
+    (id.into(), token)
 }
 
 fn create_single_offer_router_contract(

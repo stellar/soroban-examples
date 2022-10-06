@@ -1,21 +1,17 @@
 #![cfg(test)]
 
 use crate::{contract_a, ContractB, ContractBClient};
-use soroban_sdk::{BytesN, Env};
+use soroban_sdk::Env;
 
 #[test]
 fn test() {
     let env = Env::default();
 
-    // Define IDs for contract A and B.
-    let contract_a_id = BytesN::from_array(&env, &[0; 32]);
-    let contract_b_id = BytesN::from_array(&env, &[1; 32]);
-
     // Register contract A using the imported WASM.
-    env.register_contract_wasm(&contract_a_id, contract_a::WASM);
+    let contract_a_id = env.register_contract_wasm(None, contract_a::WASM);
 
     // Register contract B defined in this crate.
-    env.register_contract(&contract_b_id, ContractB);
+    let contract_b_id = env.register_contract(None, ContractB);
 
     // Create a client for calling contract B.
     let client = ContractBClient::new(&env, &contract_b_id);

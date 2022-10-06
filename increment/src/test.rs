@@ -1,13 +1,12 @@
 #![cfg(test)]
 
 use super::{IncrementContract, IncrementContractClient};
-use soroban_sdk::{BytesN, Env};
+use soroban_sdk::Env;
 
 #[test]
 fn test() {
     let env = Env::default();
-    let contract_id = BytesN::from_array(&env, &[0; 32]);
-    env.register_contract(&contract_id, IncrementContract);
+    let contract_id = env.register_contract(None, IncrementContract);
     let client = IncrementContractClient::new(&env, &contract_id);
 
     assert_eq!(client.increment(), 1);
