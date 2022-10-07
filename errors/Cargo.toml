@@ -1,0 +1,20 @@
+[package]
+name = "soroban-errors-contract"
+version = "0.0.0"
+authors = ["Stellar Development Foundation <info@stellar.org>"]
+license = "Apache-2.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+doctest = false
+
+[features]
+testutils = ["soroban-sdk/testutils"]
+
+[dependencies]
+soroban-sdk = "0.1.0"
+
+[dev_dependencies]
+soroban-sdk = { version = "0.1.0", features = ["testutils"] }

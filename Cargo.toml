@@ -20,6 +20,7 @@ members = [
     "timelock",
     "token",
     "logging",
+    "errors",
 ]
 
 [profile.release-with-logs]
