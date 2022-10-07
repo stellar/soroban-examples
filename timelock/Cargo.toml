@@ -14,11 +14,11 @@ doctest = false
 testutils = ["soroban-sdk/testutils", "soroban-auth/testutils"]
 
 [dependencies]
-soroban-sdk = "0.0.4"
-soroban-auth = "0.0.4"
+soroban-sdk = "0.0.6"
+soroban-auth = "0.0.6"
 
 [dev_dependencies]
-soroban-sdk = { version = "0.0.4", features = ["testutils"] }
-soroban-auth = { version = "0.0.4", features = ["testutils"] }
+soroban-sdk = { version = "0.0.6", features = ["testutils"] }
+soroban-auth = { version = "0.0.6", features = ["testutils"] }
 rand = { version = "0.7.3" }
 ed25519-dalek = { version = "1.0.1" }
