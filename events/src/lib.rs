@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contractimpl, log, symbol, Env, Symbol};
+use soroban_sdk::{contractimpl, symbol, Env, Symbol};
 
 const COUNTER: Symbol = symbol!("COUNTER");
 
@@ -23,6 +23,7 @@ impl IncrementContract {
         // The event has two topics:
         //   - The "COUNTER" symbol.
         //   - The "increment" symbol.
+        // The event data is the count.
         env.events().publish((COUNTER, symbol!("increment")), count);
 
         // Save the count.
