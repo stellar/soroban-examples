@@ -9,14 +9,14 @@ pub enum Error {
 }
 
 const COUNTER: Symbol = symbol!("COUNTER");
-const MAX: u32 = 10;
+const MAX: u32 = 5;
 
 pub struct IncrementContract;
 
 #[contractimpl]
 impl IncrementContract {
     /// Increment increments an internal counter, and returns the value. Errors
-    /// if the value is attempted to be incremented past 10.
+    /// if the value is attempted to be incremented past 5.
     pub fn increment(env: Env) -> Result<u32, Error> {
         // Get the current count.
         let mut count: u32 = env

@@ -16,11 +16,6 @@ fn test() {
     assert_eq!(client.try_increment(), Ok(Ok(3)));
     assert_eq!(client.try_increment(), Ok(Ok(4)));
     assert_eq!(client.try_increment(), Ok(Ok(5)));
-    assert_eq!(client.try_increment(), Ok(Ok(6)));
-    assert_eq!(client.try_increment(), Ok(Ok(7)));
-    assert_eq!(client.try_increment(), Ok(Ok(8)));
-    assert_eq!(client.try_increment(), Ok(Ok(9)));
-    assert_eq!(client.try_increment(), Ok(Ok(10)));
     assert_eq!(client.try_increment(), Err(Ok(Error::LimitReached)));
 
     std::println!("{}", env.logger().all().join("\n"));
@@ -38,10 +33,5 @@ fn test_panic() {
     assert_eq!(client.increment(), 3);
     assert_eq!(client.increment(), 4);
     assert_eq!(client.increment(), 5);
-    assert_eq!(client.increment(), 6);
-    assert_eq!(client.increment(), 7);
-    assert_eq!(client.increment(), 8);
-    assert_eq!(client.increment(), 9);
-    assert_eq!(client.increment(), 10);
     client.increment();
 }
