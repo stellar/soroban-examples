@@ -19,15 +19,15 @@ impl IncrementContract {
         // Increment the count.
         count += 1;
 
+        // Save the count.
+        env.data().set(COUNTER, count);
+
         // Publish an event about the increment occuring.
         // The event has two topics:
         //   - The "COUNTER" symbol.
         //   - The "increment" symbol.
         // The event data is the count.
         env.events().publish((COUNTER, symbol!("increment")), count);
-
-        // Save the count.
-        env.data().set(COUNTER, count);
 
         // Return the count to the caller.
         count
