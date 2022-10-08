@@ -1,9 +1,7 @@
 #![cfg(test)]
 
 use super::*;
-use soroban_sdk::{testutils::Logger, Env};
-
-extern crate std;
+use soroban_sdk::Env;
 
 #[test]
 fn test() {
@@ -20,6 +18,4 @@ fn test() {
             last_incr: 10
         }
     );
-
-    std::println!("{}", env.logger().all().join("\n"));
 }

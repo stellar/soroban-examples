@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contractimpl, contracttype, log, symbol, Env, Symbol};
+use soroban_sdk::{contractimpl, contracttype, symbol, Env, Symbol};
 
 #[contracttype]
 #[derive(Clone, Default, Debug, Eq, PartialEq)]
@@ -18,8 +18,6 @@ impl IncrementContract {
     pub fn increment(env: Env, incr: u32) -> u32 {
         // Get the current count.
         let mut state = Self::get_state(env.clone());
-        log!(&env, "count: {}", state.count);
-        log!(&env, "last increment: {}", state.last_incr);
 
         // Increment the count.
         state.count += incr;
