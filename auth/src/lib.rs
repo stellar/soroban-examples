@@ -1,52 +1,38 @@
 #![no_std]
-
-mod test;
-
-use soroban_sdk::{contractimpl, contracttype, Address, BigInt, Env};
+use soroban_sdk::{contractimpl, contracttype, Address, Env};
 
 #[contracttype]
 pub enum DataKey {
-    SavedNum(Address),
-    Admin,
+    Counter(Address),
 }
 
-pub struct ExampleContract;
+pub struct IncrementContract;
 
 #[contractimpl]
-impl ExampleContract {
-    /// Set the admin Address.
-    ///
-    /// May be called only once unauthenticated, and
-    /// then only by current admin.
-    pub fn set_admin(env: Env, new_admin: Address) {
-        let admin = Self::admin(&env);
-        if let Some(admin) = admin {
-            assert_eq!(env.invoker(), admin);
-        }
-        env.data().set(DataKey::Admin, new_admin);
-    }
+impl IncrementContract {
+    /// Increment increments a counter for the invoker, and returns the value.
+    pub fn increment(env: Env) -> u32 {
+        // Construct a key for the data being stored. Use an enum to set the
+        // contract up well for adding other types of data to be stored.
+        let invoker = env.invoker();
+        let key = DataKey::Counter(invoker);
 
-    /// Set the number for an authenticated address.
-    pub fn set_num(env: Env, num: BigInt) {
-        let addr = env.invoker();
-        env.data().set(DataKey::SavedNum(addr), num);
-    }
+        // Get the current count for the invoker.
+        let mut count: u32 = env
+            .data()
+            .get(&key)
+            .unwrap_or(Ok(0)) // If no value set, assume 0.
+            .unwrap(); // Panic if the value of COUNTER is not u32.
 
-    /// Get the number for an Address.
-    pub fn num(env: Env, addr: Address) -> Option<BigInt> {
-        env.data().get(DataKey::SavedNum(addr)).map(Result::unwrap)
-    }
+        // Increment the count.
+        count += 1;
 
-    /// Overwrite any number for an Address.
-    /// Callable only by admin.
-    pub fn overwrite(env: Env, addr: Address, num: BigInt) {
-        let admin = Self::admin(&env);
-        assert_eq!(Some(env.invoker()), admin);
+        // Save the count.
+        env.data().set(&key, count);
 
-        env.data().set(DataKey::SavedNum(addr), num);
-    }
-
-    fn admin(env: &Env) -> Option<Address> {
-        env.data().get(DataKey::Admin).map(Result::unwrap)
+        // Return the count to the caller.
+        count
     }
 }
+
+mod test;
