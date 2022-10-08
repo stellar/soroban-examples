@@ -2,34 +2,39 @@
 use soroban_sdk::{contractimpl, contracttype, symbol, Env, Symbol};
 
 #[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Name {
-    None,
-    FirstLast(FirstLast),
+#[derive(Clone, Default, Debug, Eq, PartialEq)]
+pub struct State {
+    pub count: u32,
+    pub last_incr: u32,
 }
 
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct FirstLast {
-    pub first: Symbol,
-    pub last: Symbol,
-}
+const STATE: Symbol = symbol!("STATE");
 
-pub struct CustomTypesContract;
-
-const NAME: Symbol = symbol!("NAME");
+pub struct IncrementContract;
 
 #[contractimpl]
-impl CustomTypesContract {
-    pub fn store(env: Env, name: Name) {
-        env.data().set(NAME, name);
-    }
+impl IncrementContract {
+    /// Increment increments an internal counter, and returns the value.
+    pub fn increment(env: Env, incr: u32) -> u32 {
+        // Get the current count.
+        let mut state = Self::get_state(env.clone());
 
-    pub fn retrieve(env: Env) -> Name {
+        // Increment the count.
+        state.count += incr;
+        state.last_incr = incr;
+
+        // Save the count.
+        env.data().set(STATE, &state);
+
+        // Return the count to the caller.
+        state.count
+    }
+    /// Return the current state.
+    pub fn get_state(env: Env) -> State {
         env.data()
-            .get(NAME) // Get the value associated with key NAME.
-            .unwrap_or(Ok(Name::None)) // If no value, use None instead.
-            .unwrap()
+            .get(STATE)
+            .unwrap_or_else(|| Ok(State::default())) // If no value set, assume 0.
+            .unwrap() // Panic if the value of COUNTER is not a State.
     }
 }
 
