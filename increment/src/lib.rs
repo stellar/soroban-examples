@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contractimpl, symbol, Env, Symbol, log};
+use soroban_sdk::{contractimpl, log, symbol, Env, Symbol};
 
 const COUNTER: Symbol = symbol!("COUNTER");
 
