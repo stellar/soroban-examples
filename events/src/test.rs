@@ -3,8 +3,6 @@
 use super::*;
 use soroban_sdk::{testutils::Events, vec, Env, IntoVal};
 
-extern crate std;
-
 #[test]
 fn test() {
     let env = Env::default();
