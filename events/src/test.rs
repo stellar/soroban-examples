@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use super::*;
-use soroban_sdk::{testutils::Events, Env};
+use soroban_sdk::{testutils::Events, vec, Env, IntoVal};
 
 extern crate std;
 
@@ -15,12 +15,25 @@ fn test() {
     assert_eq!(client.increment(), 2);
     assert_eq!(client.increment(), 3);
 
-    env.events().all().iter().map(Result::unwrap).for_each(|e| {
-        std::println!(
-            "event:\n - contract: {:?}\n - topics: {:?}\n - value: {:?}",
-            e.0,
-            e.1,
-            e.2
-        );
-    });
+    assert_eq!(
+        env.events().all(),
+        vec![
+            &env,
+            (
+                contract_id.clone(),
+                (symbol!("COUNTER"), symbol!("increment")).into_val(&env),
+                1u32.into_val(&env)
+            ),
+            (
+                contract_id.clone(),
+                (symbol!("COUNTER"), symbol!("increment")).into_val(&env),
+                2u32.into_val(&env)
+            ),
+            (
+                contract_id.clone(),
+                (symbol!("COUNTER"), symbol!("increment")).into_val(&env),
+                3u32.into_val(&env)
+            ),
+        ]
+    );
 }
