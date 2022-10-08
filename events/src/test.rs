@@ -2,7 +2,6 @@
 
 use super::*;
 use soroban_sdk::{
-    symbol,
     testutils::{Events, Logger},
     Env,
 };
@@ -18,8 +17,6 @@ fn test() {
     assert_eq!(client.increment(), 1);
     assert_eq!(client.increment(), 2);
     assert_eq!(client.increment(), 3);
-
-    std::println!("{}", env.logger().all().join("\n"));
 
     env.events().all().iter().map(Result::unwrap).for_each(|e| {
         std::println!(

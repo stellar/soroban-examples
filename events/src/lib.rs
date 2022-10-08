@@ -15,7 +15,6 @@ impl IncrementContract {
             .get(COUNTER)
             .unwrap_or(Ok(0)) // If no value set, assume 0.
             .unwrap(); // Panic if the value of COUNTER is not u32.
-        log!(&env, "count: {}", count);
 
         // Increment the count.
         count += 1;
