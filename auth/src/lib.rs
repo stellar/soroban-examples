@@ -14,7 +14,8 @@ impl IncrementContract {
     pub fn increment(env: Env) -> u32 {
         // Construct a key for the data being stored. Use an enum to set the
         // contract up well for adding other types of data to be stored.
-        let key = DataKey::Counter(env.invoker());
+        let invoker = env.invoker();
+        let key = DataKey::Counter(invoker);
 
         // Get the current count for the invoker.
         let mut count: u32 = env
