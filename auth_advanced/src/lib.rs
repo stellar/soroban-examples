@@ -58,15 +58,15 @@ impl IncrementContract {
     }
 }
 
-fn verify_and_consume_nonce(env: &Env, auth: &Signature, nonce: &BigInt) {
-    match auth {
+fn verify_and_consume_nonce(env: &Env, sig: &Signature, nonce: &BigInt) {
+    match sig {
         Signature::Invoker => {
             if BigInt::zero(env) != nonce {
                 panic_error!(env, Error::IncorrectNonceForInvoker);
             }
         }
         Signature::Ed25519(_) | Signature::Account(_) => {
-            let id = auth.identifier(env);
+            let id = sig.identifier(env);
             if nonce != &get_nonce(env, &id) {
                 panic_error!(env, Error::IncorrectNonce);
             }
