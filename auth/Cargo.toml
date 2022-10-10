@@ -1,0 +1,17 @@
+[package]
+name = "soroban-auth-contract"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+testutils = ["soroban-sdk/testutils"]
+
+[dependencies]
+soroban-sdk = "0.1.0"
+
+[dev_dependencies]
+soroban-sdk = { version = "0.1.0", features = ["testutils"] }

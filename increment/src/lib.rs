@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contractimpl, symbol, Env, Symbol};
+use soroban_sdk::{contractimpl, log, symbol, Env, Symbol};
 
 const COUNTER: Symbol = symbol!("COUNTER");
 
@@ -11,16 +11,17 @@ impl IncrementContract {
     pub fn increment(env: Env) -> u32 {
         // Get the current count.
         let mut count: u32 = env
-            .contract_data()
+            .data()
             .get(COUNTER)
             .unwrap_or(Ok(0)) // If no value set, assume 0.
             .unwrap(); // Panic if the value of COUNTER is not u32.
+        log!(&env, "count: {}", count);
 
         // Increment the count.
         count += 1;
 
         // Save the count.
-        env.contract_data().set(COUNTER, count);
+        env.data().set(COUNTER, count);
 
         // Return the count to the caller.
         count

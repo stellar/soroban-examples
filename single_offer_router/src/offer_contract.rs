@@ -1,13 +1,15 @@
 use soroban_sdk::{BytesN, Env};
 
-#[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
-pub const OFFER_CONTRACT: &[u8] = include_bytes!("../../soroban_single_offer_contract.wasm");
+soroban_sdk::contractimport!(
+    file = "../target/wasm32-unknown-unknown/release/soroban_single_offer_contract.wasm"
+);
+pub type SingleOfferClient = Client;
 
 #[cfg(not(all(any(test, feature = "testutils"), not(feature = "token-wasm"))))]
 pub fn create_contract(e: &Env, salt: &BytesN<32>) -> BytesN<32> {
     use soroban_sdk::Bytes;
-    let bin = Bytes::from_slice(e, OFFER_CONTRACT);
-    e.deployer().from_current_contract(salt).deploy(bin)
+    let bin = Bytes::from_slice(e, WASM);
+    e.deployer().with_current_contract(salt).deploy(bin)
 }
 
 #[cfg(all(any(test, feature = "testutils"), not(feature = "token-wasm")))]

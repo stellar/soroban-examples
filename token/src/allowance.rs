@@ -4,7 +4,7 @@ use soroban_sdk::{BigInt, Env};
 
 pub fn read_allowance(e: &Env, from: Identifier, spender: Identifier) -> BigInt {
     let key = DataKey::Allowance(AllowanceDataKey { from, spender });
-    if let Some(allowance) = e.contract_data().get(key) {
+    if let Some(allowance) = e.data().get(key) {
         allowance.unwrap()
     } else {
         BigInt::zero(e)
@@ -13,7 +13,7 @@ pub fn read_allowance(e: &Env, from: Identifier, spender: Identifier) -> BigInt 
 
 pub fn write_allowance(e: &Env, from: Identifier, spender: Identifier, amount: BigInt) {
     let key = DataKey::Allowance(AllowanceDataKey { from, spender });
-    e.contract_data().set(key, amount);
+    e.data().set(key, amount);
 }
 
 pub fn spend_allowance(e: &Env, from: Identifier, spender: Identifier, amount: BigInt) {

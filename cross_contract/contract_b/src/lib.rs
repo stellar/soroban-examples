@@ -13,7 +13,7 @@ pub struct ContractB;
 #[contractimpl]
 impl ContractB {
     pub fn add_with(env: Env, contract_id: BytesN<32>, x: u32, y: u32) -> u32 {
-        let client = contract_a::ContractClient::new(&env, contract_id);
+        let client = contract_a::Client::new(&env, contract_id);
         client.add(&x, &y)
     }
 }

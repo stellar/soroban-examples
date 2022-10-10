@@ -2,12 +2,15 @@
 resolver = "2"
 
 members = [
-    "authorization",
     "hello_world",
     "increment",
+    "auth",
+    "auth_advanced",
     "custom_types",
     "cross_contract/contract_a",
     "cross_contract/contract_b",
+    "deployer/contract",
+    "deployer/deployer",
     "liquidity_pool",
     "liquidity_pool_router",
     "single_offer",
@@ -16,8 +19,14 @@ members = [
     "events",
     "timelock",
     "token",
+    "logging",
+    "errors",
     "wallet",
 ]
+
+[profile.release-with-logs]
+inherits = "release"
+debug-assertions = true
 
 [profile.release]
 opt-level = "z"
@@ -30,12 +39,14 @@ codegen-units = 1
 lto = true
 
 [patch.crates-io]
-soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "06e73968" }
-soroban-auth = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "06e73968" }
-soroban-sdk-macros = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "06e73968" }
-soroban-env-common = { git = "https://github.com/stellar/rs-soroban-env", rev = "c8bc71d" }
-soroban-env-guest = { git = "https://github.com/stellar/rs-soroban-env", rev = "c8bc71d" }
-soroban-env-host = { git = "https://github.com/stellar/rs-soroban-env", rev = "c8bc71d" }
-soroban-env-macros = { git = "https://github.com/stellar/rs-soroban-env", rev = "c8bc71d" }
-soroban-native-sdk-macros = { git = "https://github.com/stellar/rs-soroban-env", rev = "c8bc71d" }
-stellar-xdr = { git = "https://github.com/stellar/rs-stellar-xdr", rev = "fee9a43" }
+soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "3992556b" }
+soroban-spec = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "3992556b" }
+soroban-auth = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "3992556b" }
+soroban-sdk-macros = { git = "https://github.com/stellar/rs-soroban-sdk", rev = "3992556b" }
+soroban-env-common = { git = "https://github.com/stellar/rs-soroban-env", rev = "91cf595" }
+soroban-env-guest = { git = "https://github.com/stellar/rs-soroban-env", rev = "91cf595" }
+soroban-env-host = { git = "https://github.com/stellar/rs-soroban-env", rev = "91cf595" }
+soroban-env-macros = { git = "https://github.com/stellar/rs-soroban-env", rev = "91cf595" }
+soroban-native-sdk-macros = { git = "https://github.com/stellar/rs-soroban-env", rev = "91cf595" }
+stellar-xdr = { git = "https://github.com/stellar/rs-stellar-xdr", rev = "5cca712b" }
+wasmi = { package = "soroban-wasmi", git = "https://github.com/stellar/wasmi", rev = "d1ec0036" }
