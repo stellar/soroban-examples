@@ -2,7 +2,6 @@
 
 use super::*;
 use rand::{thread_rng, RngCore};
-use soroban_auth::Identifier;
 use soroban_sdk::testutils::{Accounts, Ledger, LedgerInfo};
 use soroban_sdk::{vec, AccountId, Env, IntoVal};
 use token::{Client as TokenClient, TokenMetadata};
@@ -97,7 +96,7 @@ impl ClaimableBalanceTest {
         );
     }
 
-    fn deposit(&self, amount: u32, claimants: &Vec<Identifier>, time_bound: TimeBound) {
+    fn deposit(&self, amount: u32, claimants: &Vec<AccountId>, time_bound: TimeBound) {
         self.call_deposit(
             &self.deposit_user,
             &self.token_id,
@@ -120,22 +119,16 @@ impl ClaimableBalanceTest {
         account_id: &AccountId,
         token: &BytesN<32>,
         amount: &BigInt,
-        claimants: &Vec<Identifier>,
+        claimants: &Vec<AccountId>,
         time_bound: &TimeBound,
     ) {
-        self.contract.with_source_account(account_id).deposit(
-            &Signature::Invoker,
-            token,
-            amount,
-            claimants,
-            time_bound,
-        );
+        self.contract
+            .with_source_account(account_id)
+            .deposit(token, amount, claimants, time_bound);
     }
 
     fn call_claim(&self, account_id: &AccountId) {
-        self.contract
-            .with_source_account(account_id)
-            .claim(&Signature::Invoker);
+        self.contract.with_source_account(account_id).claim();
     }
 }
 
@@ -147,8 +140,8 @@ fn test_deposit_and_claim() {
         800,
         &vec![
             &test.env,
-            test.account_id_to_identifier(&test.claim_users[0]),
-            test.account_id_to_identifier(&test.claim_users[1]),
+            test.claim_users[0].clone(),
+            test.claim_users[1].clone(),
         ],
         TimeBound {
             kind: TimeBoundKind::Before,
@@ -195,10 +188,7 @@ fn test_deposit_above_allowance_not_possible() {
     test.approve_deposit(800);
     test.deposit(
         801,
-        &vec![
-            &test.env,
-            test.account_id_to_identifier(&test.claim_users[0]),
-        ],
+        &vec![&test.env, test.claim_users[0].clone()],
         TimeBound {
             kind: TimeBoundKind::Before,
             timestamp: 12346,
@@ -213,10 +203,7 @@ fn test_double_deposit_not_possible() {
     test.approve_deposit(800);
     test.deposit(
         1,
-        &vec![
-            &test.env,
-            test.account_id_to_identifier(&test.claim_users[0]),
-        ],
+        &vec![&test.env, test.claim_users[0].clone()],
         TimeBound {
             kind: TimeBoundKind::Before,
             timestamp: 12346,
@@ -224,10 +211,7 @@ fn test_double_deposit_not_possible() {
     );
     test.deposit(
         1,
-        &vec![
-            &test.env,
-            test.account_id_to_identifier(&test.claim_users[0]),
-        ],
+        &vec![&test.env, test.claim_users[0].clone()],
         TimeBound {
             kind: TimeBoundKind::Before,
             timestamp: 12346,
@@ -244,8 +228,8 @@ fn test_unauthorized_claim_not_possible() {
         800,
         &vec![
             &test.env,
-            test.account_id_to_identifier(&test.claim_users[0]),
-            test.account_id_to_identifier(&test.claim_users[1]),
+            test.claim_users[0].clone(),
+            test.claim_users[1].clone(),
         ],
         TimeBound {
             kind: TimeBoundKind::Before,
@@ -263,10 +247,7 @@ fn test_out_of_time_bound_claim_not_possible() {
     test.approve_deposit(800);
     test.deposit(
         800,
-        &vec![
-            &test.env,
-            test.account_id_to_identifier(&test.claim_users[0]),
-        ],
+        &vec![&test.env, test.claim_users[0].clone()],
         TimeBound {
             kind: TimeBoundKind::After,
             timestamp: 12346,
@@ -283,10 +264,7 @@ fn test_double_claim_not_possible() {
     test.approve_deposit(800);
     test.deposit(
         800,
-        &vec![
-            &test.env,
-            test.account_id_to_identifier(&test.claim_users[0]),
-        ],
+        &vec![&test.env, test.claim_users[0].clone()],
         TimeBound {
             kind: TimeBoundKind::Before,
             timestamp: 12346,
@@ -309,10 +287,7 @@ fn test_deposit_after_claim_not_possible() {
     test.approve_deposit(1000);
     test.deposit(
         800,
-        &vec![
-            &test.env,
-            test.account_id_to_identifier(&test.claim_users[0]),
-        ],
+        &vec![&test.env, test.claim_users[0].clone()],
         TimeBound {
             kind: TimeBoundKind::After,
             timestamp: 12344,
@@ -327,10 +302,7 @@ fn test_deposit_after_claim_not_possible() {
     );
     test.deposit(
         200,
-        &vec![
-            &test.env,
-            test.account_id_to_identifier(&test.claim_users[0]),
-        ],
+        &vec![&test.env, test.claim_users[0].clone()],
         TimeBound {
             kind: TimeBoundKind::After,
             timestamp: 12344,
