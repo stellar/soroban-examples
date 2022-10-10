@@ -96,7 +96,7 @@ impl ClaimableBalanceTest {
         );
     }
 
-    fn deposit(&self, amount: u32, claimants: &Vec<AccountId>, time_bound: TimeBound) {
+    fn deposit(&self, amount: u32, claimants: &Vec<Identifier>, time_bound: TimeBound) {
         self.call_deposit(
             &self.deposit_user,
             &self.token_id,
@@ -119,7 +119,7 @@ impl ClaimableBalanceTest {
         account_id: &AccountId,
         token: &BytesN<32>,
         amount: &BigInt,
-        claimants: &Vec<AccountId>,
+        claimants: &Vec<Identifier>,
         time_bound: &TimeBound,
     ) {
         self.contract
@@ -140,8 +140,8 @@ fn test_deposit_and_claim() {
         800,
         &vec![
             &test.env,
-            test.claim_users[0].clone(),
-            test.claim_users[1].clone(),
+            test.account_id_to_identifier(&test.claim_users[0]),
+            test.account_id_to_identifier(&test.claim_users[1]),
         ],
         TimeBound {
             kind: TimeBoundKind::Before,
@@ -188,7 +188,10 @@ fn test_deposit_above_allowance_not_possible() {
     test.approve_deposit(800);
     test.deposit(
         801,
-        &vec![&test.env, test.claim_users[0].clone()],
+        &vec![
+            &test.env,
+            test.account_id_to_identifier(&test.claim_users[0]),
+        ],
         TimeBound {
             kind: TimeBoundKind::Before,
             timestamp: 12346,
@@ -203,7 +206,10 @@ fn test_double_deposit_not_possible() {
     test.approve_deposit(800);
     test.deposit(
         1,
-        &vec![&test.env, test.claim_users[0].clone()],
+        &vec![
+            &test.env,
+            test.account_id_to_identifier(&test.claim_users[0]),
+        ],
         TimeBound {
             kind: TimeBoundKind::Before,
             timestamp: 12346,
@@ -211,7 +217,10 @@ fn test_double_deposit_not_possible() {
     );
     test.deposit(
         1,
-        &vec![&test.env, test.claim_users[0].clone()],
+        &vec![
+            &test.env,
+            test.account_id_to_identifier(&test.claim_users[0]),
+        ],
         TimeBound {
             kind: TimeBoundKind::Before,
             timestamp: 12346,
@@ -228,8 +237,8 @@ fn test_unauthorized_claim_not_possible() {
         800,
         &vec![
             &test.env,
-            test.claim_users[0].clone(),
-            test.claim_users[1].clone(),
+            test.account_id_to_identifier(&test.claim_users[0]),
+            test.account_id_to_identifier(&test.claim_users[1]),
         ],
         TimeBound {
             kind: TimeBoundKind::Before,
@@ -247,7 +256,10 @@ fn test_out_of_time_bound_claim_not_possible() {
     test.approve_deposit(800);
     test.deposit(
         800,
-        &vec![&test.env, test.claim_users[0].clone()],
+        &vec![
+            &test.env,
+            test.account_id_to_identifier(&test.claim_users[0]),
+        ],
         TimeBound {
             kind: TimeBoundKind::After,
             timestamp: 12346,
@@ -264,7 +276,10 @@ fn test_double_claim_not_possible() {
     test.approve_deposit(800);
     test.deposit(
         800,
-        &vec![&test.env, test.claim_users[0].clone()],
+        &vec![
+            &test.env,
+            test.account_id_to_identifier(&test.claim_users[0]),
+        ],
         TimeBound {
             kind: TimeBoundKind::Before,
             timestamp: 12346,
@@ -287,7 +302,10 @@ fn test_deposit_after_claim_not_possible() {
     test.approve_deposit(1000);
     test.deposit(
         800,
-        &vec![&test.env, test.claim_users[0].clone()],
+        &vec![
+            &test.env,
+            test.account_id_to_identifier(&test.claim_users[0]),
+        ],
         TimeBound {
             kind: TimeBoundKind::After,
             timestamp: 12344,
@@ -302,7 +320,10 @@ fn test_deposit_after_claim_not_possible() {
     );
     test.deposit(
         200,
-        &vec![&test.env, test.claim_users[0].clone()],
+        &vec![
+            &test.env,
+            test.account_id_to_identifier(&test.claim_users[0]),
+        ],
         TimeBound {
             kind: TimeBoundKind::After,
             timestamp: 12344,

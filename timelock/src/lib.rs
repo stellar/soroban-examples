@@ -3,13 +3,12 @@
 //! https://developers.stellar.org/docs/glossary/claimable-balance).
 //! The contract allows to deposit some amount of token and allow another
 //! account(s) claim it before or after provided time point.
-//! For simplicity, the contract only operates on classic account ids and only
-//! supports invoker-based auth.
+//! For simplicity, the contract only supports invoker-based auth.
 #![no_std]
 #[cfg(feature = "testutils")]
 extern crate std;
 
-use soroban_sdk::{contractimpl, contracttype, AccountId, BigInt, BytesN, Env, Vec};
+use soroban_sdk::{contractimpl, contracttype, Address, BigInt, BytesN, Env, Vec};
 
 mod token {
     soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
@@ -43,7 +42,7 @@ pub struct TimeBound {
 pub struct ClaimableBalance {
     pub token: BytesN<32>,
     pub amount: BigInt,
-    pub claimants: Vec<AccountId>,
+    pub claimants: Vec<Identifier>,
     pub time_bound: TimeBound,
 }
 
@@ -74,7 +73,7 @@ impl ClaimableBalanceContract {
         env: Env,
         token: BytesN<32>,
         amount: BigInt,
-        claimants: Vec<AccountId>,
+        claimants: Vec<Identifier>,
         time_bound: TimeBound,
     ) {
         if claimants.len() > 10 {
@@ -84,9 +83,9 @@ impl ClaimableBalanceContract {
             panic!("contract has been already initialized");
         }
 
-        let from_id = env.source_account();
+        let from_id = address_to_id(env.invoker());
         // Transfer token to this contract address.
-        transfer_from_account_to_contract(&env, &token, from_id, &amount);
+        transfer_from_account_to_contract(&env, &token, &from_id, &amount);
         // Store all the necessary info to allow one of the claimants to claim it.
         env.data().set(
             DataKey::Balance,
@@ -111,7 +110,7 @@ impl ClaimableBalanceContract {
             panic!("time predicate is not fulfilled");
         }
 
-        let claimant_id = env.source_account();
+        let claimant_id = address_to_id(env.invoker());
         let claimants = &claimable_balance.claimants;
         if !claimants.contains(&claimant_id) {
             panic!("claimant is not allowed to claim this balance");
@@ -138,17 +137,24 @@ fn get_contract_id(e: &Env) -> Identifier {
     Identifier::Contract(e.get_current_contract().into())
 }
 
+fn address_to_id(address: Address) -> Identifier {
+    match address {
+        Address::Account(a) => Identifier::Account(a),
+        Address::Contract(c) => Identifier::Contract(c),
+    }
+}
+
 fn transfer_from_account_to_contract(
     e: &Env,
     token_id: &BytesN<32>,
-    from: AccountId,
+    from: &Identifier,
     amount: &BigInt,
 ) {
     let client = token::Client::new(&e, token_id);
     client.xfer_from(
         &Signature::Invoker,
         &BigInt::zero(e),
-        &Identifier::Account(from),
+        &from,
         &get_contract_id(e),
         &amount,
     );
@@ -157,16 +163,11 @@ fn transfer_from_account_to_contract(
 fn transfer_from_contract_to_account(
     e: &Env,
     token_id: &BytesN<32>,
-    to: &AccountId,
+    to: &Identifier,
     amount: &BigInt,
 ) {
     let client = token::Client::new(&e, token_id);
-    client.xfer(
-        &Signature::Invoker,
-        &BigInt::zero(&e),
-        &Identifier::Account(to.clone()),
-        amount,
-    );
+    client.xfer(&Signature::Invoker, &BigInt::zero(&e), to, amount);
 }
 
 mod test;
