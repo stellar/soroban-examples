@@ -938,6 +938,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "soroban-wallet-contract"
+version = "0.0.0"
+dependencies = [
+ "ed25519-dalek",
+ "rand 0.7.3",
+ "soroban-auth",
+ "soroban-sdk",
+]
+
+[[package]]
 name = "soroban-wasmi"
 version = "0.16.0-soroban1"
 source = "git+https://github.com/stellar/wasmi?rev=d1ec0036#d1ec0036a002a14227b0b09117f0dc6182ae19e4"
