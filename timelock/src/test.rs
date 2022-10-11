@@ -2,7 +2,6 @@
 
 use super::*;
 use rand::{thread_rng, RngCore};
-use soroban_auth::Identifier;
 use soroban_sdk::testutils::{Accounts, Ledger, LedgerInfo};
 use soroban_sdk::{vec, AccountId, Env, IntoVal};
 use token::{Client as TokenClient, TokenMetadata};
@@ -123,19 +122,13 @@ impl ClaimableBalanceTest {
         claimants: &Vec<Identifier>,
         time_bound: &TimeBound,
     ) {
-        self.contract.with_source_account(account_id).deposit(
-            &Signature::Invoker,
-            token,
-            amount,
-            claimants,
-            time_bound,
-        );
+        self.contract
+            .with_source_account(account_id)
+            .deposit(token, amount, claimants, time_bound);
     }
 
     fn call_claim(&self, account_id: &AccountId) {
-        self.contract
-            .with_source_account(account_id)
-            .claim(&Signature::Invoker);
+        self.contract.with_source_account(account_id).claim();
     }
 }
 
