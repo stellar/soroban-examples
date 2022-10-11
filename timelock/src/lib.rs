@@ -8,7 +8,7 @@
 #[cfg(feature = "testutils")]
 extern crate std;
 
-use soroban_sdk::{contractimpl, contracttype, Address, BigInt, BytesN, Env, Vec};
+use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, Vec};
 
 mod token {
     soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
@@ -83,9 +83,8 @@ impl ClaimableBalanceContract {
             panic!("contract has been already initialized");
         }
 
-        let from_id = address_to_id(env.invoker());
         // Transfer token to this contract address.
-        transfer_from_account_to_contract(&env, &token, &from_id, &amount);
+        transfer_from_account_to_contract(&env, &token, &env.invoker().into(), &amount);
         // Store all the necessary info to allow one of the claimants to claim it.
         env.data().set(
             DataKey::Balance,
@@ -110,7 +109,7 @@ impl ClaimableBalanceContract {
             panic!("time predicate is not fulfilled");
         }
 
-        let claimant_id = address_to_id(env.invoker());
+        let claimant_id = env.invoker().into();
         let claimants = &claimable_balance.claimants;
         if !claimants.contains(&claimant_id) {
             panic!("claimant is not allowed to claim this balance");
@@ -135,13 +134,6 @@ fn is_initialized(env: &Env) -> bool {
 
 fn get_contract_id(e: &Env) -> Identifier {
     Identifier::Contract(e.get_current_contract().into())
-}
-
-fn address_to_id(address: Address) -> Identifier {
-    match address {
-        Address::Account(a) => Identifier::Account(a),
-        Address::Contract(c) => Identifier::Contract(c),
-    }
 }
 
 fn transfer_from_account_to_contract(
