@@ -1,12 +1,14 @@
 #![cfg(test)]
 
+use core::fmt::Debug;
+
 use super::*;
 use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
 use soroban_auth::{Ed25519Signature, Identifier, SignaturePayload, SignaturePayloadV0};
 use soroban_sdk::testutils::ed25519::Sign;
 use soroban_sdk::testutils::Accounts;
-use soroban_sdk::{vec, AccountId, Env, IntoVal, RawVal, Symbol, Vec};
+use soroban_sdk::{vec, AccountId, Env, IntoVal, RawVal, Status, Symbol, Vec};
 use token::{Client as TokenClient, TokenMetadata};
 
 fn generate_keypair() -> Keypair {
@@ -80,6 +82,15 @@ struct WalletTest {
     contract_id: Identifier,
 }
 
+fn extract_error<T, U: Debug>(
+    res: Result<Result<T, U>, Result<Error, Status>>,
+) -> Result<T, Error> {
+    match res {
+        Ok(v) => Ok(v.unwrap()),
+        Err(e) => Err(e.unwrap()),
+    }
+}
+
 impl WalletTest {
     fn setup() -> Self {
         let env: Env = Default::default();
@@ -107,7 +118,7 @@ impl WalletTest {
         }
     }
 
-    fn initialize(&self, admin_weights: [u32; 3], threshold: u32) {
+    fn initialize(&self, admin_weights: [u32; 3], threshold: u32) -> Result<(), Error> {
         let mut admins = vec![&self.env];
         for i in 0..self.wallet_admins.len() {
             admins.push_back(Admin {
@@ -116,7 +127,7 @@ impl WalletTest {
             });
         }
 
-        self.contract.initialize(&admins, &threshold);
+        extract_error(self.contract.try_initialize(&admins, &threshold))
     }
 
     fn signer_to_id(&self, signer: &Keypair) -> Identifier {
@@ -135,13 +146,12 @@ impl WalletTest {
         );
     }
 
-    fn pay(&self, signers: &[&Keypair], payment_id: i64, payment: Payment) -> bool {
+    fn pay(&self, signers: &[&Keypair], payment_id: i64, payment: Payment) -> Result<bool, Error> {
         let mut signatures = vec![&self.env];
         for signer in signers {
             signatures.push_back(self.sign_pay(&signer, payment_id, &payment));
         }
-
-        self.contract.pay(&signatures, &payment_id, &payment)
+        extract_error(self.contract.try_pay(&signatures, &payment_id, &payment))
     }
 
     fn sign_pay(&self, signer: &Keypair, payment_id: i64, payment: &Payment) -> Signature {
@@ -158,7 +168,7 @@ impl WalletTest {
 #[test]
 fn test_immediate_payment() {
     let test = WalletTest::setup();
-    test.initialize([50, 50, 100], 100);
+    test.initialize([50, 50, 100], 100).unwrap();
 
     test.add_wallet_balance(&test.token, 1000);
     test.add_wallet_balance(&test.token_2, 2000);
@@ -174,7 +184,7 @@ fn test_immediate_payment() {
                 amount: BigInt::from_u32(&test.env, 300),
             },
         ),
-        true
+        Ok(true)
     );
 
     assert_eq!(
@@ -193,7 +203,7 @@ fn test_immediate_payment() {
                 amount: BigInt::from_u32(&test.env, 1500),
             },
         ),
-        true
+        Ok(true)
     );
 
     assert_eq!(
@@ -205,7 +215,7 @@ fn test_immediate_payment() {
 #[test]
 fn test_delayed_payment() {
     let test = WalletTest::setup();
-    test.initialize([30, 30, 30], 90);
+    test.initialize([30, 30, 30], 90).unwrap();
 
     let payment = Payment {
         receiver: test.payment_receiver.clone(),
@@ -219,7 +229,7 @@ fn test_delayed_payment() {
             123,
             payment.clone()
         ),
-        false
+        Ok(false)
     );
 
     assert_eq!(
@@ -232,7 +242,7 @@ fn test_delayed_payment() {
 
     assert_eq!(
         test.pay(&[&test.wallet_admins[2]], 123, payment.clone()),
-        true
+        Ok(true)
     );
     assert_eq!(
         test.token.balance(&test.payment_receiver),
@@ -243,7 +253,7 @@ fn test_delayed_payment() {
 #[test]
 fn test_mixed_payments() {
     let test = WalletTest::setup();
-    test.initialize([30, 30, 30], 90);
+    test.initialize([30, 30, 30], 90).unwrap();
 
     let delayed_payment_1 = Payment {
         receiver: test.payment_receiver.clone(),
@@ -252,7 +262,7 @@ fn test_mixed_payments() {
     };
     assert_eq!(
         test.pay(&[&test.wallet_admins[0]], 111, delayed_payment_1.clone(),),
-        false
+        Ok(false)
     );
 
     test.add_wallet_balance(&test.token, 1000);
@@ -270,7 +280,7 @@ fn test_mixed_payments() {
                 amount: BigInt::from_u32(&test.env, 1000),
             },
         ),
-        true
+        Ok(true)
     );
     assert_eq!(
         test.token.balance(&test.payment_receiver),
@@ -284,12 +294,12 @@ fn test_mixed_payments() {
     };
     assert_eq!(
         test.pay(&[&test.wallet_admins[1]], 222, delayed_payment_2.clone()),
-        false
+        Ok(false)
     );
 
     assert_eq!(
         test.pay(&[&test.wallet_admins[2]], 111, delayed_payment_1.clone()),
-        false
+        Ok(false)
     );
     test.add_wallet_balance(&test.token_2, 2000);
     assert_eq!(
@@ -298,7 +308,7 @@ fn test_mixed_payments() {
             222,
             delayed_payment_2.clone()
         ),
-        true
+        Ok(true)
     );
     assert_eq!(
         test.token_2.balance(&test.payment_receiver),
@@ -308,7 +318,7 @@ fn test_mixed_payments() {
     test.add_wallet_balance(&test.token, 500);
     assert_eq!(
         test.pay(&[&test.wallet_admins[1]], 111, delayed_payment_1.clone()),
-        true
+        Ok(true)
     );
 
     assert_eq!(
@@ -318,56 +328,101 @@ fn test_mixed_payments() {
 }
 
 #[test]
-#[should_panic(expected = "contract has already been initialized")]
-fn test_double_initialization() {
+fn test_double_initialization_returns_error() {
     let test = WalletTest::setup();
-    test.initialize([30, 30, 30], 50);
-    test.initialize([30, 30, 30], 50);
-}
-
-#[test]
-#[should_panic(expected = "threshold has to be non-zero")]
-fn test_non_zero_threshold() {
-    let test = WalletTest::setup();
-    test.initialize([30, 30, 30], 0);
-}
-
-#[test]
-#[should_panic(expected = "admin weight is lower than threshold")]
-fn test_too_high_threshold() {
-    let test = WalletTest::setup();
-    test.initialize([1, 2, 3], 7);
-}
-
-#[test]
-#[should_panic(expected = "weight should be non-zero")]
-fn test_zero_weight() {
-    let test = WalletTest::setup();
-    test.initialize([1, 0, 3], 1);
-}
-
-#[test]
-#[should_panic(expected = "HostStorageError")]
-fn test_unauthorized_signer() {
-    let test = WalletTest::setup();
-    test.initialize([2, 2, 2], 2);
-    let non_wallet_admin = generate_keypair();
-    test.pay(
-        &[&test.wallet_admins[1], &non_wallet_admin],
-        222,
-        Payment {
-            receiver: test.payment_receiver.clone(),
-            token: test.token_id.clone(),
-            amount: BigInt::from_u32(&test.env, 300),
-        },
+    test.initialize([30, 30, 30], 50).unwrap();
+    assert_eq!(
+        test.initialize([30, 30, 30], 50),
+        Err(Error::AlreadyInitialized)
     );
 }
 
 #[test]
-#[should_panic(expected = "stored payment doesn't match new payment with same id")]
-fn test_divergent_delayed_payment() {
+fn test_invalid_threshold_values_return_error() {
     let test = WalletTest::setup();
-    test.initialize([2, 2, 2], 4);
+    // 0 threshold
+    assert_eq!(
+        test.initialize([30, 30, 30], 0),
+        Err(Error::InvalidThreshold)
+    );
+    // Threshold is higher than the sum of admin weights
+    assert_eq!(
+        test.initialize([1, 2, 3], 7),
+        Err(Error::AdminWeightsBelowThreshold)
+    );
+    // Threshold is too high
+    assert_eq!(
+        test.initialize([1000, 1000, 1000], 2001),
+        Err(Error::InvalidThreshold)
+    );
+}
+
+#[test]
+fn test_invalid_admin_weights_return_error() {
+    let test = WalletTest::setup();
+    // 0 weight
+    assert_eq!(
+        test.initialize([1, 0, 3], 1),
+        Err(Error::InvalidAdminWeight)
+    );
+    // Too high weight
+    assert_eq!(
+        test.initialize([1, 2, 101], 1),
+        Err(Error::InvalidAdminWeight)
+    );
+    // Large values
+    assert_eq!(
+        test.initialize([u32::MAX, u32::MAX, u32::MAX], 1),
+        Err(Error::InvalidAdminWeight)
+    );
+}
+
+#[test]
+fn test_invalid_admin_count_returns_error() {
+    let test = WalletTest::setup();
+    let mut admins = vec![&test.env];
+
+    assert_eq!(
+        extract_error(test.contract.try_initialize(&admins, &10)),
+        Err(Error::InvalidAdminCount)
+    );
+
+    for _ in 0..21 {
+        admins.push_back(Admin {
+            id: test.signer_to_id(&generate_keypair()),
+            weight: 5,
+        });
+    }
+
+    assert_eq!(
+        extract_error(test.contract.try_initialize(&admins, &10)),
+        Err(Error::InvalidAdminCount)
+    );
+}
+
+#[test]
+fn test_unauthorized_signer_returns_error() {
+    let test = WalletTest::setup();
+    test.initialize([2, 2, 2], 2).unwrap();
+    let non_wallet_admin = generate_keypair();
+    assert_eq!(
+        test.pay(
+            &[&test.wallet_admins[1], &non_wallet_admin],
+            222,
+            Payment {
+                receiver: test.payment_receiver.clone(),
+                token: test.token_id.clone(),
+                amount: BigInt::from_u32(&test.env, 300),
+            },
+        ),
+        Err(Error::UnauthorizedSigner)
+    );
+}
+
+#[test]
+fn test_divergent_delayed_payment_returns_error() {
+    let test = WalletTest::setup();
+    test.initialize([2, 2, 2], 4).unwrap();
     test.add_wallet_balance(&test.token, 1000);
 
     assert_eq!(
@@ -380,25 +435,27 @@ fn test_divergent_delayed_payment() {
                 amount: BigInt::from_u32(&test.env, 300),
             },
         ),
-        false
+        Ok(false)
     );
 
-    test.pay(
-        &[&test.wallet_admins[0]],
-        222,
-        Payment {
-            receiver: test.payment_receiver.clone(),
-            token: test.token_id.clone(),
-            amount: BigInt::from_u32(&test.env, 299),
-        },
+    assert_eq!(
+        test.pay(
+            &[&test.wallet_admins[0]],
+            222,
+            Payment {
+                receiver: test.payment_receiver.clone(),
+                token: test.token_id.clone(),
+                amount: BigInt::from_u32(&test.env, 299),
+            },
+        ),
+        Err(Error::StoredPaymentMismatch)
     );
 }
 
 #[test]
-#[should_panic(expected = "HostStorageError")]
 fn test_payment_reexecution() {
     let test = WalletTest::setup();
-    test.initialize([2, 2, 2], 2);
+    test.initialize([2, 2, 2], 2).unwrap();
     let payment = Payment {
         receiver: test.payment_receiver.clone(),
         token: test.token_id.clone(),
@@ -408,17 +465,19 @@ fn test_payment_reexecution() {
 
     assert_eq!(
         test.pay(&[&test.wallet_admins[1]], 222, payment.clone()),
-        true
+        Ok(true)
     );
 
-    test.pay(&[&test.wallet_admins[0]], 222, payment.clone());
+    assert_eq!(
+        test.pay(&[&test.wallet_admins[0]], 222, payment.clone()),
+        Err(Error::PaymentAlreadyExecuted)
+    );
 }
 
 #[test]
-#[should_panic(expected = "one of the signers has already signed this payment")]
 fn test_duplicate_signers() {
     let test = WalletTest::setup();
-    test.initialize([2, 2, 2], 6);
+    test.initialize([2, 2, 2], 6).unwrap();
     let payment = Payment {
         receiver: test.payment_receiver.clone(),
         token: test.token_id.clone(),
@@ -431,12 +490,15 @@ fn test_duplicate_signers() {
             222,
             payment.clone()
         ),
-        false
+        Ok(false)
     );
 
-    test.pay(
-        &[&test.wallet_admins[2], &test.wallet_admins[0]],
-        222,
-        payment.clone(),
+    assert_eq!(
+        test.pay(
+            &[&test.wallet_admins[2], &test.wallet_admins[0]],
+            222,
+            payment.clone(),
+        ),
+        Err(Error::DuplicateSigner)
     );
 }

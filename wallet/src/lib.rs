@@ -6,7 +6,9 @@
 extern crate std;
 
 use soroban_auth::{verify, Identifier, Signature};
-use soroban_sdk::{contractimpl, contracttype, map, symbol, vec, BigInt, BytesN, Env, Map, Vec};
+use soroban_sdk::{
+    contracterror, contractimpl, contracttype, map, symbol, vec, BigInt, BytesN, Env, Map, Vec,
+};
 mod token {
     soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
 }
@@ -46,6 +48,23 @@ pub struct Admin {
     pub weight: u32,
 }
 
+#[contracterror]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+#[repr(u32)]
+pub enum Error {
+    // Initialization errors
+    InvalidAdminWeight = 1,
+    AdminWeightsBelowThreshold = 2,
+    InvalidAdminCount = 3,
+    InvalidThreshold = 4,
+    AlreadyInitialized = 5,
+    // Payment errors
+    StoredPaymentMismatch = 6,
+    DuplicateSigner = 7,
+    UnauthorizedSigner = 8,
+    PaymentAlreadyExecuted = 9,
+}
+
 const MAX_ADMINS: u32 = 20;
 const MAX_WEIGHT: u32 = 100;
 
@@ -69,17 +88,17 @@ impl WalletContract {
     // Call `initialize` and supply ids and weights of the admins, as well as the
     // threshold needed to execute payments. The payment may only be executed when
     // unique admins with combined weight exceeding `threshold` have signed it.
-    pub fn initialize(env: Env, admins: Vec<Admin>, threshold: u32) {
-        check_initialization_params(&env, &admins, threshold);
+    pub fn initialize(env: Env, admins: Vec<Admin>, threshold: u32) -> Result<(), Error> {
+        check_initialization_params(&env, &admins, threshold)?;
 
         let mut weight_sum = 0;
         for maybe_admin in admins.iter() {
             let admin = maybe_admin.unwrap();
             if admin.weight == 0 {
-                panic!("weight should be non-zero");
+                return Err(Error::InvalidAdminWeight);
             }
             if admin.weight > MAX_WEIGHT {
-                panic!("too high admin weight");
+                return Err(Error::InvalidAdminWeight);
             }
             weight_sum += admin.weight;
             // Record admin weight (and effectively admin identifier too).
@@ -87,9 +106,10 @@ impl WalletContract {
         }
         // Do a basic sanity check to make sure we don't create a locked wallet.
         if weight_sum < threshold {
-            panic!("admin weight is lower than threshold");
+            return Err(Error::AdminWeightsBelowThreshold);
         }
         env.data().set(DataKey::Threshold, threshold);
+        Ok(())
     }
 
     // Stores a provided payment or executes it when enough signer weight is
@@ -108,9 +128,14 @@ impl WalletContract {
     // Note on replay prevention: this call doesn't need additional replay
     // prevention (nonces) as only the first call of `pay` per signer is
     //  meaningful (all the further calls will just fail).
-    pub fn pay(env: Env, signatures: Vec<Signature>, payment_id: i64, payment: Payment) -> bool {
+    pub fn pay(
+        env: Env,
+        signatures: Vec<Signature>,
+        payment_id: i64,
+        payment: Payment,
+    ) -> Result<bool, Error> {
         let mut weight_sum =
-            validate_and_compute_signature_weight(&env, &signatures, payment_id, &payment);
+            validate_and_compute_signature_weight(&env, &signatures, payment_id, &payment)?;
         let mut is_existing_payment = false;
         let mut signer_ids = vec![&env];
         if let Some(maybe_previous_signers) = env.data().get(&DataKey::PaySigners(payment_id)) {
@@ -120,10 +145,11 @@ impl WalletContract {
             // and that it matches the payment signed by the new signers.
             let stored_payment: Payment = env
                 .data()
-                .get_unchecked(&DataKey::Payment(payment_id))
+                .get(&DataKey::Payment(payment_id))
+                .ok_or(Error::PaymentAlreadyExecuted)?
                 .unwrap();
             if stored_payment != payment {
-                panic!("stored payment doesn't match new payment with same id");
+                return Err(Error::StoredPaymentMismatch);
             }
             let previous_signers: WeightedSigners = maybe_previous_signers.unwrap();
             signer_ids = previous_signers.signers;
@@ -136,7 +162,7 @@ impl WalletContract {
             for maybe_signature in signatures.iter() {
                 let id = maybe_signature.unwrap().identifier(&env);
                 if signer_ids.contains(&id) {
-                    panic!("one of the signers has already signed this payment");
+                    return Err(Error::DuplicateSigner);
                 }
             }
             weight_sum += previous_signers.weight;
@@ -163,32 +189,31 @@ impl WalletContract {
             execute_payment(&env, payment);
             // Remove the payment to mark it executed (signers are still there).
             env.data().remove(&DataKey::Payment(payment_id));
-            return true;
+            return Ok(true);
         }
         if !is_existing_payment {
             env.data().set(DataKey::Payment(payment_id), payment);
         }
 
-        false
+        Ok(false)
     }
 }
 
-fn check_initialization_params(env: &Env, admins: &Vec<Admin>, threshold: u32) {
-    if threshold == 0 {
-        panic!("threshold has to be non-zero");
+fn check_initialization_params(
+    env: &Env,
+    admins: &Vec<Admin>,
+    threshold: u32,
+) -> Result<(), Error> {
+    if threshold == 0 || threshold > MAX_WEIGHT * MAX_ADMINS {
+        return Err(Error::InvalidThreshold);
     }
-    if admins.len() == 0 {
-        panic!("at least one admin needs to be provided");
-    }
-    if admins.len() > MAX_ADMINS {
-        panic!("too many admins");
-    }
-    if threshold > MAX_WEIGHT * MAX_ADMINS {
-        panic!("threshold is too high");
+    if admins.len() == 0 || admins.len() > MAX_ADMINS {
+        return Err(Error::InvalidAdminCount);
     }
     if env.data().has(DataKey::Threshold) {
-        panic!("contract has already been initialized");
+        return Err(Error::AlreadyInitialized);
     }
+    Ok(())
 }
 
 // Performs auth and duplication check on the provided signatures and
@@ -198,7 +223,7 @@ fn validate_and_compute_signature_weight(
     signatures: &Vec<Signature>,
     payment_id: i64,
     payment: &Payment,
-) -> u32 {
+) -> Result<u32, Error> {
     let mut weight_sum = 0;
     let mut unique_ids: Map<Identifier, ()> = map![&env];
 
@@ -207,7 +232,7 @@ fn validate_and_compute_signature_weight(
         let id = signature.identifier(&env);
         // Accumulate the weights and take care of non-authorized accounts
         // at the same time (non-authorized accounts won't have weight).
-        weight_sum += read_weight(env, &id);
+        weight_sum += read_weight(env, &id)?;
 
         verify(
             &env,
@@ -218,10 +243,10 @@ fn validate_and_compute_signature_weight(
         unique_ids.set(id, ());
     }
     if unique_ids.len() != signatures.len() {
-        panic!("duplicate signatures provided");
+        return Err(Error::DuplicateSigner);
     }
 
-    weight_sum
+    Ok(weight_sum)
 }
 
 fn execute_payment(env: &Env, payment: Payment) {
@@ -238,10 +263,12 @@ fn read_threshold(env: &Env) -> u32 {
     env.data().get_unchecked(DataKey::Threshold).unwrap()
 }
 
-fn read_weight(env: &Env, id: &Identifier) -> u32 {
-    env.data()
-        .get_unchecked(DataKey::AdminW(id.clone()))
-        .unwrap()
+fn read_weight(env: &Env, id: &Identifier) -> Result<u32, Error> {
+    Ok(env
+        .data()
+        .get(DataKey::AdminW(id.clone()))
+        .ok_or(Error::UnauthorizedSigner)?
+        .unwrap())
 }
 
 mod test;
