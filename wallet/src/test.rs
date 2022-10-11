@@ -5,10 +5,9 @@ use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
 use soroban_auth::{Ed25519Signature, Identifier, SignaturePayload, SignaturePayloadV0};
 use soroban_sdk::testutils::ed25519::Sign;
-use soroban_sdk::{vec, Env, RawVal, Symbol, Vec};
-use soroban_token_contract::testutils::{
-    register_test_contract as register_token, to_ed25519, Token,
-};
+use soroban_sdk::testutils::Accounts;
+use soroban_sdk::{vec, AccountId, Env, IntoVal, RawVal, Symbol, Vec};
+use token::{Client as TokenClient, TokenMetadata};
 
 fn generate_keypair() -> Keypair {
     Keypair::generate(&mut thread_rng())
@@ -20,14 +19,22 @@ fn generate_id() -> [u8; 32] {
     id
 }
 
-fn create_token_contract(e: &Env, admin: &Keypair) -> (BytesN<32>, Token) {
-    let id = generate_id();
-    register_token(&e, &id);
-    let token = Token::new(e, &id);
+// Note: we use `AccountId` here and `Ed25519` signers everywhere else in this
+// test only for the sake of the test setup simplicity. There are no limitations
+// on types of identifiers used in any contexts here.
+fn create_token_contract(e: &Env, admin: &AccountId) -> (BytesN<32>, TokenClient) {
+    let id = e.register_contract_token(None);
+    let token = TokenClient::new(e, &id);
     // decimals, name, symbol don't matter in tests
-    token.initialize(&to_ed25519(&e, admin), 7, "name", "symbol");
-
-    (BytesN::from_array(&e, &id), token)
+    token.init(
+        &Identifier::Account(admin.clone()),
+        &TokenMetadata {
+            name: "name".into_val(e),
+            symbol: "symbol".into_val(e),
+            decimals: 7,
+        },
+    );
+    (id, token)
 }
 
 fn create_wallet_contract(e: &Env) -> WalletContractClient {
@@ -45,7 +52,7 @@ fn sign_args(
     args: Vec<RawVal>,
 ) -> Signature {
     let msg = SignaturePayload::V0(SignaturePayloadV0 {
-        function: Symbol::from_str(fn_name),
+        name: Symbol::from_str(fn_name),
         contract: contract_id.clone(),
         network: env.ledger().network_passphrase(),
         args,
@@ -64,11 +71,11 @@ struct WalletTest {
     env: Env,
     wallet_admins: [Keypair; 3],
     payment_receiver: Identifier,
-    token: Token,
+    token: TokenClient,
     token_id: BytesN<32>,
-    token_2: Token,
+    token_2: TokenClient,
     token_id_2: BytesN<32>,
-    token_admin: Keypair,
+    token_admin: AccountId,
     contract: WalletContractClient,
     contract_id: Identifier,
 }
@@ -79,7 +86,7 @@ impl WalletTest {
 
         let wallet_admins = [generate_keypair(), generate_keypair(), generate_keypair()];
 
-        let token_admin = generate_keypair();
+        let token_admin = env.accounts().generate();
         let (token_id, token) = create_token_contract(&env, &token_admin);
         let (token_id_2, token_2) = create_token_contract(&env, &token_admin);
 
@@ -113,41 +120,38 @@ impl WalletTest {
     }
 
     fn signer_to_id(&self, signer: &Keypair) -> Identifier {
-        to_ed25519(&self.env, &signer)
+        Identifier::Ed25519(BytesN::<32>::from_array(
+            &self.env,
+            &signer.public.to_bytes(),
+        ))
     }
 
-    fn add_wallet_balance(&self, token: &Token, amount: u32) {
-        token.mint(
-            &self.token_admin,
+    fn add_wallet_balance(&self, token: &TokenClient, amount: u32) {
+        token.with_source_account(&self.token_admin).mint(
+            &Signature::Invoker,
+            &BigInt::from_u64(&self.env, 0),
             &self.contract_id,
             &BigInt::from_u32(&self.env, amount),
         );
     }
 
     fn pay(&self, signers: &[&Keypair], payment_id: i64, payment: Payment) -> bool {
-        let mut signatures_with_nonce = vec![&self.env];
+        let mut signatures = vec![&self.env];
         for signer in signers {
-            let signer_id = self.signer_to_id(signer);
-            let nonce = self.contract.get_nonce(&signer_id);
-            signatures_with_nonce
-                .push_back((self.sign_pay(&signer, &nonce, payment_id, &payment), nonce));
+            signatures.push_back(self.sign_pay(&signer, payment_id, &payment));
         }
 
-        self.contract
-            .pay(&signatures_with_nonce, &payment_id, &payment)
+        self.contract.pay(&signatures, &payment_id, &payment)
     }
 
-    fn sign_pay(
-        &self,
-        signer: &Keypair,
-        nonce: &BigInt,
-        payment_id: i64,
-        payment: &Payment,
-    ) -> Signature {
-        let signer_id = self.signer_to_id(signer);
-        let args: Vec<RawVal> = (&signer_id, nonce, payment_id, payment).into_val(&self.env);
-
-        sign_args(&self.env, signer, "pay", &self.contract.contract_id, args)
+    fn sign_pay(&self, signer: &Keypair, payment_id: i64, payment: &Payment) -> Signature {
+        sign_args(
+            &self.env,
+            signer,
+            "pay",
+            &self.contract.contract_id,
+            (&self.signer_to_id(signer), payment_id, payment).into_val(&self.env),
+        )
     }
 }
 
@@ -347,9 +351,9 @@ fn test_zero_weight() {
 fn test_unauthorized_signer() {
     let test = WalletTest::setup();
     test.initialize([2, 2, 2], 2);
-
+    let non_wallet_admin = generate_keypair();
     test.pay(
-        &[&test.wallet_admins[1], &test.token_admin],
+        &[&test.wallet_admins[1], &non_wallet_admin],
         222,
         Payment {
             receiver: test.payment_receiver.clone(),

@@ -943,10 +943,9 @@ name = "soroban-wallet-contract"
 version = "0.0.0"
 dependencies = [
  "ed25519-dalek",
- "rand",
+ "rand 0.7.3",
  "soroban-auth",
  "soroban-sdk",
- "soroban-token-contract",
 ]
 
 [[package]]

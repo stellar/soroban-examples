@@ -5,14 +5,10 @@
 #[cfg(feature = "testutils")]
 extern crate std;
 
-use soroban_auth::{
-    check_auth, NonceAuth, {Identifier, Signature},
-};
-use soroban_sdk::{
-    contractimpl, contracttype, map, symbol, vec, BigInt, BytesN, Env, IntoVal, Map, Vec,
-};
+use soroban_auth::{verify, Identifier, Signature};
+use soroban_sdk::{contractimpl, contracttype, map, symbol, vec, BigInt, BytesN, Env, Map, Vec};
 mod token {
-    soroban_sdk::contractimport!(file = "../soroban_token_contract.wasm");
+    soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
 }
 
 #[derive(Clone)]
@@ -22,7 +18,6 @@ pub enum DataKey {
     AdminW(Identifier),
     // Threshold (minimum sum of weights) for execution a transaction.
     Threshold,
-    Nonce(Identifier),
     // `Payment`s keyed by payment identifier.
     Payment(i64),
     // `WeightedSigners` keyed by payment identifier.
@@ -88,20 +83,13 @@ impl WalletContract {
             }
             weight_sum += admin.weight;
             // Record admin weight (and effectively admin identifier too).
-            env.contract_data()
-                .set(DataKey::AdminW(admin.id), admin.weight);
+            env.data().set(DataKey::AdminW(admin.id), admin.weight);
         }
         // Do a basic sanity check to make sure we don't create a locked wallet.
         if weight_sum < threshold {
             panic!("admin weight is lower than threshold");
         }
-        env.contract_data().set(DataKey::Threshold, threshold);
-    }
-
-    // Helper to get nonce for any provided admin identifier.
-    // The nonce should then be used in `pay`.
-    pub fn get_nonce(env: Env, admin: Identifier) -> BigInt {
-        read_nonce(&env, admin)
+        env.data().set(DataKey::Threshold, threshold);
     }
 
     // Stores a provided payment or executes it when enough signer weight is
@@ -110,35 +98,28 @@ impl WalletContract {
     //
     // Every wallet admin signs `pay` as if it was called by them only, i.e.
     // they should sign `pay` function call with argument tuple of
-    // `(id, nonce, payment_id, payment)`. Then the signatures and nonces of
-    // the wallet admins can be batched together in the same `pay` call.
+    // `(admin_id, payment_id, payment)`. Then the signatures of the wallet
+    // admins can be batched together in the same `pay` call.
     // This allows using the same signature set in any `pay` call scenario,
     // i.e. it's possible to execute the payment immediately after gathering all
     // the signatures off-chain, or it's possible to call `pay` for every admin
     // separately until it executes, or any combinaton of the above options.
-    pub fn pay(
-        env: Env,
-        signatures_with_nonces: Vec<(Signature, BigInt)>,
-        payment_id: i64,
-        payment: Payment,
-    ) -> bool {
-        let mut weight_sum = validate_and_compute_signature_weight(
-            &env,
-            &signatures_with_nonces,
-            payment_id,
-            &payment,
-        );
+    //
+    // Note on replay prevention: this call doesn't need additional replay
+    // prevention (nonces) as only the first call of `pay` per signer is
+    //  meaningful (all the further calls will just fail).
+    pub fn pay(env: Env, signatures: Vec<Signature>, payment_id: i64, payment: Payment) -> bool {
+        let mut weight_sum =
+            validate_and_compute_signature_weight(&env, &signatures, payment_id, &payment);
         let mut is_existing_payment = false;
         let mut signer_ids = vec![&env];
-        if let Some(maybe_previous_signers) =
-            env.contract_data().get(&DataKey::PaySigners(payment_id))
-        {
+        if let Some(maybe_previous_signers) = env.data().get(&DataKey::PaySigners(payment_id)) {
             is_existing_payment = true;
             // If there were previous signers for this payment id, we need to check that
             // the payment still hasn't been executed (it should be removed on execution)
             // and that it matches the payment signed by the new signers.
             let stored_payment: Payment = env
-                .contract_data()
+                .data()
                 .get_unchecked(&DataKey::Payment(payment_id))
                 .unwrap();
             if stored_payment != payment {
@@ -150,10 +131,10 @@ impl WalletContract {
             // panic if that's not the case.
             // This is only one option of how to handle this; an alternative approach
             // сould be to only account for weight of the new signers, but that's likely
-            // more error-prone (there shouldn't be a reason for an admin to sign the same
-            // payment twice).
-            for maybe_signature_with_nonce in signatures_with_nonces.iter() {
-                let id = maybe_signature_with_nonce.unwrap().0.get_identifier(&env);
+            // more error-prone (there shouldn't be a reason for an admin to
+            // resubmit the signature).
+            for maybe_signature in signatures.iter() {
+                let id = maybe_signature.unwrap().identifier(&env);
                 if signer_ids.contains(&id) {
                     panic!("one of the signers has already signed this payment");
                 }
@@ -161,13 +142,13 @@ impl WalletContract {
             weight_sum += previous_signers.weight;
         }
 
-        for signature in signatures_with_nonces.iter() {
-            signer_ids.push_back(signature.unwrap().0.get_identifier(&env));
+        for maybe_signature in signatures.iter() {
+            signer_ids.push_back(maybe_signature.unwrap().identifier(&env));
         }
         // Update signer data. This also serves as a protection from
-        // re-executing the payment with the same id (that could be a separate
-        // entry too).
-        env.contract_data().set(
+        // re-executing the payment with the same id (a separate entry could
+        // serve this purpose as well).
+        env.data().set(
             DataKey::PaySigners(payment_id),
             WeightedSigners {
                 signers: signer_ids,
@@ -181,12 +162,11 @@ impl WalletContract {
         if weight_sum >= threshold {
             execute_payment(&env, payment);
             // Remove the payment to mark it executed (signers are still there).
-            env.contract_data().remove(&DataKey::Payment(payment_id));
+            env.data().remove(&DataKey::Payment(payment_id));
             return true;
         }
         if !is_existing_payment {
-            env.contract_data()
-                .set(DataKey::Payment(payment_id), payment);
+            env.data().set(DataKey::Payment(payment_id), payment);
         }
 
         false
@@ -206,7 +186,7 @@ fn check_initialization_params(env: &Env, admins: &Vec<Admin>, threshold: u32) {
     if threshold > MAX_WEIGHT * MAX_ADMINS {
         panic!("threshold is too high");
     }
-    if env.contract_data().has(DataKey::Threshold) {
+    if env.data().has(DataKey::Threshold) {
         panic!("contract has already been initialized");
     }
 }
@@ -215,33 +195,29 @@ fn check_initialization_params(env: &Env, admins: &Vec<Admin>, threshold: u32) {
 // returns their combined weight.
 fn validate_and_compute_signature_weight(
     env: &Env,
-    signatures_with_nonce: &Vec<(Signature, BigInt)>,
+    signatures: &Vec<Signature>,
     payment_id: i64,
     payment: &Payment,
 ) -> u32 {
     let mut weight_sum = 0;
     let mut unique_ids: Map<Identifier, ()> = map![&env];
 
-    for maybe_signature_with_nonce in signatures_with_nonce.iter() {
-        let signature_with_nonce = maybe_signature_with_nonce.unwrap();
-        let id = signature_with_nonce.0.get_identifier(&env);
+    for maybe_signature in signatures.iter() {
+        let signature = maybe_signature.unwrap();
+        let id = signature.identifier(&env);
         // Accumulate the weights and take care of non-authorized accounts
         // at the same time (non-authorized accounts won't have weight).
-        weight_sum += env
-            .contract_data()
-            .get_unchecked::<DataKey, u32>(DataKey::AdminW(id.clone()))
-            .unwrap();
+        weight_sum += read_weight(env, &id);
 
-        check_auth(
+        verify(
             &env,
-            &NonceForSignature(signature_with_nonce.0.clone()),
-            signature_with_nonce.1.clone(),
+            &signature,
             symbol!("pay"),
-            (&id, &signature_with_nonce.1, &payment_id, payment).into_val(env),
+            (&id, &payment_id, payment),
         );
         unique_ids.set(id, ());
     }
-    if unique_ids.len() != signatures_with_nonce.len() {
+    if unique_ids.len() != signatures.len() {
         panic!("duplicate signatures provided");
     }
 
@@ -249,9 +225,9 @@ fn validate_and_compute_signature_weight(
 }
 
 fn execute_payment(env: &Env, payment: Payment) {
-    let client = token::ContractClient::new(&env, payment.token);
+    let client = token::Client::new(&env, payment.token);
     client.xfer(
-        &Signature::Contract,
+        &Signature::Invoker,
         &BigInt::zero(&env),
         &payment.receiver,
         &payment.amount,
@@ -259,38 +235,13 @@ fn execute_payment(env: &Env, payment: Payment) {
 }
 
 fn read_threshold(env: &Env) -> u32 {
-    env.contract_data()
-        .get_unchecked(DataKey::Threshold)
+    env.data().get_unchecked(DataKey::Threshold).unwrap()
+}
+
+fn read_weight(env: &Env, id: &Identifier) -> u32 {
+    env.data()
+        .get_unchecked(DataKey::AdminW(id.clone()))
         .unwrap()
-}
-
-fn read_nonce(e: &Env, id: Identifier) -> BigInt {
-    let key = DataKey::Nonce(id);
-    if let Some(nonce) = e.contract_data().get(key) {
-        nonce.unwrap()
-    } else {
-        BigInt::zero(e)
-    }
-}
-
-struct NonceForSignature(Signature);
-
-impl NonceAuth for NonceForSignature {
-    fn read_nonce(e: &Env, id: Identifier) -> BigInt {
-        read_nonce(e, id)
-    }
-
-    fn read_and_increment_nonce(&self, e: &Env, id: Identifier) -> BigInt {
-        let key = DataKey::Nonce(id.clone());
-        let nonce = Self::read_nonce(e, id);
-        e.contract_data()
-            .set(key, nonce.clone() + BigInt::from_u32(e, 1));
-        nonce
-    }
-
-    fn signature(&self) -> &Signature {
-        &self.0
-    }
 }
 
 mod test;
