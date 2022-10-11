@@ -921,8 +921,7 @@ dependencies = [
 name = "soroban-timelock-contract"
 version = "0.0.0"
 dependencies = [
- "ed25519-dalek",
- "rand 0.7.3",
+ "rand 0.8.5",
  "soroban-auth",
  "soroban-sdk",
 ]
