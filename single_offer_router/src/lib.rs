@@ -1,8 +1,5 @@
 #![no_std]
 
-#[cfg(any(test, feature = "testutils"))]
-extern crate std;
-
 mod offer_contract;
 mod test;
 pub mod testutils;

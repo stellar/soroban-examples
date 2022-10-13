@@ -1,8 +1,5 @@
 #![no_std]
 
-#[cfg(feature = "testutils")]
-extern crate std;
-
 mod test;
 pub mod testutils;
 

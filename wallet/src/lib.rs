@@ -2,8 +2,6 @@
 //! complex auth scheme with multiple signers that authorize payments in immediate
 //! or delayed (async) fashion.
 #![no_std]
-#[cfg(feature = "testutils")]
-extern crate std;
 
 use soroban_auth::{verify, Identifier, Signature};
 use soroban_sdk::{
