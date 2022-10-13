@@ -5,8 +5,6 @@
 //! account(s) claim it before or after provided time point.
 //! For simplicity, the contract only supports invoker-based auth.
 #![no_std]
-#[cfg(feature = "testutils")]
-extern crate std;
 
 use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, Vec};
 
