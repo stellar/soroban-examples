@@ -13,6 +13,9 @@ pub fn create_contract(e: &Env, salt: &BytesN<32>) -> BytesN<32> {
 }
 
 #[cfg(all(any(test, feature = "testutils"), not(feature = "token-wasm")))]
+extern crate std;
+
+#[cfg(all(any(test, feature = "testutils"), not(feature = "token-wasm")))]
 pub fn create_contract(e: &Env, salt: &BytesN<32>) -> BytesN<32> {
     use sha2::{Digest, Sha256};
     use stellar_xdr::{Hash, HashIdPreimage, HashIdPreimageContractId, Uint256, WriteXdr};
