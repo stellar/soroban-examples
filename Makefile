@@ -2,8 +2,6 @@ default: build
 
 all: build test
 
-export RUSTFLAGS=-Dwarnings
-
 test: build
 	cargo hack --feature-powerset test
 
