@@ -15,4 +15,4 @@ RUN rustup component add --toolchain nightly rust-src
 
 RUN sudo apt-get update && sudo apt-get install -y binaryen
 
-RUN docker pull stellar/quickstart:soroban-dev
+# RUN docker pull stellar/quickstart:soroban-dev
