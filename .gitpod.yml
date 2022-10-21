@@ -4,6 +4,7 @@ image:
 tasks:
   - init: |
       cargo fetch
+      make build test
     command: |
       code increment/src/lib.rs
       cargo build --target wasm32-unknown-unknown --profile release

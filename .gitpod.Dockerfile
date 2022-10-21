@@ -8,7 +8,8 @@ RUN curl -L https://github.com/taiki-e/cargo-hack/releases/download/v0.5.21/carg
 RUN curl -L https://github.com/watchexec/cargo-watch/releases/download/v8.1.2/cargo-watch-v8.1.2-x86_64-unknown-linux-gnu.tar.xz | tar xJ --strip-components 1 -C ~/.local/bin cargo-watch-v8.1.2-x86_64-unknown-linux-gnu/cargo-watch
 
 ENV RUSTC_WRAPPER=sccache
-ENV SCCACHE_CACHE_SIZE=2G
+ENV SCCACHE_CACHE_SIZE=5G
+ENV SCCACHE_DIR=/workspace/.sccache
 
 RUN rustup update
 RUN rustup install nightly
