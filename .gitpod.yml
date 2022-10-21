@@ -9,6 +9,7 @@ tasks:
       RUSTC_WRAPPER: sccache
       SCCACHE_CACHE_SIZE: 2G
   - command: |
+      code increment/src/lib.rs
       cargo build --target wasm32-unknown-unknown --profile release
       soroban invoke --id 1 --wasm target/wasm32-unknown-unknown/release/soroban_increment_contract.wasm --fn increment
 
