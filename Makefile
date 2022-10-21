@@ -1,18 +1,11 @@
-default: build-normal
+default: build
 
 all: build test
 
-export RUSTFLAGS=-Dwarnings
-
-test: build-normal
+test: build
 	cargo hack --feature-powerset test
 
-test-optimized: build-optimized
-	cargo hack --feature-powerset test
-
-build: build-normal build-optimized
-
-build-normal:
+build:
 	cargo build --target wasm32-unknown-unknown --release -p soroban-token-contract
 	cargo build --target wasm32-unknown-unknown --release -p soroban-liquidity-pool-contract
 	cargo build --target wasm32-unknown-unknown --release -p soroban-single-offer-contract
@@ -21,6 +14,9 @@ build-normal:
 		for i in *.wasm ; do \
 			ls -l "$$i"; \
 		done
+
+test-optimized: build-optimized
+	cargo hack --feature-powerset test
 
 build-optimized:
 	cargo +nightly build --target wasm32-unknown-unknown --release -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort -p soroban-token-contract

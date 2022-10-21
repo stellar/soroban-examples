@@ -1,0 +1,23 @@
+image:
+  file: .gitpod.Dockerfile
+
+tasks:
+  - init: |
+      cargo fetch
+      make build test
+    command: |
+      code increment/src/lib.rs
+      make build test
+      soroban invoke --id 1 --wasm target/wasm32-unknown-unknown/release/soroban_increment_contract.wasm --fn increment
+
+vscode:
+  extensions:
+    - matklad.rust-analyzer
+    - vadimcn.vscode-lldb
+
+github:
+  prebuilds:
+    addBadge: true
+    addComment: true
+    pullRequests: true
+    pullRequestsFromForks: true
