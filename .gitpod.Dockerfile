@@ -11,10 +11,13 @@ ENV RUSTC_WRAPPER=sccache
 ENV SCCACHE_CACHE_SIZE=5G
 ENV SCCACHE_DIR=/workspace/.sccache
 
-RUN rustup update
+RUN rustup install stable
+RUN rustup target add --toolchain stable wasm32-unknown-unknown
+RUN rustup component add --toolchain stable rust-src
 RUN rustup install nightly
 RUN rustup target add --toolchain nightly wasm32-unknown-unknown
 RUN rustup component add --toolchain nightly rust-src
+RUN rustup default stable
 
 RUN sudo apt-get update && sudo apt-get install -y binaryen
 
