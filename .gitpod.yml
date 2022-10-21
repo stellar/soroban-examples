@@ -1,7 +1,7 @@
 tasks:
   - init: |
       mkdir -p ~/.local/bin
-      curl https://github.com/stellar/soroban-cli/releases/download/v0.1.2/soroban-cli-0.1.2-x86_64-unknown-linux-gnu.tar.gz | tar xz -C ~/.local/bin soroban
+      curl -L https://github.com/stellar/soroban-cli/releases/download/v0.1.2/soroban-cli-0.1.2-x86_64-unknown-linux-gnu.tar.gz | tar xz -C ~/.local/bin soroban
       rustup show
       cargo install --locked sccache
   - command: |
@@ -12,3 +12,7 @@ vscode:
   extensions:
     - matklad.rust-analyzer
     - vadimcn.vscode-lldb
+
+github:
+  prebuilds:
+    addBadge: true
