@@ -2,7 +2,7 @@
 
 Example contracts for Soroban.
 
-Follow along at https://soroban.stellar.org/docs/examples.
+Follow along at https://soroban.stellar.org/docs/category/examples.
 
 Open a development environment on GitPod:
 https://gitpod.io/#https://github.com/stellar/soroban-examples
