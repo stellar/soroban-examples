@@ -11,7 +11,6 @@ tasks:
       gp open increment/src/lib.rs
       gp open increment/src/test.rs
       gp open README.md
-      make build test
       soroban invoke --id 1 --wasm target/wasm32-unknown-unknown/release/soroban_increment_contract.wasm --fn increment
 
 vscode:
