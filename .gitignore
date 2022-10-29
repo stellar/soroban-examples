@@ -1,2 +1,4 @@
-/target
-/.sccache
+.DS_Store
+target
+.sccache
+.soroban
