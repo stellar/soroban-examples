@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contractimpl, log, symbol, Env, Symbol};
+use soroban_sdk::{contractimpl, log, symbol, BytesN, Env, Symbol};
 
 const COUNTER: Symbol = symbol!("COUNTER");
 
@@ -22,6 +22,8 @@ impl IncrementContract {
 
         // Save the count.
         env.data().set(COUNTER, count);
+
+        env.data().set(count, BytesN::from_array(&env, &[0; 32]));
 
         // Return the count to the caller.
         count
