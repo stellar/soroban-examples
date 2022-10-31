@@ -5,7 +5,7 @@ version = "0.0.6"
 edition = "2021"
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+crate-type = ["cdylib"]
 
 [features]
 testutils = ["soroban-sdk/testutils", "soroban-auth/testutils", "dep:ed25519-dalek"]
