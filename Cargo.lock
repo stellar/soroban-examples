@@ -808,7 +808,6 @@ dependencies = [
  "rand 0.7.3",
  "sha2 0.10.6",
  "soroban-auth",
- "soroban-liquidity-pool-contract",
  "soroban-sdk",
  "stellar-xdr",
 ]
@@ -891,7 +890,6 @@ dependencies = [
  "sha2 0.10.6",
  "soroban-auth",
  "soroban-sdk",
- "soroban-single-offer-contract",
  "stellar-xdr",
 ]
 

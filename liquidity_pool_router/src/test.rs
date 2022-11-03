@@ -1,14 +1,13 @@
 #![cfg(test)]
 
+use crate::pool_contract::LiquidityPoolClient;
 use crate::token::{self, TokenMetadata};
 
 use crate::testutils::{
     register_test_contract as register_liquidity_pool_router, LiquidityPoolRouter,
 };
-use liquidity_pool::LiquidityPoolClient;
 use rand::{thread_rng, RngCore};
 use soroban_auth::{Identifier, Signature};
-use soroban_liquidity_pool_contract as liquidity_pool;
 use soroban_sdk::{testutils::Accounts, AccountId, BigInt, BytesN, Env, IntoVal};
 
 fn generate_sorted_contract_ids() -> ([u8; 32], [u8; 32]) {

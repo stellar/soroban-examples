@@ -5,7 +5,6 @@ all: build test
 test: build
 	cargo test
 	cargo test --features testutils
-	cargo test --features token-wasm
 
 build:
 	cargo build --target wasm32-unknown-unknown --release -p soroban-token-contract
@@ -21,7 +20,6 @@ build:
 test-optimized: build-optimized
 	cargo test
 	cargo test --features testutils
-	cargo test --features token-wasm
 
 build-optimized:
 	cargo +nightly build --target wasm32-unknown-unknown --release -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort -p soroban-token-contract
