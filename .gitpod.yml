@@ -15,7 +15,7 @@ tasks:
 
 vscode:
   extensions:
-    - matklad.rust-analyzer
+    - rust-lang.rust-analyzer
     - vadimcn.vscode-lldb
 
 github:
