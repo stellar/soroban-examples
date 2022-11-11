@@ -3,7 +3,9 @@
 use soroban_auth::{
     verify, {Identifier, Signature},
 };
-use soroban_sdk::{contracterror, contractimpl, contracttype, panic_with_error, symbol, BigInt, Env};
+use soroban_sdk::{
+    contracterror, contractimpl, contracttype, panic_with_error, symbol, BigInt, Env,
+};
 
 #[contracttype]
 pub enum DataKey {
