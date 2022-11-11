@@ -14,7 +14,7 @@ doctest = false
 testutils = ["soroban-sdk/testutils"]
 
 [dependencies]
-soroban-sdk = "0.2.0"
+soroban-sdk = "0.2.1"
 
 [dev_dependencies]
-soroban-sdk = { version = "0.2.0", features = ["testutils"] }
+soroban-sdk = { version = "0.2.1", features = ["testutils"] }
