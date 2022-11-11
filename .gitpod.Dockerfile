@@ -1,4 +1,4 @@
-FROM gitpod/workspace-full:2022-10-17-21-33-26
+FROM gitpod/workspace-full:2022-11-09-13-54-49
 
 RUN mkdir -p ~/.local/bin
 RUN curl -L -o ~/.local/bin/soroban https://github.com/stellar/soroban-cli/releases/download/v0.2.1/soroban-cli-0.2.1-x86_64-unknown-linux-gnu
@@ -11,10 +11,10 @@ ENV RUSTC_WRAPPER=sccache
 ENV SCCACHE_CACHE_SIZE=5G
 ENV SCCACHE_DIR=/workspace/.sccache
 
-RUN rustup install stable
+RUN rustup update stable
 RUN rustup target add --toolchain stable wasm32-unknown-unknown
 RUN rustup component add --toolchain stable rust-src
-RUN rustup install nightly
+RUN rustup update nightly
 RUN rustup target add --toolchain nightly wasm32-unknown-unknown
 RUN rustup component add --toolchain nightly rust-src
 RUN rustup default stable
