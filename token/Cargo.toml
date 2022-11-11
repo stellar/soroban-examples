@@ -13,11 +13,11 @@ testutils = ["soroban-sdk/testutils", "soroban-auth/testutils", "dep:ed25519-dal
 [dependencies]
 ed25519-dalek = { version = "1.0.1", optional = true }
 num-bigint = { version = "0.4", optional = true }
-soroban-sdk = { version = "0.1.0" }
-soroban-auth = { version = "0.1.0" }
+soroban-sdk = { version = "0.2.0" }
+soroban-auth = { version = "0.2.0" }
 
 [dev-dependencies]
-soroban-sdk = { version = "0.1.0", features = ["testutils"] }
-soroban-auth = { version = "0.1.0", features = ["testutils"] }
+soroban-sdk = { version = "0.2.0", features = ["testutils"] }
+soroban-auth = { version = "0.2.0", features = ["testutils"] }
 ed25519-dalek = { version = "1.0.1" }
 rand = { version = "0.7.3" }
