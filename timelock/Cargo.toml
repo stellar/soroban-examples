@@ -11,9 +11,9 @@ crate-type = ["cdylib"]
 doctest = false
 
 [dependencies]
-soroban-sdk = "0.1.0"
-soroban-auth = "0.1.0"
+soroban-sdk = "0.2.0"
+soroban-auth = "0.2.0"
 
 [dev_dependencies]
-soroban-sdk = { version = "0.1.0", features = ["testutils"] }
+soroban-sdk = { version = "0.2.0", features = ["testutils"] }
 rand = { version = "0.8.5" }

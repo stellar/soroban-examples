@@ -3,7 +3,9 @@
 use soroban_auth::{
     verify, {Identifier, Signature},
 };
-use soroban_sdk::{contracterror, contractimpl, contracttype, panic_error, symbol, BigInt, Env};
+use soroban_sdk::{
+    contracterror, contractimpl, contracttype, panic_with_error, symbol, BigInt, Env,
+};
 
 #[contracttype]
 pub enum DataKey {
@@ -62,13 +64,13 @@ fn verify_and_consume_nonce(env: &Env, sig: &Signature, nonce: &BigInt) {
     match sig {
         Signature::Invoker => {
             if BigInt::zero(env) != nonce {
-                panic_error!(env, Error::IncorrectNonceForInvoker);
+                panic_with_error!(env, Error::IncorrectNonceForInvoker);
             }
         }
         Signature::Ed25519(_) | Signature::Account(_) => {
             let id = sig.identifier(env);
             if nonce != &get_nonce(env, &id) {
-                panic_error!(env, Error::IncorrectNonce);
+                panic_with_error!(env, Error::IncorrectNonce);
             }
             set_nonce(env, &id, nonce + 1);
         }
