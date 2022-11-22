@@ -209,9 +209,9 @@ impl LiquidityPoolTrait for LiquidityPool {
         let total_shares = get_total_shares(&e);
 
         let zero = BigInt::zero(&e);
-        let new_total_shares = if reserve_a > zero.clone() && reserve_b > zero {
-            let shares_a = (balance_a.clone() * total_shares.clone()) / reserve_a;
-            let shares_b = (balance_b.clone() * total_shares.clone()) / reserve_b;
+        let new_total_shares = if reserve_a > zero && reserve_b > zero {
+            let shares_a = ((balance_a.clone() - reserve_a.clone()) * total_shares.clone()) / reserve_a;
+            let shares_b = ((balance_b.clone() - reserve_b.clone()) * total_shares.clone()) / reserve_b;
             shares_a.min(shares_b)
         } else {
             (balance_a.clone() * balance_b.clone()).sqrt()
