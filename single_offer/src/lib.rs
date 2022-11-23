@@ -107,7 +107,6 @@ How to use this contract to trade
    seller and 10 USDC to buyer. If these two actions are not done atomically, then the 1 BTC sent to this
    address can be taken by another user calling trade.
 4. call withdraw(sellerAuth, 10). This will send the remaining 10 USDC in the contract back to seller.
-   The sellers nonce is required to create the Authorization, which can be retrieved by calling nonce()
 */
 pub trait SingleOfferTrait {
     // See comment above the Price struct for information on pricing

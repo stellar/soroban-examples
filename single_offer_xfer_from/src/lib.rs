@@ -115,10 +115,7 @@ pub trait SingleOfferXferFromTrait {
 
     // Sends amount_to_sell of buy_token to the admin, and sends amount_to_sell * d / n of
     // sell_token to "to". Allowances must be sufficient for this contract address to send
-    // sell_token from admin and buy_token from "to". Needs to be authorized by "to".
-    // (Signature is required because a different entity
-    // could submit the trade with a bad min, or the admin could change the price and then
-    // call trade).
+    // sell_token from admin and buy_token from the invoker.
     fn trade(e: Env, amount_to_sell: BigInt, min: BigInt);
 
     // Updates the price. Must be authorized by admin
