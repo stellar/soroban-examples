@@ -1,5 +1,4 @@
 #![cfg(any(test, feature = "testutils"))]
-use soroban_auth::{Identifier, Signature};
 use soroban_sdk::{AccountId, BigInt, BytesN, Env};
 
 use crate::LiquidityPoolRouterClient;
@@ -39,16 +38,9 @@ impl LiquidityPoolRouter {
         let token_a = BytesN::from_array(&self.env, token_a);
         let token_b = BytesN::from_array(&self.env, token_b);
 
-        self.client().with_source_account(&to).sf_deposit(
-            &Signature::Invoker,
-            &BigInt::zero(&self.env),
-            &token_a,
-            &token_b,
-            &desired_a,
-            &min_a,
-            &desired_b,
-            &min_b,
-        )
+        self.client()
+            .with_source_account(&to)
+            .sf_deposit(&token_a, &token_b, &desired_a, &min_a, &desired_b, &min_b)
     }
 
     pub fn swap_out(
@@ -62,14 +54,9 @@ impl LiquidityPoolRouter {
         let sell = BytesN::from_array(&self.env, sell);
         let buy = BytesN::from_array(&self.env, buy);
 
-        self.client().with_source_account(&to).swap_out(
-            &Signature::Invoker,
-            &BigInt::zero(&self.env),
-            &sell,
-            &buy,
-            &out,
-            &in_max,
-        )
+        self.client()
+            .with_source_account(&to)
+            .swap_out(&sell, &buy, &out, &in_max)
     }
 
     pub fn sf_withdrw(
@@ -85,8 +72,6 @@ impl LiquidityPoolRouter {
         let token_b = BytesN::from_array(&self.env, token_b);
 
         self.client().with_source_account(&to).sf_withdrw(
-            &Signature::Invoker,
-            &BigInt::zero(&self.env),
             &token_a,
             &token_b,
             &share_amount,
@@ -100,9 +85,5 @@ impl LiquidityPoolRouter {
         let token_b = BytesN::from_array(&self.env, token_b);
 
         self.client().get_pool(&token_a, &token_b)
-    }
-
-    pub fn nonce(&self, id: &Identifier) -> BigInt {
-        self.client().nonce(&id)
     }
 }

@@ -4,9 +4,9 @@ mod test;
 pub mod testutils;
 mod token;
 
-use soroban_auth::{Identifier, Signature};
 use soroban_sdk::{contractimpl, BigInt, Bytes, BytesN, Env, IntoVal, RawVal};
 use token::{create_contract, TokenMetadata};
+use token::{Identifier, Signature};
 
 #[derive(Clone, Copy)]
 #[repr(u32)]

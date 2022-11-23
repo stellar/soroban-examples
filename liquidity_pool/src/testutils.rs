@@ -1,9 +1,8 @@
 #![cfg(any(test, feature = "testutils"))]
 
-use soroban_auth::Identifier;
 use soroban_sdk::{BigInt, BytesN, Env};
 
-use crate::LiquidityPoolClient;
+use crate::{token::Identifier, LiquidityPoolClient};
 
 pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
     let contract_id = BytesN::from_array(e, contract_id);

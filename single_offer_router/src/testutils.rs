@@ -1,8 +1,7 @@
 #![cfg(any(test, feature = "testutils"))]
-use soroban_auth::{Identifier, Signature};
 use soroban_sdk::{AccountId, BigInt, BytesN, Env};
 
-use crate::SingleOfferRouterClient;
+use crate::{token::Identifier, SingleOfferRouterClient};
 
 pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
     let contract_id = BytesN::from_array(e, contract_id);
@@ -34,13 +33,9 @@ impl SingleOfferRouter {
 
     pub fn safe_trade(&self, to: &AccountId, offer: &[u8; 32], amount: &BigInt, min: &BigInt) {
         let offer_addr = BytesN::from_array(&self.env, offer);
-        self.client().with_source_account(&to).safe_trade(
-            &Signature::Invoker,
-            &BigInt::zero(&self.env),
-            &offer_addr,
-            &amount,
-            &min,
-        )
+        self.client()
+            .with_source_account(&to)
+            .safe_trade(&offer_addr, &amount, &min)
     }
 
     pub fn get_offer(
@@ -52,9 +47,5 @@ impl SingleOfferRouter {
         let token_a = BytesN::from_array(&self.env, token_a);
         let token_b = BytesN::from_array(&self.env, token_b);
         self.client().get_offer(&admin, &token_a, &token_b)
-    }
-
-    pub fn nonce(&self, id: &Identifier) -> BigInt {
-        self.client().nonce(&id)
     }
 }

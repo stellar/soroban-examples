@@ -3,10 +3,8 @@
 mod test;
 pub mod testutils;
 
-use soroban_auth::{
-    verify, {Identifier, Signature},
-};
-use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, Symbol};
+use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env};
+use token::{Identifier, Signature};
 
 mod token {
     soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
@@ -19,7 +17,6 @@ pub enum DataKey {
     BuyToken,
     Admin,
     Price,
-    Nonce(Identifier),
 }
 
 // Price is 1 unit of selling in terms of buying. For example, if you wanted
@@ -95,40 +92,10 @@ fn write_administrator(e: &Env, id: Identifier) {
     e.data().set(key, id);
 }
 
-pub fn check_admin(e: &Env, auth: &Signature) {
-    let auth_id = auth.identifier(&e);
-    if auth_id != read_administrator(&e) {
+pub fn check_admin(e: &Env, auth_id: &Identifier) {
+    if *auth_id != read_administrator(&e) {
         panic!("not authorized by admin")
     }
-}
-
-fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
-    let key = DataKey::Nonce(id.clone());
-    e.data()
-        .get(key)
-        .unwrap_or_else(|| Ok(BigInt::zero(e)))
-        .unwrap()
-}
-
-fn verify_and_consume_nonce(e: &Env, auth: &Signature, expected_nonce: &BigInt) {
-    match auth {
-        Signature::Invoker => {
-            if BigInt::zero(&e) != expected_nonce {
-                panic!("nonce should be zero for Invoker")
-            }
-            return;
-        }
-        _ => {}
-    }
-
-    let id = auth.identifier(&e);
-    let key = DataKey::Nonce(id.clone());
-    let nonce = read_nonce(e, &id);
-
-    if nonce != expected_nonce {
-        panic!("incorrect nonce")
-    }
-    e.data().set(key, &nonce + 1);
 }
 
 /*
@@ -140,7 +107,6 @@ How to use this contract to trade
    seller and 10 USDC to buyer. If these two actions are not done atomically, then the 1 BTC sent to this
    address can be taken by another user calling trade.
 4. call withdraw(sellerAuth, 10). This will send the remaining 10 USDC in the contract back to seller.
-   The sellers nonce is required to create the Authorization, which can be retrieved by calling nonce()
 */
 pub trait SingleOfferTrait {
     // See comment above the Price struct for information on pricing
@@ -154,9 +120,6 @@ pub trait SingleOfferTrait {
         d: u32,
     );
 
-    // Returns the nonce for the admin
-    fn nonce(e: Env) -> BigInt;
-
     // Sends the full balance of this contracts buy_token balance (let's call this BuyB) to the admin, and
     // also sends buyB * d / n of the sell_token to the "to" identifier specified in trade call. Note that
     // the seller and the buyer need to transfer the sell_token and buy_token to this contract prior to calling
@@ -165,10 +128,10 @@ pub trait SingleOfferTrait {
     fn trade(e: Env, to: Identifier, min: BigInt);
 
     // Sends amount of sell_token from this contract to the admin. Must be authorized by admin
-    fn withdraw(e: Env, admin: Signature, nonce: BigInt, amount: BigInt);
+    fn withdraw(e: Env, amount: BigInt);
 
     // Updates the price. Must be authorized by admin
-    fn updt_price(e: Env, admin: Signature, nonce: BigInt, n: u32, d: u32);
+    fn updt_price(e: Env, n: u32, d: u32);
 
     // Get the current price
     fn get_price(e: Env) -> Price;
@@ -223,43 +186,18 @@ impl SingleOfferTrait for SingleOffer {
         transfer_buy(&e, admin, balance_buy_token);
     }
 
-    fn nonce(e: Env) -> BigInt {
-        read_nonce(&e, &read_administrator(&e))
+    fn withdraw(e: Env, amount: BigInt) {
+        let invoker = e.invoker().into();
+        check_admin(&e, &invoker);
+        transfer_sell(&e, invoker, amount);
     }
 
-    fn withdraw(e: Env, admin: Signature, nonce: BigInt, amount: BigInt) {
-        check_admin(&e, &admin);
-
-        verify_and_consume_nonce(&e, &admin, &nonce);
-
-        let admin_id = admin.identifier(&e);
-        verify(
-            &e,
-            &admin,
-            Symbol::from_str("withdraw"),
-            (admin_id, nonce, &amount),
-        );
-
-        transfer_sell(&e, read_administrator(&e), amount);
-    }
-
-    fn updt_price(e: Env, admin: Signature, nonce: BigInt, n: u32, d: u32) {
-        check_admin(&e, &admin);
+    fn updt_price(e: Env, n: u32, d: u32) {
+        check_admin(&e, &e.invoker().into());
 
         if d == 0 {
             panic!("d is zero but cannot be zero")
         }
-
-        verify_and_consume_nonce(&e, &admin, &nonce);
-        let admin_id = admin.identifier(&e);
-
-        verify(
-            &e,
-            &admin,
-            Symbol::from_str("updt_price"),
-            (admin_id, nonce, &n, &d),
-        );
-
         put_price(&e, Price { n, d });
     }
 

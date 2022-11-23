@@ -3,10 +3,8 @@
 mod test;
 pub mod testutils;
 
-use soroban_auth::{
-    verify, {Identifier, Signature},
-};
-use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, Symbol};
+use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env};
+use token::{Identifier, Signature};
 
 mod token {
     soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
@@ -19,7 +17,6 @@ pub enum DataKey {
     BuyToken,
     Admin,
     Price,
-    Nonce(Identifier),
 }
 
 // Price is 1 unit of selling in terms of buying. For example, if you wanted
@@ -89,40 +86,10 @@ fn write_administrator(e: &Env, id: Identifier) {
     e.data().set(key, id);
 }
 
-pub fn check_admin(e: &Env, auth: &Signature) {
-    let auth_id = auth.identifier(&e);
+pub fn check_admin(e: &Env, auth_id: Identifier) {
     if auth_id != read_administrator(&e) {
         panic!("not authorized by admin")
     }
-}
-
-fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
-    let key = DataKey::Nonce(id.clone());
-    e.data()
-        .get(key)
-        .unwrap_or_else(|| Ok(BigInt::zero(e)))
-        .unwrap()
-}
-
-fn verify_and_consume_nonce(e: &Env, auth: &Signature, expected_nonce: &BigInt) {
-    match auth {
-        Signature::Invoker => {
-            if BigInt::zero(&e) != expected_nonce {
-                panic!("nonce should be zero for Invoker")
-            }
-            return;
-        }
-        _ => {}
-    }
-
-    let id = auth.identifier(&e);
-    let key = DataKey::Nonce(id.clone());
-    let nonce = read_nonce(e, &id);
-
-    if nonce != expected_nonce {
-        panic!("incorrect nonce")
-    }
-    e.data().set(key, &nonce + 1);
 }
 
 /*
@@ -146,19 +113,13 @@ pub trait SingleOfferXferFromTrait {
         d: u32,
     );
 
-    // Returns the current nonce for "id"
-    fn nonce(e: Env, id: Identifier) -> BigInt;
-
     // Sends amount_to_sell of buy_token to the admin, and sends amount_to_sell * d / n of
     // sell_token to "to". Allowances must be sufficient for this contract address to send
-    // sell_token from admin and buy_token from "to". Needs to be authorized by "to".
-    // (Signature is required because a different entity
-    // could submit the trade with a bad min, or the admin could change the price and then
-    // call trade).
-    fn trade(e: Env, to: Signature, nonce: BigInt, amount_to_sell: BigInt, min: BigInt);
+    // sell_token from admin and buy_token from the invoker.
+    fn trade(e: Env, amount_to_sell: BigInt, min: BigInt);
 
     // Updates the price. Must be authorized by admin
-    fn updt_price(e: Env, admin: Signature, nonce: BigInt, n: u32, d: u32);
+    fn updt_price(e: Env, n: u32, d: u32);
 
     // Get the current price
     fn get_price(e: Env) -> Price;
@@ -191,17 +152,7 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
         put_price(&e, Price { n, d });
     }
 
-    fn trade(e: Env, to: Signature, nonce: BigInt, amount_to_sell: BigInt, min: BigInt) {
-        verify_and_consume_nonce(&e, &to, &nonce);
-
-        let to_id = to.identifier(&e);
-        verify(
-            &e,
-            &to,
-            Symbol::from_str("trade"),
-            (&to_id, nonce, &amount_to_sell, &min),
-        );
-
+    fn trade(e: Env, amount_to_sell: BigInt, min: BigInt) {
         let price = get_price(&e);
 
         let amount =
@@ -213,29 +164,13 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
 
         let admin = read_administrator(&e);
 
-        transfer_sell(&e, &admin, &to_id, &amount);
-        transfer_buy(&e, &to_id, &admin, &amount_to_sell);
+        let invoker = e.invoker().into();
+        transfer_sell(&e, &admin, &invoker, &amount);
+        transfer_buy(&e, &invoker, &admin, &amount_to_sell);
     }
 
-    fn nonce(e: Env, id: Identifier) -> BigInt {
-        read_nonce(&e, &id)
-    }
-
-    fn updt_price(e: Env, admin: Signature, nonce: BigInt, n: u32, d: u32) {
-        check_admin(&e, &admin);
-        if d == 0 {
-            panic!("d is zero but cannot be zero")
-        }
-
-        verify_and_consume_nonce(&e, &admin, &nonce);
-
-        let admin_id = admin.identifier(&e);
-        verify(
-            &e,
-            &admin,
-            Symbol::from_str("updt_price"),
-            (admin_id, nonce, &n, &d),
-        );
+    fn updt_price(e: Env, n: u32, d: u32) {
+        check_admin(&e, e.invoker().into());
 
         put_price(&e, Price { n, d });
     }

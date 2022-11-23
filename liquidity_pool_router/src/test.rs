@@ -7,8 +7,8 @@ use crate::testutils::{
     register_test_contract as register_liquidity_pool_router, LiquidityPoolRouter,
 };
 use rand::{thread_rng, RngCore};
-use soroban_auth::{Identifier, Signature};
 use soroban_sdk::{testutils::Accounts, AccountId, BigInt, BytesN, Env, IntoVal};
+use token::{Identifier, Signature};
 
 fn generate_sorted_contract_ids() -> ([u8; 32], [u8; 32]) {
     let a = generate_contract_id();

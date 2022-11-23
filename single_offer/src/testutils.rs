@@ -1,7 +1,6 @@
 #![cfg(any(test, feature = "testutils"))]
 
-use crate::{Price, SingleOfferClient};
-use soroban_auth::{Identifier, Signature};
+use crate::{token::Identifier, Price, SingleOfferClient};
 
 use soroban_sdk::{AccountId, BigInt, BytesN, Env};
 
@@ -40,24 +39,16 @@ impl SingleOffer {
         self.client().initialize(&admin, &token_a, &token_b, &n, &d);
     }
 
-    pub fn nonce(&self) -> BigInt {
-        self.client().nonce()
-    }
-
     pub fn trade(&self, to: &Identifier, min: &BigInt) {
         self.client().trade(&to, &min)
     }
 
     pub fn withdraw(&self, admin: &AccountId, amount: &BigInt) {
-        self.env.set_source_account(&admin);
-        self.client()
-            .withdraw(&Signature::Invoker, &BigInt::zero(&self.env), &amount)
+        self.client().with_source_account(&admin).withdraw(&amount)
     }
 
     pub fn updt_price(&self, admin: &AccountId, n: u32, d: u32) {
-        self.env.set_source_account(&admin);
-        self.client()
-            .updt_price(&Signature::Invoker, &BigInt::zero(&self.env), &n, &d)
+        self.client().with_source_account(&admin).updt_price(&n, &d)
     }
 
     pub fn get_price(&self) -> Price {
