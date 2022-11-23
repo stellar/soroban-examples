@@ -5,13 +5,9 @@ mod test;
 pub mod testutils;
 
 use offer_contract::{create_contract, SingleOfferClient};
+use token::{Identifier, Signature};
 
-use soroban_auth::{
-    verify, {Identifier, Signature},
-};
-use soroban_sdk::{
-    contractimpl, contracttype, serde::Serialize, BigInt, Bytes, BytesN, Env, Symbol,
-};
+use soroban_sdk::{contractimpl, contracttype, serde::Serialize, BigInt, Bytes, BytesN, Env};
 
 mod token {
     soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
@@ -21,7 +17,6 @@ mod token {
 #[contracttype]
 pub enum DataKey {
     Offer(BytesN<32>),
-    Nonce(Identifier),
 }
 
 fn get_offer(e: &Env, offer_key: &BytesN<32>) -> BytesN<32> {
@@ -56,14 +51,7 @@ pub trait SingleOfferRouterTrait {
     // This contract pulls amount from "to", sends it to "offer", and then calls trade on "offer".
     // The admin must send the sell_token to the offer address specified in this function,
     // and the "to" identifier must set a buy_token allowance for this router contract
-    fn safe_trade(
-        e: Env,
-        to: Signature,
-        nonce: BigInt,
-        offer: BytesN<32>,
-        amount: BigInt,
-        min: BigInt,
-    );
+    fn safe_trade(e: Env, offer: BytesN<32>, amount: BigInt, min: BigInt);
 
     // returns the contract address for the specified admin, sell_token, buy_token combo
     fn get_offer(
@@ -72,9 +60,6 @@ pub trait SingleOfferRouterTrait {
         sell_token: BytesN<32>,
         buy_token: BytesN<32>,
     ) -> BytesN<32>;
-
-    // Returns the current nonce for "id"
-    fn nonce(e: Env, id: Identifier) -> BigInt;
 }
 
 pub fn offer_key(
@@ -93,35 +78,6 @@ pub fn offer_key(
     offer_key_bin.append(&sell_token.clone().into());
     offer_key_bin.append(&buy_token.clone().into());
     e.compute_hash_sha256(&offer_key_bin)
-}
-
-fn read_nonce(e: &Env, id: &Identifier) -> BigInt {
-    let key = DataKey::Nonce(id.clone());
-    e.data()
-        .get(key)
-        .unwrap_or_else(|| Ok(BigInt::zero(e)))
-        .unwrap()
-}
-
-fn verify_and_consume_nonce(e: &Env, auth: &Signature, expected_nonce: &BigInt) {
-    match auth {
-        Signature::Invoker => {
-            if BigInt::zero(&e) != expected_nonce {
-                panic!("nonce should be zero for Invoker")
-            }
-            return;
-        }
-        _ => {}
-    }
-
-    let id = auth.identifier(&e);
-    let key = DataKey::Nonce(id.clone());
-    let nonce = read_nonce(e, &id);
-
-    if nonce != expected_nonce {
-        panic!("incorrect nonce")
-    }
-    e.data().set(key, &nonce + 1);
 }
 
 struct SingleOfferRouter;
@@ -155,40 +111,23 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
         );
     }
 
-    fn safe_trade(
-        e: Env,
-        to: Signature,
-        nonce: BigInt,
-        offer: BytesN<32>,
-        amount: BigInt,
-        min: BigInt,
-    ) {
-        verify_and_consume_nonce(&e, &to, &nonce);
-
-        let to_id = to.identifier(&e);
-
-        verify(
-            &e,
-            &to,
-            Symbol::from_str("safe_trade"),
-            (&to_id, nonce, &offer, &amount, &min),
-        );
-
+    fn safe_trade(e: Env, offer: BytesN<32>, amount: BigInt, min: BigInt) {
         // TODO:specify buy token instead of calling into offer contract?
         let offer_client = SingleOfferClient::new(&e, &offer);
         let buy = offer_client.get_buy();
 
         let token_client = token::Client::new(&e, &buy);
 
+        let invoker = e.invoker().into();
         token_client.xfer_from(
             &Signature::Invoker,
             &BigInt::zero(&e),
-            &to_id,
+            &invoker,
             &Identifier::Contract(offer.clone()),
             &amount,
         );
 
-        offer_client.trade(&to_id, &min);
+        offer_client.trade(&invoker, &min);
     }
 
     fn get_offer(
@@ -199,9 +138,5 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
     ) -> BytesN<32> {
         let offer_key = offer_key(&e, &admin, &sell_token, &buy_token);
         get_offer(&e, &offer_key)
-    }
-
-    fn nonce(e: Env, id: Identifier) -> BigInt {
-        read_nonce(&e, &id)
     }
 }
