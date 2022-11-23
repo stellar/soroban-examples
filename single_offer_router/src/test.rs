@@ -1,9 +1,8 @@
 #![cfg(test)]
 
 use crate::testutils::{register_test_contract as register_single_offer_router, SingleOfferRouter};
-use crate::token::{self, TokenMetadata};
+use crate::token::{self, Identifier, Signature, TokenMetadata};
 use rand::{thread_rng, RngCore};
-use soroban_auth::{Identifier, Signature};
 use soroban_sdk::{testutils::Accounts, AccountId, BigInt, BytesN, Env, IntoVal};
 
 fn generate_contract_id() -> [u8; 32] {

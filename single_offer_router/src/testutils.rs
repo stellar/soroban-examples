@@ -1,8 +1,7 @@
 #![cfg(any(test, feature = "testutils"))]
-use soroban_auth::Identifier;
 use soroban_sdk::{AccountId, BigInt, BytesN, Env};
 
-use crate::SingleOfferRouterClient;
+use crate::{token::Identifier, SingleOfferRouterClient};
 
 pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
     let contract_id = BytesN::from_array(e, contract_id);

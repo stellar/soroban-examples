@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 
 [features]
 token-wasm = []
-testutils = ["soroban-sdk/testutils", "soroban-auth/testutils", "dep:ed25519-dalek", "dep:sha2", "dep:stellar-xdr"]
+testutils = ["soroban-sdk/testutils", "dep:ed25519-dalek", "dep:sha2", "dep:stellar-xdr"]
 
 [dependencies]
 soroban-sdk = "0.2.1"

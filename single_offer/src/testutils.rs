@@ -1,7 +1,6 @@
 #![cfg(any(test, feature = "testutils"))]
 
-use crate::{Price, SingleOfferClient};
-use soroban_auth::Identifier;
+use crate::{token::Identifier, Price, SingleOfferClient};
 
 use soroban_sdk::{AccountId, BigInt, BytesN, Env};
 

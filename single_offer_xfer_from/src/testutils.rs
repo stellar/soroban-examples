@@ -1,7 +1,6 @@
 #![cfg(any(test, feature = "testutils"))]
 
-use crate::{Price, SingleOfferXferFromClient};
-use soroban_auth::Identifier;
+use crate::{token::Identifier, Price, SingleOfferXferFromClient};
 use soroban_sdk::{AccountId, BigInt, BytesN, Env};
 
 pub fn register_test_contract(e: &Env, contract_id: &[u8; 32]) {
