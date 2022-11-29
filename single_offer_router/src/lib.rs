@@ -4,7 +4,7 @@ mod offer_contract;
 mod test;
 pub mod testutils;
 
-use offer_contract::{create_contract, SingleOfferClient};
+use offer_contract::SingleOfferClient;
 use token::{Identifier, Signature};
 
 use soroban_sdk::{contractimpl, contracttype, serde::Serialize, BigInt, Bytes, BytesN, Env};
@@ -39,6 +39,7 @@ pub trait SingleOfferRouterTrait {
     // Creates an offer contract and stores the address in a map
     fn init(
         e: Env,
+        offer_wasm_hash: BytesN<32>,
         admin: Identifier,
         sell_token: BytesN<32>,
         buy_token: BytesN<32>,
@@ -86,6 +87,7 @@ struct SingleOfferRouter;
 impl SingleOfferRouterTrait for SingleOfferRouter {
     fn init(
         e: Env,
+        offer_wasm_hash: BytesN<32>,
         admin: Identifier,
         sell_token: BytesN<32>,
         buy_token: BytesN<32>,
@@ -98,7 +100,10 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
             panic!("contract already exists");
         }
 
-        let offer_contract_id = create_contract(&e, &offer_key);
+        let offer_contract_id = e
+            .deployer()
+            .with_current_contract(offer_key.clone())
+            .deploy(offer_wasm_hash);
 
         put_offer(&e, &offer_key, &offer_contract_id);
 

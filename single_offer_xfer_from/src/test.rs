@@ -2,17 +2,10 @@
 
 use crate::testutils::{register_test_contract as register_single_offer, SingleOfferXferFrom};
 use crate::token::{self, Identifier, Signature, TokenMetadata};
-use rand::{thread_rng, RngCore};
 use soroban_sdk::{testutils::Accounts, AccountId, BigInt, BytesN, Env, IntoVal};
 
-fn generate_contract_id() -> [u8; 32] {
-    let mut id: [u8; 32] = Default::default();
-    thread_rng().fill_bytes(&mut id);
-    id
-}
-
-fn create_token_contract(e: &Env, admin: &AccountId) -> ([u8; 32], token::Client) {
-    let id = e.register_contract_token(None);
+fn create_token_contract(e: &Env, admin: &AccountId) -> token::Client {
+    let id = e.register_contract_token();
     let token = token::Client::new(e, &id);
     // decimals, name, symbol don't matter in tests
     token.init(
@@ -23,22 +16,20 @@ fn create_token_contract(e: &Env, admin: &AccountId) -> ([u8; 32], token::Client
             decimals: 7,
         },
     );
-    (id.into(), token)
+    token
 }
 
 fn create_single_offer_contract(
     e: &Env,
     admin: &AccountId,
-    token_a: &[u8; 32],
-    token_b: &[u8; 32],
+    token_a: &BytesN<32>,
+    token_b: &BytesN<32>,
     n: u32,
     d: u32,
-) -> ([u8; 32], SingleOfferXferFrom) {
-    let id = generate_contract_id();
-    register_single_offer(&e, &id);
-    let single_offer = SingleOfferXferFrom::new(e, &id);
+) -> SingleOfferXferFrom {
+    let single_offer = SingleOfferXferFrom::new(e, &register_single_offer(&e));
     single_offer.initialize(&Identifier::Account(admin.clone()), token_a, token_b, n, d);
-    (id, single_offer)
+    single_offer
 }
 
 #[test]
@@ -52,13 +43,13 @@ fn test() {
     let user1_id = Identifier::Account(user1.clone());
     let user2_id = Identifier::Account(user2.clone());
 
-    let (contract1, token1) = create_token_contract(&e, &admin1);
-    let (contract2, token2) = create_token_contract(&e, &admin2);
+    let token1 = create_token_contract(&e, &admin1);
+    let token2 = create_token_contract(&e, &admin2);
 
     // The price here is 1 A == .5 B and the admin in user1
-    let (contract_offer, offer) =
-        create_single_offer_contract(&e, &user1, &contract1, &contract2, 1, 2);
-    let offer_id = Identifier::Contract(BytesN::from_array(&e, &contract_offer));
+    let offer =
+        create_single_offer_contract(&e, &user1, &token1.contract_id, &token2.contract_id, 1, 2);
+    let offer_id = Identifier::Contract(offer.contract_id.clone());
 
     // mint tokens that will be traded
     token1.with_source_account(&admin1).mint(

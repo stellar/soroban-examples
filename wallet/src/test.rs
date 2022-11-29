@@ -25,7 +25,7 @@ fn generate_id() -> [u8; 32] {
 // test only for the sake of the test setup simplicity. There are no limitations
 // on types of identifiers used in any contexts here.
 fn create_token_contract(e: &Env, admin: &AccountId) -> (BytesN<32>, TokenClient) {
-    let id = e.register_contract_token(None);
+    let id = e.register_contract_token();
     let token = TokenClient::new(e, &id);
     // decimals, name, symbol don't matter in tests
     token.init(
@@ -40,10 +40,7 @@ fn create_token_contract(e: &Env, admin: &AccountId) -> (BytesN<32>, TokenClient
 }
 
 fn create_wallet_contract(e: &Env) -> WalletContractClient {
-    let contract_id = BytesN::from_array(e, &generate_id());
-    e.register_contract(&contract_id, WalletContract {});
-
-    WalletContractClient::new(e, contract_id)
+    WalletContractClient::new(e, e.register_contract(None, WalletContract {}))
 }
 
 fn sign_args(

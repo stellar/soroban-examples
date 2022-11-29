@@ -1,19 +1,12 @@
 #![cfg(test)]
 
 use super::*;
-use rand::{thread_rng, RngCore};
 use soroban_sdk::testutils::{Accounts, Ledger, LedgerInfo};
 use soroban_sdk::{vec, AccountId, Env, IntoVal};
 use token::{Client as TokenClient, TokenMetadata};
 
-fn generate_contract_id() -> [u8; 32] {
-    let mut id: [u8; 32] = Default::default();
-    thread_rng().fill_bytes(&mut id);
-    id
-}
-
 fn create_token_contract(e: &Env, admin: &AccountId) -> (BytesN<32>, TokenClient) {
-    let id = e.register_contract_token(None);
+    let id = e.register_contract_token();
     let token = TokenClient::new(e, &id);
     // decimals, name, symbol don't matter in tests
     token.init(
@@ -28,10 +21,7 @@ fn create_token_contract(e: &Env, admin: &AccountId) -> (BytesN<32>, TokenClient
 }
 
 fn create_claimable_balance_contract(e: &Env) -> ClaimableBalanceContractClient {
-    let contract_id = BytesN::from_array(e, &generate_contract_id());
-    e.register_contract(&contract_id, ClaimableBalanceContract {});
-
-    ClaimableBalanceContractClient::new(e, contract_id)
+    ClaimableBalanceContractClient::new(e, e.register_contract(None, ClaimableBalanceContract {}))
 }
 
 struct ClaimableBalanceTest {
