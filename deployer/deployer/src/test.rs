@@ -15,9 +15,11 @@ fn test() {
     let env = Env::default();
     let client = DeployerClient::new(&env, &env.register_contract(None, Deployer));
 
-    // Deploy contract using deployer, and include an init function to call.
-    let salt = Bytes::from_array(&env, &[0; 32]);
+    // Install the WASM code to be deployed from the deployer contract.
     let wasm_hash = env.install_contract_wasm(contract::WASM);
+    
+    // Deploy contract using deployer, and include an init function to call.
+    let salt = Bytes::from_array(&env, &[0; 32]);    
     let init_fn = symbol!("init");
     let init_fn_args = (5u32,).into_val(&env);
     let (contract_id, init_result) = client.deploy(&salt, &wasm_hash, &init_fn, &init_fn_args);
