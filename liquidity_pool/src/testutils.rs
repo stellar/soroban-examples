@@ -34,15 +34,15 @@ impl LiquidityPool {
     }
 
     pub fn deposit(&self, to: &Identifier) {
-        self.client().deposit(&to)
+        self.client().deposit(to)
     }
 
     pub fn swap(&self, to: &Identifier, out_a: &i128, out_b: &i128) {
-        self.client().swap(&to, &out_a, &out_b)
+        self.client().swap(to, out_a, out_b)
     }
 
     pub fn withdraw(&self, to: &Identifier) -> (i128, i128) {
-        self.client().withdraw(&to)
+        self.client().withdraw(to)
     }
 
     pub fn get_rsrvs(&self) -> (i128, i128) {

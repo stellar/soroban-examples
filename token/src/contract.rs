@@ -53,7 +53,7 @@ pub trait TokenTrait {
 
 fn read_nonce(e: &Env, id: &Identifier) -> i128 {
     let key = DataKey::Nonce(id.clone());
-    e.data().get(key).unwrap_or_else(|| Ok(0)).unwrap()
+    e.data().get(key).unwrap_or(Ok(0)).unwrap()
 }
 
 fn verify_and_consume_nonce(e: &Env, auth: &Signature, expected_nonce: i128) {
@@ -67,7 +67,7 @@ fn verify_and_consume_nonce(e: &Env, auth: &Signature, expected_nonce: i128) {
         _ => {}
     }
 
-    let id = auth.identifier(&e);
+    let id = auth.identifier(e);
     let key = DataKey::Nonce(id.clone());
     let nonce = read_nonce(e, &id);
 
@@ -128,7 +128,7 @@ impl TokenTrait for Token {
         let from_id = from.identifier(&e);
 
         verify(&e, &from, symbol!("xfer"), (&from_id, nonce, &to, &amount));
-        spend_balance(&e, from_id, amount.clone());
+        spend_balance(&e, from_id, amount);
         receive_balance(&e, to, amount);
     }
 
@@ -150,8 +150,8 @@ impl TokenTrait for Token {
             symbol!("xfer_from"),
             (&spender_id, nonce, &from, &to, &amount),
         );
-        spend_allowance(&e, from.clone(), spender_id, amount.clone());
-        spend_balance(&e, from, amount.clone());
+        spend_allowance(&e, from.clone(), spender_id, amount);
+        spend_balance(&e, from, amount);
         receive_balance(&e, to, amount);
     }
 

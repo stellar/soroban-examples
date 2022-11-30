@@ -33,19 +33,19 @@ impl SingleOffer {
         n: u32,
         d: u32,
     ) {
-        self.client().initialize(&admin, token_a, token_b, &n, &d);
+        self.client().initialize(admin, token_a, token_b, &n, &d);
     }
 
     pub fn trade(&self, to: &Identifier, min: &i128) {
-        self.client().trade(&to, &min)
+        self.client().trade(to, min)
     }
 
     pub fn withdraw(&self, admin: &AccountId, amount: &i128) {
-        self.client().with_source_account(&admin).withdraw(&amount)
+        self.client().with_source_account(admin).withdraw(amount)
     }
 
     pub fn updt_price(&self, admin: &AccountId, n: u32, d: u32) {
-        self.client().with_source_account(&admin).updt_price(&n, &d)
+        self.client().with_source_account(admin).updt_price(&n, &d)
     }
 
     pub fn get_price(&self) -> Price {

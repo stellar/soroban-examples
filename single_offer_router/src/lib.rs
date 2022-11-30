@@ -69,12 +69,12 @@ pub fn offer_key(
     sell_token: &BytesN<32>,
     buy_token: &BytesN<32>,
 ) -> BytesN<32> {
-    let mut offer_key_bin = Bytes::new(&e);
+    let mut offer_key_bin = Bytes::new(e);
 
     match admin {
         Identifier::Contract(a) => offer_key_bin.append(&a.clone().into()),
         Identifier::Ed25519(a) => offer_key_bin.append(&a.clone().into()),
-        Identifier::Account(a) => offer_key_bin.append(&a.serialize(&e)),
+        Identifier::Account(a) => offer_key_bin.append(&a.serialize(e)),
     }
     offer_key_bin.append(&sell_token.clone().into());
     offer_key_bin.append(&buy_token.clone().into());
@@ -128,7 +128,7 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
             &Signature::Invoker,
             &0,
             &invoker,
-            &Identifier::Contract(offer.clone()),
+            &Identifier::Contract(offer),
             &amount,
         );
 

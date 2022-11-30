@@ -146,7 +146,7 @@ impl WalletTest {
     fn pay(&self, signers: &[&Keypair], payment_id: i64, payment: Payment) -> Result<bool, Error> {
         let mut signatures = vec![&self.env];
         for signer in signers {
-            signatures.push_back(self.sign_pay(&signer, payment_id, &payment));
+            signatures.push_back(self.sign_pay(signer, payment_id, &payment));
         }
         extract_error(self.contract.try_pay(&signatures, &payment_id, &payment))
     }
@@ -228,10 +228,7 @@ fn test_delayed_payment() {
     // now the payment can be cleared.
     test.add_wallet_balance(&test.token, 1000);
 
-    assert_eq!(
-        test.pay(&[&test.wallet_admins[2]], 123, payment.clone()),
-        Ok(true)
-    );
+    assert_eq!(test.pay(&[&test.wallet_admins[2]], 123, payment), Ok(true));
     assert_eq!(test.token.balance(&test.payment_receiver), 300);
 }
 
@@ -288,7 +285,7 @@ fn test_mixed_payments() {
         test.pay(
             &[&test.wallet_admins[0], &test.wallet_admins[2]],
             222,
-            delayed_payment_2.clone()
+            delayed_payment_2
         ),
         Ok(true)
     );
@@ -296,7 +293,7 @@ fn test_mixed_payments() {
 
     test.add_wallet_balance(&test.token, 500);
     assert_eq!(
-        test.pay(&[&test.wallet_admins[1]], 111, delayed_payment_1.clone()),
+        test.pay(&[&test.wallet_admins[1]], 111, delayed_payment_1),
         Ok(true)
     );
 
@@ -445,7 +442,7 @@ fn test_payment_reexecution() {
     );
 
     assert_eq!(
-        test.pay(&[&test.wallet_admins[0]], 222, payment.clone()),
+        test.pay(&[&test.wallet_admins[0]], 222, payment),
         Err(Error::PaymentAlreadyExecuted)
     );
 }
@@ -473,7 +470,7 @@ fn test_duplicate_signers() {
         test.pay(
             &[&test.wallet_admins[2], &test.wallet_admins[0]],
             222,
-            payment.clone(),
+            payment,
         ),
         Err(Error::DuplicateSigner)
     );

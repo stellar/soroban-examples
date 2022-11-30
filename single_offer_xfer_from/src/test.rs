@@ -27,7 +27,7 @@ fn create_single_offer_contract(
     n: u32,
     d: u32,
 ) -> SingleOfferXferFrom {
-    let single_offer = SingleOfferXferFrom::new(e, &register_single_offer(&e));
+    let single_offer = SingleOfferXferFrom::new(e, &register_single_offer(e));
     single_offer.initialize(&Identifier::Account(admin.clone()), token_a, token_b, n, d);
     single_offer
 }

@@ -73,7 +73,7 @@ impl ClaimableBalanceTest {
             token,
             token_id,
             contract,
-            contract_id: contract_id,
+            contract_id,
         }
     }
 

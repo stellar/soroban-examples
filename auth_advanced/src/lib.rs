@@ -77,7 +77,7 @@ fn verify_and_consume_nonce(env: &Env, sig: &Signature, nonce: i128) {
 
 fn get_nonce(env: &Env, id: &Identifier) -> i128 {
     let key = DataKey::Nonce(id.clone());
-    env.data().get(key).unwrap_or_else(|| Ok(0)).unwrap()
+    env.data().get(key).unwrap_or(Ok(0)).unwrap()
 }
 
 fn set_nonce(env: &Env, id: &Identifier, nonce: i128) {

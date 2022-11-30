@@ -18,8 +18,8 @@ pub fn write_administrator(e: &Env, id: Identifier) {
 }
 
 pub fn check_admin(e: &Env, auth: &Signature) {
-    let auth_id = auth.identifier(&e);
-    if auth_id != read_administrator(&e) {
+    let auth_id = auth.identifier(e);
+    if auth_id != read_administrator(e) {
         panic!("not authorized by admin")
     }
 }

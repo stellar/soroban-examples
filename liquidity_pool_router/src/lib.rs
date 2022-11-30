@@ -73,7 +73,7 @@ pub fn pool_salt(e: &Env, token_a: &BytesN<32>, token_b: &BytesN<32>) -> BytesN<
         panic!("token_a must be less t&han token_b");
     }
 
-    let mut salt_bin = Bytes::new(&e);
+    let mut salt_bin = Bytes::new(e);
     salt_bin.append(&token_a.clone().into());
     salt_bin.append(&token_b.clone().into());
     e.compute_hash_sha256(&salt_bin)
@@ -90,18 +90,18 @@ fn get_deposit_amounts(
         return (desired_a, desired_b);
     }
 
-    let amount_b = desired_a.clone() * reserves.1.clone() / reserves.0.clone();
+    let amount_b = desired_a * reserves.1 / reserves.0;
     if amount_b <= desired_b {
         if amount_b < min_b {
             panic!("amount_b less than min")
         }
-        return (desired_a, amount_b);
+        (desired_a, amount_b)
     } else {
-        let amount_a = desired_b.clone() * reserves.0 / reserves.1;
+        let amount_a = desired_b * reserves.0 / reserves.1;
         if amount_a > desired_a || desired_a < min_a {
             panic!("amount_a invalid")
         }
-        return (amount_a, desired_b);
+        (amount_a, desired_b)
     }
 }
 
@@ -175,8 +175,8 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
             reserve_buy = reserves.0;
         }
 
-        let n = reserve_sell * out.clone() * 1000;
-        let d = (reserve_buy - out.clone()) * 997;
+        let n = reserve_sell * out * 1000;
+        let d = (reserve_buy - out) * 997;
         let xfer_amount = (n / d) + 1;
         if xfer_amount > in_max {
             panic!("in amount is over max")
@@ -214,7 +214,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         min_a: i128,
         min_b: i128,
     ) {
-        let pool_id = Self::get_pool(e.clone(), token_a.clone(), token_b);
+        let pool_id = Self::get_pool(e.clone(), token_a, token_b);
 
         let pool_client = LiquidityPoolClient::new(&e, &pool_id);
         let share_token = pool_client.share_id();
@@ -225,7 +225,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
             &Signature::Invoker,
             &0,
             &invoker.clone().into(),
-            &Identifier::Contract(pool_id.clone()),
+            &Identifier::Contract(pool_id),
             &share_amount,
         );
 

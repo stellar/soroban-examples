@@ -59,16 +59,16 @@ fn transfer_from(
     to: &Identifier,
     amount: &i128,
 ) {
-    let client = token::Client::new(&e, &contract_id);
-    client.xfer_from(&Signature::Invoker, &0, &from, &to, &amount)
+    let client = token::Client::new(e, &contract_id);
+    client.xfer_from(&Signature::Invoker, &0, from, to, amount)
 }
 
 fn transfer_sell(e: &Env, from: &Identifier, to: &Identifier, amount: &i128) {
-    transfer_from(&e, get_sell_token(&e), from, to, amount);
+    transfer_from(e, get_sell_token(e), from, to, amount);
 }
 
 fn transfer_buy(e: &Env, from: &Identifier, to: &Identifier, amount: &i128) {
-    transfer_from(&e, get_buy_token(&e), from, to, amount);
+    transfer_from(e, get_buy_token(e), from, to, amount);
 }
 
 fn has_administrator(e: &Env) -> bool {
@@ -87,7 +87,7 @@ fn write_administrator(e: &Env, id: Identifier) {
 }
 
 pub fn check_admin(e: &Env, auth_id: Identifier) {
-    if auth_id != read_administrator(&e) {
+    if auth_id != read_administrator(e) {
         panic!("not authorized by admin")
     }
 }
@@ -155,7 +155,7 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
     fn trade(e: Env, amount_to_sell: i128, min: i128) {
         let price = get_price(&e);
 
-        let amount = amount_to_sell.clone() * price.d as i128 / price.n as i128;
+        let amount = amount_to_sell * price.d as i128 / price.n as i128;
 
         if amount < min {
             panic!("will receive less than min");

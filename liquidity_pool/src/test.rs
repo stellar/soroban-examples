@@ -21,7 +21,7 @@ fn create_token_contract(e: &Env, admin: &AccountId) -> token::Client {
 }
 
 fn create_liqpool_contract(e: &Env, token_a: &BytesN<32>, token_b: &BytesN<32>) -> LiquidityPool {
-    let liqpool = LiquidityPool::new(e, &register_liqpool(&e));
+    let liqpool = LiquidityPool::new(e, &register_liqpool(e));
     liqpool.initialize(token_a, token_b);
     liqpool
 }
@@ -44,7 +44,7 @@ fn test() {
     let liqpool = create_liqpool_contract(&e, &token1.contract_id, &token2.contract_id);
     let pool_id = Identifier::Contract(liqpool.contract_id.clone());
     let contract_share: [u8; 32] = liqpool.share_id().into();
-    let token_share = token::Client::new(&e, &contract_share);
+    let token_share = token::Client::new(&e, contract_share);
 
     token1
         .with_source_account(&admin1)

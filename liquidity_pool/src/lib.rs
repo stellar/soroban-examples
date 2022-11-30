@@ -27,7 +27,7 @@ impl IntoVal<Env, RawVal> for DataKey {
 }
 
 fn get_contract_id(e: &Env) -> Identifier {
-    Identifier::Contract(e.get_current_contract().into())
+    Identifier::Contract(e.get_current_contract())
 }
 
 fn get_token_a(e: &Env) -> BytesN<32> {
@@ -55,19 +55,19 @@ fn get_reserve_b(e: &Env) -> i128 {
 }
 
 fn get_balance(e: &Env, contract_id: BytesN<32>) -> i128 {
-    token::Client::new(&e, contract_id).balance(&get_contract_id(e))
+    token::Client::new(e, contract_id).balance(&get_contract_id(e))
 }
 
 fn get_balance_a(e: &Env) -> i128 {
-    get_balance(&e, get_token_a(&e))
+    get_balance(e, get_token_a(e))
 }
 
 fn get_balance_b(e: &Env) -> i128 {
-    get_balance(&e, get_token_b(&e))
+    get_balance(e, get_token_b(e))
 }
 
 fn get_balance_shares(e: &Env) -> i128 {
-    get_balance(&e, get_token_share(&e))
+    get_balance(e, get_token_share(e))
 }
 
 fn put_token_a(e: &Env, contract_id: BytesN<32>) {
@@ -98,7 +98,7 @@ fn burn_shares(e: &Env, amount: i128) {
     let total = get_total_shares(e);
     let share_contract_id = get_token_share(e);
 
-    token::Client::new(&e, share_contract_id).burn(
+    token::Client::new(e, share_contract_id).burn(
         &Signature::Invoker,
         &0,
         &get_contract_id(e),
@@ -111,21 +111,21 @@ fn mint_shares(e: &Env, to: Identifier, amount: i128) {
     let total = get_total_shares(e);
     let share_contract_id = get_token_share(e);
 
-    token::Client::new(&e, share_contract_id).mint(&Signature::Invoker, &0, &to, &amount);
+    token::Client::new(e, share_contract_id).mint(&Signature::Invoker, &0, &to, &amount);
 
     put_total_shares(e, total + amount);
 }
 
 fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: i128) {
-    token::Client::new(&e, contract_id).xfer(&Signature::Invoker, &0, &to, &amount);
+    token::Client::new(e, contract_id).xfer(&Signature::Invoker, &0, &to, &amount);
 }
 
 fn transfer_a(e: &Env, to: Identifier, amount: i128) {
-    transfer(&e, get_token_a(&e), to, amount);
+    transfer(e, get_token_a(e), to, amount);
 }
 
 fn transfer_b(e: &Env, to: Identifier, amount: i128) {
-    transfer(&e, get_token_b(&e), to, amount);
+    transfer(e, get_token_b(e), to, amount);
 }
 
 /*
@@ -205,12 +205,12 @@ impl LiquidityPoolTrait for LiquidityPool {
         let total_shares = get_total_shares(&e);
 
         let zero = 0;
-        let new_total_shares = if reserve_a > zero.clone() && reserve_b > zero {
-            let shares_a = (balance_a.clone() * total_shares.clone()) / reserve_a;
-            let shares_b = (balance_b.clone() * total_shares.clone()) / reserve_b;
+        let new_total_shares = if reserve_a > zero && reserve_b > zero {
+            let shares_a = (balance_a * total_shares) / reserve_a;
+            let shares_b = (balance_b * total_shares) / reserve_b;
             shares_a.min(shares_b)
         } else {
-            (balance_a.clone() * balance_b.clone()).sqrt()
+            (balance_a * balance_b).sqrt()
         };
 
         mint_shares(&e, to, new_total_shares - total_shares);
@@ -229,25 +229,25 @@ impl LiquidityPoolTrait for LiquidityPool {
         let zero = 0;
 
         let new_invariant_factor = |balance: i128, reserve: i128, out: i128| {
-            let delta = balance - reserve.clone() - out;
+            let delta = balance - reserve - out;
             let adj_delta = if delta > zero {
-                residue_numerator.clone() * delta
+                residue_numerator * delta
             } else {
-                residue_denominator.clone() * delta
+                residue_denominator * delta
             };
-            residue_denominator.clone() * reserve + adj_delta
+            residue_denominator * reserve + adj_delta
         };
-        let new_inv_a = new_invariant_factor(balance_a.clone(), reserve_a.clone(), out_a.clone());
-        let new_inv_b = new_invariant_factor(balance_b.clone(), reserve_b.clone(), out_b.clone());
-        let old_inv_a = residue_denominator.clone() * reserve_a.clone();
-        let old_inv_b = residue_denominator.clone() * reserve_b.clone();
+        let new_inv_a = new_invariant_factor(balance_a, reserve_a, out_a);
+        let new_inv_b = new_invariant_factor(balance_b, reserve_b, out_b);
+        let old_inv_a = residue_denominator * reserve_a;
+        let old_inv_b = residue_denominator * reserve_b;
 
         if new_inv_a * new_inv_b < old_inv_a * old_inv_b {
             panic!("constant product invariant does not hold");
         }
 
-        transfer_a(&e, to.clone(), out_a.clone());
-        transfer_b(&e, to, out_b.clone());
+        transfer_a(&e, to.clone(), out_a);
+        transfer_b(&e, to, out_b);
         put_reserve_a(&e, balance_a - out_a);
         put_reserve_b(&e, balance_b - out_b);
     }
@@ -257,14 +257,14 @@ impl LiquidityPoolTrait for LiquidityPool {
         let balance_shares = get_balance_shares(&e);
         let total_shares = get_total_shares(&e);
 
-        let out_a = (balance_a.clone() * balance_shares.clone()) / total_shares.clone();
-        let out_b = (balance_b.clone() * balance_shares.clone()) / total_shares.clone();
+        let out_a = (balance_a * balance_shares) / total_shares;
+        let out_b = (balance_b * balance_shares) / total_shares;
 
         burn_shares(&e, balance_shares);
-        transfer_a(&e, to.clone(), out_a.clone());
-        transfer_b(&e, to, out_b.clone());
-        put_reserve_a(&e, balance_a - out_a.clone());
-        put_reserve_b(&e, balance_b - out_b.clone());
+        transfer_a(&e, to.clone(), out_a);
+        transfer_b(&e, to, out_b);
+        put_reserve_a(&e, balance_a - out_a);
+        put_reserve_b(&e, balance_b - out_b);
 
         (out_a, out_b)
     }

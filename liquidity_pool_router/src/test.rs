@@ -26,7 +26,7 @@ fn create_token_contract(e: &Env, admin: &AccountId) -> token::Client {
 }
 
 fn create_liquidity_pool_router_contract(e: &Env) -> LiquidityPoolRouter {
-    LiquidityPoolRouter::new(e, &register_liquidity_pool_router(&e))
+    LiquidityPoolRouter::new(e, &register_liquidity_pool_router(e))
 }
 
 fn install_liquidity_pool_wasm(e: &Env) -> BytesN<32> {

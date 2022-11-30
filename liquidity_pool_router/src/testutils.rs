@@ -35,14 +35,14 @@ impl LiquidityPoolRouter {
         desired_b: &i128,
         min_b: &i128,
     ) {
-        self.client().with_source_account(&to).sf_deposit(
+        self.client().with_source_account(to).sf_deposit(
             liquidity_pool_wasm_hash,
             token_a,
             token_b,
-            &desired_a,
-            &min_a,
-            &desired_b,
-            &min_b,
+            desired_a,
+            min_a,
+            desired_b,
+            min_b,
         )
     }
 
@@ -55,8 +55,8 @@ impl LiquidityPoolRouter {
         in_max: &i128,
     ) {
         self.client()
-            .with_source_account(&to)
-            .swap_out(sell, buy, &out, &in_max)
+            .with_source_account(to)
+            .swap_out(sell, buy, out, in_max)
     }
 
     pub fn sf_withdrw(
@@ -68,12 +68,12 @@ impl LiquidityPoolRouter {
         min_a: &i128,
         min_b: &i128,
     ) {
-        self.client().with_source_account(&to).sf_withdrw(
+        self.client().with_source_account(to).sf_withdrw(
             token_a,
             token_b,
-            &share_amount,
-            &min_a,
-            &min_b,
+            share_amount,
+            min_a,
+            min_b,
         )
     }
 

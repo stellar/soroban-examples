@@ -27,7 +27,7 @@ fn create_single_offer_router_contract(
     n: u32,
     d: u32,
 ) -> SingleOfferRouter {
-    let single_offer = SingleOfferRouter::new(e, &register_single_offer_router(&e));
+    let single_offer = SingleOfferRouter::new(e, &register_single_offer_router(e));
     single_offer.init(
         offer_wasm_hash,
         &Identifier::Account(admin.clone()),
@@ -95,7 +95,7 @@ fn test() {
         .with_source_account(&user2)
         .approve(&Signature::Invoker, &0, &router_id, &20);
 
-    offer_router.safe_trade(&user2, &offer_addr.into(), &10, &10);
+    offer_router.safe_trade(&user2, &offer_addr, &10, &10);
     assert_eq!(token1.balance(&user1_id), 10);
     assert_eq!(token1.balance(&user2_id), 10);
     assert_eq!(token2.balance(&user1_id), 10);

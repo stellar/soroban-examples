@@ -134,7 +134,7 @@ fn is_initialized(env: &Env) -> bool {
 }
 
 fn get_contract_id(e: &Env) -> Identifier {
-    Identifier::Contract(e.get_current_contract().into())
+    Identifier::Contract(e.get_current_contract())
 }
 
 fn transfer_from_account_to_contract(
@@ -143,8 +143,8 @@ fn transfer_from_account_to_contract(
     from: &Identifier,
     amount: &i128,
 ) {
-    let client = token::Client::new(&e, token_id);
-    client.xfer_from(&Signature::Invoker, &0, &from, &get_contract_id(e), &amount);
+    let client = token::Client::new(e, token_id);
+    client.xfer_from(&Signature::Invoker, &0, from, &get_contract_id(e), amount);
 }
 
 fn transfer_from_contract_to_account(
@@ -153,7 +153,7 @@ fn transfer_from_contract_to_account(
     to: &Identifier,
     amount: &i128,
 ) {
-    let client = token::Client::new(&e, token_id);
+    let client = token::Client::new(e, token_id);
     client.xfer(&Signature::Invoker, &0, to, amount);
 }
 

@@ -26,7 +26,7 @@ fn create_single_offer_contract(
     n: u32,
     d: u32,
 ) -> SingleOffer {
-    let single_offer = SingleOffer::new(e, &register_single_offer(&e));
+    let single_offer = SingleOffer::new(e, &register_single_offer(e));
     single_offer.initialize(&Identifier::Account(admin.clone()), token_a, token_b, n, d);
     single_offer
 }

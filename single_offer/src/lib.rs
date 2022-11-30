@@ -29,7 +29,7 @@ pub struct Price {
 }
 
 fn get_contract_id(e: &Env) -> Identifier {
-    Identifier::Contract(e.get_current_contract().into())
+    Identifier::Contract(e.get_current_contract())
 }
 
 fn get_sell_token(e: &Env) -> BytesN<32> {
@@ -41,11 +41,11 @@ fn get_buy_token(e: &Env) -> BytesN<32> {
 }
 
 fn get_balance(e: &Env, contract_id: BytesN<32>) -> i128 {
-    token::Client::new(&e, contract_id).balance(&get_contract_id(e))
+    token::Client::new(e, contract_id).balance(&get_contract_id(e))
 }
 
 fn get_balance_buy(e: &Env) -> i128 {
-    get_balance(&e, get_buy_token(&e))
+    get_balance(e, get_buy_token(e))
 }
 
 fn put_sell_token(e: &Env, contract_id: BytesN<32>) {
@@ -65,16 +65,16 @@ fn load_price(e: &Env) -> Price {
 }
 
 fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: i128) {
-    let client = token::Client::new(&e, contract_id);
+    let client = token::Client::new(e, contract_id);
     client.xfer(&Signature::Invoker, &0, &to, &amount);
 }
 
 fn transfer_sell(e: &Env, to: Identifier, amount: i128) {
-    transfer(&e, get_sell_token(&e), to, amount);
+    transfer(e, get_sell_token(e), to, amount);
 }
 
 fn transfer_buy(e: &Env, to: Identifier, amount: i128) {
-    transfer(&e, get_buy_token(&e), to, amount);
+    transfer(e, get_buy_token(e), to, amount);
 }
 
 fn has_administrator(e: &Env) -> bool {
@@ -93,7 +93,7 @@ fn write_administrator(e: &Env, id: Identifier) {
 }
 
 pub fn check_admin(e: &Env, auth_id: &Identifier) {
-    if *auth_id != read_administrator(&e) {
+    if *auth_id != read_administrator(e) {
         panic!("not authorized by admin")
     }
 }
@@ -173,7 +173,7 @@ impl SingleOfferTrait for SingleOffer {
 
         let price = load_price(&e);
 
-        let amount = balance_buy_token.clone() * price.d as i128 / price.n as i128;
+        let amount = balance_buy_token * price.d as i128 / price.n as i128;
 
         if amount < min {
             panic!("will receive less than min");
