@@ -1,5 +1,5 @@
 #![cfg(any(test, feature = "testutils"))]
-use soroban_sdk::{AccountId, BigInt, BytesN, Env};
+use soroban_sdk::{AccountId, BytesN, Env};
 
 use crate::LiquidityPoolRouterClient;
 
@@ -30,19 +30,19 @@ impl LiquidityPoolRouter {
         to: &AccountId,
         token_a: &BytesN<32>,
         token_b: &BytesN<32>,
-        desired_a: &BigInt,
-        min_a: &BigInt,
-        desired_b: &BigInt,
-        min_b: &BigInt,
+        desired_a: &i128,
+        min_a: &i128,
+        desired_b: &i128,
+        min_b: &i128,
     ) {
-        self.client().with_source_account(&to).sf_deposit(
+        self.client().with_source_account(to).sf_deposit(
             liquidity_pool_wasm_hash,
             token_a,
             token_b,
-            &desired_a,
-            &min_a,
-            &desired_b,
-            &min_b,
+            desired_a,
+            min_a,
+            desired_b,
+            min_b,
         )
     }
 
@@ -51,12 +51,12 @@ impl LiquidityPoolRouter {
         to: &AccountId,
         sell: &BytesN<32>,
         buy: &BytesN<32>,
-        out: &BigInt,
-        in_max: &BigInt,
+        out: &i128,
+        in_max: &i128,
     ) {
         self.client()
-            .with_source_account(&to)
-            .swap_out(sell, buy, &out, &in_max)
+            .with_source_account(to)
+            .swap_out(sell, buy, out, in_max)
     }
 
     pub fn sf_withdrw(
@@ -64,16 +64,16 @@ impl LiquidityPoolRouter {
         to: &AccountId,
         token_a: &BytesN<32>,
         token_b: &BytesN<32>,
-        share_amount: &BigInt,
-        min_a: &BigInt,
-        min_b: &BigInt,
+        share_amount: &i128,
+        min_a: &i128,
+        min_b: &i128,
     ) {
-        self.client().with_source_account(&to).sf_withdrw(
+        self.client().with_source_account(to).sf_withdrw(
             token_a,
             token_b,
-            &share_amount,
-            &min_a,
-            &min_b,
+            share_amount,
+            min_a,
+            min_b,
         )
     }
 

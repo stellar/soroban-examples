@@ -3,7 +3,7 @@
 mod test;
 pub mod testutils;
 
-use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env};
+use soroban_sdk::{contractimpl, contracttype, BytesN, Env};
 use token::{Identifier, Signature};
 
 mod token {
@@ -29,7 +29,7 @@ pub struct Price {
 }
 
 fn get_contract_id(e: &Env) -> Identifier {
-    Identifier::Contract(e.get_current_contract().into())
+    Identifier::Contract(e.get_current_contract())
 }
 
 fn get_sell_token(e: &Env) -> BytesN<32> {
@@ -40,12 +40,12 @@ fn get_buy_token(e: &Env) -> BytesN<32> {
     e.data().get_unchecked(DataKey::BuyToken).unwrap()
 }
 
-fn get_balance(e: &Env, contract_id: BytesN<32>) -> BigInt {
-    token::Client::new(&e, contract_id).balance(&get_contract_id(e))
+fn get_balance(e: &Env, contract_id: BytesN<32>) -> i128 {
+    token::Client::new(e, contract_id).balance(&get_contract_id(e))
 }
 
-fn get_balance_buy(e: &Env) -> BigInt {
-    get_balance(&e, get_buy_token(&e))
+fn get_balance_buy(e: &Env) -> i128 {
+    get_balance(e, get_buy_token(e))
 }
 
 fn put_sell_token(e: &Env, contract_id: BytesN<32>) {
@@ -64,17 +64,17 @@ fn load_price(e: &Env) -> Price {
     e.data().get_unchecked(DataKey::Price).unwrap()
 }
 
-fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
-    let client = token::Client::new(&e, contract_id);
-    client.xfer(&Signature::Invoker, &BigInt::zero(&e), &to, &amount);
+fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: i128) {
+    let client = token::Client::new(e, contract_id);
+    client.xfer(&Signature::Invoker, &0, &to, &amount);
 }
 
-fn transfer_sell(e: &Env, to: Identifier, amount: BigInt) {
-    transfer(&e, get_sell_token(&e), to, amount);
+fn transfer_sell(e: &Env, to: Identifier, amount: i128) {
+    transfer(e, get_sell_token(e), to, amount);
 }
 
-fn transfer_buy(e: &Env, to: Identifier, amount: BigInt) {
-    transfer(&e, get_buy_token(&e), to, amount);
+fn transfer_buy(e: &Env, to: Identifier, amount: i128) {
+    transfer(e, get_buy_token(e), to, amount);
 }
 
 fn has_administrator(e: &Env) -> bool {
@@ -93,7 +93,7 @@ fn write_administrator(e: &Env, id: Identifier) {
 }
 
 pub fn check_admin(e: &Env, auth_id: &Identifier) {
-    if *auth_id != read_administrator(&e) {
+    if *auth_id != read_administrator(e) {
         panic!("not authorized by admin")
     }
 }
@@ -125,10 +125,10 @@ pub trait SingleOfferTrait {
     // the seller and the buyer need to transfer the sell_token and buy_token to this contract prior to calling
     // trade. Due to this and the fact that the buyer is a parameter to trade, the buyer must tranfer the buy_token
     // to the contract and call trade in the same transaction for safety.
-    fn trade(e: Env, to: Identifier, min: BigInt);
+    fn trade(e: Env, to: Identifier, min: i128);
 
     // Sends amount of sell_token from this contract to the admin. Must be authorized by admin
-    fn withdraw(e: Env, amount: BigInt);
+    fn withdraw(e: Env, amount: i128);
 
     // Updates the price. Must be authorized by admin
     fn updt_price(e: Env, n: u32, d: u32);
@@ -168,13 +168,12 @@ impl SingleOfferTrait for SingleOffer {
         put_price(&e, Price { n, d });
     }
 
-    fn trade(e: Env, to: Identifier, min: BigInt) {
+    fn trade(e: Env, to: Identifier, min: i128) {
         let balance_buy_token = get_balance_buy(&e);
 
         let price = load_price(&e);
 
-        let amount = balance_buy_token.clone() * BigInt::from_u32(&e, price.d)
-            / BigInt::from_u32(&e, price.n);
+        let amount = balance_buy_token * price.d as i128 / price.n as i128;
 
         if amount < min {
             panic!("will receive less than min");
@@ -186,7 +185,7 @@ impl SingleOfferTrait for SingleOffer {
         transfer_buy(&e, admin, balance_buy_token);
     }
 
-    fn withdraw(e: Env, amount: BigInt) {
+    fn withdraw(e: Env, amount: i128) {
         let invoker = e.invoker().into();
         check_admin(&e, &invoker);
         transfer_sell(&e, invoker, amount);

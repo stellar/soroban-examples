@@ -59,9 +59,9 @@ impl ClaimableBalanceTest {
         let (token_id, token) = create_token_contract(&env, &token_admin);
         token.with_source_account(&token_admin).mint(
             &Signature::Invoker,
-            &BigInt::zero(&env),
+            &0,
             &deposit_user_id,
-            &BigInt::from_u32(&env, 1000),
+            &1000,
         );
 
         let contract = create_claimable_balance_contract(&env);
@@ -73,24 +73,24 @@ impl ClaimableBalanceTest {
             token,
             token_id,
             contract,
-            contract_id: contract_id,
+            contract_id,
         }
     }
 
     fn approve_deposit(&self, amount: u32) {
         self.token.with_source_account(&self.deposit_user).approve(
             &Signature::Invoker,
-            &BigInt::zero(&self.env),
+            &0,
             &Identifier::Contract(self.contract.contract_id.clone()),
-            &BigInt::from_u32(&self.env, amount),
-        );
+            &(amount as i128),
+        )
     }
 
     fn deposit(&self, amount: u32, claimants: &Vec<Identifier>, time_bound: TimeBound) {
         self.call_deposit(
             &self.deposit_user,
             &self.token_id,
-            &BigInt::from_u32(&self.env, amount),
+            &(amount as i128),
             claimants,
             &time_bound,
         );
@@ -108,7 +108,7 @@ impl ClaimableBalanceTest {
         &self,
         account_id: &AccountId,
         token: &BytesN<32>,
-        amount: &BigInt,
+        amount: &i128,
         claimants: &Vec<Identifier>,
         time_bound: &TimeBound,
     ) {
@@ -142,32 +142,26 @@ fn test_deposit_and_claim() {
     assert_eq!(
         test.token
             .balance(&test.account_id_to_identifier(&test.deposit_user)),
-        BigInt::from_u32(&test.env, 200)
+        200
     );
-    assert_eq!(
-        test.token.balance(&test.contract_id),
-        BigInt::from_u32(&test.env, 800)
-    );
+    assert_eq!(test.token.balance(&test.contract_id), 800);
     assert_eq!(
         test.token
             .balance(&test.account_id_to_identifier(&test.claim_users[1])),
-        BigInt::from_u32(&test.env, 0)
+        0
     );
 
     test.claim(&test.claim_users[1]);
     assert_eq!(
         test.token
             .balance(&test.account_id_to_identifier(&test.deposit_user)),
-        BigInt::from_u32(&test.env, 200)
+        200
     );
-    assert_eq!(
-        test.token.balance(&test.contract_id),
-        BigInt::from_u32(&test.env, 0)
-    );
+    assert_eq!(test.token.balance(&test.contract_id), 0);
     assert_eq!(
         test.token
             .balance(&test.account_id_to_identifier(&test.claim_users[1])),
-        BigInt::from_u32(&test.env, 800)
+        800
     );
 }
 
@@ -280,7 +274,7 @@ fn test_double_claim_not_possible() {
     assert_eq!(
         test.token
             .balance(&test.account_id_to_identifier(&test.claim_users[0])),
-        BigInt::from_u32(&test.env, 800)
+        800
     );
     test.claim(&test.claim_users[0]);
 }
@@ -306,7 +300,7 @@ fn test_deposit_after_claim_not_possible() {
     assert_eq!(
         test.token
             .balance(&test.account_id_to_identifier(&test.claim_users[0])),
-        BigInt::from_u32(&test.env, 800)
+        800
     );
     test.deposit(
         200,

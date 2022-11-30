@@ -3,7 +3,7 @@
 mod test;
 pub mod testutils;
 
-use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env};
+use soroban_sdk::{contractimpl, contracttype, BytesN, Env};
 use token::{Identifier, Signature};
 
 mod token {
@@ -57,18 +57,18 @@ fn transfer_from(
     contract_id: BytesN<32>,
     from: &Identifier,
     to: &Identifier,
-    amount: &BigInt,
+    amount: &i128,
 ) {
-    let client = token::Client::new(&e, &contract_id);
-    client.xfer_from(&Signature::Invoker, &BigInt::zero(&e), &from, &to, &amount)
+    let client = token::Client::new(e, &contract_id);
+    client.xfer_from(&Signature::Invoker, &0, from, to, amount)
 }
 
-fn transfer_sell(e: &Env, from: &Identifier, to: &Identifier, amount: &BigInt) {
-    transfer_from(&e, get_sell_token(&e), from, to, amount);
+fn transfer_sell(e: &Env, from: &Identifier, to: &Identifier, amount: &i128) {
+    transfer_from(e, get_sell_token(e), from, to, amount);
 }
 
-fn transfer_buy(e: &Env, from: &Identifier, to: &Identifier, amount: &BigInt) {
-    transfer_from(&e, get_buy_token(&e), from, to, amount);
+fn transfer_buy(e: &Env, from: &Identifier, to: &Identifier, amount: &i128) {
+    transfer_from(e, get_buy_token(e), from, to, amount);
 }
 
 fn has_administrator(e: &Env) -> bool {
@@ -87,7 +87,7 @@ fn write_administrator(e: &Env, id: Identifier) {
 }
 
 pub fn check_admin(e: &Env, auth_id: Identifier) {
-    if auth_id != read_administrator(&e) {
+    if auth_id != read_administrator(e) {
         panic!("not authorized by admin")
     }
 }
@@ -116,7 +116,7 @@ pub trait SingleOfferXferFromTrait {
     // Sends amount_to_sell of buy_token to the admin, and sends amount_to_sell * d / n of
     // sell_token to "to". Allowances must be sufficient for this contract address to send
     // sell_token from admin and buy_token from the invoker.
-    fn trade(e: Env, amount_to_sell: BigInt, min: BigInt);
+    fn trade(e: Env, amount_to_sell: i128, min: i128);
 
     // Updates the price. Must be authorized by admin
     fn updt_price(e: Env, n: u32, d: u32);
@@ -152,11 +152,10 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
         put_price(&e, Price { n, d });
     }
 
-    fn trade(e: Env, amount_to_sell: BigInt, min: BigInt) {
+    fn trade(e: Env, amount_to_sell: i128, min: i128) {
         let price = get_price(&e);
 
-        let amount =
-            amount_to_sell.clone() * BigInt::from_u32(&e, price.d) / BigInt::from_u32(&e, price.n);
+        let amount = amount_to_sell * price.d as i128 / price.n as i128;
 
         if amount < min {
             panic!("will receive less than min");

@@ -1,5 +1,5 @@
 #![cfg(any(test, feature = "testutils"))]
-use soroban_sdk::{AccountId, BigInt, BytesN, Env};
+use soroban_sdk::{AccountId, BytesN, Env};
 
 use crate::{token::Identifier, SingleOfferRouterClient};
 
@@ -37,10 +37,10 @@ impl SingleOfferRouter {
             .init(offer_wasm_hash, admin, token_a, token_b, &n, &d)
     }
 
-    pub fn safe_trade(&self, to: &AccountId, offer: &BytesN<32>, amount: &BigInt, min: &BigInt) {
+    pub fn safe_trade(&self, to: &AccountId, offer: &BytesN<32>, amount: &i128, min: &i128) {
         self.client()
-            .with_source_account(&to)
-            .safe_trade(offer, &amount, &min)
+            .with_source_account(to)
+            .safe_trade(offer, amount, min)
     }
 
     pub fn get_offer(

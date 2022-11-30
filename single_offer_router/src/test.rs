@@ -2,7 +2,7 @@
 
 use crate::testutils::{register_test_contract as register_single_offer_router, SingleOfferRouter};
 use crate::token::{self, Identifier, Signature, TokenMetadata};
-use soroban_sdk::{testutils::Accounts, AccountId, BigInt, BytesN, Env, IntoVal};
+use soroban_sdk::{testutils::Accounts, AccountId, BytesN, Env, IntoVal};
 
 fn create_token_contract(e: &Env, admin: &AccountId) -> token::Client {
     let token = token::Client::new(e, &e.register_contract_token());
@@ -27,7 +27,7 @@ fn create_single_offer_router_contract(
     n: u32,
     d: u32,
 ) -> SingleOfferRouter {
-    let single_offer = SingleOfferRouter::new(e, &register_single_offer_router(&e));
+    let single_offer = SingleOfferRouter::new(e, &register_single_offer_router(e));
     single_offer.init(
         offer_wasm_hash,
         &Identifier::Account(admin.clone()),
@@ -75,50 +75,29 @@ fn test() {
 
     // mint tokens that will be traded
     e.set_source_account(&admin1);
-    token1.mint(
-        &Signature::Invoker,
-        &BigInt::zero(&e),
-        &user1_id,
-        &BigInt::from_u32(&e, 20),
-    );
-    assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 20));
+    token1.mint(&Signature::Invoker, &0, &user1_id, &20);
+    assert_eq!(token1.balance(&user1_id), 20);
 
     e.set_source_account(&admin2);
-    token2.mint(
-        &Signature::Invoker,
-        &BigInt::zero(&e),
-        &user2_id,
-        &BigInt::from_u32(&e, 20),
-    );
-    assert_eq!(token2.balance(&user2_id), BigInt::from_u32(&e, 20));
+    token2.mint(&Signature::Invoker, &0, &user2_id, &20);
+    assert_eq!(token2.balance(&user2_id), 20);
 
     let offer_addr = offer_router.get_offer(&user1_id, &token1.contract_id, &token2.contract_id);
     let offer_id = Identifier::Contract(offer_addr.clone());
 
     // admin transfers the sell_token (token1) to the contract address
-    token1.with_source_account(&user1).xfer(
-        &Signature::Invoker,
-        &BigInt::zero(&e),
-        &offer_id,
-        &BigInt::from_u32(&e, 10),
-    );
+    token1
+        .with_source_account(&user1)
+        .xfer(&Signature::Invoker, &0, &offer_id, &10);
 
     // set required allowances for the router contract before trading
-    token2.with_source_account(&user2).approve(
-        &Signature::Invoker,
-        &BigInt::zero(&e),
-        &router_id,
-        &BigInt::from_u32(&e, 20),
-    );
+    token2
+        .with_source_account(&user2)
+        .approve(&Signature::Invoker, &0, &router_id, &20);
 
-    offer_router.safe_trade(
-        &user2,
-        &offer_addr.into(),
-        &BigInt::from_u32(&e, 10),
-        &BigInt::from_u32(&e, 10),
-    );
-    assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 10));
-    assert_eq!(token1.balance(&user2_id), BigInt::from_u32(&e, 10));
-    assert_eq!(token2.balance(&user1_id), BigInt::from_u32(&e, 10));
-    assert_eq!(token2.balance(&user2_id), BigInt::from_u32(&e, 10));
+    offer_router.safe_trade(&user2, &offer_addr, &10, &10);
+    assert_eq!(token1.balance(&user1_id), 10);
+    assert_eq!(token1.balance(&user2_id), 10);
+    assert_eq!(token2.balance(&user1_id), 10);
+    assert_eq!(token2.balance(&user2_id), 10);
 }

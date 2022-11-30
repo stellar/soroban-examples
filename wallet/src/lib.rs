@@ -5,7 +5,7 @@
 
 use soroban_auth::{verify, Identifier, Signature};
 use soroban_sdk::{
-    contracterror, contractimpl, contracttype, map, symbol, vec, BigInt, BytesN, Env, Map, Vec,
+    contracterror, contractimpl, contracttype, map, symbol, vec, BytesN, Env, Map, Vec,
 };
 mod token {
     soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
@@ -24,12 +24,12 @@ pub enum DataKey {
     PaySigners(i64),
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 #[contracttype]
 pub struct Payment {
     pub receiver: Identifier,
     pub token: BytesN<32>,
-    pub amount: BigInt,
+    pub amount: i128,
 }
 
 #[derive(Clone)]
@@ -205,7 +205,7 @@ fn check_initialization_params(
     if threshold == 0 || threshold > MAX_WEIGHT * MAX_ADMINS {
         return Err(Error::InvalidThreshold);
     }
-    if admins.len() == 0 || admins.len() > MAX_ADMINS {
+    if admins.is_empty() || admins.len() > MAX_ADMINS {
         return Err(Error::InvalidAdminCount);
     }
     if env.data().has(DataKey::Threshold) {
@@ -223,21 +223,16 @@ fn validate_and_compute_signature_weight(
     payment: &Payment,
 ) -> Result<u32, Error> {
     let mut weight_sum = 0;
-    let mut unique_ids: Map<Identifier, ()> = map![&env];
+    let mut unique_ids: Map<Identifier, ()> = map![env];
 
     for maybe_signature in signatures.iter() {
         let signature = maybe_signature.unwrap();
-        let id = signature.identifier(&env);
+        let id = signature.identifier(env);
         // Accumulate the weights and take care of non-authorized accounts
         // at the same time (non-authorized accounts won't have weight).
         weight_sum += read_weight(env, &id)?;
 
-        verify(
-            &env,
-            &signature,
-            symbol!("pay"),
-            (&id, &payment_id, payment),
-        );
+        verify(env, &signature, symbol!("pay"), (&id, &payment_id, payment));
         unique_ids.set(id, ());
     }
     if unique_ids.len() != signatures.len() {
@@ -248,13 +243,8 @@ fn validate_and_compute_signature_weight(
 }
 
 fn execute_payment(env: &Env, payment: Payment) {
-    let client = token::Client::new(&env, payment.token);
-    client.xfer(
-        &Signature::Invoker,
-        &BigInt::zero(&env),
-        &payment.receiver,
-        &payment.amount,
-    );
+    let client = token::Client::new(env, payment.token);
+    client.xfer(&Signature::Invoker, &0, &payment.receiver, &payment.amount);
 }
 
 fn read_threshold(env: &Env) -> u32 {

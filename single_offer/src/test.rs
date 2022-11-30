@@ -2,7 +2,7 @@
 
 use crate::testutils::{register_test_contract as register_single_offer, SingleOffer};
 use crate::token::{self, Identifier, Signature, TokenMetadata};
-use soroban_sdk::{testutils::Accounts, AccountId, BigInt, BytesN, Env, IntoVal};
+use soroban_sdk::{testutils::Accounts, AccountId, BytesN, Env, IntoVal};
 
 fn create_token_contract(e: &Env, admin: &AccountId) -> token::Client {
     let token = token::Client::new(e, &e.register_contract_token());
@@ -26,7 +26,7 @@ fn create_single_offer_contract(
     n: u32,
     d: u32,
 ) -> SingleOffer {
-    let single_offer = SingleOffer::new(e, &register_single_offer(&e));
+    let single_offer = SingleOffer::new(e, &register_single_offer(e));
     single_offer.initialize(&Identifier::Account(admin.clone()), token_a, token_b, n, d);
     single_offer
 }
@@ -49,75 +49,60 @@ fn test() {
         create_single_offer_contract(&e, &user1, &token1.contract_id, &token2.contract_id, 1, 2);
     let offer_id = Identifier::Contract(offer.contract_id.clone());
 
-    token1.with_source_account(&admin1).mint(
-        &Signature::Invoker,
-        &BigInt::zero(&e),
-        &user1_id,
-        &BigInt::from_u32(&e, 1000),
-    );
+    token1
+        .with_source_account(&admin1)
+        .mint(&Signature::Invoker, &0, &user1_id, &1000);
 
-    assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 1000));
-    token2.with_source_account(&admin2).mint(
-        &Signature::Invoker,
-        &BigInt::zero(&e),
-        &user2_id,
-        &BigInt::from_u32(&e, 1000),
-    );
-    assert_eq!(token2.balance(&user2_id), BigInt::from_u32(&e, 1000));
+    assert_eq!(token1.balance(&user1_id), 1000);
+    token2
+        .with_source_account(&admin2)
+        .mint(&Signature::Invoker, &0, &user2_id, &1000);
+    assert_eq!(token2.balance(&user2_id), 1000);
 
     // Deposit 100 token1 into offer
-    token1.with_source_account(&user1).xfer(
-        &Signature::Invoker,
-        &BigInt::zero(&e),
-        &offer_id,
-        &BigInt::from_u32(&e, 100),
-    );
-    assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 900));
-    assert_eq!(token1.balance(&offer_id), BigInt::from_u32(&e, 100));
+    token1
+        .with_source_account(&user1)
+        .xfer(&Signature::Invoker, &0, &offer_id, &100);
+    assert_eq!(token1.balance(&user1_id), 900);
+    assert_eq!(token1.balance(&offer_id), 100);
 
     // Trade 10 token2 for 20 token1
-    token2.with_source_account(&user2).xfer(
-        &Signature::Invoker,
-        &BigInt::zero(&e),
-        &offer_id,
-        &BigInt::from_u32(&e, 10),
-    );
-    assert_eq!(token2.balance(&user2_id), BigInt::from_u32(&e, 990));
-    assert_eq!(token2.balance(&offer_id), BigInt::from_u32(&e, 10));
-    offer.trade(&user2_id, &BigInt::from_u32(&e, 20));
-    assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 900));
-    assert_eq!(token1.balance(&user2_id), BigInt::from_u32(&e, 20));
-    assert_eq!(token1.balance(&offer_id), BigInt::from_u32(&e, 80));
-    assert_eq!(token2.balance(&user1_id), BigInt::from_u32(&e, 10));
-    assert_eq!(token2.balance(&user2_id), BigInt::from_u32(&e, 990));
-    assert_eq!(token2.balance(&offer_id), BigInt::zero(&e));
+    token2
+        .with_source_account(&user2)
+        .xfer(&Signature::Invoker, &0, &offer_id, &10);
+    assert_eq!(token2.balance(&user2_id), 990);
+    assert_eq!(token2.balance(&offer_id), 10);
+    offer.trade(&user2_id, &20);
+    assert_eq!(token1.balance(&user1_id), 900);
+    assert_eq!(token1.balance(&user2_id), 20);
+    assert_eq!(token1.balance(&offer_id), 80);
+    assert_eq!(token2.balance(&user1_id), 10);
+    assert_eq!(token2.balance(&user2_id), 990);
+    assert_eq!(token2.balance(&offer_id), 0);
 
     // Withdraw 70 token1 from offer
-    offer.withdraw(&user1, &BigInt::from_u32(&e, 70));
-    assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 970));
-    assert_eq!(token1.balance(&user2_id), BigInt::from_u32(&e, 20));
-    assert_eq!(token1.balance(&offer_id), BigInt::from_u32(&e, 10));
-    assert_eq!(token2.balance(&user1_id), BigInt::from_u32(&e, 10));
-    assert_eq!(token2.balance(&user2_id), BigInt::from_u32(&e, 990));
-    assert_eq!(token2.balance(&offer_id), BigInt::zero(&e));
+    offer.withdraw(&user1, &70);
+    assert_eq!(token1.balance(&user1_id), 970);
+    assert_eq!(token1.balance(&user2_id), 20);
+    assert_eq!(token1.balance(&offer_id), 10);
+    assert_eq!(token2.balance(&user1_id), 10);
+    assert_eq!(token2.balance(&user2_id), 990);
+    assert_eq!(token2.balance(&offer_id), 0);
 
     // The price here is 1 A = 1 B
     offer.updt_price(&user1, 1, 1);
 
     // Trade 10 token2 for 10 token1
-    token2.with_source_account(&user2).xfer(
-        &Signature::Invoker,
-        &BigInt::zero(&e),
-        &offer_id,
-        &BigInt::from_u32(&e, 10),
-    );
-    assert_eq!(token2.balance(&user2_id), BigInt::from_u32(&e, 980));
-    assert_eq!(token2.balance(&offer_id), BigInt::from_u32(&e, 10));
-    offer.trade(&user2_id, &BigInt::from_u32(&e, 10));
-    assert_eq!(token1.balance(&user1_id), BigInt::from_u32(&e, 970));
-    assert_eq!(token1.balance(&user2_id), BigInt::from_u32(&e, 30));
-    assert_eq!(token1.balance(&offer_id), BigInt::from_u32(&e, 00));
-    assert_eq!(token2.balance(&user1_id), BigInt::from_u32(&e, 20));
-    assert_eq!(token2.balance(&user2_id), BigInt::from_u32(&e, 980));
-    assert_eq!(token2.balance(&offer_id), BigInt::zero(&e));
+    token2
+        .with_source_account(&user2)
+        .xfer(&Signature::Invoker, &0, &offer_id, &10);
+    assert_eq!(token2.balance(&user2_id), 980);
+    assert_eq!(token2.balance(&offer_id), 10);
+    offer.trade(&user2_id, &10);
+    assert_eq!(token1.balance(&user1_id), 970);
+    assert_eq!(token1.balance(&user2_id), 30);
+    assert_eq!(token1.balance(&offer_id), 00);
+    assert_eq!(token2.balance(&user1_id), 20);
+    assert_eq!(token2.balance(&user2_id), 980);
+    assert_eq!(token2.balance(&offer_id), 0);
 }

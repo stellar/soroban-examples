@@ -7,7 +7,7 @@ pub mod testutils;
 use offer_contract::SingleOfferClient;
 use token::{Identifier, Signature};
 
-use soroban_sdk::{contractimpl, contracttype, serde::Serialize, BigInt, Bytes, BytesN, Env};
+use soroban_sdk::{contractimpl, contracttype, serde::Serialize, Bytes, BytesN, Env};
 
 mod token {
     soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
@@ -52,7 +52,7 @@ pub trait SingleOfferRouterTrait {
     // This contract pulls amount from "to", sends it to "offer", and then calls trade on "offer".
     // The admin must send the sell_token to the offer address specified in this function,
     // and the "to" identifier must set a buy_token allowance for this router contract
-    fn safe_trade(e: Env, offer: BytesN<32>, amount: BigInt, min: BigInt);
+    fn safe_trade(e: Env, offer: BytesN<32>, amount: i128, min: i128);
 
     // returns the contract address for the specified admin, sell_token, buy_token combo
     fn get_offer(
@@ -69,12 +69,12 @@ pub fn offer_key(
     sell_token: &BytesN<32>,
     buy_token: &BytesN<32>,
 ) -> BytesN<32> {
-    let mut offer_key_bin = Bytes::new(&e);
+    let mut offer_key_bin = Bytes::new(e);
 
     match admin {
         Identifier::Contract(a) => offer_key_bin.append(&a.clone().into()),
         Identifier::Ed25519(a) => offer_key_bin.append(&a.clone().into()),
-        Identifier::Account(a) => offer_key_bin.append(&a.serialize(&e)),
+        Identifier::Account(a) => offer_key_bin.append(&a.serialize(e)),
     }
     offer_key_bin.append(&sell_token.clone().into());
     offer_key_bin.append(&buy_token.clone().into());
@@ -116,7 +116,7 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
         );
     }
 
-    fn safe_trade(e: Env, offer: BytesN<32>, amount: BigInt, min: BigInt) {
+    fn safe_trade(e: Env, offer: BytesN<32>, amount: i128, min: i128) {
         // TODO:specify buy token instead of calling into offer contract?
         let offer_client = SingleOfferClient::new(&e, &offer);
         let buy = offer_client.get_buy();
@@ -126,9 +126,9 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
         let invoker = e.invoker().into();
         token_client.xfer_from(
             &Signature::Invoker,
-            &BigInt::zero(&e),
+            &0,
             &invoker,
-            &Identifier::Contract(offer.clone()),
+            &Identifier::Contract(offer),
             &amount,
         );
 

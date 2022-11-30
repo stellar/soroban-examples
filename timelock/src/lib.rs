@@ -6,7 +6,7 @@
 //! For simplicity, the contract only supports invoker-based auth.
 #![no_std]
 
-use soroban_sdk::{contractimpl, contracttype, BigInt, BytesN, Env, Vec};
+use soroban_sdk::{contractimpl, contracttype, BytesN, Env, Vec};
 
 mod token {
     soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
@@ -39,7 +39,7 @@ pub struct TimeBound {
 #[contracttype]
 pub struct ClaimableBalance {
     pub token: BytesN<32>,
-    pub amount: BigInt,
+    pub amount: i128,
     pub claimants: Vec<Identifier>,
     pub time_bound: TimeBound,
 }
@@ -70,7 +70,7 @@ impl ClaimableBalanceContract {
     pub fn deposit(
         env: Env,
         token: BytesN<32>,
-        amount: BigInt,
+        amount: i128,
         claimants: Vec<Identifier>,
         time_bound: TimeBound,
     ) {
@@ -79,6 +79,9 @@ impl ClaimableBalanceContract {
         }
         if is_initialized(&env) {
             panic!("contract has been already initialized");
+        }
+        if amount < 0 {
+            panic!("negative amount is not allowed")
         }
 
         // Transfer token to this contract address.
@@ -131,33 +134,27 @@ fn is_initialized(env: &Env) -> bool {
 }
 
 fn get_contract_id(e: &Env) -> Identifier {
-    Identifier::Contract(e.get_current_contract().into())
+    Identifier::Contract(e.get_current_contract())
 }
 
 fn transfer_from_account_to_contract(
     e: &Env,
     token_id: &BytesN<32>,
     from: &Identifier,
-    amount: &BigInt,
+    amount: &i128,
 ) {
-    let client = token::Client::new(&e, token_id);
-    client.xfer_from(
-        &Signature::Invoker,
-        &BigInt::zero(e),
-        &from,
-        &get_contract_id(e),
-        &amount,
-    );
+    let client = token::Client::new(e, token_id);
+    client.xfer_from(&Signature::Invoker, &0, from, &get_contract_id(e), amount);
 }
 
 fn transfer_from_contract_to_account(
     e: &Env,
     token_id: &BytesN<32>,
     to: &Identifier,
-    amount: &BigInt,
+    amount: &i128,
 ) {
-    let client = token::Client::new(&e, token_id);
-    client.xfer(&Signature::Invoker, &BigInt::zero(&e), to, amount);
+    let client = token::Client::new(e, token_id);
+    client.xfer(&Signature::Invoker, &0, to, amount);
 }
 
 mod test;

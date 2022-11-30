@@ -5,7 +5,7 @@ mod test;
 pub mod testutils;
 
 use pool_contract::LiquidityPoolClient;
-use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env};
+use soroban_sdk::{contractimpl, contracttype, Bytes, BytesN, Env};
 use token::{Identifier, Signature};
 
 mod token {
@@ -36,23 +36,23 @@ pub trait LiquidityPoolRouterTrait {
         liqiudity_pool_wasm_hash: BytesN<32>,
         token_a: BytesN<32>,
         token_b: BytesN<32>,
-        desired_a: BigInt,
-        min_a: BigInt,
-        desired_b: BigInt,
-        min_b: BigInt,
+        desired_a: i128,
+        min_a: i128,
+        desired_b: i128,
+        min_b: i128,
     );
 
     // swaps out an exact amount of "buy", in exchange for "sell" that this contract has an
     // allowance for from "to". "sell" amount swapped in must not be greater than "in_max"
-    fn swap_out(e: Env, sell: BytesN<32>, buy: BytesN<32>, out: BigInt, in_max: BigInt);
+    fn swap_out(e: Env, sell: BytesN<32>, buy: BytesN<32>, out: i128, in_max: i128);
 
     fn sf_withdrw(
         e: Env,
         token_a: BytesN<32>,
         token_b: BytesN<32>,
-        share_amount: BigInt,
-        min_a: BigInt,
-        min_b: BigInt,
+        share_amount: i128,
+        min_a: i128,
+        min_b: i128,
     );
 
     // returns the contract address for the specified token_a/token_b combo
@@ -73,35 +73,35 @@ pub fn pool_salt(e: &Env, token_a: &BytesN<32>, token_b: &BytesN<32>) -> BytesN<
         panic!("token_a must be less t&han token_b");
     }
 
-    let mut salt_bin = Bytes::new(&e);
+    let mut salt_bin = Bytes::new(e);
     salt_bin.append(&token_a.clone().into());
     salt_bin.append(&token_b.clone().into());
     e.compute_hash_sha256(&salt_bin)
 }
 
 fn get_deposit_amounts(
-    desired_a: BigInt,
-    min_a: BigInt,
-    desired_b: BigInt,
-    min_b: BigInt,
-    reserves: (BigInt, BigInt),
-) -> (BigInt, BigInt) {
+    desired_a: i128,
+    min_a: i128,
+    desired_b: i128,
+    min_b: i128,
+    reserves: (i128, i128),
+) -> (i128, i128) {
     if reserves.0 == 0 && reserves.1 == 0 {
         return (desired_a, desired_b);
     }
 
-    let amount_b = desired_a.clone() * reserves.1.clone() / reserves.0.clone();
+    let amount_b = desired_a * reserves.1 / reserves.0;
     if amount_b <= desired_b {
         if amount_b < min_b {
             panic!("amount_b less than min")
         }
-        return (desired_a, amount_b);
+        (desired_a, amount_b)
     } else {
-        let amount_a = desired_b.clone() * reserves.0 / reserves.1;
+        let amount_a = desired_b * reserves.0 / reserves.1;
         if amount_a > desired_a || desired_a < min_a {
             panic!("amount_a invalid")
         }
-        return (amount_a, desired_b);
+        (amount_a, desired_b)
     }
 }
 
@@ -114,10 +114,10 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         liquidity_pool_wasm_hash: BytesN<32>,
         token_a: BytesN<32>,
         token_b: BytesN<32>,
-        desired_a: BigInt,
-        min_a: BigInt,
-        desired_b: BigInt,
-        min_b: BigInt,
+        desired_a: i128,
+        min_a: i128,
+        desired_b: i128,
+        min_b: i128,
     ) {
         let salt = pool_salt(&e, &token_a, &token_b);
         if !has_pool(&e, &salt) {
@@ -141,7 +141,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         let client_a = token::Client::new(&e, token_a);
         client_a.xfer_from(
             &Signature::Invoker,
-            &BigInt::zero(&e),
+            &0,
             &invoker.clone().into(),
             &Identifier::Contract(pool_id.clone()),
             &amounts.0,
@@ -150,7 +150,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         let client_b = token::Client::new(&e, token_b);
         client_b.xfer_from(
             &Signature::Invoker,
-            &BigInt::zero(&e),
+            &0,
             &invoker.clone().into(),
             &Identifier::Contract(pool_id.clone()),
             &amounts.1,
@@ -159,14 +159,14 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         LiquidityPoolClient::new(&e, &pool_id).deposit(&invoker.into());
     }
 
-    fn swap_out(e: Env, sell: BytesN<32>, buy: BytesN<32>, out: BigInt, in_max: BigInt) {
+    fn swap_out(e: Env, sell: BytesN<32>, buy: BytesN<32>, out: i128, in_max: i128) {
         let (token_a, token_b) = sort(&sell, &buy);
         let pool_id = Self::get_pool(e.clone(), token_a.clone(), token_b);
 
         let reserves = LiquidityPoolClient::new(&e, &pool_id).get_rsrvs();
 
-        let reserve_sell: BigInt;
-        let reserve_buy: BigInt;
+        let reserve_sell: i128;
+        let reserve_buy: i128;
         if sell == token_a {
             reserve_sell = reserves.0;
             reserve_buy = reserves.1;
@@ -175,9 +175,9 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
             reserve_buy = reserves.0;
         }
 
-        let n = reserve_sell * out.clone() * BigInt::from_u32(&e, 1000);
-        let d = (reserve_buy - out.clone()) * BigInt::from_u32(&e, 997);
-        let xfer_amount = (n / d) + BigInt::from_u32(&e, 1);
+        let n = reserve_sell * out * 1000;
+        let d = (reserve_buy - out) * 997;
+        let xfer_amount = (n / d) + 1;
         if xfer_amount > in_max {
             panic!("in amount is over max")
         }
@@ -187,20 +187,20 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         let client = token::Client::new(&e, &sell);
         client.xfer_from(
             &Signature::Invoker,
-            &BigInt::zero(&e),
+            &0,
             &invoker.clone().into(),
             &Identifier::Contract(pool_id.clone()),
             &xfer_amount,
         );
 
-        let out_a: BigInt;
-        let out_b: BigInt;
+        let out_a: i128;
+        let out_b: i128;
         if sell == token_a {
-            out_a = BigInt::zero(&e);
+            out_a = 0;
             out_b = out;
         } else {
             out_a = out;
-            out_b = BigInt::zero(&e);
+            out_b = 0;
         }
 
         LiquidityPoolClient::new(&e, &pool_id).swap(&invoker.into(), &out_a, &out_b)
@@ -210,11 +210,11 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         e: Env,
         token_a: BytesN<32>,
         token_b: BytesN<32>,
-        share_amount: BigInt,
-        min_a: BigInt,
-        min_b: BigInt,
+        share_amount: i128,
+        min_a: i128,
+        min_b: i128,
     ) {
-        let pool_id = Self::get_pool(e.clone(), token_a.clone(), token_b);
+        let pool_id = Self::get_pool(e.clone(), token_a, token_b);
 
         let pool_client = LiquidityPoolClient::new(&e, &pool_id);
         let share_token = pool_client.share_id();
@@ -223,9 +223,9 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         let client = token::Client::new(&e, &share_token);
         client.xfer_from(
             &Signature::Invoker,
-            &BigInt::zero(&e),
+            &0,
             &invoker.clone().into(),
-            &Identifier::Contract(pool_id.clone()),
+            &Identifier::Contract(pool_id),
             &share_amount,
         );
 

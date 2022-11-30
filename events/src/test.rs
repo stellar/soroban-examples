@@ -28,7 +28,7 @@ fn test() {
                 2u32.into_val(&env)
             ),
             (
-                contract_id.clone(),
+                contract_id,
                 (symbol!("COUNTER"), symbol!("increment")).into_val(&env),
                 3u32.into_val(&env)
             ),
