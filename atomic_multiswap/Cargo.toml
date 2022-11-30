@@ -1,5 +1,5 @@
 [package]
-name = "soroban-timelock-contract"
+name = "soroban-atomic-multiswap-contract"
 version = "0.0.0"
 authors = ["Stellar Development Foundation <info@stellar.org>"]
 license = "Apache-2.0"
@@ -9,9 +9,6 @@ publish = false
 [lib]
 crate-type = ["cdylib"]
 doctest = false
-
-[features]
-testutils = ["soroban-auth/testutils"]
 
 [dependencies]
 soroban-sdk = { workspace = true }

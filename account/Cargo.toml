@@ -1,5 +1,5 @@
 [package]
-name = "soroban-timelock-contract"
+name = "soroban-account-contract"
 version = "0.0.0"
 authors = ["Stellar Development Foundation <info@stellar.org>"]
 license = "Apache-2.0"
@@ -10,11 +10,11 @@ publish = false
 crate-type = ["cdylib"]
 doctest = false
 
-[features]
-testutils = ["soroban-auth/testutils"]
-
 [dependencies]
 soroban-sdk = { workspace = true }
 
 [dev_dependencies]
 soroban-sdk = { workspace = true, features = ["testutils"]  }
+soroban-account = { workspace = true }
+ed25519-dalek = { version = "1.0.1" }
+rand = { version = "0.7.3" }

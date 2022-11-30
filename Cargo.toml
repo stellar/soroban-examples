@@ -1,27 +1,11 @@
 [workspace]
 resolver = "2"
 
-members = [
-    "hello_world",
-    "increment",
-    "auth",
-    "auth_advanced",
-    "custom_types",
-    "cross_contract/contract_a",
-    "cross_contract/contract_b",
-    "deployer/contract",
-    "deployer/deployer",
-    "liquidity_pool",
-    "liquidity_pool_router",
-    "single_offer",
-    "single_offer_xfer_from",
-    "single_offer_router",
-    "events",
+members = [    
     "timelock",
-    "token",
-    "logging",
-    "errors",
-    "wallet",
+    "atomic_swap",    
+    "atomic_multiswap",
+    "account",
 ]
 
 [profile.release-with-logs]
@@ -47,3 +31,16 @@ rev = "980778e"
 version = "0.4.1"
 git = "https://github.com/stellar/rs-soroban-sdk"
 rev = "980778e"
+
+[patch."https://github.com/stellar/rs-soroban-sdk"]
+soroban-sdk = { path = "../rs-soroban-sdk/soroban-sdk" }
+soroban-spec = { path = "../rs-soroban-sdk/soroban-spec" }
+soroban-account = { path = "../rs-soroban-sdk/soroban-account" }
+
+[patch."https://github.com/stellar/rs-stellar-xdr"]
+stellar-xdr = { path = "../rs-stellar-xdr/" }
+
+[patch."https://github.com/stellar/rs-soroban-env"]
+soroban-env-common = { path = "../rs-soroban-env/soroban-env-common" }
+soroban-env-guest = { path = "../rs-soroban-env/soroban-env-guest" }
+soroban-env-host = { path = "../rs-soroban-env/soroban-env-host/" }
