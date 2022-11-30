@@ -128,10 +128,6 @@ fn transfer_b(e: &Env, to: Identifier, amount: i128) {
     transfer(&e, get_token_b(&e), to, amount);
 }
 
-fn safe_mult(a: i128, b: i128) -> i128 {
-    a.checked_mul(b).expect("no overflow")
-}
-
 /*
 How to use this contract to swap
 
@@ -209,12 +205,12 @@ impl LiquidityPoolTrait for LiquidityPool {
         let total_shares = get_total_shares(&e);
 
         let zero = 0;
-        let new_total_shares = if reserve_a > zero && reserve_b > zero {
-            let shares_a = safe_mult(balance_a, total_shares) / reserve_a;
-            let shares_b = safe_mult(balance_b, total_shares) / reserve_b;
+        let new_total_shares = if reserve_a > zero.clone() && reserve_b > zero {
+            let shares_a = (balance_a.clone() * total_shares.clone()) / reserve_a;
+            let shares_b = (balance_b.clone() * total_shares.clone()) / reserve_b;
             shares_a.min(shares_b)
         } else {
-            safe_mult(balance_a, balance_b).sqrt()
+            (balance_a.clone() * balance_b.clone()).sqrt()
         };
 
         mint_shares(&e, to, new_total_shares - total_shares);
@@ -233,27 +229,25 @@ impl LiquidityPoolTrait for LiquidityPool {
         let zero = 0;
 
         let new_invariant_factor = |balance: i128, reserve: i128, out: i128| {
-            let delta = balance - reserve - out;
+            let delta = balance - reserve.clone() - out;
             let adj_delta = if delta > zero {
-                safe_mult(residue_numerator, delta)
+                residue_numerator.clone() * delta
             } else {
-                safe_mult(residue_denominator, delta)
+                residue_denominator.clone() * delta
             };
-            safe_mult(residue_denominator, reserve)
-                .checked_add(adj_delta)
-                .expect("no overflow")
+            residue_denominator.clone() * reserve + adj_delta
         };
-        let new_inv_a = new_invariant_factor(balance_a, reserve_a, out_a);
-        let new_inv_b = new_invariant_factor(balance_b, reserve_b, out_b);
-        let old_inv_a = safe_mult(residue_denominator, reserve_a);
-        let old_inv_b = safe_mult(residue_denominator, reserve_b);
+        let new_inv_a = new_invariant_factor(balance_a.clone(), reserve_a.clone(), out_a.clone());
+        let new_inv_b = new_invariant_factor(balance_b.clone(), reserve_b.clone(), out_b.clone());
+        let old_inv_a = residue_denominator.clone() * reserve_a.clone();
+        let old_inv_b = residue_denominator.clone() * reserve_b.clone();
 
-        if safe_mult(new_inv_a, new_inv_b) < safe_mult(old_inv_a, old_inv_b) {
+        if new_inv_a * new_inv_b < old_inv_a * old_inv_b {
             panic!("constant product invariant does not hold");
         }
 
-        transfer_a(&e, to.clone(), out_a);
-        transfer_b(&e, to, out_b);
+        transfer_a(&e, to.clone(), out_a.clone());
+        transfer_b(&e, to, out_b.clone());
         put_reserve_a(&e, balance_a - out_a);
         put_reserve_b(&e, balance_b - out_b);
     }
@@ -263,18 +257,14 @@ impl LiquidityPoolTrait for LiquidityPool {
         let balance_shares = get_balance_shares(&e);
         let total_shares = get_total_shares(&e);
 
-        let out_a = safe_mult(balance_a, balance_shares)
-            .checked_div(total_shares)
-            .expect("no overflow");
-        let out_b = safe_mult(balance_b, balance_shares)
-            .checked_div(total_shares)
-            .expect("no overflow");
+        let out_a = (balance_a.clone() * balance_shares.clone()) / total_shares.clone();
+        let out_b = (balance_b.clone() * balance_shares.clone()) / total_shares.clone();
 
         burn_shares(&e, balance_shares);
-        transfer_a(&e, to.clone(), out_a);
-        transfer_b(&e, to, out_b);
-        put_reserve_a(&e, balance_a - out_a);
-        put_reserve_b(&e, balance_b - out_b);
+        transfer_a(&e, to.clone(), out_a.clone());
+        transfer_b(&e, to, out_b.clone());
+        put_reserve_a(&e, balance_a - out_a.clone());
+        put_reserve_b(&e, balance_b - out_b.clone());
 
         (out_a, out_b)
     }

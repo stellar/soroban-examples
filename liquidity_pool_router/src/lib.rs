@@ -90,23 +90,14 @@ fn get_deposit_amounts(
         return (desired_a, desired_b);
     }
 
-    let amount_b = desired_a
-        .checked_mul(reserves.1)
-        .expect("no overflow")
-        .checked_div(reserves.0)
-        .expect("no overflow");
+    let amount_b = desired_a.clone() * reserves.1.clone() / reserves.0.clone();
     if amount_b <= desired_b {
         if amount_b < min_b {
             panic!("amount_b less than min")
         }
         return (desired_a, amount_b);
     } else {
-        let amount_a = desired_b
-            .checked_mul(reserves.0)
-            .expect("no overflow")
-            .checked_div(reserves.1)
-            .expect("no overflow");
-
+        let amount_a = desired_b.clone() * reserves.0 / reserves.1;
         if amount_a > desired_a || desired_a < min_a {
             panic!("amount_a invalid")
         }
@@ -184,13 +175,8 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
             reserve_buy = reserves.0;
         }
 
-        let n = reserve_sell
-            .checked_mul(out)
-            .expect("no overflow")
-            .checked_mul(1000)
-            .expect("no overflow");
-        let d = (reserve_buy - out).checked_mul(997).expect("no overflow");
-
+        let n = reserve_sell * out.clone() * 1000;
+        let d = (reserve_buy - out.clone()) * 997;
         let xfer_amount = (n / d) + 1;
         if xfer_amount > in_max {
             panic!("in amount is over max")
