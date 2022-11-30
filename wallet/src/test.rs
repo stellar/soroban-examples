@@ -137,9 +137,9 @@ impl WalletTest {
     fn add_wallet_balance(&self, token: &TokenClient, amount: u32) {
         token.with_source_account(&self.token_admin).mint(
             &Signature::Invoker,
-            &BigInt::from_u64(&self.env, 0),
+            &0,
             &self.contract_id,
-            &BigInt::from_u32(&self.env, amount),
+            &(amount as i128),
         );
     }
 
@@ -178,16 +178,13 @@ fn test_immediate_payment() {
             Payment {
                 receiver: test.payment_receiver.clone(),
                 token: test.token_id.clone(),
-                amount: BigInt::from_u32(&test.env, 300),
+                amount: 300,
             },
         ),
         Ok(true)
     );
 
-    assert_eq!(
-        test.token.balance(&test.payment_receiver),
-        BigInt::from_u32(&test.env, 300)
-    );
+    assert_eq!(test.token.balance(&test.payment_receiver), 300);
 
     // Single signer with high enough weight.
     assert_eq!(
@@ -197,16 +194,13 @@ fn test_immediate_payment() {
             Payment {
                 receiver: test.payment_receiver.clone(),
                 token: test.token_id_2.clone(),
-                amount: BigInt::from_u32(&test.env, 1500),
+                amount: 1500,
             },
         ),
         Ok(true)
     );
 
-    assert_eq!(
-        test.token_2.balance(&test.payment_receiver),
-        BigInt::from_u32(&test.env, 1500)
-    );
+    assert_eq!(test.token_2.balance(&test.payment_receiver), 1500);
 }
 
 #[test]
@@ -217,7 +211,7 @@ fn test_delayed_payment() {
     let payment = Payment {
         receiver: test.payment_receiver.clone(),
         token: test.token_id.clone(),
-        amount: BigInt::from_u32(&test.env, 300),
+        amount: 300,
     };
     // Initialize payment - contract is not required to have the token balance yet.
     assert_eq!(
@@ -229,10 +223,7 @@ fn test_delayed_payment() {
         Ok(false)
     );
 
-    assert_eq!(
-        test.token.balance(&test.payment_receiver),
-        BigInt::from_u32(&test.env, 0)
-    );
+    assert_eq!(test.token.balance(&test.payment_receiver), 0);
     // Add balance and authorize the payment by the remaining signer,
     // now the payment can be cleared.
     test.add_wallet_balance(&test.token, 1000);
@@ -241,10 +232,7 @@ fn test_delayed_payment() {
         test.pay(&[&test.wallet_admins[2]], 123, payment.clone()),
         Ok(true)
     );
-    assert_eq!(
-        test.token.balance(&test.payment_receiver),
-        BigInt::from_u32(&test.env, 300)
-    );
+    assert_eq!(test.token.balance(&test.payment_receiver), 300);
 }
 
 #[test]
@@ -255,7 +243,7 @@ fn test_mixed_payments() {
     let delayed_payment_1 = Payment {
         receiver: test.payment_receiver.clone(),
         token: test.token_id.clone(),
-        amount: BigInt::from_u32(&test.env, 500),
+        amount: 500,
     };
     assert_eq!(
         test.pay(&[&test.wallet_admins[0]], 111, delayed_payment_1.clone(),),
@@ -274,20 +262,17 @@ fn test_mixed_payments() {
             Payment {
                 receiver: test.payment_receiver.clone(),
                 token: test.token_id.clone(),
-                amount: BigInt::from_u32(&test.env, 1000),
+                amount: 1000,
             },
         ),
         Ok(true)
     );
-    assert_eq!(
-        test.token.balance(&test.payment_receiver),
-        BigInt::from_u32(&test.env, 1000)
-    );
+    assert_eq!(test.token.balance(&test.payment_receiver), 1000);
 
     let delayed_payment_2 = Payment {
         receiver: test.payment_receiver.clone(),
         token: test.token_id_2.clone(),
-        amount: BigInt::from_u32(&test.env, 2000),
+        amount: 2000,
     };
     assert_eq!(
         test.pay(&[&test.wallet_admins[1]], 222, delayed_payment_2.clone()),
@@ -307,10 +292,7 @@ fn test_mixed_payments() {
         ),
         Ok(true)
     );
-    assert_eq!(
-        test.token_2.balance(&test.payment_receiver),
-        BigInt::from_u32(&test.env, 2000)
-    );
+    assert_eq!(test.token_2.balance(&test.payment_receiver), 2000);
 
     test.add_wallet_balance(&test.token, 500);
     assert_eq!(
@@ -318,10 +300,7 @@ fn test_mixed_payments() {
         Ok(true)
     );
 
-    assert_eq!(
-        test.token.balance(&test.payment_receiver),
-        BigInt::from_u32(&test.env, 1500)
-    );
+    assert_eq!(test.token.balance(&test.payment_receiver), 1500);
 }
 
 #[test]
@@ -409,7 +388,7 @@ fn test_unauthorized_signer_returns_error() {
             Payment {
                 receiver: test.payment_receiver.clone(),
                 token: test.token_id.clone(),
-                amount: BigInt::from_u32(&test.env, 300),
+                amount: 300,
             },
         ),
         Err(Error::UnauthorizedSigner)
@@ -429,7 +408,7 @@ fn test_divergent_delayed_payment_returns_error() {
             Payment {
                 receiver: test.payment_receiver.clone(),
                 token: test.token_id.clone(),
-                amount: BigInt::from_u32(&test.env, 300),
+                amount: 300,
             },
         ),
         Ok(false)
@@ -442,7 +421,7 @@ fn test_divergent_delayed_payment_returns_error() {
             Payment {
                 receiver: test.payment_receiver.clone(),
                 token: test.token_id.clone(),
-                amount: BigInt::from_u32(&test.env, 299),
+                amount: 299,
             },
         ),
         Err(Error::StoredPaymentMismatch)
@@ -456,7 +435,7 @@ fn test_payment_reexecution() {
     let payment = Payment {
         receiver: test.payment_receiver.clone(),
         token: test.token_id.clone(),
-        amount: BigInt::from_u32(&test.env, 300),
+        amount: 300,
     };
     test.add_wallet_balance(&test.token, 1000);
 
@@ -478,7 +457,7 @@ fn test_duplicate_signers() {
     let payment = Payment {
         receiver: test.payment_receiver.clone(),
         token: test.token_id.clone(),
-        amount: BigInt::from_u32(&test.env, 300),
+        amount: 300,
     };
     test.add_wallet_balance(&test.token, 1000);
     assert_eq!(

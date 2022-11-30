@@ -1,7 +1,7 @@
 #![cfg(any(test, feature = "testutils"))]
 
 use crate::{token::Identifier, Price, SingleOfferXferFromClient};
-use soroban_sdk::{AccountId, BigInt, BytesN, Env};
+use soroban_sdk::{AccountId, BytesN, Env};
 
 pub fn register_test_contract(e: &Env) -> BytesN<32> {
     e.register_contract(None, crate::SingleOfferXferFrom {})
@@ -35,7 +35,7 @@ impl SingleOfferXferFrom {
         self.client().initialize(admin, token_a, token_b, &n, &d)
     }
 
-    pub fn trade(&self, to: &AccountId, amount_to_sell: &BigInt, min: &BigInt) {
+    pub fn trade(&self, to: &AccountId, amount_to_sell: &i128, min: &i128) {
         self.client()
             .with_source_account(&to)
             .trade(&amount_to_sell, &min)

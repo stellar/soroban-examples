@@ -1,6 +1,6 @@
 #![cfg(any(test, feature = "testutils"))]
 
-use soroban_sdk::{BigInt, BytesN, Env};
+use soroban_sdk::{BytesN, Env};
 
 use crate::{token::Identifier, LiquidityPoolClient};
 
@@ -37,15 +37,15 @@ impl LiquidityPool {
         self.client().deposit(&to)
     }
 
-    pub fn swap(&self, to: &Identifier, out_a: &BigInt, out_b: &BigInt) {
+    pub fn swap(&self, to: &Identifier, out_a: &i128, out_b: &i128) {
         self.client().swap(&to, &out_a, &out_b)
     }
 
-    pub fn withdraw(&self, to: &Identifier) -> (BigInt, BigInt) {
+    pub fn withdraw(&self, to: &Identifier) -> (i128, i128) {
         self.client().withdraw(&to)
     }
 
-    pub fn get_rsrvs(&self) -> (BigInt, BigInt) {
+    pub fn get_rsrvs(&self) -> (i128, i128) {
         self.client().get_rsrvs()
     }
 }

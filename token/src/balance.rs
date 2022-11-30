@@ -1,22 +1,22 @@
 use crate::storage_types::DataKey;
 use soroban_auth::Identifier;
-use soroban_sdk::{BigInt, Env};
+use soroban_sdk::Env;
 
-pub fn read_balance(e: &Env, id: Identifier) -> BigInt {
+pub fn read_balance(e: &Env, id: Identifier) -> i128 {
     let key = DataKey::Balance(id);
     if let Some(balance) = e.data().get(key) {
         balance.unwrap()
     } else {
-        BigInt::zero(e)
+        0
     }
 }
 
-fn write_balance(e: &Env, id: Identifier, amount: BigInt) {
+fn write_balance(e: &Env, id: Identifier, amount: i128) {
     let key = DataKey::Balance(id);
     e.data().set(key, amount);
 }
 
-pub fn receive_balance(e: &Env, id: Identifier, amount: BigInt) {
+pub fn receive_balance(e: &Env, id: Identifier, amount: i128) {
     let balance = read_balance(e, id.clone());
     let is_frozen = read_state(e, id.clone());
     if is_frozen {
@@ -25,7 +25,7 @@ pub fn receive_balance(e: &Env, id: Identifier, amount: BigInt) {
     write_balance(e, id, balance + amount);
 }
 
-pub fn spend_balance(e: &Env, id: Identifier, amount: BigInt) {
+pub fn spend_balance(e: &Env, id: Identifier, amount: i128) {
     let balance = read_balance(e, id.clone());
     let is_frozen = read_state(e, id.clone());
     if is_frozen {

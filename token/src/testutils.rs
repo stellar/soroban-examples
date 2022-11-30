@@ -4,7 +4,7 @@ use crate::contract::TokenClient;
 use ed25519_dalek::Keypair;
 use soroban_auth::{Ed25519Signature, Identifier, Signature, SignaturePayload, SignaturePayloadV0};
 use soroban_sdk::testutils::ed25519::Sign;
-use soroban_sdk::{symbol, BigInt, Bytes, BytesN, Env, IntoVal};
+use soroban_sdk::{symbol, Bytes, BytesN, Env, IntoVal};
 
 pub fn register_test_contract(e: &Env) -> BytesN<32> {
     e.register_contract(None, crate::contract::Token {})
@@ -34,15 +34,15 @@ impl Token {
             .initialize(&admin, &decimals, &name, &symbol);
     }
 
-    pub fn nonce(&self, id: &Identifier) -> BigInt {
+    pub fn nonce(&self, id: &Identifier) -> i128 {
         TokenClient::new(&self.env, &self.contract_id).nonce(&id)
     }
 
-    pub fn allowance(&self, from: &Identifier, spender: &Identifier) -> BigInt {
+    pub fn allowance(&self, from: &Identifier, spender: &Identifier) -> i128 {
         TokenClient::new(&self.env, &self.contract_id).allowance(&from, &spender)
     }
 
-    pub fn approve(&self, from: &Keypair, spender: &Identifier, amount: &BigInt) {
+    pub fn approve(&self, from: &Keypair, spender: &Identifier, amount: &i128) {
         let from_id = to_ed25519(&self.env, from);
         let nonce = self.nonce(&from_id);
 
@@ -60,7 +60,7 @@ impl Token {
         TokenClient::new(&self.env, &self.contract_id).approve(&auth, &nonce, &spender, &amount)
     }
 
-    pub fn balance(&self, id: &Identifier) -> BigInt {
+    pub fn balance(&self, id: &Identifier) -> i128 {
         TokenClient::new(&self.env, &self.contract_id).balance(&id)
     }
 
@@ -68,7 +68,7 @@ impl Token {
         TokenClient::new(&self.env, &self.contract_id).is_frozen(&id)
     }
 
-    pub fn xfer(&self, from: &Keypair, to: &Identifier, amount: &BigInt) {
+    pub fn xfer(&self, from: &Keypair, to: &Identifier, amount: &i128) {
         let from_id = to_ed25519(&self.env, from);
         let nonce = self.nonce(&from_id);
 
@@ -87,13 +87,7 @@ impl Token {
         TokenClient::new(&self.env, &self.contract_id).xfer(&auth, &nonce, &to, &amount)
     }
 
-    pub fn xfer_from(
-        &self,
-        spender: &Keypair,
-        from: &Identifier,
-        to: &Identifier,
-        amount: &BigInt,
-    ) {
+    pub fn xfer_from(&self, spender: &Keypair, from: &Identifier, to: &Identifier, amount: &i128) {
         let spender_id = to_ed25519(&self.env, spender);
         let nonce = self.nonce(&spender_id);
 
@@ -112,7 +106,7 @@ impl Token {
         TokenClient::new(&self.env, &self.contract_id).xfer_from(&auth, &nonce, &from, &to, &amount)
     }
 
-    pub fn burn(&self, admin: &Keypair, from: &Identifier, amount: &BigInt) {
+    pub fn burn(&self, admin: &Keypair, from: &Identifier, amount: &i128) {
         let admin_id = to_ed25519(&self.env, admin);
         let nonce = self.nonce(&admin_id);
 
@@ -146,7 +140,7 @@ impl Token {
         TokenClient::new(&self.env, &self.contract_id).freeze(&auth, &nonce, &id)
     }
 
-    pub fn mint(&self, admin: &Keypair, to: &Identifier, amount: &BigInt) {
+    pub fn mint(&self, admin: &Keypair, to: &Identifier, amount: &i128) {
         let admin_id = to_ed25519(&self.env, admin);
         let nonce = self.nonce(&admin_id);
 

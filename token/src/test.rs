@@ -5,7 +5,7 @@ use crate::TokenClient;
 use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
 use soroban_auth::{Ed25519Signature, Signature};
-use soroban_sdk::{BigInt, Env, IntoVal};
+use soroban_sdk::{Env, IntoVal};
 
 fn generate_keypair() -> Keypair {
     Keypair::generate(&mut thread_rng())
@@ -30,46 +30,43 @@ fn test() {
 
     token.initialize(&admin1_id, 7, "name", "symbol");
 
-    token.mint(&admin1, &user1_id, &BigInt::from_u32(&e, 1000));
-    assert_eq!(token.balance(&user1_id), BigInt::from_u32(&e, 1000));
-    assert_eq!(token.nonce(&admin1_id), BigInt::from_u32(&e, 1));
+    token.mint(&admin1, &user1_id, &1000);
+    assert_eq!(token.balance(&user1_id), 1000);
+    assert_eq!(token.nonce(&admin1_id), 1);
 
-    token.approve(&user2, &user3_id, &BigInt::from_u32(&e, 500));
-    assert_eq!(
-        token.allowance(&user2_id, &user3_id),
-        BigInt::from_u32(&e, 500)
-    );
-    assert_eq!(token.nonce(&user2_id), BigInt::from_u32(&e, 1));
+    token.approve(&user2, &user3_id, &500);
+    assert_eq!(token.allowance(&user2_id, &user3_id), 500);
+    assert_eq!(token.nonce(&user2_id), 1);
 
-    token.xfer(&user1, &user2_id, &BigInt::from_u32(&e, 600));
-    assert_eq!(token.balance(&user1_id), BigInt::from_u32(&e, 400));
-    assert_eq!(token.balance(&user2_id), BigInt::from_u32(&e, 600));
-    assert_eq!(token.nonce(&user1_id), BigInt::from_u32(&e, 1));
+    token.xfer(&user1, &user2_id, &600);
+    assert_eq!(token.balance(&user1_id), 400);
+    assert_eq!(token.balance(&user2_id), 600);
+    assert_eq!(token.nonce(&user1_id), 1);
 
-    token.xfer_from(&user3, &user2_id, &user1_id, &BigInt::from_u32(&e, 400));
-    assert_eq!(token.balance(&user1_id), BigInt::from_u32(&e, 800));
-    assert_eq!(token.balance(&user2_id), BigInt::from_u32(&e, 200));
-    assert_eq!(token.nonce(&user3_id), BigInt::from_u32(&e, 1));
+    token.xfer_from(&user3, &user2_id, &user1_id, &400);
+    assert_eq!(token.balance(&user1_id), 800);
+    assert_eq!(token.balance(&user2_id), 200);
+    assert_eq!(token.nonce(&user3_id), 1);
 
-    token.xfer(&user1, &user3_id, &BigInt::from_u32(&e, 300));
-    assert_eq!(token.balance(&user1_id), BigInt::from_u32(&e, 500));
-    assert_eq!(token.balance(&user3_id), BigInt::from_u32(&e, 300));
-    assert_eq!(token.nonce(&user1_id), BigInt::from_u32(&e, 2));
+    token.xfer(&user1, &user3_id, &300);
+    assert_eq!(token.balance(&user1_id), 500);
+    assert_eq!(token.balance(&user3_id), 300);
+    assert_eq!(token.nonce(&user1_id), 2);
 
     token.set_admin(&admin1, &admin2_id);
-    assert_eq!(token.nonce(&admin1_id), BigInt::from_u32(&e, 2));
+    assert_eq!(token.nonce(&admin1_id), 2);
 
     token.freeze(&admin2, &user2_id);
     assert_eq!(token.is_frozen(&user2_id), true);
-    assert_eq!(token.nonce(&admin2_id), BigInt::from_u32(&e, 1));
+    assert_eq!(token.nonce(&admin2_id), 1);
 
     token.unfreeze(&admin2, &user3_id);
     assert_eq!(token.is_frozen(&user3_id), false);
-    assert_eq!(token.nonce(&admin2_id), BigInt::from_u32(&e, 2));
+    assert_eq!(token.nonce(&admin2_id), 2);
 
-    token.burn(&admin2, &user3_id, &BigInt::from_u32(&e, 100));
-    assert_eq!(token.balance(&user3_id), BigInt::from_u32(&e, 200));
-    assert_eq!(token.nonce(&admin2_id), BigInt::from_u32(&e, 3));
+    token.burn(&admin2, &user3_id, &100);
+    assert_eq!(token.balance(&user3_id), 200);
+    assert_eq!(token.nonce(&admin2_id), 3);
 }
 
 #[test]
@@ -88,11 +85,11 @@ fn xfer_insufficient_balance() {
 
     token.initialize(&admin1_id, 10, "name", "symbol");
 
-    token.mint(&admin1, &user1_id, &BigInt::from_u32(&e, 1000));
-    assert_eq!(token.balance(&user1_id), BigInt::from_u32(&e, 1000));
-    assert_eq!(token.nonce(&admin1_id), BigInt::from_u32(&e, 1));
+    token.mint(&admin1, &user1_id, &1000);
+    assert_eq!(token.balance(&user1_id), 1000);
+    assert_eq!(token.nonce(&admin1_id), 1);
 
-    token.xfer(&user1, &user2_id, &BigInt::from_u32(&e, 1001));
+    token.xfer(&user1, &user2_id, &1001);
 }
 
 #[test]
@@ -111,12 +108,12 @@ fn xfer_receive_frozen() {
 
     token.initialize(&admin1_id, 10, "name", "symbol");
 
-    token.mint(&admin1, &user1_id, &BigInt::from_u32(&e, 1000));
-    assert_eq!(token.balance(&user1_id), BigInt::from_u32(&e, 1000));
-    assert_eq!(token.nonce(&admin1_id), BigInt::from_u32(&e, 1));
+    token.mint(&admin1, &user1_id, &1000);
+    assert_eq!(token.balance(&user1_id), 1000);
+    assert_eq!(token.nonce(&admin1_id), 1);
 
     token.freeze(&admin1, &user2_id);
-    token.xfer(&user1, &user2_id, &BigInt::from_u32(&e, 1));
+    token.xfer(&user1, &user2_id, &1);
 }
 
 #[test]
@@ -135,12 +132,12 @@ fn xfer_spend_frozen() {
 
     token.initialize(&admin1_id, 10, "name", "symbol");
 
-    token.mint(&admin1, &user1_id, &BigInt::from_u32(&e, 1000));
-    assert_eq!(token.balance(&user1_id), BigInt::from_u32(&e, 1000));
-    assert_eq!(token.nonce(&admin1_id), BigInt::from_u32(&e, 1));
+    token.mint(&admin1, &user1_id, &1000);
+    assert_eq!(token.balance(&user1_id), 1000);
+    assert_eq!(token.nonce(&admin1_id), 1);
 
     token.freeze(&admin1, &user1_id);
-    token.xfer(&user1, &user2_id, &BigInt::from_u32(&e, 1));
+    token.xfer(&user1, &user2_id, &1);
 }
 
 #[test]
@@ -161,18 +158,15 @@ fn xfer_from_insufficient_allowance() {
 
     token.initialize(&admin1_id, 10, "name", "symbol");
 
-    token.mint(&admin1, &user1_id, &BigInt::from_u32(&e, 1000));
-    assert_eq!(token.balance(&user1_id), BigInt::from_u32(&e, 1000));
-    assert_eq!(token.nonce(&admin1_id), BigInt::from_u32(&e, 1));
+    token.mint(&admin1, &user1_id, &1000);
+    assert_eq!(token.balance(&user1_id), 1000);
+    assert_eq!(token.nonce(&admin1_id), 1);
 
-    token.approve(&user1, &user3_id, &BigInt::from_u32(&e, 100));
-    assert_eq!(
-        token.allowance(&user1_id, &user3_id),
-        BigInt::from_u32(&e, 100)
-    );
-    assert_eq!(token.nonce(&user1_id), BigInt::from_u32(&e, 1));
+    token.approve(&user1, &user3_id, &100);
+    assert_eq!(token.allowance(&user1_id, &user3_id), 100);
+    assert_eq!(token.nonce(&user1_id), 1);
 
-    token.xfer_from(&user3, &user1_id, &user2_id, &BigInt::from_u32(&e, 101));
+    token.xfer_from(&user3, &user1_id, &user2_id, &101);
 }
 
 #[test]

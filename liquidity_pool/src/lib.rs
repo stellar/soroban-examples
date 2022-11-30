@@ -4,7 +4,8 @@ mod test;
 pub mod testutils;
 mod token;
 
-use soroban_sdk::{contractimpl, BigInt, Bytes, BytesN, Env, IntoVal, RawVal};
+use num_integer::Roots;
+use soroban_sdk::{contractimpl, Bytes, BytesN, Env, IntoVal, RawVal};
 use token::{create_contract, TokenMetadata};
 use token::{Identifier, Signature};
 
@@ -41,31 +42,31 @@ fn get_token_share(e: &Env) -> BytesN<32> {
     e.data().get_unchecked(DataKey::TokenShare).unwrap()
 }
 
-fn get_total_shares(e: &Env) -> BigInt {
+fn get_total_shares(e: &Env) -> i128 {
     e.data().get_unchecked(DataKey::TotalShares).unwrap()
 }
 
-fn get_reserve_a(e: &Env) -> BigInt {
+fn get_reserve_a(e: &Env) -> i128 {
     e.data().get_unchecked(DataKey::ReserveA).unwrap()
 }
 
-fn get_reserve_b(e: &Env) -> BigInt {
+fn get_reserve_b(e: &Env) -> i128 {
     e.data().get_unchecked(DataKey::ReserveB).unwrap()
 }
 
-fn get_balance(e: &Env, contract_id: BytesN<32>) -> BigInt {
+fn get_balance(e: &Env, contract_id: BytesN<32>) -> i128 {
     token::Client::new(&e, contract_id).balance(&get_contract_id(e))
 }
 
-fn get_balance_a(e: &Env) -> BigInt {
+fn get_balance_a(e: &Env) -> i128 {
     get_balance(&e, get_token_a(&e))
 }
 
-fn get_balance_b(e: &Env) -> BigInt {
+fn get_balance_b(e: &Env) -> i128 {
     get_balance(&e, get_token_b(&e))
 }
 
-fn get_balance_shares(e: &Env) -> BigInt {
+fn get_balance_shares(e: &Env) -> i128 {
     get_balance(&e, get_token_share(&e))
 }
 
@@ -81,54 +82,49 @@ fn put_token_share(e: &Env, contract_id: BytesN<32>) {
     e.data().set(DataKey::TokenShare, contract_id);
 }
 
-fn put_total_shares(e: &Env, amount: BigInt) {
+fn put_total_shares(e: &Env, amount: i128) {
     e.data().set(DataKey::TotalShares, amount)
 }
 
-fn put_reserve_a(e: &Env, amount: BigInt) {
+fn put_reserve_a(e: &Env, amount: i128) {
     e.data().set(DataKey::ReserveA, amount)
 }
 
-fn put_reserve_b(e: &Env, amount: BigInt) {
+fn put_reserve_b(e: &Env, amount: i128) {
     e.data().set(DataKey::ReserveB, amount)
 }
 
-fn burn_shares(e: &Env, amount: BigInt) {
+fn burn_shares(e: &Env, amount: i128) {
     let total = get_total_shares(e);
     let share_contract_id = get_token_share(e);
 
     token::Client::new(&e, share_contract_id).burn(
         &Signature::Invoker,
-        &BigInt::zero(&e),
+        &0,
         &get_contract_id(e),
         &amount,
     );
     put_total_shares(e, total - amount);
 }
 
-fn mint_shares(e: &Env, to: Identifier, amount: BigInt) {
+fn mint_shares(e: &Env, to: Identifier, amount: i128) {
     let total = get_total_shares(e);
     let share_contract_id = get_token_share(e);
 
-    token::Client::new(&e, share_contract_id).mint(
-        &Signature::Invoker,
-        &BigInt::zero(&e),
-        &to,
-        &amount,
-    );
+    token::Client::new(&e, share_contract_id).mint(&Signature::Invoker, &0, &to, &amount);
 
     put_total_shares(e, total + amount);
 }
 
-fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: BigInt) {
-    token::Client::new(&e, contract_id).xfer(&Signature::Invoker, &BigInt::zero(&e), &to, &amount);
+fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: i128) {
+    token::Client::new(&e, contract_id).xfer(&Signature::Invoker, &0, &to, &amount);
 }
 
-fn transfer_a(e: &Env, to: Identifier, amount: BigInt) {
+fn transfer_a(e: &Env, to: Identifier, amount: i128) {
     transfer(&e, get_token_a(&e), to, amount);
 }
 
-fn transfer_b(e: &Env, to: Identifier, amount: BigInt) {
+fn transfer_b(e: &Env, to: Identifier, amount: i128) {
     transfer(&e, get_token_b(&e), to, amount);
 }
 
@@ -160,16 +156,16 @@ pub trait LiquidityPoolTrait {
     // holds. The difference between the balance and reserve for each token in this contract determines the amounts that
     // can be swapped. For this to be used safely, the swapper must send tokens to this contract and call swap in the
     // same transaction. If these steps aren't done atomically, then the swapper could lose their tokens.
-    fn swap(e: Env, to: Identifier, out_a: BigInt, out_b: BigInt);
+    fn swap(e: Env, to: Identifier, out_a: i128, out_b: i128);
 
     // Burns all pool share tokens in this contract, and sends the corresponding amount of token_a and token_b to
     // "to". For this to be used safely, the withdrawer must send the pool share token to this contract and call
     // withdraw in the same transaction. If these steps aren't done atomically, then the withdrawer
     // could lose their tokens.
     // Returns amount of both tokens withdrawn
-    fn withdraw(e: Env, to: Identifier) -> (BigInt, BigInt);
+    fn withdraw(e: Env, to: Identifier) -> (i128, i128);
 
-    fn get_rsrvs(e: Env) -> (BigInt, BigInt);
+    fn get_rsrvs(e: Env) -> (i128, i128);
 }
 
 struct LiquidityPool;
@@ -194,9 +190,9 @@ impl LiquidityPoolTrait for LiquidityPool {
         put_token_a(&e, token_a);
         put_token_b(&e, token_b);
         put_token_share(&e, share_contract_id.try_into().unwrap());
-        put_total_shares(&e, BigInt::zero(&e));
-        put_reserve_a(&e, BigInt::zero(&e));
-        put_reserve_b(&e, BigInt::zero(&e));
+        put_total_shares(&e, 0);
+        put_reserve_a(&e, 0);
+        put_reserve_b(&e, 0);
     }
 
     fn share_id(e: Env) -> BytesN<32> {
@@ -208,7 +204,7 @@ impl LiquidityPoolTrait for LiquidityPool {
         let (balance_a, balance_b) = (get_balance_a(&e), get_balance_b(&e));
         let total_shares = get_total_shares(&e);
 
-        let zero = BigInt::zero(&e);
+        let zero = 0;
         let new_total_shares = if reserve_a > zero.clone() && reserve_b > zero {
             let shares_a = (balance_a.clone() * total_shares.clone()) / reserve_a;
             let shares_b = (balance_b.clone() * total_shares.clone()) / reserve_b;
@@ -222,17 +218,17 @@ impl LiquidityPoolTrait for LiquidityPool {
         put_reserve_b(&e, balance_b);
     }
 
-    fn swap(e: Env, to: Identifier, out_a: BigInt, out_b: BigInt) {
+    fn swap(e: Env, to: Identifier, out_a: i128, out_b: i128) {
         let (reserve_a, reserve_b) = (get_reserve_a(&e), get_reserve_b(&e));
         let (balance_a, balance_b) = (get_balance_a(&e), get_balance_b(&e));
 
         // residue_numerator and residue_denominator are the amount that the invariant considers after
         // deducting the fee, scaled up by 1000 to avoid fractions
-        let residue_numerator = BigInt::from_u32(&e, 997);
-        let residue_denominator = BigInt::from_u32(&e, 1000);
-        let zero = BigInt::zero(&e);
+        let residue_numerator = 997;
+        let residue_denominator = 1000;
+        let zero = 0;
 
-        let new_invariant_factor = |balance: BigInt, reserve: BigInt, out: BigInt| {
+        let new_invariant_factor = |balance: i128, reserve: i128, out: i128| {
             let delta = balance - reserve.clone() - out;
             let adj_delta = if delta > zero {
                 residue_numerator.clone() * delta
@@ -256,7 +252,7 @@ impl LiquidityPoolTrait for LiquidityPool {
         put_reserve_b(&e, balance_b - out_b);
     }
 
-    fn withdraw(e: Env, to: Identifier) -> (BigInt, BigInt) {
+    fn withdraw(e: Env, to: Identifier) -> (i128, i128) {
         let (balance_a, balance_b) = (get_balance_a(&e), get_balance_b(&e));
         let balance_shares = get_balance_shares(&e);
         let total_shares = get_total_shares(&e);
@@ -273,7 +269,7 @@ impl LiquidityPoolTrait for LiquidityPool {
         (out_a, out_b)
     }
 
-    fn get_rsrvs(e: Env) -> (BigInt, BigInt) {
+    fn get_rsrvs(e: Env) -> (i128, i128) {
         (get_reserve_a(&e), get_reserve_b(&e))
     }
 }

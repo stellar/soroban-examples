@@ -5,7 +5,7 @@
 
 use soroban_auth::{verify, Identifier, Signature};
 use soroban_sdk::{
-    contracterror, contractimpl, contracttype, map, symbol, vec, BigInt, BytesN, Env, Map, Vec,
+    contracterror, contractimpl, contracttype, map, symbol, vec, BytesN, Env, Map, Vec,
 };
 mod token {
     soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
@@ -29,7 +29,7 @@ pub enum DataKey {
 pub struct Payment {
     pub receiver: Identifier,
     pub token: BytesN<32>,
-    pub amount: BigInt,
+    pub amount: i128,
 }
 
 #[derive(Clone)]
@@ -249,12 +249,7 @@ fn validate_and_compute_signature_weight(
 
 fn execute_payment(env: &Env, payment: Payment) {
     let client = token::Client::new(&env, payment.token);
-    client.xfer(
-        &Signature::Invoker,
-        &BigInt::zero(&env),
-        &payment.receiver,
-        &payment.amount,
-    );
+    client.xfer(&Signature::Invoker, &0, &payment.receiver, &payment.amount);
 }
 
 fn read_threshold(env: &Env) -> u32 {
