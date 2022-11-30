@@ -1,27 +1,8 @@
 [workspace]
 resolver = "2"
 
-members = [
-    "hello_world",
-    "increment",
-    "auth",
-    "auth_advanced",
-    "custom_types",
-    "cross_contract/contract_a",
-    "cross_contract/contract_b",
-    "deployer/contract",
-    "deployer/deployer",
-    "liquidity_pool",
-    "liquidity_pool_router",
-    "single_offer",
-    "single_offer_xfer_from",
-    "single_offer_router",
-    "events",
+members = [    
     "timelock",
-    "token",
-    "logging",
-    "errors",
-    "wallet",
 ]
 
 [profile.release-with-logs]
@@ -39,11 +20,10 @@ codegen-units = 1
 lto = true
 
 [workspace.dependencies.soroban-sdk]
-version = "0.3.2"
+version = "0.2.1"
 git = "https://github.com/stellar/rs-soroban-sdk"
-rev = "e2ecbee"
+rev = "8e3d9642"
 
-[workspace.dependencies.soroban-auth]
-version = "0.3.2"
-git = "https://github.com/stellar/rs-soroban-sdk"
-rev = "e2ecbee"
+
+[patch."https://github.com/stellar/rs-soroban-sdk"]
+soroban-sdk = { path = "../rs-soroban-env/soroban-sdk" }

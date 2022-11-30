@@ -1453,3 +1453,15 @@ dependencies = [
  "syn",
  "synstructure",
 ]
+
+[[patch.unused]]
+name = "soroban-env-common"
+version = "0.0.9"
+
+[[patch.unused]]
+name = "soroban-env-guest"
+version = "0.0.9"
+
+[[patch.unused]]
+name = "soroban-env-host"
+version = "0.0.9"
