@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use crate::{Deployer, DeployerClient};
-use soroban_sdk::{bytesn, symbol, Bytes, BytesN, Env, IntoVal};
+use soroban_sdk::{symbol, Bytes, Env, IntoVal};
 
 // The contract that will be deployed by the deployer contract.
 mod contract {
@@ -13,20 +13,16 @@ mod contract {
 #[test]
 fn test() {
     let env = Env::default();
-    let deployer_id = BytesN::from_array(&env, &[0; 32]);
-    env.register_contract(&deployer_id, Deployer);
-    let client = DeployerClient::new(&env, &deployer_id);
+    let client = DeployerClient::new(&env, &env.register_contract(None, Deployer));
+
+    // Install the WASM code to be deployed from the deployer contract.
+    let wasm_hash = env.install_contract_wasm(contract::WASM);
 
     // Deploy contract using deployer, and include an init function to call.
     let salt = Bytes::from_array(&env, &[0; 32]);
-    let wasm: Bytes = contract::WASM.into_val(&env);
     let init_fn = symbol!("init");
     let init_fn_args = (5u32,).into_val(&env);
-    let (contract_id, init_result) = client.deploy(&salt, &wasm, &init_fn, &init_fn_args);
-    assert_eq!(
-        contract_id,
-        bytesn!(&env, 0xead19f55aec09bfcb555e09f230149ba7f72744a5fd639804ce1e934e8fe9c5d)
-    );
+    let (contract_id, init_result) = client.deploy(&salt, &wasm_hash, &init_fn, &init_fn_args);
     assert!(init_result.is_void());
 
     // Invoke contract to check that it is initialized.

@@ -5,13 +5,7 @@ use crate::TokenClient;
 use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
 use soroban_auth::{Ed25519Signature, Signature};
-use soroban_sdk::{BigInt, BytesN, Env, IntoVal};
-
-fn generate_contract_id() -> [u8; 32] {
-    let mut id: [u8; 32] = Default::default();
-    thread_rng().fill_bytes(&mut id);
-    id
-}
+use soroban_sdk::{BigInt, Env, IntoVal};
 
 fn generate_keypair() -> Keypair {
     Keypair::generate(&mut thread_rng())
@@ -20,8 +14,7 @@ fn generate_keypair() -> Keypair {
 #[test]
 fn test() {
     let e: Env = Default::default();
-    let contract_id = generate_contract_id();
-    register_token(&e, &contract_id);
+    let contract_id = register_token(&e);
     let token = Token::new(&e, &contract_id);
 
     let admin1 = generate_keypair();
@@ -83,8 +76,7 @@ fn test() {
 #[should_panic(expected = "insufficient balance")]
 fn xfer_insufficient_balance() {
     let e: Env = Default::default();
-    let contract_id = generate_contract_id();
-    register_token(&e, &contract_id);
+    let contract_id = register_token(&e);
     let token = Token::new(&e, &contract_id);
 
     let admin1 = generate_keypair();
@@ -107,8 +99,7 @@ fn xfer_insufficient_balance() {
 #[should_panic(expected = "can't receive when frozen")]
 fn xfer_receive_frozen() {
     let e: Env = Default::default();
-    let contract_id = generate_contract_id();
-    register_token(&e, &contract_id);
+    let contract_id = register_token(&e);
     let token = Token::new(&e, &contract_id);
 
     let admin1 = generate_keypair();
@@ -132,8 +123,7 @@ fn xfer_receive_frozen() {
 #[should_panic(expected = "can't spend when frozen")]
 fn xfer_spend_frozen() {
     let e: Env = Default::default();
-    let contract_id = generate_contract_id();
-    register_token(&e, &contract_id);
+    let contract_id = register_token(&e);
     let token = Token::new(&e, &contract_id);
 
     let admin1 = generate_keypair();
@@ -157,8 +147,7 @@ fn xfer_spend_frozen() {
 #[should_panic(expected = "insufficient allowance")]
 fn xfer_from_insufficient_allowance() {
     let e: Env = Default::default();
-    let contract_id = generate_contract_id();
-    register_token(&e, &contract_id);
+    let contract_id = register_token(&e);
     let token = Token::new(&e, &contract_id);
 
     let admin1 = generate_keypair();
@@ -190,8 +179,7 @@ fn xfer_from_insufficient_allowance() {
 #[should_panic(expected = "already initialized")]
 fn initialize_already_initialized() {
     let e: Env = Default::default();
-    let contract_id = generate_contract_id();
-    register_token(&e, &contract_id);
+    let contract_id = register_token(&e);
     let token = Token::new(&e, &contract_id);
 
     let admin1 = generate_keypair();
@@ -205,8 +193,7 @@ fn initialize_already_initialized() {
 #[should_panic] // TODO: Add expected
 fn set_admin_bad_signature() {
     let e: Env = Default::default();
-    let contract_id = generate_contract_id();
-    register_token(&e, &contract_id);
+    let contract_id = register_token(&e);
     let token = Token::new(&e, &contract_id);
 
     let admin1 = generate_keypair();
@@ -224,9 +211,7 @@ fn set_admin_bad_signature() {
         signature: signature.into_val(&e),
     });
 
-    let contract_id_bin = BytesN::from_array(&e, &contract_id);
-
-    let client = TokenClient::new(&e, &contract_id_bin);
+    let client = TokenClient::new(&e, &contract_id);
     let nonce = client.nonce(&admin1_id);
     client.set_admin(&auth, &nonce, &admin2_id);
 }
@@ -235,8 +220,7 @@ fn set_admin_bad_signature() {
 #[should_panic(expected = "Decimal must fit in a u8")]
 fn decimal_is_over_max() {
     let e = Default::default();
-    let contract_id = generate_contract_id();
-    register_token(&e, &contract_id);
+    let contract_id = register_token(&e);
     let token = Token::new(&e, &contract_id);
 
     let admin1 = generate_keypair();

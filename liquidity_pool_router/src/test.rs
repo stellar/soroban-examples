@@ -1,4 +1,5 @@
 #![cfg(test)]
+extern crate std;
 
 use crate::pool_contract::LiquidityPoolClient;
 use crate::token::{self, TokenMetadata};
@@ -6,26 +7,11 @@ use crate::token::{self, TokenMetadata};
 use crate::testutils::{
     register_test_contract as register_liquidity_pool_router, LiquidityPoolRouter,
 };
-use rand::{thread_rng, RngCore};
 use soroban_sdk::{testutils::Accounts, AccountId, BigInt, BytesN, Env, IntoVal};
 use token::{Identifier, Signature};
 
-fn generate_sorted_contract_ids() -> ([u8; 32], [u8; 32]) {
-    let a = generate_contract_id();
-    let b = generate_contract_id();
-    if a < b {
-        (a, b)
-    } else if a == b {
-        generate_sorted_contract_ids()
-    } else {
-        (b, a)
-    }
-}
-
-fn create_token_contract(e: &Env, id: &[u8; 32], admin: &AccountId) -> token::Client {
-    let contract_id = BytesN::from_array(e, &id);
-    e.register_contract_token(&contract_id);
-    let token = token::Client::new(e, id);
+fn create_token_contract(e: &Env, admin: &AccountId) -> token::Client {
+    let token = token::Client::new(e, e.register_contract_token());
 
     // decimals, name, symbol don't matter in tests
     token.init(
@@ -39,33 +25,35 @@ fn create_token_contract(e: &Env, id: &[u8; 32], admin: &AccountId) -> token::Cl
     token
 }
 
-fn generate_contract_id() -> [u8; 32] {
-    let mut id: [u8; 32] = Default::default();
-    thread_rng().fill_bytes(&mut id);
-    id
+fn create_liquidity_pool_router_contract(e: &Env) -> LiquidityPoolRouter {
+    LiquidityPoolRouter::new(e, &register_liquidity_pool_router(&e))
 }
 
-fn create_liquidity_pool_router_contract(e: &Env) -> ([u8; 32], LiquidityPoolRouter) {
-    let id = generate_contract_id();
-    register_liquidity_pool_router(&e, &id);
-    let pool = LiquidityPoolRouter::new(e, &id);
-    (id, pool)
+fn install_liquidity_pool_wasm(e: &Env) -> BytesN<32> {
+    soroban_sdk::contractimport!(
+        file = "../target/wasm32-unknown-unknown/release/soroban_liquidity_pool_contract.wasm"
+    );
+    e.install_contract_wasm(WASM)
 }
 
 #[test]
 fn test() {
     let e: Env = Default::default();
 
-    let admin1 = e.accounts().generate();
-    let admin2 = e.accounts().generate();
+    let mut admin1 = e.accounts().generate();
+    let mut admin2 = e.accounts().generate();
+
+    let mut token1 = create_token_contract(&e, &admin1);
+    let mut token2 = create_token_contract(&e, &admin2);
+    if &token2.contract_id < &token1.contract_id {
+        std::mem::swap(&mut token1, &mut token2);
+        std::mem::swap(&mut admin1, &mut admin2);
+    }
     let user1 = e.accounts().generate();
     let user1_id = Identifier::Account(user1.clone());
 
-    let (contract1, contract2) = generate_sorted_contract_ids();
-    let token1 = create_token_contract(&e, &contract1, &admin1);
-    let token2 = create_token_contract(&e, &contract2, &admin2);
-    let (contract_router, router) = create_liquidity_pool_router_contract(&e);
-    let router_id = Identifier::Contract(BytesN::from_array(&e, &contract_router));
+    let contract_router = create_liquidity_pool_router_contract(&e);
+    let router_id = Identifier::Contract(contract_router.contract_id.clone());
 
     token1.with_source_account(&admin1).mint(
         &Signature::Invoker,
@@ -95,17 +83,18 @@ fn test() {
         &BigInt::from_u32(&e, 100),
     );
 
-    router.sf_deposit(
+    contract_router.sf_deposit(
+        &install_liquidity_pool_wasm(&e),
         &user1,
-        &contract1,
-        &contract2,
+        &token1.contract_id,
+        &token2.contract_id,
         &BigInt::from_u32(&e, 100),
         &BigInt::from_u32(&e, 100),
         &BigInt::from_u32(&e, 100),
         &BigInt::from_u32(&e, 100),
     );
 
-    let contract_pool = router.get_pool(&contract1, &contract2);
+    let contract_pool = contract_router.get_pool(&token1.contract_id, &token2.contract_id);
     let pool_id = Identifier::Contract(contract_pool.clone());
 
     let share_id = LiquidityPoolClient::new(&e, &contract_pool).share_id();
@@ -125,10 +114,10 @@ fn test() {
         &BigInt::from_u32(&e, 100),
     );
 
-    router.swap_out(
+    contract_router.swap_out(
         &user1,
-        &contract1,
-        &contract2,
+        &token1.contract_id,
+        &token2.contract_id,
         &BigInt::from_u32(&e, 49),
         &BigInt::from_u32(&e, 100),
     );
@@ -144,10 +133,10 @@ fn test() {
         &router_id,
         &BigInt::from_u32(&e, 100),
     );
-    router.sf_withdrw(
+    contract_router.sf_withdrw(
         &user1,
-        &contract1,
-        &contract2,
+        &token1.contract_id,
+        &token2.contract_id,
         &BigInt::from_u32(&e, 100),
         &BigInt::from_u32(&e, 197),
         &BigInt::from_u32(&e, 51),

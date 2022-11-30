@@ -8,18 +8,11 @@ publish = false
 crate-type = ["cdylib"]
 
 [features]
-testutils = ["soroban-sdk/testutils","dep:ed25519-dalek", "dep:sha2", "dep:stellar-xdr"]
+testutils = ["soroban-sdk/testutils"]
 
 [dependencies]
-soroban-sdk = "0.2.1"
-soroban-auth = "0.2.1"
-ed25519-dalek = { version = "1.0.1", optional = true }
-stellar-xdr = { version = "0.0.6", features = ["next", "std"], optional = true }
-sha2 = { version = "0.10.2", optional = true }
+soroban-sdk = { workspace = true }
+soroban-auth = { workspace = true }
 
 [dev_dependencies]
-soroban-sdk = { version = "0.2.1", features = ["testutils"] }
-stellar-xdr = { version = "0.0.6", features = ["next", "std"] }
-ed25519-dalek = { version = "1.0.1" }
-sha2 = { version = "0.10.2" }
-rand = { version = "0.7.3" }
+soroban-sdk = { workspace = true, features = ["testutils"] }

@@ -2,18 +2,10 @@
 
 use crate::testutils::{register_test_contract as register_single_offer_router, SingleOfferRouter};
 use crate::token::{self, Identifier, Signature, TokenMetadata};
-use rand::{thread_rng, RngCore};
 use soroban_sdk::{testutils::Accounts, AccountId, BigInt, BytesN, Env, IntoVal};
 
-fn generate_contract_id() -> [u8; 32] {
-    let mut id: [u8; 32] = Default::default();
-    thread_rng().fill_bytes(&mut id);
-    id
-}
-
-fn create_token_contract(e: &Env, admin: &AccountId) -> ([u8; 32], token::Client) {
-    let id = e.register_contract_token(None);
-    let token = token::Client::new(e, &id);
+fn create_token_contract(e: &Env, admin: &AccountId) -> token::Client {
+    let token = token::Client::new(e, &e.register_contract_token());
     // decimals, name, symbol don't matter in tests
     token.init(
         &Identifier::Account(admin.clone()),
@@ -23,22 +15,35 @@ fn create_token_contract(e: &Env, admin: &AccountId) -> ([u8; 32], token::Client
             decimals: 7,
         },
     );
-    (id.into(), token)
+    token
 }
 
 fn create_single_offer_router_contract(
     e: &Env,
+    offer_wasm_hash: &BytesN<32>,
     admin: &AccountId,
-    token_a: &[u8; 32],
-    token_b: &[u8; 32],
+    token_a: &BytesN<32>,
+    token_b: &BytesN<32>,
     n: u32,
     d: u32,
-) -> ([u8; 32], SingleOfferRouter) {
-    let id = generate_contract_id();
-    register_single_offer_router(&e, &id);
-    let single_offer = SingleOfferRouter::new(e, &id);
-    single_offer.init(&Identifier::Account(admin.clone()), token_a, token_b, n, d);
-    (id, single_offer)
+) -> SingleOfferRouter {
+    let single_offer = SingleOfferRouter::new(e, &register_single_offer_router(&e));
+    single_offer.init(
+        offer_wasm_hash,
+        &Identifier::Account(admin.clone()),
+        token_a,
+        token_b,
+        n,
+        d,
+    );
+    single_offer
+}
+
+fn install_offer_wasm(e: &Env) -> BytesN<32> {
+    soroban_sdk::contractimport!(
+        file = "../target/wasm32-unknown-unknown/release/soroban_single_offer_contract.wasm"
+    );
+    e.install_contract_wasm(WASM)
 }
 
 #[test]
@@ -52,13 +57,21 @@ fn test() {
     let user1_id = Identifier::Account(user1.clone());
     let user2_id = Identifier::Account(user2.clone());
 
-    let (contract1, token1) = create_token_contract(&e, &admin1);
-    let (contract2, token2) = create_token_contract(&e, &admin2);
+    let token1 = create_token_contract(&e, &admin1);
+    let token2 = create_token_contract(&e, &admin2);
+    // let offer_wasm_hash =
     // The price here is 1 A == .5 B
-    let (contract_offer_router, offer_router) =
-        create_single_offer_router_contract(&e, &user1, &contract1, &contract2, 1, 1);
+    let offer_router = create_single_offer_router_contract(
+        &e,
+        &install_offer_wasm(&e),
+        &user1,
+        &token1.contract_id,
+        &token2.contract_id,
+        1,
+        1,
+    );
 
-    let router_id = Identifier::Contract(BytesN::from_array(&e, &contract_offer_router));
+    let router_id = Identifier::Contract(offer_router.contract_id.clone());
 
     // mint tokens that will be traded
     e.set_source_account(&admin1);
@@ -79,7 +92,7 @@ fn test() {
     );
     assert_eq!(token2.balance(&user2_id), BigInt::from_u32(&e, 20));
 
-    let offer_addr = offer_router.get_offer(&user1_id, &contract1, &contract2);
+    let offer_addr = offer_router.get_offer(&user1_id, &token1.contract_id, &token2.contract_id);
     let offer_id = Identifier::Contract(offer_addr.clone());
 
     // admin transfers the sell_token (token1) to the contract address

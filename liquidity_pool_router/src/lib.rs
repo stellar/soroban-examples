@@ -4,8 +4,7 @@ mod pool_contract;
 mod test;
 pub mod testutils;
 
-use pool_contract::{create_contract, LiquidityPoolClient};
-
+use pool_contract::LiquidityPoolClient;
 use soroban_sdk::{contractimpl, contracttype, BigInt, Bytes, BytesN, Env};
 use token::{Identifier, Signature};
 
@@ -34,6 +33,7 @@ fn has_pool(e: &Env, salt: &BytesN<32>) -> bool {
 pub trait LiquidityPoolRouterTrait {
     fn sf_deposit(
         e: Env,
+        liqiudity_pool_wasm_hash: BytesN<32>,
         token_a: BytesN<32>,
         token_b: BytesN<32>,
         desired_a: BigInt,
@@ -111,6 +111,7 @@ struct LiquidityPoolRouter;
 impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
     fn sf_deposit(
         e: Env,
+        liquidity_pool_wasm_hash: BytesN<32>,
         token_a: BytesN<32>,
         token_b: BytesN<32>,
         desired_a: BigInt,
@@ -120,7 +121,10 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
     ) {
         let salt = pool_salt(&e, &token_a, &token_b);
         if !has_pool(&e, &salt) {
-            let pool_contract_id = create_contract(&e, &salt);
+            let pool_contract_id = e
+                .deployer()
+                .with_current_contract(salt.clone())
+                .deploy(liquidity_pool_wasm_hash);
 
             put_pool(&e, &salt, &pool_contract_id);
 
