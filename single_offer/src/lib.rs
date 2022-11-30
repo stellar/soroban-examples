@@ -173,7 +173,10 @@ impl SingleOfferTrait for SingleOffer {
 
         let price = load_price(&e);
 
-        let amount = balance_buy_token.clone() * price.d as i128 / price.n as i128;
+        let amount = balance_buy_token
+            .checked_mul(price.d as i128)
+            .expect("no overflow")
+            / price.n as i128;
 
         if amount < min {
             panic!("will receive less than min");

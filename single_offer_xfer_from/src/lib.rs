@@ -155,7 +155,10 @@ impl SingleOfferXferFromTrait for SingleOfferXferFrom {
     fn trade(e: Env, amount_to_sell: i128, min: i128) {
         let price = get_price(&e);
 
-        let amount = amount_to_sell.clone() * price.d as i128 / price.n as i128;
+        let amount = amount_to_sell
+            .checked_mul(price.d as i128)
+            .expect("no overflow")
+            / price.n as i128;
 
         if amount < min {
             panic!("will receive less than min");
