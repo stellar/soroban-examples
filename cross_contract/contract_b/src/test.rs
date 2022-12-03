@@ -8,7 +8,7 @@ fn test() {
     let env = Env::default();
 
     // Register contract A using the imported WASM.
-    let contract_a_id = env.register_contract_wasm(contract_a::WASM);
+    let contract_a_id = env.register_contract_wasm(None, contract_a::WASM);
 
     // Register contract B defined in this crate.
     let contract_b_id = env.register_contract(None, ContractB);

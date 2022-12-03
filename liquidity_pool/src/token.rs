@@ -7,6 +7,6 @@ pub fn create_contract(e: &Env, token_a: &BytesN<32>, token_b: &BytesN<32>) -> B
     let mut salt = Bytes::new(e);
     salt.append(&token_a.clone().into());
     salt.append(&token_b.clone().into());
-    let salt = e.compute_hash_sha256(&salt);
+    let salt = e.crypto().sha256(&salt);
     e.deployer().with_current_contract(salt).deploy_token()
 }

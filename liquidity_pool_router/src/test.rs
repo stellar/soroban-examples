@@ -11,7 +11,7 @@ use soroban_sdk::{testutils::Accounts, AccountId, BytesN, Env, IntoVal};
 use token::{Identifier, Signature};
 
 fn create_token_contract(e: &Env, admin: &AccountId) -> token::Client {
-    let token = token::Client::new(e, e.register_contract_token());
+    let token = token::Client::new(e, e.register_contract_token(None));
 
     // decimals, name, symbol don't matter in tests
     token.init(

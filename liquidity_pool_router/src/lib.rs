@@ -76,7 +76,7 @@ pub fn pool_salt(e: &Env, token_a: &BytesN<32>, token_b: &BytesN<32>) -> BytesN<
     let mut salt_bin = Bytes::new(e);
     salt_bin.append(&token_a.clone().into());
     salt_bin.append(&token_b.clone().into());
-    e.compute_hash_sha256(&salt_bin)
+    e.crypto().sha256(&salt_bin)
 }
 
 fn get_deposit_amounts(

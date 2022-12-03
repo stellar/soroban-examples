@@ -78,7 +78,7 @@ pub fn offer_key(
     }
     offer_key_bin.append(&sell_token.clone().into());
     offer_key_bin.append(&buy_token.clone().into());
-    e.compute_hash_sha256(&offer_key_bin)
+    e.crypto().sha256(&offer_key_bin)
 }
 
 struct SingleOfferRouter;
