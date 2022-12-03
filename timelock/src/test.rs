@@ -6,7 +6,7 @@ use soroban_sdk::{vec, AccountId, Env, IntoVal};
 use token::{Client as TokenClient, TokenMetadata};
 
 fn create_token_contract(e: &Env, admin: &AccountId) -> (BytesN<32>, TokenClient) {
-    let id = e.register_contract_token();
+    let id = e.register_contract_token(None);
     let token = TokenClient::new(e, &id);
     // decimals, name, symbol don't matter in tests
     token.init(

@@ -5,7 +5,7 @@ use crate::token::{self, Identifier, Signature, TokenMetadata};
 use soroban_sdk::{testutils::Accounts, AccountId, BytesN, Env, IntoVal};
 
 fn create_token_contract(e: &Env, admin: &AccountId) -> token::Client {
-    let id = e.register_contract_token();
+    let id = e.register_contract_token(None);
     let token = token::Client::new(e, &id);
     // decimals, name, symbol don't matter in tests
     token.init(
