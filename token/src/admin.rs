@@ -4,17 +4,17 @@ use soroban_sdk::Env;
 
 pub fn has_administrator(e: &Env) -> bool {
     let key = DataKey::Admin;
-    e.data().has(key)
+    e.storage().has(key)
 }
 
 fn read_administrator(e: &Env) -> Identifier {
     let key = DataKey::Admin;
-    e.data().get_unchecked(key).unwrap()
+    e.storage().get_unchecked(key).unwrap()
 }
 
 pub fn write_administrator(e: &Env, id: Identifier) {
     let key = DataKey::Admin;
-    e.data().set(key, id);
+    e.storage().set(key, id);
 }
 
 pub fn check_admin(e: &Env, auth: &Signature) {

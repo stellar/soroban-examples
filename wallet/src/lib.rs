@@ -100,13 +100,13 @@ impl WalletContract {
             }
             weight_sum += admin.weight;
             // Record admin weight (and effectively admin identifier too).
-            env.data().set(DataKey::AdminW(admin.id), admin.weight);
+            env.storage().set(DataKey::AdminW(admin.id), admin.weight);
         }
         // Do a basic sanity check to make sure we don't create a locked wallet.
         if weight_sum < threshold {
             return Err(Error::AdminWeightsBelowThreshold);
         }
-        env.data().set(DataKey::Threshold, threshold);
+        env.storage().set(DataKey::Threshold, threshold);
         Ok(())
     }
 
@@ -136,13 +136,13 @@ impl WalletContract {
             validate_and_compute_signature_weight(&env, &signatures, payment_id, &payment)?;
         let mut is_existing_payment = false;
         let mut signer_ids = vec![&env];
-        if let Some(maybe_previous_signers) = env.data().get(&DataKey::PaySigners(payment_id)) {
+        if let Some(maybe_previous_signers) = env.storage().get(&DataKey::PaySigners(payment_id)) {
             is_existing_payment = true;
             // If there were previous signers for this payment id, we need to check that
             // the payment still hasn't been executed (it should be removed on execution)
             // and that it matches the payment signed by the new signers.
             let stored_payment: Payment = env
-                .data()
+                .storage()
                 .get(&DataKey::Payment(payment_id))
                 .ok_or(Error::PaymentAlreadyExecuted)?
                 .unwrap();
@@ -172,7 +172,7 @@ impl WalletContract {
         // Update signer data. This also serves as a protection from
         // re-executing the payment with the same id (a separate entry could
         // serve this purpose as well).
-        env.data().set(
+        env.storage().set(
             DataKey::PaySigners(payment_id),
             WeightedSigners {
                 signers: signer_ids,
@@ -186,11 +186,11 @@ impl WalletContract {
         if weight_sum >= threshold {
             execute_payment(&env, payment);
             // Remove the payment to mark it executed (signers are still there).
-            env.data().remove(&DataKey::Payment(payment_id));
+            env.storage().remove(&DataKey::Payment(payment_id));
             return Ok(true);
         }
         if !is_existing_payment {
-            env.data().set(DataKey::Payment(payment_id), payment);
+            env.storage().set(DataKey::Payment(payment_id), payment);
         }
 
         Ok(false)
@@ -208,7 +208,7 @@ fn check_initialization_params(
     if admins.is_empty() || admins.len() > MAX_ADMINS {
         return Err(Error::InvalidAdminCount);
     }
-    if env.data().has(DataKey::Threshold) {
+    if env.storage().has(DataKey::Threshold) {
         return Err(Error::AlreadyInitialized);
     }
     Ok(())
@@ -248,12 +248,12 @@ fn execute_payment(env: &Env, payment: Payment) {
 }
 
 fn read_threshold(env: &Env) -> u32 {
-    env.data().get_unchecked(DataKey::Threshold).unwrap()
+    env.storage().get_unchecked(DataKey::Threshold).unwrap()
 }
 
 fn read_weight(env: &Env, id: &Identifier) -> Result<u32, Error> {
     Ok(env
-        .data()
+        .storage()
         .get(DataKey::AdminW(id.clone()))
         .ok_or(Error::UnauthorizedSigner)?
         .unwrap())

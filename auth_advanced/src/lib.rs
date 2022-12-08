@@ -38,7 +38,7 @@ impl IncrementContract {
 
         // Get the current count for the invoker.
         let mut count: u32 = env
-            .data()
+            .storage()
             .get(&key)
             .unwrap_or(Ok(0)) // If no value set, assume 0.
             .unwrap(); // Panic if the value of COUNTER is not u32.
@@ -47,7 +47,7 @@ impl IncrementContract {
         count += 1;
 
         // Save the count.
-        env.data().set(&key, count);
+        env.storage().set(&key, count);
 
         // Return the count to the caller.
         count
@@ -77,12 +77,12 @@ fn verify_and_consume_nonce(env: &Env, sig: &Signature, nonce: i128) {
 
 fn get_nonce(env: &Env, id: &Identifier) -> i128 {
     let key = DataKey::Nonce(id.clone());
-    env.data().get(key).unwrap_or(Ok(0)).unwrap()
+    env.storage().get(key).unwrap_or(Ok(0)).unwrap()
 }
 
 fn set_nonce(env: &Env, id: &Identifier, nonce: i128) {
     let key = DataKey::Nonce(id.clone());
-    env.data().set(key, nonce);
+    env.storage().set(key, nonce);
 }
 
 mod test;

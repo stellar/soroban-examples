@@ -19,15 +19,17 @@ pub enum DataKey {
 }
 
 fn get_pool_id(e: &Env, salt: &BytesN<32>) -> BytesN<32> {
-    e.data().get_unchecked(DataKey::Pool(salt.clone())).unwrap()
+    e.storage()
+        .get_unchecked(DataKey::Pool(salt.clone()))
+        .unwrap()
 }
 
 fn put_pool(e: &Env, salt: &BytesN<32>, pool: &BytesN<32>) {
-    e.data().set(DataKey::Pool(salt.clone()), pool.clone())
+    e.storage().set(DataKey::Pool(salt.clone()), pool.clone())
 }
 
 fn has_pool(e: &Env, salt: &BytesN<32>) -> bool {
-    e.data().has(DataKey::Pool(salt.clone()))
+    e.storage().has(DataKey::Pool(salt.clone()))
 }
 
 pub trait LiquidityPoolRouterTrait {
