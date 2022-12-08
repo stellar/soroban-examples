@@ -39,11 +39,11 @@ codegen-units = 1
 lto = true
 
 [workspace.dependencies.soroban-sdk]
-version = "0.3.1"
+version = "0.3.2"
 git = "https://github.com/stellar/rs-soroban-sdk"
-rev = "f13925e0"
+rev = "e2ecbee"
 
 [workspace.dependencies.soroban-auth]
-version = "0.3.1"
+version = "0.3.2"
 git = "https://github.com/stellar/rs-soroban-sdk"
-rev = "f13925e0"
+rev = "e2ecbee"

@@ -4,7 +4,7 @@ use soroban_sdk::Env;
 
 pub fn read_balance(e: &Env, id: Identifier) -> i128 {
     let key = DataKey::Balance(id);
-    if let Some(balance) = e.data().get(key) {
+    if let Some(balance) = e.storage().get(key) {
         balance.unwrap()
     } else {
         0
@@ -13,7 +13,7 @@ pub fn read_balance(e: &Env, id: Identifier) -> i128 {
 
 fn write_balance(e: &Env, id: Identifier, amount: i128) {
     let key = DataKey::Balance(id);
-    e.data().set(key, amount);
+    e.storage().set(key, amount);
 }
 
 pub fn receive_balance(e: &Env, id: Identifier, amount: i128) {
@@ -39,7 +39,7 @@ pub fn spend_balance(e: &Env, id: Identifier, amount: i128) {
 
 pub fn read_state(e: &Env, id: Identifier) -> bool {
     let key = DataKey::State(id);
-    if let Some(state) = e.data().get(key) {
+    if let Some(state) = e.storage().get(key) {
         state.unwrap()
     } else {
         false
@@ -48,5 +48,5 @@ pub fn read_state(e: &Env, id: Identifier) -> bool {
 
 pub fn write_state(e: &Env, id: Identifier, is_frozen: bool) {
     let key = DataKey::State(id);
-    e.data().set(key, is_frozen);
+    e.storage().set(key, is_frozen);
 }

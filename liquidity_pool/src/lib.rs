@@ -31,27 +31,27 @@ fn get_contract_id(e: &Env) -> Identifier {
 }
 
 fn get_token_a(e: &Env) -> BytesN<32> {
-    e.data().get_unchecked(DataKey::TokenA).unwrap()
+    e.storage().get_unchecked(DataKey::TokenA).unwrap()
 }
 
 fn get_token_b(e: &Env) -> BytesN<32> {
-    e.data().get_unchecked(DataKey::TokenB).unwrap()
+    e.storage().get_unchecked(DataKey::TokenB).unwrap()
 }
 
 fn get_token_share(e: &Env) -> BytesN<32> {
-    e.data().get_unchecked(DataKey::TokenShare).unwrap()
+    e.storage().get_unchecked(DataKey::TokenShare).unwrap()
 }
 
 fn get_total_shares(e: &Env) -> i128 {
-    e.data().get_unchecked(DataKey::TotalShares).unwrap()
+    e.storage().get_unchecked(DataKey::TotalShares).unwrap()
 }
 
 fn get_reserve_a(e: &Env) -> i128 {
-    e.data().get_unchecked(DataKey::ReserveA).unwrap()
+    e.storage().get_unchecked(DataKey::ReserveA).unwrap()
 }
 
 fn get_reserve_b(e: &Env) -> i128 {
-    e.data().get_unchecked(DataKey::ReserveB).unwrap()
+    e.storage().get_unchecked(DataKey::ReserveB).unwrap()
 }
 
 fn get_balance(e: &Env, contract_id: BytesN<32>) -> i128 {
@@ -71,27 +71,27 @@ fn get_balance_shares(e: &Env) -> i128 {
 }
 
 fn put_token_a(e: &Env, contract_id: BytesN<32>) {
-    e.data().set(DataKey::TokenA, contract_id);
+    e.storage().set(DataKey::TokenA, contract_id);
 }
 
 fn put_token_b(e: &Env, contract_id: BytesN<32>) {
-    e.data().set(DataKey::TokenB, contract_id);
+    e.storage().set(DataKey::TokenB, contract_id);
 }
 
 fn put_token_share(e: &Env, contract_id: BytesN<32>) {
-    e.data().set(DataKey::TokenShare, contract_id);
+    e.storage().set(DataKey::TokenShare, contract_id);
 }
 
 fn put_total_shares(e: &Env, amount: i128) {
-    e.data().set(DataKey::TotalShares, amount)
+    e.storage().set(DataKey::TotalShares, amount)
 }
 
 fn put_reserve_a(e: &Env, amount: i128) {
-    e.data().set(DataKey::ReserveA, amount)
+    e.storage().set(DataKey::ReserveA, amount)
 }
 
 fn put_reserve_b(e: &Env, amount: i128) {
-    e.data().set(DataKey::ReserveB, amount)
+    e.storage().set(DataKey::ReserveB, amount)
 }
 
 fn burn_shares(e: &Env, amount: i128) {

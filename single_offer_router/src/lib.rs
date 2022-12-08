@@ -20,18 +20,18 @@ pub enum DataKey {
 }
 
 fn get_offer(e: &Env, offer_key: &BytesN<32>) -> BytesN<32> {
-    e.data()
+    e.storage()
         .get_unchecked(DataKey::Offer(offer_key.clone()))
         .unwrap()
 }
 
 fn put_offer(e: &Env, offer_key: &BytesN<32>, offer: &BytesN<32>) {
-    e.data()
+    e.storage()
         .set(DataKey::Offer(offer_key.clone()), offer.clone())
 }
 
 fn has_offer(e: &Env, offer_key: &BytesN<32>) -> bool {
-    e.data().has(DataKey::Offer(offer_key.clone()))
+    e.storage().has(DataKey::Offer(offer_key.clone()))
 }
 
 pub trait SingleOfferRouterTrait {
