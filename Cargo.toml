@@ -3,6 +3,8 @@ resolver = "2"
 
 members = [    
     "timelock",
+    #"deployer/deployer",
+    #"deployer/contract",
 ]
 
 [profile.release-with-logs]
@@ -26,4 +28,13 @@ rev = "8e3d9642"
 
 
 [patch."https://github.com/stellar/rs-soroban-sdk"]
-soroban-sdk = { path = "../rs-soroban-env/soroban-sdk" }
+soroban-sdk = { path = "../rs-soroban-sdk/soroban-sdk" }
+soroban-spec = { path = "../rs-soroban-sdk/soroban-spec" }
+
+[patch."https://github.com/stellar/rs-stellar-xdr"]
+stellar-xdr = { path = "../rs-stellar-xdr/" }
+
+[patch."https://github.com/stellar/rs-soroban-env"]
+soroban-env-common = { path = "../rs-soroban-env/soroban-env-common" }
+soroban-env-guest = { path = "../rs-soroban-env/soroban-env-guest" }
+soroban-env-host = { path = "../rs-soroban-env/soroban-env-host/" }
