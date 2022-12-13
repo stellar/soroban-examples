@@ -3,8 +3,8 @@ resolver = "2"
 
 members = [    
     "timelock",
-    #"deployer/deployer",
-    #"deployer/contract",
+    "atomic_swap",    
+    "atomic_multiswap",
 ]
 
 [profile.release-with-logs]
