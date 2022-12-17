@@ -1,20 +1,24 @@
 #![cfg(test)]
 
 use crate::testutils::{register_test_contract as register_single_offer, SingleOfferXferFrom};
-use crate::token::{self, Identifier, Signature, TokenMetadata};
 use soroban_sdk::{testutils::Accounts, AccountId, BytesN, Env, IntoVal};
 
-fn create_token_contract(e: &Env, admin: &AccountId) -> token::Client {
-    let id = e.register_contract_token(None);
-    let token = token::Client::new(e, &id);
+soroban_sdk::contractimport!(
+    file = "../target/wasm32-unknown-unknown/release/soroban_token_contract.wasm"
+);
+
+type TokenClient = Client;
+
+fn create_token_contract(e: &Env, admin: &AccountId) -> TokenClient {
+    e.install_contract_wasm(WASM);
+
+    let token = TokenClient::new(e, e.register_contract_wasm(None, WASM));
     // decimals, name, symbol don't matter in tests
-    token.init(
+    token.initialize(
         &Identifier::Account(admin.clone()),
-        &TokenMetadata {
-            name: "name".into_val(e),
-            symbol: "symbol".into_val(e),
-            decimals: 7,
-        },
+        &7u32,
+        &"name".into_val(e),
+        &"symbol".into_val(e),
     );
     token
 }

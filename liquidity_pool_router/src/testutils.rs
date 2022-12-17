@@ -27,6 +27,7 @@ impl LiquidityPoolRouter {
     pub fn sf_deposit(
         &self,
         liquidity_pool_wasm_hash: &BytesN<32>,
+        token_wasm_hash: &BytesN<32>,
         to: &AccountId,
         token_a: &BytesN<32>,
         token_b: &BytesN<32>,
@@ -37,6 +38,7 @@ impl LiquidityPoolRouter {
     ) {
         self.client().with_source_account(to).sf_deposit(
             liquidity_pool_wasm_hash,
+            token_wasm_hash,
             token_a,
             token_b,
             desired_a,
