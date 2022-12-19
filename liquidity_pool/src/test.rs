@@ -2,28 +2,38 @@
 extern crate std;
 
 use crate::testutils::{register_test_contract as register_liqpool, LiquidityPool};
-use crate::token::{self, TokenMetadata};
+use crate::token::{self};
 use soroban_sdk::{testutils::Accounts, AccountId, BytesN, Env, IntoVal};
-use token::{Identifier, Signature};
+
+soroban_sdk::contractimport!(
+    file = "../target/wasm32-unknown-unknown/release/soroban_token_contract.wasm"
+);
 
 fn create_token_contract(e: &Env, admin: &AccountId) -> token::Client {
-    let token = token::Client::new(e, e.register_contract_token(None));
+    let token = token::Client::new(e, e.register_contract_wasm(None, WASM));
     // decimals, name, symbol don't matter in tests
-    token.init(
+    token.initialize(
         &Identifier::Account(admin.clone()),
-        &TokenMetadata {
-            name: "name".into_val(e),
-            symbol: "symbol".into_val(e),
-            decimals: 7,
-        },
+        &7u32,
+        &"name".into_val(e),
+        &"symbol".into_val(e),
     );
     token
 }
 
-fn create_liqpool_contract(e: &Env, token_a: &BytesN<32>, token_b: &BytesN<32>) -> LiquidityPool {
+fn create_liqpool_contract(
+    e: &Env,
+    token_wasm_hash: &BytesN<32>,
+    token_a: &BytesN<32>,
+    token_b: &BytesN<32>,
+) -> LiquidityPool {
     let liqpool = LiquidityPool::new(e, &register_liqpool(e));
-    liqpool.initialize(token_a, token_b);
+    liqpool.initialize(token_wasm_hash, token_a, token_b);
     liqpool
+}
+
+fn install_token_wasm(e: &Env) -> BytesN<32> {
+    e.install_contract_wasm(WASM)
 }
 
 #[test]
@@ -41,7 +51,12 @@ fn test() {
     }
     let user1 = e.accounts().generate();
     let user1_id = Identifier::Account(user1.clone());
-    let liqpool = create_liqpool_contract(&e, &token1.contract_id, &token2.contract_id);
+    let liqpool = create_liqpool_contract(
+        &e,
+        &install_token_wasm(&e),
+        &token1.contract_id,
+        &token2.contract_id,
+    );
     let pool_id = Identifier::Contract(liqpool.contract_id.clone());
     let contract_share: [u8; 32] = liqpool.share_id().into();
     let token_share = token::Client::new(&e, contract_share);

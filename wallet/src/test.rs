@@ -5,11 +5,9 @@ use core::fmt::Debug;
 use super::*;
 use ed25519_dalek::Keypair;
 use rand::{thread_rng, RngCore};
-use soroban_auth::{Ed25519Signature, Identifier, SignaturePayload, SignaturePayloadV0};
 use soroban_sdk::testutils::ed25519::Sign;
 use soroban_sdk::testutils::Accounts;
 use soroban_sdk::{vec, AccountId, Env, IntoVal, RawVal, Status, Symbol, Vec};
-use token::{Client as TokenClient, TokenMetadata};
 
 fn generate_keypair() -> Keypair {
     Keypair::generate(&mut thread_rng())
@@ -24,17 +22,23 @@ fn generate_id() -> [u8; 32] {
 // Note: we use `AccountId` here and `Ed25519` signers everywhere else in this
 // test only for the sake of the test setup simplicity. There are no limitations
 // on types of identifiers used in any contexts here.
+soroban_sdk::contractimport!(
+    file = "../target/wasm32-unknown-unknown/release/soroban_token_contract.wasm"
+);
+
+type TokenClient = Client;
+
 fn create_token_contract(e: &Env, admin: &AccountId) -> (BytesN<32>, TokenClient) {
-    let id = e.register_contract_token(None);
+    e.install_contract_wasm(WASM);
+
+    let id = e.register_contract_wasm(None, WASM);
     let token = TokenClient::new(e, &id);
     // decimals, name, symbol don't matter in tests
-    token.init(
+    token.initialize(
         &Identifier::Account(admin.clone()),
-        &TokenMetadata {
-            name: "name".into_val(e),
-            symbol: "symbol".into_val(e),
-            decimals: 7,
-        },
+        &7u32,
+        &"name".into_val(e),
+        &"symbol".into_val(e),
     );
     (id, token)
 }

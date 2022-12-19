@@ -35,7 +35,8 @@ fn has_pool(e: &Env, salt: &BytesN<32>) -> bool {
 pub trait LiquidityPoolRouterTrait {
     fn sf_deposit(
         e: Env,
-        liqiudity_pool_wasm_hash: BytesN<32>,
+        liquidity_pool_wasm_hash: BytesN<32>,
+        token_wasm_hash: BytesN<32>,
         token_a: BytesN<32>,
         token_b: BytesN<32>,
         desired_a: i128,
@@ -114,6 +115,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
     fn sf_deposit(
         e: Env,
         liquidity_pool_wasm_hash: BytesN<32>,
+        token_wasm_hash: BytesN<32>,
         token_a: BytesN<32>,
         token_b: BytesN<32>,
         desired_a: i128,
@@ -130,7 +132,11 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
 
             put_pool(&e, &salt, &pool_contract_id);
 
-            LiquidityPoolClient::new(&e, &pool_contract_id).initialize(&token_a, &token_b);
+            LiquidityPoolClient::new(&e, &pool_contract_id).initialize(
+                &token_wasm_hash,
+                &token_a,
+                &token_b,
+            );
         }
 
         let pool_id = get_pool_id(&e, &salt);

@@ -8,7 +8,7 @@ publish = false
 crate-type = ["cdylib"]
 
 [features]
-testutils = ["soroban-sdk/testutils"]
+testutils = ["soroban-sdk/testutils", "soroban-auth/testutils"]
 
 [dependencies]
 soroban-sdk = { workspace = true }

@@ -6,7 +6,7 @@ mod token;
 
 use num_integer::Roots;
 use soroban_sdk::{contractimpl, Bytes, BytesN, Env, IntoVal, RawVal};
-use token::{create_contract, TokenMetadata};
+use token::create_contract;
 use token::{Identifier, Signature};
 
 #[derive(Clone, Copy)]
@@ -140,7 +140,7 @@ How to use this contract to swap
 */
 pub trait LiquidityPoolTrait {
     // Sets the token contract addresses for this pool
-    fn initialize(e: Env, token_a: BytesN<32>, token_b: BytesN<32>);
+    fn initialize(e: Env, token_wasm_hash: BytesN<32>, token_a: BytesN<32>, token_b: BytesN<32>);
 
     // Returns the token contract address for the pool share token
     fn share_id(e: Env) -> BytesN<32>;
@@ -172,19 +172,17 @@ struct LiquidityPool;
 
 #[contractimpl]
 impl LiquidityPoolTrait for LiquidityPool {
-    fn initialize(e: Env, token_a: BytesN<32>, token_b: BytesN<32>) {
+    fn initialize(e: Env, token_wasm_hash: BytesN<32>, token_a: BytesN<32>, token_b: BytesN<32>) {
         if token_a >= token_b {
             panic!("token_a must be less than token_b");
         }
 
-        let share_contract_id = create_contract(&e, &token_a, &token_b);
-        token::Client::new(&e, share_contract_id.clone()).init(
+        let share_contract_id = create_contract(&e, &token_wasm_hash, &token_a, &token_b);
+        token::Client::new(&e, share_contract_id.clone()).initialize(
             &get_contract_id(&e),
-            &TokenMetadata {
-                name: Bytes::from_slice(&e, b"name"),
-                symbol: Bytes::from_slice(&e, b"symbol"),
-                decimals: 7,
-            },
+            &7u32,
+            &Bytes::from_slice(&e, b"name"),
+            &Bytes::from_slice(&e, b"symbol"),
         );
 
         put_token_a(&e, token_a);

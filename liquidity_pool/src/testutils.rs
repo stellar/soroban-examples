@@ -25,8 +25,13 @@ impl LiquidityPool {
         }
     }
 
-    pub fn initialize(&self, token_a: &BytesN<32>, token_b: &BytesN<32>) {
-        self.client().initialize(token_a, token_b)
+    pub fn initialize(
+        &self,
+        token_wasm_hash: &BytesN<32>,
+        token_a: &BytesN<32>,
+        token_b: &BytesN<32>,
+    ) {
+        self.client().initialize(token_wasm_hash, token_a, token_b)
     }
 
     pub fn share_id(&self) -> BytesN<32> {

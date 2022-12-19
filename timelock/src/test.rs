@@ -3,19 +3,24 @@
 use super::*;
 use soroban_sdk::testutils::{Accounts, Ledger, LedgerInfo};
 use soroban_sdk::{vec, AccountId, Env, IntoVal};
-use token::{Client as TokenClient, TokenMetadata};
+
+soroban_sdk::contractimport!(
+    file = "../target/wasm32-unknown-unknown/release/soroban_token_contract.wasm"
+);
+
+type TokenClient = Client;
 
 fn create_token_contract(e: &Env, admin: &AccountId) -> (BytesN<32>, TokenClient) {
-    let id = e.register_contract_token(None);
+    e.install_contract_wasm(WASM);
+
+    let id = e.register_contract_wasm(None, WASM);
     let token = TokenClient::new(e, &id);
     // decimals, name, symbol don't matter in tests
-    token.init(
+    token.initialize(
         &Identifier::Account(admin.clone()),
-        &TokenMetadata {
-            name: "name".into_val(e),
-            symbol: "symbol".into_val(e),
-            decimals: 7,
-        },
+        &7u32,
+        &"name".into_val(e),
+        &"symbol".into_val(e),
     );
     (id, token)
 }
