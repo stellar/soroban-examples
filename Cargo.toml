@@ -5,6 +5,7 @@ members = [
     "timelock",
     "atomic_swap",    
     "atomic_multiswap",
+    "account",
 ]
 
 [profile.release-with-logs]
@@ -26,10 +27,15 @@ version = "0.2.1"
 git = "https://github.com/stellar/rs-soroban-sdk"
 rev = "8e3d9642"
 
+[workspace.dependencies.soroban-account]
+version = "0.2.1"
+git = "https://github.com/stellar/rs-soroban-sdk"
+rev = "63bef69c"
 
 [patch."https://github.com/stellar/rs-soroban-sdk"]
 soroban-sdk = { path = "../rs-soroban-sdk/soroban-sdk" }
 soroban-spec = { path = "../rs-soroban-sdk/soroban-spec" }
+soroban-account = { path = "../rs-soroban-sdk/soroban-account" }
 
 [patch."https://github.com/stellar/rs-stellar-xdr"]
 stellar-xdr = { path = "../rs-stellar-xdr/" }

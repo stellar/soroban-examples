@@ -843,6 +843,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "soroban-account"
+version = "0.2.1"
+dependencies = [
+ "soroban-sdk",
+ "soroban-sdk-macros",
+]
+
+[[package]]
+name = "soroban-account-contract"
+version = "0.0.0"
+dependencies = [
+ "ed25519-dalek",
+ "rand 0.7.3",
+ "soroban-account",
+ "soroban-sdk",
+]
+
+[[package]]
 name = "soroban-atomic-multiswap-contract"
 version = "0.0.0"
 dependencies = [
