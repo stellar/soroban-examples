@@ -17,7 +17,9 @@ pub trait TokenTrait {
 
     fn allowance(e: Env, from: Identifier, spender: Identifier) -> i128;
 
-    fn approve(e: Env, from: Signature, nonce: i128, spender: Identifier, amount: i128);
+    fn incr_allow(e: Env, from: Signature, nonce: i128, spender: Identifier, amount: i128);
+
+    fn decr_allow(e: Env, from: Signature, nonce: i128, spender: Identifier, amount: i128);
 
     fn balance(e: Env, id: Identifier) -> i128;
 
@@ -34,7 +36,7 @@ pub trait TokenTrait {
         amount: i128,
     );
 
-    fn burn(e: Env, admin: Signature, nonce: i128, from: Identifier, amount: i128);
+    fn clawback(e: Env, admin: Signature, nonce: i128, from: Identifier, amount: i128);
 
     fn freeze(e: Env, admin: Signature, nonce: i128, id: Identifier);
 
@@ -100,7 +102,7 @@ impl TokenTrait for Token {
         read_allowance(&e, from, spender)
     }
 
-    fn approve(e: Env, from: Signature, nonce: i128, spender: Identifier, amount: i128) {
+    fn incr_allow(e: Env, from: Signature, nonce: i128, spender: Identifier, amount: i128) {
         verify_and_consume_nonce(&e, &from, nonce);
 
         let from_id = from.identifier(&e);
@@ -108,10 +110,36 @@ impl TokenTrait for Token {
         verify(
             &e,
             &from,
-            symbol!("approve"),
+            symbol!("incr_allow"),
             (&from_id, nonce, &spender, &amount),
         );
-        write_allowance(&e, from_id, spender, amount);
+
+        let allowance = read_allowance(&e, from_id.clone(), spender.clone());
+        let new_allowance = allowance
+            .checked_add(amount)
+            .expect("Updated allowance doesn't fit in an i128");
+
+        write_allowance(&e, from_id, spender, new_allowance);
+    }
+
+    fn decr_allow(e: Env, from: Signature, nonce: i128, spender: Identifier, amount: i128) {
+        verify_and_consume_nonce(&e, &from, nonce);
+
+        let from_id = from.identifier(&e);
+
+        verify(
+            &e,
+            &from,
+            symbol!("decr_allow"),
+            (&from_id, nonce, &spender, &amount),
+        );
+
+        let allowance = read_allowance(&e, from_id.clone(), spender.clone());
+        if amount >= allowance {
+            write_allowance(&e, from_id, spender, 0);
+        } else {
+            write_allowance(&e, from_id, spender, allowance - amount);
+        }
     }
 
     fn balance(e: Env, id: Identifier) -> i128 {
@@ -155,7 +183,7 @@ impl TokenTrait for Token {
         receive_balance(&e, to, amount);
     }
 
-    fn burn(e: Env, admin: Signature, nonce: i128, from: Identifier, amount: i128) {
+    fn clawback(e: Env, admin: Signature, nonce: i128, from: Identifier, amount: i128) {
         check_admin(&e, &admin);
         verify_and_consume_nonce(&e, &admin, nonce);
 
@@ -164,7 +192,7 @@ impl TokenTrait for Token {
         verify(
             &e,
             &admin,
-            symbol!("burn"),
+            symbol!("clawback"),
             (admin_id, nonce, &from, &amount),
         );
         spend_balance(&e, from, amount);

@@ -34,7 +34,7 @@ fn test() {
     assert_eq!(token.balance(&user1_id), 1000);
     assert_eq!(token.nonce(&admin1_id), 1);
 
-    token.approve(&user2, &user3_id, &500);
+    token.incr_allow(&user2, &user3_id, &500);
     assert_eq!(token.allowance(&user2_id, &user3_id), 500);
     assert_eq!(token.nonce(&user2_id), 1);
 
@@ -64,7 +64,7 @@ fn test() {
     assert_eq!(token.is_frozen(&user3_id), false);
     assert_eq!(token.nonce(&admin2_id), 2);
 
-    token.burn(&admin2, &user3_id, &100);
+    token.clawback(&admin2, &user3_id, &100);
     assert_eq!(token.balance(&user3_id), 200);
     assert_eq!(token.nonce(&admin2_id), 3);
 }
@@ -162,7 +162,7 @@ fn xfer_from_insufficient_allowance() {
     assert_eq!(token.balance(&user1_id), 1000);
     assert_eq!(token.nonce(&admin1_id), 1);
 
-    token.approve(&user1, &user3_id, &100);
+    token.incr_allow(&user1, &user3_id, &100);
     assert_eq!(token.allowance(&user1_id, &user3_id), 100);
     assert_eq!(token.nonce(&user1_id), 1);
 

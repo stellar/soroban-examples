@@ -41,12 +41,12 @@ impl Token {
         TokenClient::new(&self.env, &self.contract_id).allowance(from, spender)
     }
 
-    pub fn approve(&self, from: &Keypair, spender: &Identifier, amount: &i128) {
+    pub fn incr_allow(&self, from: &Keypair, spender: &Identifier, amount: &i128) {
         let from_id = to_ed25519(&self.env, from);
         let nonce = self.nonce(&from_id);
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            name: symbol!("approve"),
+            name: symbol!("incr_allow"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
             args: (from_id, &nonce, spender, amount).into_val(&self.env),
@@ -56,7 +56,25 @@ impl Token {
             public_key: from.public.to_bytes().into_val(&self.env),
             signature: from.sign(msg).unwrap().into_val(&self.env),
         });
-        TokenClient::new(&self.env, &self.contract_id).approve(&auth, &nonce, spender, amount)
+        TokenClient::new(&self.env, &self.contract_id).incr_allow(&auth, &nonce, spender, amount)
+    }
+
+    pub fn decr_allow(&self, from: &Keypair, spender: &Identifier, amount: &i128) {
+        let from_id = to_ed25519(&self.env, from);
+        let nonce = self.nonce(&from_id);
+
+        let msg = SignaturePayload::V0(SignaturePayloadV0 {
+            name: symbol!("decr_allow"),
+            contract: self.contract_id.clone(),
+            network: self.env.ledger().network_passphrase(),
+            args: (from_id, &nonce, spender, amount).into_val(&self.env),
+        });
+
+        let auth = Signature::Ed25519(Ed25519Signature {
+            public_key: from.public.to_bytes().into_val(&self.env),
+            signature: from.sign(msg).unwrap().into_val(&self.env),
+        });
+        TokenClient::new(&self.env, &self.contract_id).decr_allow(&auth, &nonce, spender, amount)
     }
 
     pub fn balance(&self, id: &Identifier) -> i128 {
@@ -105,12 +123,12 @@ impl Token {
         TokenClient::new(&self.env, &self.contract_id).xfer_from(&auth, &nonce, from, to, amount)
     }
 
-    pub fn burn(&self, admin: &Keypair, from: &Identifier, amount: &i128) {
+    pub fn clawback(&self, admin: &Keypair, from: &Identifier, amount: &i128) {
         let admin_id = to_ed25519(&self.env, admin);
         let nonce = self.nonce(&admin_id);
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            name: symbol!("burn"),
+            name: symbol!("clawback"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
             args: (admin_id, &nonce, from, amount).into_val(&self.env),
@@ -119,7 +137,7 @@ impl Token {
             public_key: admin.public.to_bytes().into_val(&self.env),
             signature: admin.sign(msg).unwrap().into_val(&self.env),
         });
-        TokenClient::new(&self.env, &self.contract_id).burn(&auth, &nonce, from, amount)
+        TokenClient::new(&self.env, &self.contract_id).clawback(&auth, &nonce, from, amount)
     }
 
     pub fn freeze(&self, admin: &Keypair, id: &Identifier) {

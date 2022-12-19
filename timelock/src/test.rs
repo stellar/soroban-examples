@@ -83,12 +83,14 @@ impl ClaimableBalanceTest {
     }
 
     fn approve_deposit(&self, amount: u32) {
-        self.token.with_source_account(&self.deposit_user).approve(
-            &Signature::Invoker,
-            &0,
-            &Identifier::Contract(self.contract.contract_id.clone()),
-            &(amount as i128),
-        )
+        self.token
+            .with_source_account(&self.deposit_user)
+            .incr_allow(
+                &Signature::Invoker,
+                &0,
+                &Identifier::Contract(self.contract.contract_id.clone()),
+                &(amount as i128),
+            )
     }
 
     fn deposit(&self, amount: u32, claimants: &Vec<Identifier>, time_bound: TimeBound) {

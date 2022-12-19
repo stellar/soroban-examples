@@ -98,7 +98,7 @@ fn test() {
     // set required allowances for the router contract before trading
     token2
         .with_source_account(&user2)
-        .approve(&Signature::Invoker, &0, &router_id, &20);
+        .incr_allow(&Signature::Invoker, &0, &router_id, &20);
 
     offer_router.safe_trade(&user2, &offer_addr, &10, &10);
     assert_eq!(token1.balance(&user1_id), 10);
