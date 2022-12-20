@@ -56,12 +56,12 @@ fn test() {
     token.set_admin(&admin1, &admin2_id);
     assert_eq!(token.nonce(&admin1_id), 2);
 
-    token.freeze(&admin2, &user2_id);
-    assert_eq!(token.is_frozen(&user2_id), true);
+    token.set_auth(&admin2, &user2_id, false);
+    assert_eq!(token.authorized(&user2_id), false);
     assert_eq!(token.nonce(&admin2_id), 1);
 
-    token.unfreeze(&admin2, &user3_id);
-    assert_eq!(token.is_frozen(&user3_id), false);
+    token.set_auth(&admin2, &user3_id, true);
+    assert_eq!(token.authorized(&user3_id), true);
     assert_eq!(token.nonce(&admin2_id), 2);
 
     token.clawback(&admin2, &user3_id, &100);
@@ -99,8 +99,8 @@ fn xfer_insufficient_balance() {
 }
 
 #[test]
-#[should_panic(expected = "can't receive when frozen")]
-fn xfer_receive_frozen() {
+#[should_panic(expected = "can't receive when deauthorized")]
+fn xfer_receive_deauthorized() {
     let e: Env = Default::default();
     let contract_id = register_token(&e);
     let token = Token::new(&e, &contract_id);
@@ -118,13 +118,13 @@ fn xfer_receive_frozen() {
     assert_eq!(token.balance(&user1_id), 1000);
     assert_eq!(token.nonce(&admin1_id), 1);
 
-    token.freeze(&admin1, &user2_id);
+    token.set_auth(&admin1, &user2_id, false);
     token.xfer(&user1, &user2_id, &1);
 }
 
 #[test]
-#[should_panic(expected = "can't spend when frozen")]
-fn xfer_spend_frozen() {
+#[should_panic(expected = "can't spend when deauthorized")]
+fn xfer_spend_deauthorized() {
     let e: Env = Default::default();
     let contract_id = register_token(&e);
     let token = Token::new(&e, &contract_id);
@@ -142,7 +142,7 @@ fn xfer_spend_frozen() {
     assert_eq!(token.balance(&user1_id), 1000);
     assert_eq!(token.nonce(&admin1_id), 1);
 
-    token.freeze(&admin1, &user1_id);
+    token.set_auth(&admin1, &user1_id, false);
     token.xfer(&user1, &user2_id, &1);
 }
 

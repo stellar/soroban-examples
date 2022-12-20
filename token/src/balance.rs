@@ -18,18 +18,16 @@ fn write_balance(e: &Env, id: Identifier, amount: i128) {
 
 pub fn receive_balance(e: &Env, id: Identifier, amount: i128) {
     let balance = read_balance(e, id.clone());
-    let is_frozen = read_state(e, id.clone());
-    if is_frozen {
-        panic!("can't receive when frozen");
+    if !is_authorized(e, id.clone()) {
+        panic!("can't receive when deauthorized");
     }
     write_balance(e, id, balance + amount);
 }
 
 pub fn spend_balance(e: &Env, id: Identifier, amount: i128) {
     let balance = read_balance(e, id.clone());
-    let is_frozen = read_state(e, id.clone());
-    if is_frozen {
-        panic!("can't spend when frozen");
+    if !is_authorized(e, id.clone()) {
+        panic!("can't spend when deauthorized");
     }
     if balance < amount {
         panic!("insufficient balance");
@@ -37,16 +35,16 @@ pub fn spend_balance(e: &Env, id: Identifier, amount: i128) {
     write_balance(e, id, balance - amount);
 }
 
-pub fn read_state(e: &Env, id: Identifier) -> bool {
+pub fn is_authorized(e: &Env, id: Identifier) -> bool {
     let key = DataKey::State(id);
     if let Some(state) = e.storage().get(key) {
         state.unwrap()
     } else {
-        false
+        true
     }
 }
 
-pub fn write_state(e: &Env, id: Identifier, is_frozen: bool) {
+pub fn write_authorization(e: &Env, id: Identifier, is_authorized: bool) {
     let key = DataKey::State(id);
-    e.storage().set(key, is_frozen);
+    e.storage().set(key, is_authorized);
 }

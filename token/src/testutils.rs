@@ -81,8 +81,8 @@ impl Token {
         TokenClient::new(&self.env, &self.contract_id).balance(id)
     }
 
-    pub fn is_frozen(&self, id: &Identifier) -> bool {
-        TokenClient::new(&self.env, &self.contract_id).is_frozen(id)
+    pub fn authorized(&self, id: &Identifier) -> bool {
+        TokenClient::new(&self.env, &self.contract_id).authorized(id)
     }
 
     pub fn xfer(&self, from: &Keypair, to: &Identifier, amount: &i128) {
@@ -140,21 +140,21 @@ impl Token {
         TokenClient::new(&self.env, &self.contract_id).clawback(&auth, &nonce, from, amount)
     }
 
-    pub fn freeze(&self, admin: &Keypair, id: &Identifier) {
+    pub fn set_auth(&self, admin: &Keypair, id: &Identifier, authorize: bool) {
         let admin_id = to_ed25519(&self.env, admin);
         let nonce = self.nonce(&admin_id);
 
         let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            name: symbol!("freeze"),
+            name: symbol!("set_auth"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
-            args: (admin_id, &nonce, id).into_val(&self.env),
+            args: (admin_id, &nonce, id, authorize).into_val(&self.env),
         });
         let auth = Signature::Ed25519(Ed25519Signature {
             public_key: admin.public.to_bytes().into_val(&self.env),
             signature: admin.sign(msg).unwrap().into_val(&self.env),
         });
-        TokenClient::new(&self.env, &self.contract_id).freeze(&auth, &nonce, id)
+        TokenClient::new(&self.env, &self.contract_id).set_auth(&auth, &nonce, id, &authorize)
     }
 
     pub fn mint(&self, admin: &Keypair, to: &Identifier, amount: &i128) {
@@ -189,23 +189,6 @@ impl Token {
             signature: admin.sign(msg).unwrap().into_val(&self.env),
         });
         TokenClient::new(&self.env, &self.contract_id).set_admin(&auth, &nonce, new_admin)
-    }
-
-    pub fn unfreeze(&self, admin: &Keypair, id: &Identifier) {
-        let admin_id = to_ed25519(&self.env, admin);
-        let nonce = self.nonce(&admin_id);
-
-        let msg = SignaturePayload::V0(SignaturePayloadV0 {
-            name: symbol!("unfreeze"),
-            contract: self.contract_id.clone(),
-            network: self.env.ledger().network_passphrase(),
-            args: (admin_id, &nonce, id).into_val(&self.env),
-        });
-        let auth = Signature::Ed25519(Ed25519Signature {
-            public_key: admin.public.to_bytes().into_val(&self.env),
-            signature: admin.sign(msg).unwrap().into_val(&self.env),
-        });
-        TokenClient::new(&self.env, &self.contract_id).unfreeze(&auth, &nonce, id)
     }
 
     pub fn decimals(&self) -> u32 {

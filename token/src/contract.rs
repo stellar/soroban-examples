@@ -1,7 +1,7 @@
 use crate::admin::{check_admin, has_administrator, write_administrator};
 use crate::allowance::{read_allowance, spend_allowance, write_allowance};
+use crate::balance::{is_authorized, write_authorization};
 use crate::balance::{read_balance, receive_balance, spend_balance};
-use crate::balance::{read_state, write_state};
 use crate::metadata::{
     read_decimal, read_name, read_symbol, write_decimal, write_name, write_symbol,
 };
@@ -25,7 +25,7 @@ pub trait TokenTrait {
 
     fn spendable(e: Env, id: Identifier) -> i128;
 
-    fn is_frozen(e: Env, id: Identifier) -> bool;
+    fn authorized(e: Env, id: Identifier) -> bool;
 
     fn xfer(e: Env, from: Signature, nonce: i128, to: Identifier, amount: i128);
 
@@ -40,13 +40,11 @@ pub trait TokenTrait {
 
     fn clawback(e: Env, admin: Signature, nonce: i128, from: Identifier, amount: i128);
 
-    fn freeze(e: Env, admin: Signature, nonce: i128, id: Identifier);
+    fn set_auth(e: Env, admin: Signature, nonce: i128, id: Identifier, authorize: bool);
 
     fn mint(e: Env, admin: Signature, nonce: i128, to: Identifier, amount: i128);
 
     fn set_admin(e: Env, admin: Signature, nonce: i128, new_admin: Identifier);
-
-    fn unfreeze(e: Env, admin: Signature, nonce: i128, id: Identifier);
 
     fn decimals(e: Env) -> u32;
 
@@ -152,8 +150,8 @@ impl TokenTrait for Token {
         read_balance(&e, id)
     }
 
-    fn is_frozen(e: Env, id: Identifier) -> bool {
-        read_state(&e, id)
+    fn authorized(e: Env, id: Identifier) -> bool {
+        is_authorized(&e, id)
     }
 
     fn xfer(e: Env, from: Signature, nonce: i128, to: Identifier, amount: i128) {
@@ -204,15 +202,20 @@ impl TokenTrait for Token {
         spend_balance(&e, from, amount);
     }
 
-    fn freeze(e: Env, admin: Signature, nonce: i128, id: Identifier) {
+    fn set_auth(e: Env, admin: Signature, nonce: i128, id: Identifier, authorize: bool) {
         check_admin(&e, &admin);
 
         verify_and_consume_nonce(&e, &admin, nonce);
 
         let admin_id = admin.identifier(&e);
 
-        verify(&e, &admin, symbol!("freeze"), (admin_id, nonce, &id));
-        write_state(&e, id, true);
+        verify(
+            &e,
+            &admin,
+            symbol!("set_auth"),
+            (admin_id, nonce, &id, authorize),
+        );
+        write_authorization(&e, id, authorize);
     }
 
     fn mint(e: Env, admin: Signature, nonce: i128, to: Identifier, amount: i128) {
@@ -240,17 +243,6 @@ impl TokenTrait for Token {
             (admin_id, nonce, &new_admin),
         );
         write_administrator(&e, new_admin);
-    }
-
-    fn unfreeze(e: Env, admin: Signature, nonce: i128, id: Identifier) {
-        check_admin(&e, &admin);
-
-        verify_and_consume_nonce(&e, &admin, nonce);
-
-        let admin_id = admin.identifier(&e);
-
-        verify(&e, &admin, symbol!("unfreeze"), (admin_id, nonce, &id));
-        write_state(&e, id, false);
     }
 
     fn decimals(e: Env) -> u32 {
