@@ -38,6 +38,10 @@ pub trait TokenTrait {
         amount: i128,
     );
 
+    fn burn(e: Env, from: Signature, nonce: i128, amount: i128);
+
+    fn burn_from(e: Env, spender: Signature, nonce: i128, from: Identifier, amount: i128);
+
     fn clawback(e: Env, admin: Signature, nonce: i128, from: Identifier, amount: i128);
 
     fn set_auth(e: Env, admin: Signature, nonce: i128, id: Identifier, authorize: bool);
@@ -185,6 +189,30 @@ impl TokenTrait for Token {
         spend_allowance(&e, from.clone(), spender_id, amount);
         spend_balance(&e, from, amount);
         receive_balance(&e, to, amount);
+    }
+
+    fn burn(e: Env, from: Signature, nonce: i128, amount: i128) {
+        verify_and_consume_nonce(&e, &from, nonce);
+
+        let from_id = from.identifier(&e);
+
+        verify(&e, &from, symbol!("burn"), (&from_id, nonce, &amount));
+        spend_balance(&e, from_id, amount);
+    }
+
+    fn burn_from(e: Env, spender: Signature, nonce: i128, from: Identifier, amount: i128) {
+        verify_and_consume_nonce(&e, &spender, nonce);
+
+        let spender_id = spender.identifier(&e);
+
+        verify(
+            &e,
+            &spender,
+            symbol!("burn_from"),
+            (&spender_id, nonce, &from, &amount),
+        );
+        spend_allowance(&e, from.clone(), spender_id, amount);
+        spend_balance(&e, from, amount);
     }
 
     fn clawback(e: Env, admin: Signature, nonce: i128, from: Identifier, amount: i128) {

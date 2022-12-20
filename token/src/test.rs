@@ -76,6 +76,39 @@ fn test() {
 }
 
 #[test]
+fn test_burn() {
+    let e: Env = Default::default();
+    let contract_id = register_token(&e);
+    let token = Token::new(&e, &contract_id);
+
+    let admin1 = generate_keypair();
+    let admin1_id = to_ed25519(&e, &admin1);
+    let user1 = generate_keypair();
+    let user1_id = to_ed25519(&e, &user1);
+    let user2 = generate_keypair();
+    let user2_id = to_ed25519(&e, &user2);
+
+    token.initialize(&admin1_id, 7, "name", "symbol");
+
+    token.mint(&admin1, &user1_id, &1000);
+    assert_eq!(token.balance(&user1_id), 1000);
+    assert_eq!(token.nonce(&admin1_id), 1);
+
+    token.incr_allow(&user1, &user2_id, &500);
+    assert_eq!(token.allowance(&user1_id, &user2_id), 500);
+    assert_eq!(token.nonce(&user1_id), 1);
+
+    token.burn_from(&user2, &user1_id, &500);
+    assert_eq!(token.allowance(&user1_id, &user2_id), 0);
+    assert_eq!(token.balance(&user1_id), 500);
+    assert_eq!(token.balance(&user2_id), 0);
+
+    token.burn(&user1, &500);
+    assert_eq!(token.balance(&user1_id), 0);
+    assert_eq!(token.balance(&user2_id), 0);
+}
+
+#[test]
 #[should_panic(expected = "insufficient balance")]
 fn xfer_insufficient_balance() {
     let e: Env = Default::default();
