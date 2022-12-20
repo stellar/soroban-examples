@@ -67,6 +67,12 @@ fn test() {
     token.clawback(&admin2, &user3_id, &100);
     assert_eq!(token.balance(&user3_id), 200);
     assert_eq!(token.nonce(&admin2_id), 3);
+
+    // Increase by 400, with an existing 100 = 500
+    token.incr_allow(&user2, &user3_id, &400);
+    assert_eq!(token.allowance(&user2_id, &user3_id), 500);
+    token.decr_allow(&user2, &user3_id, &501);
+    assert_eq!(token.allowance(&user2_id, &user3_id), 0);
 }
 
 #[test]
