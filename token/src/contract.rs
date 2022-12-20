@@ -23,6 +23,8 @@ pub trait TokenTrait {
 
     fn balance(e: Env, id: Identifier) -> i128;
 
+    fn spendable(e: Env, id: Identifier) -> i128;
+
     fn is_frozen(e: Env, id: Identifier) -> bool;
 
     fn xfer(e: Env, from: Signature, nonce: i128, to: Identifier, amount: i128);
@@ -143,6 +145,10 @@ impl TokenTrait for Token {
     }
 
     fn balance(e: Env, id: Identifier) -> i128 {
+        read_balance(&e, id)
+    }
+
+    fn spendable(e: Env, id: Identifier) -> i128 {
         read_balance(&e, id)
     }
 
