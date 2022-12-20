@@ -68,10 +68,10 @@ fn test() {
     // set required allowances before trading
     token1
         .with_source_account(&user1)
-        .approve(&Signature::Invoker, &0, &offer_id, &30);
+        .incr_allow(&Signature::Invoker, &0, &offer_id, &30);
     token2
         .with_source_account(&user2)
-        .approve(&Signature::Invoker, &0, &offer_id, &20);
+        .incr_allow(&Signature::Invoker, &0, &offer_id, &20);
 
     offer.trade(&user2, &10, &20);
     assert_eq!(token1.balance(&user1_id), 10);

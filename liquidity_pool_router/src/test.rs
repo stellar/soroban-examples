@@ -71,10 +71,10 @@ fn test() {
 
     token1
         .with_source_account(&user1)
-        .approve(&Signature::Invoker, &0, &router_id, &100);
+        .incr_allow(&Signature::Invoker, &0, &router_id, &100);
     token2
         .with_source_account(&user1)
-        .approve(&Signature::Invoker, &0, &router_id, &100);
+        .incr_allow(&Signature::Invoker, &0, &router_id, &100);
 
     contract_router.sf_deposit(
         &install_liquidity_pool_wasm(&e),
@@ -103,7 +103,7 @@ fn test() {
 
     token1
         .with_source_account(&user1)
-        .approve(&Signature::Invoker, &0, &router_id, &100);
+        .incr_allow(&Signature::Invoker, &0, &router_id, &100);
 
     contract_router.swap_out(&user1, &token1.contract_id, &token2.contract_id, &49, &100);
 
@@ -114,7 +114,7 @@ fn test() {
 
     token_share
         .with_source_account(&user1)
-        .approve(&Signature::Invoker, &0, &router_id, &100);
+        .incr_allow(&Signature::Invoker, &0, &router_id, &100);
     contract_router.sf_withdrw(
         &user1,
         &token1.contract_id,

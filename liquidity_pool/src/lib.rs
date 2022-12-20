@@ -98,7 +98,7 @@ fn burn_shares(e: &Env, amount: i128) {
     let total = get_total_shares(e);
     let share_contract_id = get_token_share(e);
 
-    token::Client::new(e, share_contract_id).burn(
+    token::Client::new(e, share_contract_id).clawback(
         &Signature::Invoker,
         &0,
         &get_contract_id(e),
