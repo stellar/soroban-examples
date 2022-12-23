@@ -2,6 +2,7 @@ use crate::admin::{check_admin, has_administrator, write_administrator};
 use crate::allowance::{read_allowance, spend_allowance, write_allowance};
 use crate::balance::{is_authorized, write_authorization};
 use crate::balance::{read_balance, receive_balance, spend_balance};
+use crate::event;
 use crate::metadata::{
     read_decimal, read_name, read_symbol, write_decimal, write_name, write_symbol,
 };
@@ -123,7 +124,8 @@ impl TokenTrait for Token {
             .checked_add(amount)
             .expect("Updated allowance doesn't fit in an i128");
 
-        write_allowance(&e, from_id, spender, new_allowance);
+        write_allowance(&e, from_id.clone(), spender.clone(), new_allowance);
+        event::incr_allow(&e, from_id, spender, amount);
     }
 
     fn decr_allow(e: Env, from: Signature, nonce: i128, spender: Identifier, amount: i128) {
@@ -140,10 +142,11 @@ impl TokenTrait for Token {
 
         let allowance = read_allowance(&e, from_id.clone(), spender.clone());
         if amount >= allowance {
-            write_allowance(&e, from_id, spender, 0);
+            write_allowance(&e, from_id.clone(), spender.clone(), 0);
         } else {
-            write_allowance(&e, from_id, spender, allowance - amount);
+            write_allowance(&e, from_id.clone(), spender.clone(), allowance - amount);
         }
+        event::decr_allow(&e, from_id, spender, amount);
     }
 
     fn balance(e: Env, id: Identifier) -> i128 {
@@ -164,8 +167,9 @@ impl TokenTrait for Token {
         let from_id = from.identifier(&e);
 
         verify(&e, &from, symbol!("xfer"), (&from_id, nonce, &to, &amount));
-        spend_balance(&e, from_id, amount);
-        receive_balance(&e, to, amount);
+        spend_balance(&e, from_id.clone(), amount);
+        receive_balance(&e, to.clone(), amount);
+        event::transfer(&e, from_id, to, amount);
     }
 
     fn xfer_from(
@@ -187,8 +191,9 @@ impl TokenTrait for Token {
             (&spender_id, nonce, &from, &to, &amount),
         );
         spend_allowance(&e, from.clone(), spender_id, amount);
-        spend_balance(&e, from, amount);
-        receive_balance(&e, to, amount);
+        spend_balance(&e, from.clone(), amount);
+        receive_balance(&e, to.clone(), amount);
+        event::transfer(&e, from, to, amount)
     }
 
     fn burn(e: Env, from: Signature, nonce: i128, amount: i128) {
@@ -197,7 +202,8 @@ impl TokenTrait for Token {
         let from_id = from.identifier(&e);
 
         verify(&e, &from, symbol!("burn"), (&from_id, nonce, &amount));
-        spend_balance(&e, from_id, amount);
+        spend_balance(&e, from_id.clone(), amount);
+        event::burn(&e, from_id, amount);
     }
 
     fn burn_from(e: Env, spender: Signature, nonce: i128, from: Identifier, amount: i128) {
@@ -212,7 +218,8 @@ impl TokenTrait for Token {
             (&spender_id, nonce, &from, &amount),
         );
         spend_allowance(&e, from.clone(), spender_id, amount);
-        spend_balance(&e, from, amount);
+        spend_balance(&e, from.clone(), amount);
+        event::burn(&e, from, amount)
     }
 
     fn clawback(e: Env, admin: Signature, nonce: i128, from: Identifier, amount: i128) {
@@ -225,9 +232,10 @@ impl TokenTrait for Token {
             &e,
             &admin,
             symbol!("clawback"),
-            (admin_id, nonce, &from, &amount),
+            (&admin_id, nonce, &from, &amount),
         );
-        spend_balance(&e, from, amount);
+        spend_balance(&e, from.clone(), amount);
+        event::clawback(&e, admin_id, from, amount);
     }
 
     fn set_auth(e: Env, admin: Signature, nonce: i128, id: Identifier, authorize: bool) {
@@ -241,9 +249,10 @@ impl TokenTrait for Token {
             &e,
             &admin,
             symbol!("set_auth"),
-            (admin_id, nonce, &id, authorize),
+            (&admin_id, nonce, &id, authorize),
         );
-        write_authorization(&e, id, authorize);
+        write_authorization(&e, id.clone(), authorize);
+        event::set_auth(&e, admin_id, id, authorize);
     }
 
     fn mint(e: Env, admin: Signature, nonce: i128, to: Identifier, amount: i128) {
@@ -253,8 +262,14 @@ impl TokenTrait for Token {
 
         let admin_id = admin.identifier(&e);
 
-        verify(&e, &admin, symbol!("mint"), (admin_id, nonce, &to, &amount));
-        receive_balance(&e, to, amount);
+        verify(
+            &e,
+            &admin,
+            symbol!("mint"),
+            (&admin_id, nonce, &to, &amount),
+        );
+        receive_balance(&e, to.clone(), amount);
+        event::mint(&e, admin_id, to, amount);
     }
 
     fn set_admin(e: Env, admin: Signature, nonce: i128, new_admin: Identifier) {
@@ -268,9 +283,10 @@ impl TokenTrait for Token {
             &e,
             &admin,
             symbol!("set_admin"),
-            (admin_id, nonce, &new_admin),
+            (&admin_id, nonce, &new_admin),
         );
-        write_administrator(&e, new_admin);
+        write_administrator(&e, new_admin.clone());
+        event::set_admin(&e, admin_id, new_admin);
     }
 
     fn decimals(e: Env) -> u32 {
