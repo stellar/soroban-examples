@@ -1,4 +1,4 @@
-FROM gitpod/workspace-full:2022-11-09-13-54-49
+FROM gitpod/workspace-full:2022-12-29-14-27-04
 
 RUN mkdir -p ~/.local/bin
 RUN curl -L -o ~/.local/bin/soroban https://github.com/stellar/soroban-tools/releases/download/v0.3.3/soroban-cli-0.3.3-x86_64-unknown-linux-gnu
@@ -20,5 +20,3 @@ RUN rustup component add --toolchain nightly rust-src
 RUN rustup default stable
 
 RUN sudo apt-get update && sudo apt-get install -y binaryen
-
-# RUN docker pull stellar/quickstart:soroban-dev
