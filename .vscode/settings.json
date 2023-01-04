@@ -1,5 +1,5 @@
 {
     // These settings exist to support the gitpod configuration.
     "workbench.startupEditor": "none",
-    "rust-analyzer.cargo.useRustcWrapperForBuildScripts": false,
+    "rust-analyzer.cargo.buildScripts.useRustcWrapper": false,
 }
