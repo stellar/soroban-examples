@@ -11,7 +11,7 @@ crate-type = ["cdylib"]
 doctest = false
 
 [dependencies]
-soroban-sdk = { workspace = true }
+soroban-sdk = { workspace = true, features = ["alloc"] }
 
 [dev_dependencies]
 soroban-sdk = { workspace = true, features = ["testutils", "alloc"] }

@@ -10,11 +10,9 @@ fn test() {
     let env = Env::default();
     let contract_id = env.register_contract(None, AllocContract);
     let client = AllocContractClient::new(&env, &contract_id);
-    client.init();
-
-    assert_eq!(client.grow(&1), 1);
-    assert_eq!(client.grow(&2), 3);
-    assert_eq!(client.grow(&5), 8);
+    assert_eq!(client.sum(&1), 0);
+    assert_eq!(client.sum(&2), 1);
+    assert_eq!(client.sum(&5), 10);
 
     std::println!("{}", env.logger().all().join("\n"));
 }
