@@ -792,9 +792,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "74233d3b3b2f6d4b006dc19dee745e73e2a6bfb6f93607cd3b02bd5b00797d7c"
 
 [[package]]
+name = "soroban-alloc-contract"
+version = "0.0.0"
+dependencies = [
+ "soroban-sdk",
+]
+
+[[package]]
 name = "soroban-auth"
-version = "0.4.1"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=980778e#980778ecc78e57178fd0226fed25b341a17c1eac"
+version = "0.4.2"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=135c3c8#135c3c8ec99d6288d722eaf1977c11671d09fe62"
 dependencies = [
  "ed25519-dalek",
  "rand 0.7.3",
@@ -940,8 +947,8 @@ dependencies = [
 
 [[package]]
 name = "soroban-ledger-snapshot"
-version = "0.4.1"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=980778e#980778ecc78e57178fd0226fed25b341a17c1eac"
+version = "0.4.2"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=135c3c8#135c3c8ec99d6288d722eaf1977c11671d09fe62"
 dependencies = [
  "serde",
  "serde_json",
@@ -986,8 +993,8 @@ dependencies = [
 
 [[package]]
 name = "soroban-sdk"
-version = "0.4.1"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=980778e#980778ecc78e57178fd0226fed25b341a17c1eac"
+version = "0.4.2"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=135c3c8#135c3c8ec99d6288d722eaf1977c11671d09fe62"
 dependencies = [
  "bytes-lit",
  "ed25519-dalek",
@@ -1001,8 +1008,8 @@ dependencies = [
 
 [[package]]
 name = "soroban-sdk-macros"
-version = "0.4.1"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=980778e#980778ecc78e57178fd0226fed25b341a17c1eac"
+version = "0.4.2"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=135c3c8#135c3c8ec99d6288d722eaf1977c11671d09fe62"
 dependencies = [
  "darling",
  "itertools",
@@ -1041,8 +1048,8 @@ dependencies = [
 
 [[package]]
 name = "soroban-spec"
-version = "0.4.1"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=980778e#980778ecc78e57178fd0226fed25b341a17c1eac"
+version = "0.4.2"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=135c3c8#135c3c8ec99d6288d722eaf1977c11671d09fe62"
 dependencies = [
  "base64",
  "darling",
