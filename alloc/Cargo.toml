@@ -1,0 +1,17 @@
+[package]
+name = "soroban-alloc-contract"
+version = "0.0.0"
+authors = ["Stellar Development Foundation <info@stellar.org>"]
+license = "Apache-2.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = { workspace = true, features = ["alloc"] }
+
+[dev_dependencies]
+soroban-sdk = { workspace = true, features = ["testutils", "alloc"] }
