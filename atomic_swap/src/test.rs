@@ -2,21 +2,18 @@
 
 use super::*;
 use soroban_sdk::{Address, Env, IntoVal};
-use token::{Client as TokenClient, TokenMetadata};
+mod token {
+    soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
+    pub type TokenClient = Client;
+}
+
+use token::TokenClient;
 
 fn create_token_contract(e: &Env, admin: &Address) -> TokenClient {
-    let id = e.register_contract_token();
-    let token = TokenClient::new(e, &id);
-    // decimals, name, symbol don't matter in tests
-    token.init(
-        admin,
-        &TokenMetadata {
-            name: "name".into_val(e),
-            symbol: "symbol".into_val(e),
-            decimals: 7,
-        },
-    );
-    token
+    TokenClient::new(
+        e,
+        &e.register_stellar_asset_contract_with_admin(admin.clone()),
+    )
 }
 
 fn create_atomic_swap_contract(e: &Env) -> AtomicSwapContractClient {
@@ -65,7 +62,7 @@ fn test_atomic_swap() {
         &account_a,
         &[
             (&contract.contract_id, "swap"),
-            (&token_a.contract_id, "approve"),
+            (&token_a.contract_id, "incr_allow"),
         ],
         (&contract_address, 1000_i128,).into_val(&env),
     ));
@@ -85,7 +82,7 @@ fn test_atomic_swap() {
         &account_b,
         &[
             (&contract.contract_id, "swap"),
-            (&token_b.contract_id, "approve"),
+            (&token_b.contract_id, "incr_allow"),
         ],
         (&contract_address, 5000_i128,).into_val(&env),
     ));

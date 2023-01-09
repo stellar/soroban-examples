@@ -1,27 +1,20 @@
 #![cfg(test)]
 
 use super::*;
-use soroban_sdk::{vec, Address, Env, IntoVal};
+use soroban_sdk::{Address, Env, IntoVal};
 
 mod token {
     soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
+    pub type TokenClient = Client;
 }
 
-use token::{Client as TokenClient, TokenMetadata};
+use token::TokenClient;
 
 fn create_token_contract(e: &Env, admin: &Address) -> TokenClient {
-    let id = e.register_contract_token();
-    let token = TokenClient::new(e, &id);
-    // decimals, name, symbol don't matter in tests
-    token.init(
-        admin,
-        &TokenMetadata {
-            name: "name".into_val(e),
-            symbol: "symbol".into_val(e),
-            decimals: 7,
-        },
-    );
-    token
+    TokenClient::new(
+        e,
+        &e.register_stellar_asset_contract_with_admin(admin.clone()),
+    )
 }
 
 fn create_atomic_multiswap_contract(e: &Env) -> AtomicMultiSwapContractClient {
@@ -80,7 +73,8 @@ fn test_atomic_multi_swap() {
 
     let contract = create_atomic_multiswap_contract(&env);
 
-    let swap_contract_id = env.register_contract_wasm(atomic_swap::WASM);
+    let swap_contract_id = env.register_contract_wasm(None, atomic_swap::WASM);
+    // let swap_contract_id = env.register_contract(None, AtomicSwapContract {});
 
     contract.swap(
         &swap_contract_id,
@@ -168,12 +162,12 @@ fn test_atomic_multi_swap() {
         &accounts_a[0].account,
         &[
             (&swap_contract_id, "swap"),
-            (&token_a.contract_id, "approve"),
+            (&token_a.contract_id, "incr_allow"),
         ],
         (&swap_contract_address, 2000_i128,).into_val(&env),
     ));
 
-    // Balance has to be checked after the auth checks because auth is only 
+    // Balance has to be checked after the auth checks because auth is only
     // stored for the last invocation currently.
     assert_eq!(token_a.balance(&accounts_a[0].account.address()), 50);
     assert_eq!(token_a.balance(&accounts_a[1].account.address()), 100);
@@ -182,7 +176,6 @@ fn test_atomic_multi_swap() {
     assert_eq!(token_a.balance(&accounts_b[0].account.address()), 0);
     assert_eq!(token_a.balance(&accounts_b[1].account.address()), 1950);
     assert_eq!(token_a.balance(&accounts_b[2].account.address()), 2900);
-
 
     assert_eq!(token_b.balance(&accounts_a[0].account.address()), 290);
     assert_eq!(token_b.balance(&accounts_a[1].account.address()), 350);
@@ -197,7 +190,7 @@ fn test_atomic_multi_swap() {
 fn test_multi_swap_with_duplicate_account() {
     let env: Env = Default::default();
     let acc_a = Account::random(&env);
-    let acc_b = Account::random(&env); 
+    let acc_b = Account::random(&env);
     let accounts_a = [
         AccountSwap {
             account: acc_a.clone(),
@@ -208,7 +201,7 @@ fn test_multi_swap_with_duplicate_account() {
             account: acc_a.clone(),
             amount: 2000,
             min_recv: 190,
-        },        
+        },
     ];
     let accounts_b = [
         AccountSwap {
@@ -228,11 +221,11 @@ fn test_multi_swap_with_duplicate_account() {
     let token_a = create_token_contract(&env, &token_admin.address());
     let token_b = create_token_contract(&env, &token_admin.address());
     token_a.mint(&token_admin, &acc_a.address(), &3000);
-    token_b.mint(&token_admin, &acc_b.address(), &291);        
+    token_b.mint(&token_admin, &acc_b.address(), &291);
 
     let contract = create_atomic_multiswap_contract(&env);
 
-    let swap_contract_id = env.register_contract_wasm(atomic_swap::WASM);
+    let swap_contract_id = env.register_contract_wasm(None, atomic_swap::WASM);
 
     contract.swap(
         &swap_contract_id,
@@ -287,11 +280,11 @@ fn test_multi_swap_with_duplicate_account() {
         )
             .into_val(&env),
     ));
-    // Balance has to be checked after the auth checks because auth is only 
+    // Balance has to be checked after the auth checks because auth is only
     // stored for the last invocation currently.
     assert_eq!(token_a.balance(&acc_a.address()), 0);
     assert_eq!(token_a.balance(&acc_b.address()), 3000);
 
     assert_eq!(token_b.balance(&acc_a.address()), 290);
-    assert_eq!(token_b.balance(&acc_b.address()), 1);    
+    assert_eq!(token_b.balance(&acc_b.address()), 1);
 }

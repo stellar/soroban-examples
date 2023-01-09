@@ -27,7 +27,7 @@ version = "0.4.1"
 git = "https://github.com/stellar/rs-soroban-sdk"
 rev = "980778e"
 
-[workspace.dependencies.soroban-auth]
+[workspace.dependencies.soroban-account]
 version = "0.4.1"
 git = "https://github.com/stellar/rs-soroban-sdk"
 rev = "980778e"

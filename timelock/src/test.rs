@@ -1,28 +1,21 @@
 #![cfg(test)]
 
 use super::*;
-use soroban_sdk::testutils::{Accounts, Ledger, LedgerInfo};
-use soroban_sdk::{vec, AccountId, Env, IntoVal};
+use soroban_sdk::testutils::{Ledger, LedgerInfo};
+use soroban_sdk::{vec, Env, IntoVal};
 
-soroban_sdk::contractimport!(
-    file = "../target/wasm32-unknown-unknown/release/soroban_token_contract.wasm"
-);
+mod token {
+    soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
+    pub type TokenClient = Client;
+}
 
-type TokenClient = Client;
+use token::TokenClient;
 
-fn create_token_contract(e: &Env, admin: &AccountId) -> (BytesN<32>, TokenClient) {
-    e.install_contract_wasm(WASM);
-
-    let id = e.register_contract_wasm(None, WASM);
-    let token = TokenClient::new(e, &id);
-    // decimals, name, symbol don't matter in tests
-    token.initialize(
-        &Identifier::Account(admin.clone()),
-        &7u32,
-        &"name".into_val(e),
-        &"symbol".into_val(e),
-    );
-    (id, token)
+fn create_token_contract(e: &Env, admin: &Address) -> TokenClient {
+    TokenClient::new(
+        e,
+        &e.register_stellar_asset_contract_with_admin(admin.clone()),
+    )
 }
 
 fn create_claimable_balance_contract(e: &Env) -> ClaimableBalanceContractClient {
@@ -119,11 +112,7 @@ fn test_deposit_and_claim() {
             (&test.contract.contract_id, "deposit"),
             (&test.token.contract_id, "xfer")
         ],
-        (
-            &test.contract_address,
-            800_i128
-        )
-            .into_val(&test.env),
+        (&test.contract_address, 800_i128).into_val(&test.env),
     ));
 
     assert_eq!(test.token.balance(&test.deposit_account.address()), 200);
@@ -256,4 +245,3 @@ fn test_deposit_after_claim_not_possible() {
         },
     );
 }
-

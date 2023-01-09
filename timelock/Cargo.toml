@@ -10,9 +10,6 @@ publish = false
 crate-type = ["cdylib"]
 doctest = false
 
-[features]
-testutils = ["soroban-auth/testutils"]
-
 [dependencies]
 soroban-sdk = { workspace = true }
 

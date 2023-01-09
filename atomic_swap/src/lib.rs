@@ -49,7 +49,7 @@ fn move_token(
 ) {
     let token = token::Client::new(&env, &token);
     let contract_account = env.current_contract_account();
-    token.approve(from, &contract_account.address(), &approve_amount);
+    token.incr_allow(from, &contract_account.address(), &approve_amount);
     token.xfer_from(&contract_account, &from.address(), to, &xfer_amount);
 }
 
