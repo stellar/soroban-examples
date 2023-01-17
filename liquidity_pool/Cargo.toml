@@ -18,3 +18,4 @@ num-integer = { version = "0.1.45", default-features = false, features = ["i128"
 
 [dev_dependencies]
 soroban-sdk = { workspace = true, features = ["testutils"] }
+soroban-auth = { workspace = true, features = ["testutils"] }
