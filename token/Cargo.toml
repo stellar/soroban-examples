@@ -17,3 +17,5 @@ soroban-auth = { workspace = true }
 [dev-dependencies]
 ed25519-dalek = { version = "1.0.1" }
 rand = { version = "0.7.3" }
+soroban-sdk = { workspace = true, features = ["testutils"] }
+soroban-auth = { workspace = true, features = ["testutils"] }
