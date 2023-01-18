@@ -43,7 +43,7 @@ fn test_auth_with_ed25519() {
     let env = Env::default();
     let contract_id = BytesN::from_array(&env, &[0; 32]);
     env.register_contract(&contract_id, IncrementContract);
-    let client = IncrementContractClient::new(&env, contract_id.clone());
+    let client = IncrementContractClient::new(&env, &contract_id);
 
     let (user_1_id, user_1_sign) = soroban_auth::testutils::ed25519::generate(&env);
     let (user_2_id, user_2_sign) = soroban_auth::testutils::ed25519::generate(&env);
@@ -54,7 +54,7 @@ fn test_auth_with_ed25519() {
         &user_1_sign,
         &contract_id,
         symbol!("increment"),
-        (&user_1_id, &nonce),
+        (user_1_id.clone(), nonce),
     );
     assert_eq!(client.increment(&sig, &nonce), 1);
 
@@ -64,7 +64,7 @@ fn test_auth_with_ed25519() {
         &user_1_sign,
         &contract_id,
         symbol!("increment"),
-        (&user_1_id, &nonce),
+        (user_1_id.clone(), nonce),
     );
     assert_eq!(client.increment(&sig, &nonce), 2);
 
@@ -74,7 +74,7 @@ fn test_auth_with_ed25519() {
         &user_2_sign,
         &contract_id,
         symbol!("increment"),
-        (&user_2_id, &nonce),
+        (user_2_id.clone(), nonce),
     );
     assert_eq!(client.increment(&sig, &nonce), 1);
 
@@ -84,7 +84,7 @@ fn test_auth_with_ed25519() {
         &user_1_sign,
         &contract_id,
         symbol!("increment"),
-        (&user_1_id, &nonce),
+        (user_1_id, nonce),
     );
     assert_eq!(client.increment(&sig, &nonce), 3);
 }
@@ -95,7 +95,7 @@ fn test_auth_with_ed25519_wrong_signer() {
     let env = Env::default();
     let contract_id = BytesN::from_array(&env, &[0; 32]);
     env.register_contract(&contract_id, IncrementContract);
-    let client = IncrementContractClient::new(&env, contract_id.clone());
+    let client = IncrementContractClient::new(&env, &contract_id);
 
     let (user_1_id, _) = soroban_auth::testutils::ed25519::generate(&env);
     let (_, user_2_sign) = soroban_auth::testutils::ed25519::generate(&env);
@@ -107,7 +107,7 @@ fn test_auth_with_ed25519_wrong_signer() {
         &user_2_sign,
         &contract_id,
         symbol!("increment"),
-        (&user_1_id, &nonce),
+        (user_1_id, nonce),
     );
     assert_eq!(client.increment(&sig, &nonce), 1);
 }
@@ -118,7 +118,7 @@ fn test_auth_with_ed25519_wrong_nonce() {
     let env = Env::default();
     let contract_id = BytesN::from_array(&env, &[0; 32]);
     env.register_contract(&contract_id, IncrementContract);
-    let client = IncrementContractClient::new(&env, contract_id.clone());
+    let client = IncrementContractClient::new(&env, &contract_id);
 
     let (user_1_id, user_1_sign) = soroban_auth::testutils::ed25519::generate(&env);
 
@@ -129,7 +129,7 @@ fn test_auth_with_ed25519_wrong_nonce() {
         &user_1_sign,
         &contract_id,
         symbol!("increment"),
-        (&user_1_id, &nonce),
+        (user_1_id, nonce),
     );
     assert_eq!(client.increment(&sig, &nonce), 1);
 }

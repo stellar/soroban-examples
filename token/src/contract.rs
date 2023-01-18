@@ -60,7 +60,7 @@ pub trait TokenTrait {
 
 fn read_nonce(e: &Env, id: &Identifier) -> i128 {
     let key = DataKey::Nonce(id.clone());
-    e.storage().get(key).unwrap_or(Ok(0)).unwrap()
+    e.storage().get(&key).unwrap_or(Ok(0)).unwrap()
 }
 
 fn verify_and_consume_nonce(e: &Env, auth: &Signature, expected_nonce: i128) {
@@ -81,7 +81,7 @@ fn verify_and_consume_nonce(e: &Env, auth: &Signature, expected_nonce: i128) {
     if nonce != expected_nonce {
         panic!("incorrect nonce")
     }
-    e.storage().set(key, &nonce + 1);
+    e.storage().set(&key, &(nonce + 1));
 }
 
 pub struct Token;
@@ -116,7 +116,7 @@ impl TokenTrait for Token {
             &e,
             &from,
             symbol!("incr_allow"),
-            (&from_id, nonce, &spender, &amount),
+            (from_id.clone(), nonce, spender.clone(), amount),
         );
 
         let allowance = read_allowance(&e, from_id.clone(), spender.clone());
@@ -137,7 +137,7 @@ impl TokenTrait for Token {
             &e,
             &from,
             symbol!("decr_allow"),
-            (&from_id, nonce, &spender, &amount),
+            (from_id.clone(), nonce, spender.clone(), amount),
         );
 
         let allowance = read_allowance(&e, from_id.clone(), spender.clone());
@@ -166,7 +166,12 @@ impl TokenTrait for Token {
 
         let from_id = from.identifier(&e);
 
-        verify(&e, &from, symbol!("xfer"), (&from_id, nonce, &to, &amount));
+        verify(
+            &e,
+            &from,
+            symbol!("xfer"),
+            (from_id.clone(), nonce, to.clone(), amount),
+        );
         spend_balance(&e, from_id.clone(), amount);
         receive_balance(&e, to.clone(), amount);
         event::transfer(&e, from_id, to, amount);
@@ -188,7 +193,7 @@ impl TokenTrait for Token {
             &e,
             &spender,
             symbol!("xfer_from"),
-            (&spender_id, nonce, &from, &to, &amount),
+            (spender_id.clone(), nonce, from.clone(), to.clone(), amount),
         );
         spend_allowance(&e, from.clone(), spender_id, amount);
         spend_balance(&e, from.clone(), amount);
@@ -201,7 +206,7 @@ impl TokenTrait for Token {
 
         let from_id = from.identifier(&e);
 
-        verify(&e, &from, symbol!("burn"), (&from_id, nonce, &amount));
+        verify(&e, &from, symbol!("burn"), (from_id.clone(), nonce, amount));
         spend_balance(&e, from_id.clone(), amount);
         event::burn(&e, from_id, amount);
     }
@@ -215,7 +220,7 @@ impl TokenTrait for Token {
             &e,
             &spender,
             symbol!("burn_from"),
-            (&spender_id, nonce, &from, &amount),
+            (spender_id.clone(), nonce, from.clone(), amount),
         );
         spend_allowance(&e, from.clone(), spender_id, amount);
         spend_balance(&e, from.clone(), amount);
@@ -232,7 +237,7 @@ impl TokenTrait for Token {
             &e,
             &admin,
             symbol!("clawback"),
-            (&admin_id, nonce, &from, &amount),
+            (admin_id.clone(), nonce, from.clone(), amount),
         );
         spend_balance(&e, from.clone(), amount);
         event::clawback(&e, admin_id, from, amount);
@@ -249,7 +254,7 @@ impl TokenTrait for Token {
             &e,
             &admin,
             symbol!("set_auth"),
-            (&admin_id, nonce, &id, authorize),
+            (admin_id.clone(), nonce, id.clone(), authorize),
         );
         write_authorization(&e, id.clone(), authorize);
         event::set_auth(&e, admin_id, id, authorize);
@@ -266,7 +271,7 @@ impl TokenTrait for Token {
             &e,
             &admin,
             symbol!("mint"),
-            (&admin_id, nonce, &to, &amount),
+            (admin_id.clone(), nonce, to.clone(), amount),
         );
         receive_balance(&e, to.clone(), amount);
         event::mint(&e, admin_id, to, amount);
@@ -283,7 +288,7 @@ impl TokenTrait for Token {
             &e,
             &admin,
             symbol!("set_admin"),
-            (&admin_id, nonce, &new_admin),
+            (admin_id.clone(), nonce, new_admin.clone()),
         );
         write_administrator(&e, new_admin.clone());
         event::set_admin(&e, admin_id, new_admin);

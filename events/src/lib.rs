@@ -12,7 +12,7 @@ impl IncrementContract {
         // Get the current count.
         let mut count: u32 = env
             .storage()
-            .get(COUNTER)
+            .get(&COUNTER)
             .unwrap_or(Ok(0)) // If no value set, assume 0.
             .unwrap(); // Panic if the value of COUNTER is not u32.
 
@@ -20,7 +20,7 @@ impl IncrementContract {
         count += 1;
 
         // Save the count.
-        env.storage().set(COUNTER, count);
+        env.storage().set(&COUNTER, &count);
 
         // Publish an event about the increment occuring.
         // The event has two topics:

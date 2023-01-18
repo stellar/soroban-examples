@@ -5,7 +5,7 @@ pub mod testutils;
 mod token;
 
 use num_integer::Roots;
-use soroban_sdk::{contractimpl, Bytes, BytesN, Env, IntoVal, RawVal};
+use soroban_sdk::{contractimpl, Bytes, BytesN, ConversionError, Env, RawVal, TryFromVal};
 use token::create_contract;
 use token::{Identifier, Signature};
 
@@ -20,9 +20,11 @@ pub enum DataKey {
     ReserveB = 5,
 }
 
-impl IntoVal<Env, RawVal> for DataKey {
-    fn into_val(self, env: &Env) -> RawVal {
-        (self as u32).into_val(env)
+impl TryFromVal<Env, DataKey> for RawVal {
+    type Error = ConversionError;
+
+    fn try_from_val(_env: &Env, v: &DataKey) -> Result<Self, Self::Error> {
+        Ok((*v as u32).into())
     }
 }
 
@@ -31,31 +33,31 @@ fn get_contract_id(e: &Env) -> Identifier {
 }
 
 fn get_token_a(e: &Env) -> BytesN<32> {
-    e.storage().get_unchecked(DataKey::TokenA).unwrap()
+    e.storage().get_unchecked(&DataKey::TokenA).unwrap()
 }
 
 fn get_token_b(e: &Env) -> BytesN<32> {
-    e.storage().get_unchecked(DataKey::TokenB).unwrap()
+    e.storage().get_unchecked(&DataKey::TokenB).unwrap()
 }
 
 fn get_token_share(e: &Env) -> BytesN<32> {
-    e.storage().get_unchecked(DataKey::TokenShare).unwrap()
+    e.storage().get_unchecked(&DataKey::TokenShare).unwrap()
 }
 
 fn get_total_shares(e: &Env) -> i128 {
-    e.storage().get_unchecked(DataKey::TotalShares).unwrap()
+    e.storage().get_unchecked(&DataKey::TotalShares).unwrap()
 }
 
 fn get_reserve_a(e: &Env) -> i128 {
-    e.storage().get_unchecked(DataKey::ReserveA).unwrap()
+    e.storage().get_unchecked(&DataKey::ReserveA).unwrap()
 }
 
 fn get_reserve_b(e: &Env) -> i128 {
-    e.storage().get_unchecked(DataKey::ReserveB).unwrap()
+    e.storage().get_unchecked(&DataKey::ReserveB).unwrap()
 }
 
 fn get_balance(e: &Env, contract_id: BytesN<32>) -> i128 {
-    token::Client::new(e, contract_id).balance(&get_contract_id(e))
+    token::Client::new(e, &contract_id).balance(&get_contract_id(e))
 }
 
 fn get_balance_a(e: &Env) -> i128 {
@@ -71,34 +73,34 @@ fn get_balance_shares(e: &Env) -> i128 {
 }
 
 fn put_token_a(e: &Env, contract_id: BytesN<32>) {
-    e.storage().set(DataKey::TokenA, contract_id);
+    e.storage().set(&DataKey::TokenA, &contract_id);
 }
 
 fn put_token_b(e: &Env, contract_id: BytesN<32>) {
-    e.storage().set(DataKey::TokenB, contract_id);
+    e.storage().set(&DataKey::TokenB, &contract_id);
 }
 
 fn put_token_share(e: &Env, contract_id: BytesN<32>) {
-    e.storage().set(DataKey::TokenShare, contract_id);
+    e.storage().set(&DataKey::TokenShare, &contract_id);
 }
 
 fn put_total_shares(e: &Env, amount: i128) {
-    e.storage().set(DataKey::TotalShares, amount)
+    e.storage().set(&DataKey::TotalShares, &amount)
 }
 
 fn put_reserve_a(e: &Env, amount: i128) {
-    e.storage().set(DataKey::ReserveA, amount)
+    e.storage().set(&DataKey::ReserveA, &amount)
 }
 
 fn put_reserve_b(e: &Env, amount: i128) {
-    e.storage().set(DataKey::ReserveB, amount)
+    e.storage().set(&DataKey::ReserveB, &amount)
 }
 
 fn burn_shares(e: &Env, amount: i128) {
     let total = get_total_shares(e);
     let share_contract_id = get_token_share(e);
 
-    token::Client::new(e, share_contract_id).clawback(
+    token::Client::new(e, &share_contract_id).clawback(
         &Signature::Invoker,
         &0,
         &get_contract_id(e),
@@ -111,13 +113,13 @@ fn mint_shares(e: &Env, to: Identifier, amount: i128) {
     let total = get_total_shares(e);
     let share_contract_id = get_token_share(e);
 
-    token::Client::new(e, share_contract_id).mint(&Signature::Invoker, &0, &to, &amount);
+    token::Client::new(e, &share_contract_id).mint(&Signature::Invoker, &0, &to, &amount);
 
     put_total_shares(e, total + amount);
 }
 
 fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: i128) {
-    token::Client::new(e, contract_id).xfer(&Signature::Invoker, &0, &to, &amount);
+    token::Client::new(e, &contract_id).xfer(&Signature::Invoker, &0, &to, &amount);
 }
 
 fn transfer_a(e: &Env, to: Identifier, amount: i128) {
@@ -178,7 +180,7 @@ impl LiquidityPoolTrait for LiquidityPool {
         }
 
         let share_contract_id = create_contract(&e, &token_wasm_hash, &token_a, &token_b);
-        token::Client::new(&e, share_contract_id.clone()).initialize(
+        token::Client::new(&e, &share_contract_id).initialize(
             &get_contract_id(&e),
             &7u32,
             &Bytes::from_slice(&e, b"name"),

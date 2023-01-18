@@ -13,7 +13,7 @@ type TokenClient = Client;
 fn create_token_contract(e: &Env, admin: &AccountId) -> TokenClient {
     e.install_contract_wasm(WASM);
 
-    let token = TokenClient::new(e, e.register_contract_wasm(None, WASM));
+    let token = TokenClient::new(e, &e.register_contract_wasm(None, WASM));
     // decimals, name, symbol don't matter in tests
     token.initialize(
         &Identifier::Account(admin.clone()),

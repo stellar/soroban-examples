@@ -44,7 +44,7 @@ fn create_token_contract(e: &Env, admin: &AccountId) -> (BytesN<32>, TokenClient
 }
 
 fn create_wallet_contract(e: &Env) -> WalletContractClient {
-    WalletContractClient::new(e, e.register_contract(None, WalletContract {}))
+    WalletContractClient::new(e, &e.register_contract(None, WalletContract {}))
 }
 
 fn sign_args(
@@ -161,7 +161,7 @@ impl WalletTest {
             signer,
             "pay",
             &self.contract.contract_id,
-            (&self.signer_to_id(signer), payment_id, payment).into_val(&self.env),
+            (self.signer_to_id(signer), payment_id, payment.clone()).into_val(&self.env),
         )
     }
 }

@@ -24,7 +24,7 @@ impl IncrementContract {
         state.last_incr = incr;
 
         // Save the count.
-        env.storage().set(STATE, &state);
+        env.storage().set(&STATE, &state);
 
         // Return the count to the caller.
         state.count
@@ -32,7 +32,7 @@ impl IncrementContract {
     /// Return the current state.
     pub fn get_state(env: Env) -> State {
         env.storage()
-            .get(STATE)
+            .get(&STATE)
             .unwrap_or_else(|| Ok(State::default())) // If no value set, assume 0.
             .unwrap() // Panic if the value of COUNTER is not a State.
     }

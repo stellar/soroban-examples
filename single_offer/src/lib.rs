@@ -33,15 +33,15 @@ fn get_contract_id(e: &Env) -> Identifier {
 }
 
 fn get_sell_token(e: &Env) -> BytesN<32> {
-    e.storage().get_unchecked(DataKey::SellToken).unwrap()
+    e.storage().get_unchecked(&DataKey::SellToken).unwrap()
 }
 
 fn get_buy_token(e: &Env) -> BytesN<32> {
-    e.storage().get_unchecked(DataKey::BuyToken).unwrap()
+    e.storage().get_unchecked(&DataKey::BuyToken).unwrap()
 }
 
 fn get_balance(e: &Env, contract_id: BytesN<32>) -> i128 {
-    token::Client::new(e, contract_id).balance(&get_contract_id(e))
+    token::Client::new(e, &contract_id).balance(&get_contract_id(e))
 }
 
 fn get_balance_buy(e: &Env) -> i128 {
@@ -49,23 +49,23 @@ fn get_balance_buy(e: &Env) -> i128 {
 }
 
 fn put_sell_token(e: &Env, contract_id: BytesN<32>) {
-    e.storage().set(DataKey::SellToken, contract_id);
+    e.storage().set(&DataKey::SellToken, &contract_id);
 }
 
 fn put_buy_token(e: &Env, contract_id: BytesN<32>) {
-    e.storage().set(DataKey::BuyToken, contract_id);
+    e.storage().set(&DataKey::BuyToken, &contract_id);
 }
 
 fn put_price(e: &Env, price: Price) {
-    e.storage().set(DataKey::Price, price);
+    e.storage().set(&DataKey::Price, &price);
 }
 
 fn load_price(e: &Env) -> Price {
-    e.storage().get_unchecked(DataKey::Price).unwrap()
+    e.storage().get_unchecked(&DataKey::Price).unwrap()
 }
 
 fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: i128) {
-    let client = token::Client::new(e, contract_id);
+    let client = token::Client::new(e, &contract_id);
     client.xfer(&Signature::Invoker, &0, &to, &amount);
 }
 
@@ -79,17 +79,17 @@ fn transfer_buy(e: &Env, to: Identifier, amount: i128) {
 
 fn has_administrator(e: &Env) -> bool {
     let key = DataKey::Admin;
-    e.storage().has(key)
+    e.storage().has(&key)
 }
 
 fn read_administrator(e: &Env) -> Identifier {
     let key = DataKey::Admin;
-    e.storage().get_unchecked(key).unwrap()
+    e.storage().get_unchecked(&key).unwrap()
 }
 
 fn write_administrator(e: &Env, id: Identifier) {
     let key = DataKey::Admin;
-    e.storage().set(key, id);
+    e.storage().set(&key, &id);
 }
 
 pub fn check_admin(e: &Env, auth_id: &Identifier) {

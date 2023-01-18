@@ -20,16 +20,16 @@ pub enum DataKey {
 
 fn get_pool_id(e: &Env, salt: &BytesN<32>) -> BytesN<32> {
     e.storage()
-        .get_unchecked(DataKey::Pool(salt.clone()))
+        .get_unchecked(&DataKey::Pool(salt.clone()))
         .unwrap()
 }
 
 fn put_pool(e: &Env, salt: &BytesN<32>, pool: &BytesN<32>) {
-    e.storage().set(DataKey::Pool(salt.clone()), pool.clone())
+    e.storage().set(&DataKey::Pool(salt.clone()), pool)
 }
 
 fn has_pool(e: &Env, salt: &BytesN<32>) -> bool {
-    e.storage().has(DataKey::Pool(salt.clone()))
+    e.storage().has(&DataKey::Pool(salt.clone()))
 }
 
 pub trait LiquidityPoolRouterTrait {
@@ -127,8 +127,8 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
         if !has_pool(&e, &salt) {
             let pool_contract_id = e
                 .deployer()
-                .with_current_contract(salt.clone())
-                .deploy(liquidity_pool_wasm_hash);
+                .with_current_contract(&salt)
+                .deploy(&liquidity_pool_wasm_hash);
 
             put_pool(&e, &salt, &pool_contract_id);
 
@@ -146,7 +146,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
 
         let invoker = e.invoker();
 
-        let client_a = token::Client::new(&e, token_a);
+        let client_a = token::Client::new(&e, &token_a);
         client_a.xfer_from(
             &Signature::Invoker,
             &0,
@@ -155,7 +155,7 @@ impl LiquidityPoolRouterTrait for LiquidityPoolRouter {
             &amounts.0,
         );
 
-        let client_b = token::Client::new(&e, token_b);
+        let client_b = token::Client::new(&e, &token_b);
         client_b.xfer_from(
             &Signature::Invoker,
             &0,

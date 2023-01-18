@@ -21,17 +21,16 @@ pub enum DataKey {
 
 fn get_offer(e: &Env, offer_key: &BytesN<32>) -> BytesN<32> {
     e.storage()
-        .get_unchecked(DataKey::Offer(offer_key.clone()))
+        .get_unchecked(&DataKey::Offer(offer_key.clone()))
         .unwrap()
 }
 
 fn put_offer(e: &Env, offer_key: &BytesN<32>, offer: &BytesN<32>) {
-    e.storage()
-        .set(DataKey::Offer(offer_key.clone()), offer.clone())
+    e.storage().set(&DataKey::Offer(offer_key.clone()), offer)
 }
 
 fn has_offer(e: &Env, offer_key: &BytesN<32>) -> bool {
-    e.storage().has(DataKey::Offer(offer_key.clone()))
+    e.storage().has(&DataKey::Offer(offer_key.clone()))
 }
 
 pub trait SingleOfferRouterTrait {
@@ -74,7 +73,7 @@ pub fn offer_key(
     match admin {
         Identifier::Contract(a) => offer_key_bin.append(&a.clone().into()),
         Identifier::Ed25519(a) => offer_key_bin.append(&a.clone().into()),
-        Identifier::Account(a) => offer_key_bin.append(&a.serialize(e)),
+        Identifier::Account(a) => offer_key_bin.append(&a.clone().serialize(e)),
     }
     offer_key_bin.append(&sell_token.clone().into());
     offer_key_bin.append(&buy_token.clone().into());
@@ -102,12 +101,12 @@ impl SingleOfferRouterTrait for SingleOfferRouter {
 
         let offer_contract_id = e
             .deployer()
-            .with_current_contract(offer_key.clone())
-            .deploy(offer_wasm_hash);
+            .with_current_contract(&offer_key)
+            .deploy(&offer_wasm_hash);
 
         put_offer(&e, &offer_key, &offer_contract_id);
 
-        SingleOfferClient::new(&e, offer_contract_id).initialize(
+        SingleOfferClient::new(&e, &offer_contract_id).initialize(
             &admin,
             &sell_token,
             &buy_token,

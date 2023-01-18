@@ -26,7 +26,7 @@ impl IncrementContract {
     pub fn increment(env: Env, sig: Signature, nonce: i128) -> u32 {
         // Verify that the signature signs and authorizes this invocation.
         let id = sig.identifier(&env);
-        verify(&env, &sig, symbol!("increment"), (&id, &nonce));
+        verify(&env, &sig, symbol!("increment"), (id.clone(), nonce));
 
         // Verify that the nonce has not been consumed to prevent replay of the
         // same presigned invocation more than once.
@@ -47,7 +47,7 @@ impl IncrementContract {
         count += 1;
 
         // Save the count.
-        env.storage().set(&key, count);
+        env.storage().set(&key, &count);
 
         // Return the count to the caller.
         count
@@ -77,12 +77,12 @@ fn verify_and_consume_nonce(env: &Env, sig: &Signature, nonce: i128) {
 
 fn get_nonce(env: &Env, id: &Identifier) -> i128 {
     let key = DataKey::Nonce(id.clone());
-    env.storage().get(key).unwrap_or(Ok(0)).unwrap()
+    env.storage().get(&key).unwrap_or(Ok(0)).unwrap()
 }
 
 fn set_nonce(env: &Env, id: &Identifier, nonce: i128) {
     let key = DataKey::Nonce(id.clone());
-    env.storage().set(key, nonce);
+    env.storage().set(&key, &nonce);
 }
 
 mod test;

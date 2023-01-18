@@ -26,7 +26,7 @@ fn create_token_contract(e: &Env, admin: &AccountId) -> (BytesN<32>, TokenClient
 }
 
 fn create_claimable_balance_contract(e: &Env) -> ClaimableBalanceContractClient {
-    ClaimableBalanceContractClient::new(e, e.register_contract(None, ClaimableBalanceContract {}))
+    ClaimableBalanceContractClient::new(e, &e.register_contract(None, ClaimableBalanceContract {}))
 }
 
 struct ClaimableBalanceTest {

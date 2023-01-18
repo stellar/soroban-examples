@@ -100,13 +100,13 @@ impl WalletContract {
             }
             weight_sum += admin.weight;
             // Record admin weight (and effectively admin identifier too).
-            env.storage().set(DataKey::AdminW(admin.id), admin.weight);
+            env.storage().set(&DataKey::AdminW(admin.id), &admin.weight);
         }
         // Do a basic sanity check to make sure we don't create a locked wallet.
         if weight_sum < threshold {
             return Err(Error::AdminWeightsBelowThreshold);
         }
-        env.storage().set(DataKey::Threshold, threshold);
+        env.storage().set(&DataKey::Threshold, &threshold);
         Ok(())
     }
 
@@ -173,8 +173,8 @@ impl WalletContract {
         // re-executing the payment with the same id (a separate entry could
         // serve this purpose as well).
         env.storage().set(
-            DataKey::PaySigners(payment_id),
-            WeightedSigners {
+            &DataKey::PaySigners(payment_id),
+            &WeightedSigners {
                 signers: signer_ids,
                 weight: weight_sum,
             },
@@ -190,7 +190,7 @@ impl WalletContract {
             return Ok(true);
         }
         if !is_existing_payment {
-            env.storage().set(DataKey::Payment(payment_id), payment);
+            env.storage().set(&DataKey::Payment(payment_id), &payment);
         }
 
         Ok(false)
@@ -208,7 +208,7 @@ fn check_initialization_params(
     if admins.is_empty() || admins.len() > MAX_ADMINS {
         return Err(Error::InvalidAdminCount);
     }
-    if env.storage().has(DataKey::Threshold) {
+    if env.storage().has(&DataKey::Threshold) {
         return Err(Error::AlreadyInitialized);
     }
     Ok(())
@@ -232,7 +232,12 @@ fn validate_and_compute_signature_weight(
         // at the same time (non-authorized accounts won't have weight).
         weight_sum += read_weight(env, &id)?;
 
-        verify(env, &signature, symbol!("pay"), (&id, &payment_id, payment));
+        verify(
+            env,
+            &signature,
+            symbol!("pay"),
+            (id.clone(), payment_id, payment.clone()),
+        );
         unique_ids.set(id, ());
     }
     if unique_ids.len() != signatures.len() {
@@ -243,18 +248,18 @@ fn validate_and_compute_signature_weight(
 }
 
 fn execute_payment(env: &Env, payment: Payment) {
-    let client = token::Client::new(env, payment.token);
+    let client = token::Client::new(env, &payment.token);
     client.xfer(&Signature::Invoker, &0, &payment.receiver, &payment.amount);
 }
 
 fn read_threshold(env: &Env) -> u32 {
-    env.storage().get_unchecked(DataKey::Threshold).unwrap()
+    env.storage().get_unchecked(&DataKey::Threshold).unwrap()
 }
 
 fn read_weight(env: &Env, id: &Identifier) -> Result<u32, Error> {
     Ok(env
         .storage()
-        .get(DataKey::AdminW(id.clone()))
+        .get(&DataKey::AdminW(id.clone()))
         .ok_or(Error::UnauthorizedSigner)?
         .unwrap())
 }

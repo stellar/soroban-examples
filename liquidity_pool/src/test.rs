@@ -10,7 +10,7 @@ soroban_sdk::contractimport!(
 );
 
 fn create_token_contract(e: &Env, admin: &AccountId) -> token::Client {
-    let token = token::Client::new(e, e.register_contract_wasm(None, WASM));
+    let token = token::Client::new(e, &e.register_contract_wasm(None, WASM));
     // decimals, name, symbol don't matter in tests
     token.initialize(
         &Identifier::Account(admin.clone()),
@@ -59,7 +59,7 @@ fn test() {
     );
     let pool_id = Identifier::Contract(liqpool.contract_id.clone());
     let contract_share: [u8; 32] = liqpool.share_id().into();
-    let token_share = token::Client::new(&e, contract_share);
+    let token_share = token::Client::new(&e, &contract_share);
 
     token1
         .with_source_account(&admin1)

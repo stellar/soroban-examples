@@ -29,27 +29,27 @@ pub struct Price {
 }
 
 fn get_sell_token(e: &Env) -> BytesN<32> {
-    e.storage().get_unchecked(DataKey::SellToken).unwrap()
+    e.storage().get_unchecked(&DataKey::SellToken).unwrap()
 }
 
 fn get_buy_token(e: &Env) -> BytesN<32> {
-    e.storage().get_unchecked(DataKey::BuyToken).unwrap()
+    e.storage().get_unchecked(&DataKey::BuyToken).unwrap()
 }
 
 fn put_sell_token(e: &Env, contract_id: BytesN<32>) {
-    e.storage().set(DataKey::SellToken, contract_id);
+    e.storage().set(&DataKey::SellToken, &contract_id);
 }
 
 fn put_buy_token(e: &Env, contract_id: BytesN<32>) {
-    e.storage().set(DataKey::BuyToken, contract_id);
+    e.storage().set(&DataKey::BuyToken, &contract_id);
 }
 
 fn put_price(e: &Env, price: Price) {
-    e.storage().set(DataKey::Price, price);
+    e.storage().set(&DataKey::Price, &price);
 }
 
 fn get_price(e: &Env) -> Price {
-    e.storage().get_unchecked(DataKey::Price).unwrap()
+    e.storage().get_unchecked(&DataKey::Price).unwrap()
 }
 
 fn transfer_from(
@@ -73,17 +73,17 @@ fn transfer_buy(e: &Env, from: &Identifier, to: &Identifier, amount: &i128) {
 
 fn has_administrator(e: &Env) -> bool {
     let key = DataKey::Admin;
-    e.storage().has(key)
+    e.storage().has(&key)
 }
 
 fn read_administrator(e: &Env) -> Identifier {
     let key = DataKey::Admin;
-    e.storage().get_unchecked(key).unwrap()
+    e.storage().get_unchecked(&key).unwrap()
 }
 
 fn write_administrator(e: &Env, id: Identifier) {
     let key = DataKey::Admin;
-    e.storage().set(key, id);
+    e.storage().set(&key, &id);
 }
 
 pub fn check_admin(e: &Env, auth_id: Identifier) {

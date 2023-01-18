@@ -28,7 +28,7 @@ impl IncrementContract {
         count += 1;
 
         // Save the count.
-        env.storage().set(&key, count);
+        env.storage().set(&key, &count);
 
         // Return the count to the caller.
         count
