@@ -88,8 +88,8 @@ impl ClaimableBalanceContract {
         transfer_from_account_to_contract(&env, &token, &env.invoker().into(), &amount);
         // Store all the necessary info to allow one of the claimants to claim it.
         env.storage().set(
-            DataKey::Balance,
-            ClaimableBalance {
+            &DataKey::Balance,
+            &ClaimableBalance {
                 token,
                 amount,
                 time_bound,
@@ -99,12 +99,12 @@ impl ClaimableBalanceContract {
         // Mark contract as initialized to prevent double-usage.
         // Note, that this is just one way to approach initialization - it may
         // be viable to allow one contract to manage several claimable balances.
-        env.storage().set(DataKey::Init, ());
+        env.storage().set(&DataKey::Init, &());
     }
 
     pub fn claim(env: Env) {
         let claimable_balance: ClaimableBalance =
-            env.storage().get_unchecked(DataKey::Balance).unwrap();
+            env.storage().get_unchecked(&DataKey::Balance).unwrap();
 
         if !check_time_bound(&env, &claimable_balance.time_bound) {
             panic!("time predicate is not fulfilled");
@@ -125,12 +125,12 @@ impl ClaimableBalanceContract {
             &claimable_balance.amount,
         );
         // Remove the balance entry to prevent any further claims.
-        env.storage().remove(DataKey::Balance);
+        env.storage().remove(&DataKey::Balance);
     }
 }
 
 fn is_initialized(env: &Env) -> bool {
-    env.storage().has(DataKey::Init)
+    env.storage().has(&DataKey::Init)
 }
 
 fn get_contract_id(e: &Env) -> Identifier {

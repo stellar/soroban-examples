@@ -49,7 +49,7 @@ impl Token {
             name: symbol!("incr_allow"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
-            args: (from_id, &nonce, spender, amount).into_val(&self.env),
+            args: (from_id, nonce, spender.clone(), amount.clone()).into_val(&self.env),
         });
 
         let auth = Signature::Ed25519(Ed25519Signature {
@@ -67,7 +67,7 @@ impl Token {
             name: symbol!("decr_allow"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
-            args: (from_id, &nonce, spender, amount).into_val(&self.env),
+            args: (from_id, nonce, spender.clone(), amount.clone()).into_val(&self.env),
         });
 
         let auth = Signature::Ed25519(Ed25519Signature {
@@ -93,7 +93,7 @@ impl Token {
             name: symbol!("xfer"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
-            args: (from_id, &nonce, to, amount).into_val(&self.env),
+            args: (from_id, nonce, to.clone(), amount.clone()).into_val(&self.env),
         });
 
         let auth = Signature::Ed25519(Ed25519Signature {
@@ -112,7 +112,7 @@ impl Token {
             name: symbol!("xfer_from"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
-            args: (spender_id, &nonce, from, to, amount).into_val(&self.env),
+            args: (spender_id, nonce, from.clone(), to.clone(), amount.clone()).into_val(&self.env),
         });
 
         let auth = Signature::Ed25519(Ed25519Signature {
@@ -131,7 +131,7 @@ impl Token {
             name: symbol!("burn"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
-            args: (from_id, &nonce, amount).into_val(&self.env),
+            args: (from_id, nonce, amount.clone()).into_val(&self.env),
         });
 
         let auth = Signature::Ed25519(Ed25519Signature {
@@ -150,7 +150,7 @@ impl Token {
             name: symbol!("burn_from"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
-            args: (spender_id, &nonce, from, amount).into_val(&self.env),
+            args: (spender_id, nonce, from.clone(), amount.clone()).into_val(&self.env),
         });
 
         let auth = Signature::Ed25519(Ed25519Signature {
@@ -169,7 +169,7 @@ impl Token {
             name: symbol!("clawback"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
-            args: (admin_id, &nonce, from, amount).into_val(&self.env),
+            args: (admin_id, nonce, from.clone(), amount.clone()).into_val(&self.env),
         });
         let auth = Signature::Ed25519(Ed25519Signature {
             public_key: admin.public.to_bytes().into_val(&self.env),
@@ -186,7 +186,7 @@ impl Token {
             name: symbol!("set_auth"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
-            args: (admin_id, &nonce, id, authorize).into_val(&self.env),
+            args: (admin_id, nonce, id.clone(), authorize).into_val(&self.env),
         });
         let auth = Signature::Ed25519(Ed25519Signature {
             public_key: admin.public.to_bytes().into_val(&self.env),
@@ -203,7 +203,7 @@ impl Token {
             name: symbol!("mint"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
-            args: (admin_id, &nonce, to, amount).into_val(&self.env),
+            args: (admin_id, nonce, to.clone(), amount.clone()).into_val(&self.env),
         });
         let auth = Signature::Ed25519(Ed25519Signature {
             public_key: admin.public.to_bytes().into_val(&self.env),
@@ -220,7 +220,7 @@ impl Token {
             name: symbol!("set_admin"),
             contract: self.contract_id.clone(),
             network: self.env.ledger().network_passphrase(),
-            args: (admin_id, &nonce, new_admin).into_val(&self.env),
+            args: (admin_id, nonce, new_admin.clone()).into_val(&self.env),
         });
         let auth = Signature::Ed25519(Ed25519Signature {
             public_key: admin.public.to_bytes().into_val(&self.env),
