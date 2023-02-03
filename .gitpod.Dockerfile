@@ -11,6 +11,7 @@ ENV RUSTC_WRAPPER=sccache
 ENV SCCACHE_CACHE_SIZE=5G
 ENV SCCACHE_DIR=/workspace/.sccache
 
+# Remove the existing rustup installation before updating due to:
 # https://github.com/gitpod-io/workspace-images/issues/933#issuecomment-1272616892
 RUN rustup self uninstall -y
 RUN rm -rf .rustup
