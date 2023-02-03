@@ -1,4 +1,4 @@
-FROM gitpod/workspace-full:2022-11-09-13-54-49
+FROM gitpod/workspace-full:2023-01-16-03-31-28
 
 RUN mkdir -p ~/.local/bin
 RUN curl -L -o ~/.local/bin/soroban https://github.com/stellar/soroban-tools/releases/download/v0.4.0/soroban-cli-0.4.0-x86_64-unknown-linux-gnu
@@ -11,6 +11,12 @@ ENV RUSTC_WRAPPER=sccache
 ENV SCCACHE_CACHE_SIZE=5G
 ENV SCCACHE_DIR=/workspace/.sccache
 
+# Remove the existing rustup installation before updating due to:
+# https://github.com/gitpod-io/workspace-images/issues/933#issuecomment-1272616892
+RUN rustup self uninstall -y
+RUN rm -rf .rustup
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
 RUN rustup update stable
 RUN rustup target add --toolchain stable wasm32-unknown-unknown
 RUN rustup component add --toolchain stable rust-src
@@ -20,5 +26,3 @@ RUN rustup component add --toolchain nightly rust-src
 RUN rustup default stable
 
 RUN sudo apt-get update && sudo apt-get install -y binaryen
-
-# RUN docker pull stellar/quickstart:soroban-dev
