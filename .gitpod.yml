@@ -19,7 +19,6 @@ tasks:
     # We specify some required environment variables for use on the futurenet.
     env:
       # This might should be set by the user.
-      # This account must actually exist as a funded account on the futurenet.
       SOROBAN_RPC_URL: "http://127.0.0.1:8000/soroban/rpc"
       SOROBAN_NETWORK_PASSPHRASE: "Test SDF Future Network ; October 2022"
     # To keep things tidy, we clear the terminal from the previous output.
