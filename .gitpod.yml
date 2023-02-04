@@ -18,7 +18,7 @@ tasks:
   - name: CLI - Futurenet
     # We specify some required environment variables for use on the futurenet.
     env:
-      # This might should be set by the user.
+      # This can be set by the user, but this terminal is dedicated to futurenet so set for convenience.
       SOROBAN_RPC_URL: "http://127.0.0.1:8000/soroban/rpc"
       SOROBAN_NETWORK_PASSPHRASE: "Test SDF Future Network ; October 2022"
     # To keep things tidy, we clear the terminal from the previous output.
