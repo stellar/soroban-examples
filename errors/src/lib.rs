@@ -21,7 +21,7 @@ impl IncrementContract {
         // Get the current count.
         let mut count: u32 = env
             .storage()
-            .get(COUNTER)
+            .get(&COUNTER)
             .unwrap_or(Ok(0)) // If no value set, assume 0.
             .unwrap(); // Panic if the value of COUNTER is not u32.
         log!(&env, "count: {}", count);
@@ -32,7 +32,7 @@ impl IncrementContract {
         // Check if the count exceeds the max.
         if count <= MAX {
             // Save the count.
-            env.storage().set(COUNTER, count);
+            env.storage().set(&COUNTER, &count);
 
             // Return the count to the caller.
             Ok(count)

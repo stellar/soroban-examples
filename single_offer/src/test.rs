@@ -4,9 +4,6 @@ extern crate std;
 use crate::testutils::{register_test_contract as register_single_offer, SingleOffer};
 use soroban_sdk::{testutils::Accounts, AccountId, BytesN, Env, IntoVal};
 
-soroban_sdk::contractimport!(
-    file = "../target/wasm32-unknown-unknown/release/soroban_token_contract.wasm"
-);
 
 type TokenClient = Client;
 

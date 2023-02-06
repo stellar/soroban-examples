@@ -1,6 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{contractimpl, contracttype, Account, BytesN, Env, Vec};
+use soroban_sdk::{contractimpl, contracttype, Address, BytesN, Env, Vec};
 
 mod atomic_swap {
     soroban_sdk::contractimport!(
@@ -10,8 +10,8 @@ mod atomic_swap {
 
 #[derive(Clone)]
 #[contracttype]
-pub struct AccountSwap {
-    pub account: Account,
+pub struct SwapSpec {
+    pub address: Address,
     pub amount: i128,
     pub min_recv: i128,
 }
@@ -28,19 +28,20 @@ impl AtomicMultiSwapContract {
         swap_contract: BytesN<32>,
         token_a: BytesN<32>,
         token_b: BytesN<32>,
-        accounts_a: Vec<AccountSwap>,
-        mut accounts_b: Vec<AccountSwap>,
+        swaps_a: Vec<SwapSpec>,
+        #[allow(unused_mut)]  // This has to be mut, but gets an incorrect warning
+        mut swaps_b: Vec<SwapSpec>,
     ) {
         let swap_client = atomic_swap::Client::new(&env, &swap_contract);
-        for acc_a in accounts_a.iter() {
+        for acc_a in swaps_a.iter() {
             let acc_a = acc_a.unwrap();
-            for i in 0..accounts_b.len() {
-                let acc_b = accounts_b.get(i).unwrap().unwrap();
+            for i in 0..swaps_b.len() {
+                let acc_b = swaps_b.get(i).unwrap().unwrap();
 
                 if acc_a.amount >= acc_b.min_recv && acc_a.min_recv <= acc_b.amount {
                     swap_client.swap(
-                        &acc_a.account,
-                        &acc_b.account,
+                        &acc_a.address,
+                        &acc_b.address,
                         &token_a,
                         &token_b,
                         &acc_a.amount,
@@ -48,7 +49,7 @@ impl AtomicMultiSwapContract {
                         &acc_b.amount,
                         &acc_b.min_recv,
                     );
-                    accounts_b.remove(i);
+                    swaps_b.remove(i);
                     break;
                 }
             }

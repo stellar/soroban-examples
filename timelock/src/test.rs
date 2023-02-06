@@ -19,13 +19,13 @@ fn create_token_contract(e: &Env, admin: &Address) -> TokenClient {
 }
 
 fn create_claimable_balance_contract(e: &Env) -> ClaimableBalanceContractClient {
-    ClaimableBalanceContractClient::new(e, e.register_contract(None, ClaimableBalanceContract {}))
+    ClaimableBalanceContractClient::new(e, &e.register_contract(None, ClaimableBalanceContract {}))
 }
 
 struct ClaimableBalanceTest {
     env: Env,
-    deposit_account: Account,
-    claim_accounts: [Account; 3],
+    deposit_address: Address,
+    claim_addresses: [Address; 3],
     token: TokenClient,
     contract: ClaimableBalanceContractClient,
     contract_address: Address,
@@ -38,29 +38,29 @@ impl ClaimableBalanceTest {
             timestamp: 12345,
             protocol_version: 1,
             sequence_number: 10,
-            network_passphrase: Default::default(),
+            network_id: Default::default(),
             base_reserve: 10,
         });
 
-        let deposit_account = Account::random(&env);
+        let deposit_address = Address::random(&env);
 
-        let claim_accounts = [
-            Account::random(&env),
-            Account::random(&env),
-            Account::random(&env),
+        let claim_addresses = [
+            Address::random(&env),
+            Address::random(&env),
+            Address::random(&env),
         ];
 
-        let token_admin = Account::random(&env);
+        let token_admin = Address::random(&env);
 
-        let token = create_token_contract(&env, &token_admin.address());
-        token.mint(&token_admin, &deposit_account.address(), &1000);
+        let token = create_token_contract(&env, &token_admin);
+        token.mint(&token_admin, &deposit_address, &1000);
 
         let contract = create_claimable_balance_contract(&env);
         let contract_address = Address::from_contract_id(&env, &contract.contract_id);
         ClaimableBalanceTest {
             env,
-            deposit_account,
-            claim_accounts,
+            deposit_address,
+            claim_addresses,
             token,
             contract,
             contract_address,
@@ -72,29 +72,30 @@ impl ClaimableBalanceTest {
 fn test_deposit_and_claim() {
     let test = ClaimableBalanceTest::setup();
     test.contract.deposit(
-        &test.deposit_account,
+        &test.deposit_address,
         &test.token.contract_id,
         &800,
         &vec![
             &test.env,
-            test.claim_accounts[0].address(),
-            test.claim_accounts[1].address(),
+            test.claim_addresses[0].clone(),
+            test.claim_addresses[1].clone(),
         ],
         &TimeBound {
             kind: TimeBoundKind::Before,
             timestamp: 12346,
         },
     );
-    assert!(test.env.verify_account_authorization(
-        &test.deposit_account,
-        &[(&test.contract.contract_id, "deposit")],
+    assert!(test.env.verify_top_authorization(
+        &test.deposit_address,
+        &test.contract.contract_id,
+        "deposit",
         (
-            &test.token.contract_id,
+            test.token.contract_id.clone(),
             800_i128,
             vec![
                 &test.env,
-                test.claim_accounts[0].address(),
-                test.claim_accounts[1].address(),
+                test.claim_addresses[0].clone(),
+                test.claim_addresses[1].clone(),
             ],
             TimeBound {
                 kind: TimeBoundKind::Before,
@@ -104,31 +105,21 @@ fn test_deposit_and_claim() {
             .into_val(&test.env),
     ));
 
-    // That shouldn't be necessary in tests most of the time. Top-level contract
-    // shouldn't worry about sub-contract authorizations normally.
-    assert!(test.env.verify_account_authorization(
-        &test.deposit_account,
-        &[
-            (&test.contract.contract_id, "deposit"),
-            (&test.token.contract_id, "xfer")
-        ],
-        (&test.contract_address, 800_i128).into_val(&test.env),
-    ));
-
-    assert_eq!(test.token.balance(&test.deposit_account.address()), 200);
+    assert_eq!(test.token.balance(&test.deposit_address), 200);
     assert_eq!(test.token.balance(&test.contract_address), 800);
-    assert_eq!(test.token.balance(&test.claim_accounts[1].address()), 0);
+    assert_eq!(test.token.balance(&test.claim_addresses[1]), 0);
 
-    test.contract.claim(&test.claim_accounts[1]);
-    assert!(test.env.verify_account_authorization(
-        &test.claim_accounts[1],
-        &[(&test.contract.contract_id, "claim")],
+    test.contract.claim(&test.claim_addresses[1]);
+    assert!(test.env.verify_top_authorization(
+        &test.claim_addresses[1],
+        &test.contract.contract_id,
+        "claim",
         vec![&test.env],
     ));
 
-    assert_eq!(test.token.balance(&test.deposit_account.address()), 200);
+    assert_eq!(test.token.balance(&test.deposit_address), 200);
     assert_eq!(test.token.balance(&test.contract_address), 0);
-    assert_eq!(test.token.balance(&test.claim_accounts[1].address()), 800);
+    assert_eq!(test.token.balance(&test.claim_addresses[1]), 800);
 }
 
 #[test]
@@ -136,20 +127,20 @@ fn test_deposit_and_claim() {
 fn test_double_deposit_not_possible() {
     let test = ClaimableBalanceTest::setup();
     test.contract.deposit(
-        &test.deposit_account,
+        &test.deposit_address,
         &test.token.contract_id,
         &1,
-        &vec![&test.env, test.claim_accounts[0].address()],
+        &vec![&test.env, test.claim_addresses[0].clone()],
         &TimeBound {
             kind: TimeBoundKind::Before,
             timestamp: 12346,
         },
     );
     test.contract.deposit(
-        &test.deposit_account,
+        &test.deposit_address,
         &test.token.contract_id,
         &1,
-        &vec![&test.env, test.claim_accounts[0].address()],
+        &vec![&test.env, test.claim_addresses[0].clone()],
         &TimeBound {
             kind: TimeBoundKind::Before,
             timestamp: 12346,
@@ -162,13 +153,13 @@ fn test_double_deposit_not_possible() {
 fn test_unauthorized_claim_not_possible() {
     let test = ClaimableBalanceTest::setup();
     test.contract.deposit(
-        &test.deposit_account,
+        &test.deposit_address,
         &test.token.contract_id,
         &800,
         &vec![
             &test.env,
-            test.claim_accounts[0].address(),
-            test.claim_accounts[1].address(),
+            test.claim_addresses[0].clone(),
+            test.claim_addresses[1].clone(),
         ],
         &TimeBound {
             kind: TimeBoundKind::Before,
@@ -176,7 +167,7 @@ fn test_unauthorized_claim_not_possible() {
         },
     );
 
-    test.contract.claim(&test.claim_accounts[2]);
+    test.contract.claim(&test.claim_addresses[2]);
 }
 
 #[test]
@@ -184,17 +175,17 @@ fn test_unauthorized_claim_not_possible() {
 fn test_out_of_time_bound_claim_not_possible() {
     let test = ClaimableBalanceTest::setup();
     test.contract.deposit(
-        &test.deposit_account,
+        &test.deposit_address,
         &test.token.contract_id,
         &800,
-        &vec![&test.env, test.claim_accounts[0].address()],
+        &vec![&test.env, test.claim_addresses[0].clone()],
         &TimeBound {
             kind: TimeBoundKind::After,
             timestamp: 12346,
         },
     );
 
-    test.contract.claim(&test.claim_accounts[0]);
+    test.contract.claim(&test.claim_addresses[0]);
 }
 
 #[test]
@@ -202,19 +193,19 @@ fn test_out_of_time_bound_claim_not_possible() {
 fn test_double_claim_not_possible() {
     let test = ClaimableBalanceTest::setup();
     test.contract.deposit(
-        &test.deposit_account,
+        &test.deposit_address,
         &test.token.contract_id,
         &800,
-        &vec![&test.env, test.claim_accounts[0].address()],
+        &vec![&test.env, test.claim_addresses[0].clone()],
         &TimeBound {
             kind: TimeBoundKind::Before,
             timestamp: 12346,
         },
     );
 
-    test.contract.claim(&test.claim_accounts[0]);
-    assert_eq!(test.token.balance(&test.claim_accounts[0].address()), 800);
-    test.contract.claim(&test.claim_accounts[0]);
+    test.contract.claim(&test.claim_addresses[0]);
+    assert_eq!(test.token.balance(&test.claim_addresses[0]), 800);
+    test.contract.claim(&test.claim_addresses[0]);
 }
 
 #[test]
@@ -222,23 +213,23 @@ fn test_double_claim_not_possible() {
 fn test_deposit_after_claim_not_possible() {
     let test = ClaimableBalanceTest::setup();
     test.contract.deposit(
-        &test.deposit_account,
+        &test.deposit_address,
         &test.token.contract_id,
         &800,
-        &vec![&test.env, test.claim_accounts[0].address()],
+        &vec![&test.env, test.claim_addresses[0].clone()],
         &TimeBound {
             kind: TimeBoundKind::After,
             timestamp: 12344,
         },
     );
 
-    test.contract.claim(&test.claim_accounts[0]);
-    assert_eq!(test.token.balance(&test.claim_accounts[0].address()), 800);
+    test.contract.claim(&test.claim_addresses[0]);
+    assert_eq!(test.token.balance(&test.claim_addresses[0]), 800);
     test.contract.deposit(
-        &test.deposit_account,
+        &test.deposit_address,
         &test.token.contract_id,
         &200,
-        &vec![&test.env, test.claim_accounts[0].address()],
+        &vec![&test.env, test.claim_addresses[0].clone()],
         &TimeBound {
             kind: TimeBoundKind::After,
             timestamp: 12344,

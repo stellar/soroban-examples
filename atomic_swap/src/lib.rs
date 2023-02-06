@@ -1,6 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{contractimpl, Account, Address, BytesN, Env, IntoVal};
+use soroban_sdk::{contractimpl, Address, BytesN, Env, IntoVal};
 
 mod token {
     soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
@@ -15,8 +15,8 @@ impl AtomicSwapContract {
     // approve; full amounts could be swapped as well).
     pub fn swap(
         env: Env,
-        a: Account,
-        b: Account,
+        a: Address,
+        b: Address,
         token_a: BytesN<32>,
         token_b: BytesN<32>,
         amount_a: i128,
@@ -31,26 +31,26 @@ impl AtomicSwapContract {
             panic!("not enough token A for token B");
         }
 
-        a.authorize((&token_a, &token_b, amount_a, min_b_for_a).into_val(&env));
-        b.authorize((&token_b, &token_a, amount_b, min_a_for_b).into_val(&env));
+        a.require_auth((token_a.clone(), token_b.clone(), amount_a, min_b_for_a).into_val(&env));
+        b.require_auth((token_b.clone(), token_a.clone(), amount_b, min_a_for_b).into_val(&env));
 
-        move_token(&env, token_a, &a, &b.address(), amount_a, min_a_for_b);
-        move_token(&env, token_b, &b, &a.address(), amount_b, min_b_for_a);
+        move_token(&env, token_a, &a, &b, amount_a, min_a_for_b);
+        move_token(&env, token_b, &b, &a, amount_b, min_b_for_a);
     }
 }
 
 fn move_token(
     env: &Env,
     token: BytesN<32>,
-    from: &Account,
+    from: &Address,
     to: &Address,
     approve_amount: i128,
     xfer_amount: i128,
 ) {
     let token = token::Client::new(&env, &token);
-    let contract_account = env.current_contract_account();
-    token.incr_allow(from, &contract_account.address(), &approve_amount);
-    token.xfer_from(&contract_account, &from.address(), to, &xfer_amount);
+    let contract_address = env.current_contract_address();
+    token.incr_allow(&from, &contract_address, &approve_amount);
+    token.xfer_from(&contract_address, &from, to, &xfer_amount);
 }
 
 mod test;

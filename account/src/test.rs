@@ -4,7 +4,7 @@ use ed25519_dalek::Keypair;
 use ed25519_dalek::Signer;
 use rand::thread_rng;
 use soroban_account::AuthorizationContext;
-use soroban_sdk::Account;
+use soroban_sdk::Address;
 use soroban_sdk::{symbol, testutils::BytesN as _, vec, BytesN, Env, IntoVal};
 
 use crate::AccError;
@@ -19,7 +19,7 @@ fn signer_public_key(e: &Env, signer: &Keypair) -> BytesN<32> {
 }
 
 fn create_account_contract(e: &Env) -> AccountContractClient {
-    AccountContractClient::new(e, e.register_contract(None, AccountContract {}))
+    AccountContractClient::new(e, &e.register_contract(None, AccountContract {}))
 }
 
 fn sign(e: &Env, signer: &Keypair, payload: &BytesN<32>) -> Signature {
@@ -67,12 +67,13 @@ fn test_token_auth() {
         .unwrap()
         .unwrap();
 
-    let account = Account::generic(&env, &account_contract.contract_id);
+    let account_address = Address::from_contract_id(&env, &account_contract.contract_id);
     // Add a spend limit of 1000 per 1 signer.
-    account_contract.add_limit(&account, &token, &1000);
-    env.verify_account_authorization(
-        &account,
-        &[(&account_contract.contract_id, "add_limit")],
+    account_contract.add_limit(&token, &1000);
+    env.verify_top_authorization(
+        &account_address,
+        &account_contract.contract_id,
+        "add_limit",
         (token.clone(), 1000).into_val(&env),
     );
     // 1 signer no longer can perform the token operation that transfers more

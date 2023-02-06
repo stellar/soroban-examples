@@ -4,7 +4,7 @@
 
 use soroban_account::AuthorizationContext;
 use soroban_sdk::{
-    contracterror, contractimpl, contracttype, symbol, Account, BytesN, Env, IntoVal, Map, Symbol,
+    contracterror, contractimpl, contracttype, symbol, BytesN, Env, IntoVal, Map, Symbol,
     TryIntoVal, Vec,
 };
 
@@ -41,17 +41,21 @@ impl AccountContract {
     pub fn init(env: Env, signers: Vec<BytesN<32>>) {
         // In reality this would need some validation on signers.
         for signer in signers.iter() {
-            env.data().set(DataKey::Signer(signer.unwrap()), ());
+            env.storage().set(&DataKey::Signer(signer.unwrap()), &());
         }
-        env.data().set(DataKey::SignerCnt, signers.len());
+        env.storage().set(&DataKey::SignerCnt, &signers.len());
     }
 
-    pub fn add_limit(env: Env, account: Account, token: BytesN<32>, limit: i128) {
-        if account.address() != env.current_contract_account().address() {
-            panic!("incorrect account");
-        }
-        account.authorize((token.clone(), limit).into_val(&env));
-        env.data().set(DataKey::SpendLimit(token), limit);
+    pub fn add_limit(env: Env, token: BytesN<32>, limit: i128) {
+        // The current contract address is the account contract address and has
+        // the same semantics for `require_auth` call as any other account
+        // contract address.
+        // Note, that if a contract *invokes* another contract, then it would
+        // authorize the call on its own behalf and that wouldn't require any
+        // user-side verification.
+        env.current_contract_address()
+            .require_auth((token.clone(), limit).into_val(&env));
+        env.storage().set(&DataKey::SpendLimit(token), &limit);
     }
 
     pub fn check_auth(
@@ -70,19 +74,19 @@ impl AccountContract {
                 }
             }
             if !env
-                .data()
-                .has(DataKey::Signer(signature.public_key.clone()))
+                .storage()
+                .has(&DataKey::Signer(signature.public_key.clone()))
             {
                 panic!("not a signer");
             }
-            env.verify_sig_ed25519(
+            env.crypto().ed25519_verify(
                 &signature.public_key,
                 &signature_payload.clone().into(),
                 &signature.signature,
             );
         }
 
-        let tot_signers: u32 = env.data().get(DataKey::SignerCnt).unwrap().unwrap();
+        let tot_signers: u32 = env.storage().get(&DataKey::SignerCnt).unwrap().unwrap();
         let all_signed = tot_signers == signatures.len();
 
         let curr_contract_id = env.current_contract_id();
@@ -107,8 +111,8 @@ impl AccountContract {
                 if let Some(spend_left) = spend_left_per_token.get(context.contract.clone()) {
                     Some(spend_left.unwrap())
                 } else if let Some(limit_left) = env
-                    .data()
-                    .get(DataKey::SpendLimit(context.contract.clone()))
+                    .storage()
+                    .get(&DataKey::SpendLimit(context.contract.clone()))
                 {
                     Some(limit_left.unwrap())
                 } else {
