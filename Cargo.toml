@@ -2,13 +2,13 @@
 resolver = "2"
 
 members = [   
-    "hello_world",
-    "increment",
+    #"hello_world",
+    #"increment",
     #"auth",
     #"auth_advanced",
-    "custom_types",
-    "cross_contract/contract_a",
-    "cross_contract/contract_b",
+    #"custom_types",
+    #"cross_contract/contract_a",
+    #"cross_contract/contract_b",
     #"deployer/contract",
     #"deployer/deployer",
     #"liquidity_pool",
@@ -16,14 +16,15 @@ members = [
     "single_offer",
     #"single_offer_xfer_from",
     #"single_offer_router",
-    "events",
+    #"events",
     #"token",
-    "logging",
-    "errors", 
+    #"logging",
+    #"errors", 
     "timelock",
-    "atomic_swap",    
-    "atomic_multiswap",
-    "account",
+    #"atomic_swap",
+    #"atomic_multiswap",
+    #"account",
+    "sac_test"
 ]
 
 [profile.release-with-logs]
@@ -41,17 +42,11 @@ codegen-units = 1
 lto = true
 
 [workspace.dependencies.soroban-sdk]
-version = "0.4.1"
+version = "0.4.3"
 git = "https://github.com/stellar/rs-soroban-sdk"
-rev = "980778e"
+rev = "e7910c7057088b3418d84af04f2c04313d0c756f"
 
-[workspace.dependencies.soroban-account]
-version = "0.4.1"
+[workspace.dependencies.soroban-auth]
+version = "0.4.3"
 git = "https://github.com/stellar/rs-soroban-sdk"
-rev = "980778e"
-
-[patch."https://github.com/stellar/rs-soroban-sdk"]
-soroban-sdk = { path = "../rs-soroban-sdk/soroban-sdk" }
-soroban-spec = { path = "../rs-soroban-sdk/soroban-spec" }
-soroban-account = { path = "../rs-soroban-sdk/soroban-account" }
-
+rev = "e7910c7057088b3418d84af04f2c04313d0c756f"
