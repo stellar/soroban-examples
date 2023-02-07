@@ -2,7 +2,30 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - init: |
+  - name: Futurenet
+    init: |
+      docker pull stellar/quickstart:soroban-dev
+    command: |
+      docker run --rm -it \
+      --name stellar \
+      -p 8000:8000 \
+      stellar/quickstart:soroban-dev \
+      --futurenet \
+      --enable-soroban-rpc
+  # This "CLI - Futurenet" task opens a terminal for you to interact with the
+  # futurenet network.
+  - name: CLI - Futurenet
+    # We specify some required environment variables for use on the futurenet.
+    env:
+      # This can be set by the user, but this terminal is dedicated to futurenet so set for convenience.
+      SOROBAN_RPC_URL: "http://127.0.0.1:8000/soroban/rpc"
+      SOROBAN_NETWORK_PASSPHRASE: "Test SDF Future Network ; October 2022"
+    # To keep things tidy, we clear the terminal from the previous output.
+    command: |
+      clear
+  - name: CLI - Sandbox
+    init: |
+      cargo clean
       cargo fetch
       make build test
     command: |
@@ -12,7 +35,6 @@ tasks:
       gp open increment/src/test.rs
       gp open README.md
       soroban invoke --id 1 --wasm target/wasm32-unknown-unknown/release/soroban_increment_contract.wasm --fn increment
-
 vscode:
   extensions:
     - rust-lang.rust-analyzer
@@ -24,3 +46,14 @@ github:
     addComment: true
     pullRequests: true
     pullRequestsFromForks: true
+ports:
+  # Your quickstart node has a Horizon API server and an RPC endpoint, both
+  # listening on port 8000. It's publicly accessible through the internet.
+  - name: Futurenet
+    port: 8000
+    visibility: public
+    onOpen: ignore
+  # This port is open for "Something with cargo test I think"??
+  - port: 4226
+    visibility: private
+    onOpen: ignore
