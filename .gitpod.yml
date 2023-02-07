@@ -8,7 +8,6 @@ tasks:
     command: |
       docker run --rm -it \
       --name stellar \
-      --platform linux/amd64 \
       -p 8000:8000 \
       stellar/quickstart:soroban-dev \
       --futurenet \
