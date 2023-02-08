@@ -1,20 +1,19 @@
-use soroban_auth::Identifier;
-use soroban_sdk::contracttype;
+use soroban_sdk::{contracttype, Address};
 
 #[derive(Clone)]
 #[contracttype]
 pub struct AllowanceDataKey {
-    pub from: Identifier,
-    pub spender: Identifier,
+    pub from: Address,
+    pub spender: Address,
 }
 
 #[derive(Clone)]
 #[contracttype]
 pub enum DataKey {
     Allowance(AllowanceDataKey),
-    Balance(Identifier),
-    Nonce(Identifier),
-    State(Identifier),
+    Balance(Address),
+    Nonce(Address),
+    State(Address),
     Admin,
     Decimals,
     Name,
