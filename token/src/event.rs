@@ -1,4 +1,4 @@
-use soroban_sdk::{symbol, Env, Address};
+use soroban_sdk::{symbol, Address, Env};
 
 pub(crate) fn incr_allow(e: &Env, from: Address, to: Address, amount: i128) {
     let topics = (symbol!("incr_allow"), from, to);

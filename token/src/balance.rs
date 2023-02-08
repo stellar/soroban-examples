@@ -1,5 +1,5 @@
 use crate::storage_types::DataKey;
-use soroban_sdk::{Env, Address};
+use soroban_sdk::{Address, Env};
 
 pub fn read_balance(e: &Env, addr: Address) -> i128 {
     let key = DataKey::Balance(addr);

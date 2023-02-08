@@ -1,5 +1,5 @@
 use crate::storage_types::{AllowanceDataKey, DataKey};
-use soroban_sdk::{Env, Address};
+use soroban_sdk::{Address, Env};
 
 pub fn read_allowance(e: &Env, from: Address, spender: Address) -> i128 {
     let key = DataKey::Allowance(AllowanceDataKey { from, spender });
