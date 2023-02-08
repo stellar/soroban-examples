@@ -1,27 +1,26 @@
 [workspace]
 resolver = "2"
 
-members = [
+members = [   
     "hello_world",
     "increment",
     "auth",
-    "auth_advanced",
     "custom_types",
     "cross_contract/contract_a",
     "cross_contract/contract_b",
     "deployer/contract",
     "deployer/deployer",
-    "liquidity_pool",
-    "liquidity_pool_router",
+    #"liquidity_pool",
+    #"liquidity_pool_router",
     "single_offer",
-    "single_offer_xfer_from",
-    "single_offer_router",
     "events",
-    "timelock",
-    "token",
+    #"token",
     "logging",
-    "errors",
-    "wallet",
+    "errors", 
+    "timelock",
+    "atomic_swap",
+    "atomic_multiswap",
+    "account",
     "alloc",
 ]
 
@@ -40,11 +39,11 @@ codegen-units = 1
 lto = true
 
 [workspace.dependencies.soroban-sdk]
-version = "0.4.3"
+version = "0.5.0"
 git = "https://github.com/stellar/rs-soroban-sdk"
-rev = "e1c3de3"
+rev = "bb986415977892c724f8fe0c37f38c2ae14deb31"
 
 [workspace.dependencies.soroban-auth]
-version = "0.4.3"
+version = "0.5.0"
 git = "https://github.com/stellar/rs-soroban-sdk"
-rev = "e1c3de3"
+rev = "bb986415977892c724f8fe0c37f38c2ae14deb31"

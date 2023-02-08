@@ -1,19 +1,18 @@
 [package]
-name = "soroban-single-offer-contract-xfer-from"
+name = "soroban-atomic-multiswap-contract"
 version = "0.0.0"
+authors = ["Stellar Development Foundation <info@stellar.org>"]
+license = "Apache-2.0"
 edition = "2021"
 publish = false
 
 [lib]
 crate-type = ["cdylib"]
-
-[features]
-testutils = ["soroban-sdk/testutils", "soroban-auth/testutils"]
+doctest = false
 
 [dependencies]
 soroban-sdk = { workspace = true }
-soroban-auth = { workspace = true }
 
 [dev_dependencies]
 soroban-sdk = { workspace = true, features = ["testutils"] }
-soroban-auth = { workspace = true, features = ["testutils"] }
+assert_unordered = "0.3.5"

@@ -7,15 +7,9 @@ publish = false
 [lib]
 crate-type = ["cdylib"]
 
-[features]
-token-wasm = []
-testutils = ["soroban-sdk/testutils", "soroban-auth/testutils"]
-
 [dependencies]
 soroban-sdk = { workspace = true }
-soroban-auth = { workspace = true }
 num-integer = { version = "0.1.45", default-features = false, features = ["i128"] }
 
 [dev_dependencies]
 soroban-sdk = { workspace = true, features = ["testutils"] }
-soroban-auth = { workspace = true, features = ["testutils"] }

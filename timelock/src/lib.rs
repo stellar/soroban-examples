@@ -6,13 +6,11 @@
 //! For simplicity, the contract only supports invoker-based auth.
 #![no_std]
 
-use soroban_sdk::{contractimpl, contracttype, BytesN, Env, Vec};
+use soroban_sdk::{contractimpl, contracttype, Address, BytesN, Env, Vec};
 
 mod token {
     soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
 }
-
-use token::{Identifier, Signature};
 
 #[derive(Clone)]
 #[contracttype]
@@ -40,7 +38,7 @@ pub struct TimeBound {
 pub struct ClaimableBalance {
     pub token: BytesN<32>,
     pub amount: i128,
-    pub claimants: Vec<Identifier>,
+    pub claimants: Vec<Address>,
     pub time_bound: TimeBound,
 }
 
@@ -57,21 +55,14 @@ fn check_time_bound(env: &Env, time_bound: &TimeBound) -> bool {
     }
 }
 
-// Contract usage pattern (pseudocode):
-// 1. Depositor calls `token.approve(depositor_auth, claimable_balance_contract, 100)`
-//    to allow contract to withdraw the needed amount of token.
-// 2. Depositor calls `deposit(token_id, 100, claimants, time bound)`. Contract
-//    withdraws the provided token amount and stores it until one of the claimants
-//    claims it.
-// 3. Claimant calls `claim()` and if time/auth conditons are passed
-//    receives the balance.
 #[contractimpl]
 impl ClaimableBalanceContract {
     pub fn deposit(
         env: Env,
+        from: Address,
         token: BytesN<32>,
         amount: i128,
-        claimants: Vec<Identifier>,
+        claimants: Vec<Address>,
         time_bound: TimeBound,
     ) {
         if claimants.len() > 10 {
@@ -80,12 +71,12 @@ impl ClaimableBalanceContract {
         if is_initialized(&env) {
             panic!("contract has been already initialized");
         }
-        if amount < 0 {
-            panic!("negative amount is not allowed")
-        }
+        // Make sure `from` address authorized the deposit call with all the
+        // arguments.
+        from.require_auth();
 
-        // Transfer token to this contract address.
-        transfer_from_account_to_contract(&env, &token, &env.invoker().into(), &amount);
+        // Transfer token from `from` to this contract address.
+        token::Client::new(&env, &token).xfer(&from, &env.current_contract_address(), &amount);
         // Store all the necessary info to allow one of the claimants to claim it.
         env.storage().set(
             &DataKey::Balance,
@@ -102,7 +93,11 @@ impl ClaimableBalanceContract {
         env.storage().set(&DataKey::Init, &());
     }
 
-    pub fn claim(env: Env) {
+    pub fn claim(env: Env, claimant: Address) {
+        // Make sure claimant has authorized this call, which ensures their
+        // identity.
+        claimant.require_auth();
+
         let claimable_balance: ClaimableBalance =
             env.storage().get_unchecked(&DataKey::Balance).unwrap();
 
@@ -110,18 +105,16 @@ impl ClaimableBalanceContract {
             panic!("time predicate is not fulfilled");
         }
 
-        let claimant_id = env.invoker().into();
         let claimants = &claimable_balance.claimants;
-        if !claimants.contains(&claimant_id) {
+        if !claimants.contains(&claimant) {
             panic!("claimant is not allowed to claim this balance");
         }
 
         // Transfer the stored amount of token to claimant after passing
         // all the checks.
-        transfer_from_contract_to_account(
-            &env,
-            &claimable_balance.token,
-            &claimant_id,
+        token::Client::new(&env, &claimable_balance.token).xfer(
+            &env.current_contract_address(),
+            &claimant,
             &claimable_balance.amount,
         );
         // Remove the balance entry to prevent any further claims.
@@ -131,30 +124,6 @@ impl ClaimableBalanceContract {
 
 fn is_initialized(env: &Env) -> bool {
     env.storage().has(&DataKey::Init)
-}
-
-fn get_contract_id(e: &Env) -> Identifier {
-    Identifier::Contract(e.get_current_contract())
-}
-
-fn transfer_from_account_to_contract(
-    e: &Env,
-    token_id: &BytesN<32>,
-    from: &Identifier,
-    amount: &i128,
-) {
-    let client = token::Client::new(e, token_id);
-    client.xfer_from(&Signature::Invoker, &0, from, &get_contract_id(e), amount);
-}
-
-fn transfer_from_contract_to_account(
-    e: &Env,
-    token_id: &BytesN<32>,
-    to: &Identifier,
-    amount: &i128,
-) {
-    let client = token::Client::new(e, token_id);
-    client.xfer(&Signature::Invoker, &0, to, amount);
 }
 
 mod test;
