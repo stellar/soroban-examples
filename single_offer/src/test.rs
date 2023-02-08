@@ -66,8 +66,11 @@ fn test() {
     // Deposit 100 sell_token from seller into offer.
     sell_token.xfer(&seller, &offer_address, &100);
 
+    // Try trading 20 buy_token for at least 11 sell_token - that wouldn't
+    // succeed because the offer price would result in 10 sell_token.
+    assert!(offer.try_trade(&buyer, &20_i128, &11_i128).is_err());
     // Buyer trades 20 buy_token for 10 sell_token.
-    offer.trade(&buyer, &20_i128);
+    offer.trade(&buyer, &20_i128, &10_i128);
     // Verify that authorization is required for the buyer.
     assert_eq!(
         e.recorded_top_authorizations(),
@@ -75,7 +78,7 @@ fn test() {
             buyer.clone(),
             offer.contract_id.clone(),
             symbol!("trade"),
-            (&buyer, 20_i128).into_val(&e)
+            (&buyer, 20_i128, 10_i128).into_val(&e)
         )]
     );
 
@@ -116,7 +119,7 @@ fn test() {
     );
 
     // Buyer trades 10 buy_token for 10 sell_token.
-    offer.trade(&buyer, &10_i128);
+    offer.trade(&buyer, &10_i128, &9_i128);
     assert_eq!(sell_token.balance(&seller), 970);
     assert_eq!(sell_token.balance(&buyer), 20);
     assert_eq!(sell_token.balance(&offer_address), 10);

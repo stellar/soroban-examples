@@ -79,9 +79,11 @@ impl SingleOffer {
 
     // Trades `buy_token_amount` of buy_token from buyer for `sell_token` amount
     // defined by the price.
+    // `min_sell_amount` defines a lower bound on the price that the buyer would
+    // accept.
     // Buyer needs to authorize the `trade` call and internal `xfer` call to
     // the contract address.
-    pub fn trade(e: Env, buyer: Address, buy_token_amount: i128) {
+    pub fn trade(e: Env, buyer: Address, buy_token_amount: i128, min_sell_token_amount: i128) {
         // Buyer needs to authorize the trade.
         buyer.require_auth();
 
@@ -95,6 +97,10 @@ impl SingleOffer {
             .checked_mul(offer.sell_price as i128)
             .unwrap_optimized()
             / offer.buy_price as i128;
+
+        if sell_token_amount < min_sell_token_amount {
+            panic!("price is too low");
+        }
 
         let contract = e.current_contract_address();
 
