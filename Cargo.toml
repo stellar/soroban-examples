@@ -14,7 +14,7 @@ members = [
     #"liquidity_pool_router",
     "single_offer",
     "events",
-    #"token",
+    "token",
     "logging",
     "errors", 
     "timelock",
