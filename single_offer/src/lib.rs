@@ -1,10 +1,9 @@
+//! This contract implements trading of one token pair between one seller and
+//! multiple buyer.
+//! It demonstrates one of the ways of how trading might be implemented.
 #![no_std]
 
-mod test;
-pub mod testutils;
-
-use soroban_sdk::{contractimpl, contracttype, BytesN, Env};
-use token::{Identifier, Signature};
+use soroban_sdk::{contractimpl, contracttype, unwrap::UnwrapOptimized, Address, BytesN, Env};
 
 mod token {
     soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
@@ -13,202 +12,152 @@ mod token {
 #[derive(Clone)]
 #[contracttype]
 pub enum DataKey {
-    SellToken,
-    BuyToken,
-    Admin,
-    Price,
+    Offer,
 }
 
-// Price is 1 unit of selling in terms of buying. For example, if you wanted
-// to sell 30 XLM and buy 5 BTC, the price would be Price{n: 5, d: 30}.
+// Represents an offer managed by the SingleOffer contract.
+// If a seller wants to sell 1000 XLM for 100 USDC the `sell_price` would be 1000
+// and `buy_price` would be 100 (or 100 and 10, or any other pair of integers
+// in 10:1 ratio).
 #[derive(Clone)]
 #[contracttype]
-pub struct Price {
-    pub n: u32,
-    pub d: u32,
-}
-
-fn get_contract_id(e: &Env) -> Identifier {
-    Identifier::Contract(e.get_current_contract())
-}
-
-fn get_sell_token(e: &Env) -> BytesN<32> {
-    e.storage().get_unchecked(&DataKey::SellToken).unwrap()
-}
-
-fn get_buy_token(e: &Env) -> BytesN<32> {
-    e.storage().get_unchecked(&DataKey::BuyToken).unwrap()
-}
-
-fn get_balance(e: &Env, contract_id: BytesN<32>) -> i128 {
-    token::Client::new(e, &contract_id).balance(&get_contract_id(e))
-}
-
-fn get_balance_buy(e: &Env) -> i128 {
-    get_balance(e, get_buy_token(e))
-}
-
-fn put_sell_token(e: &Env, contract_id: BytesN<32>) {
-    e.storage().set(&DataKey::SellToken, &contract_id);
-}
-
-fn put_buy_token(e: &Env, contract_id: BytesN<32>) {
-    e.storage().set(&DataKey::BuyToken, &contract_id);
-}
-
-fn put_price(e: &Env, price: Price) {
-    e.storage().set(&DataKey::Price, &price);
-}
-
-fn load_price(e: &Env) -> Price {
-    e.storage().get_unchecked(&DataKey::Price).unwrap()
-}
-
-fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: i128) {
-    let client = token::Client::new(e, &contract_id);
-    client.xfer(&Signature::Invoker, &0, &to, &amount);
-}
-
-fn transfer_sell(e: &Env, to: Identifier, amount: i128) {
-    transfer(e, get_sell_token(e), to, amount);
-}
-
-fn transfer_buy(e: &Env, to: Identifier, amount: i128) {
-    transfer(e, get_buy_token(e), to, amount);
-}
-
-fn has_administrator(e: &Env) -> bool {
-    let key = DataKey::Admin;
-    e.storage().has(&key)
-}
-
-fn read_administrator(e: &Env) -> Identifier {
-    let key = DataKey::Admin;
-    e.storage().get_unchecked(&key).unwrap()
-}
-
-fn write_administrator(e: &Env, id: Identifier) {
-    let key = DataKey::Admin;
-    e.storage().set(&key, &id);
-}
-
-pub fn check_admin(e: &Env, auth_id: &Identifier) {
-    if *auth_id != read_administrator(e) {
-        panic!("not authorized by admin")
-    }
-}
-
-/*
-How to use this contract to trade
-
-1. call initialize(seller, USDC_ADDR, BTC_ADDR, 1, 10). Seller is now the admin
-2. seller sends 20 USDC to this contracts address.
-3. buyer sends 1 BTC to this contracts address AND calls trade(buyer, 10). This contract will send 1 BTC to
-   seller and 10 USDC to buyer. If these two actions are not done atomically, then the 1 BTC sent to this
-   address can be taken by another user calling trade.
-4. call withdraw(sellerAuth, 10). This will send the remaining 10 USDC in the contract back to seller.
-*/
-pub trait SingleOfferTrait {
-    // See comment above the Price struct for information on pricing
-    // Sets the admin, the sell/buy tokens, and the price
-    fn initialize(
-        e: Env,
-        admin: Identifier,
-        sell_token: BytesN<32>,
-        buy_token: BytesN<32>,
-        n: u32,
-        d: u32,
-    );
-
-    // Sends the full balance of this contracts buy_token balance (let's call this BuyB) to the admin, and
-    // also sends buyB * d / n of the sell_token to the "to" identifier specified in trade call. Note that
-    // the seller and the buyer need to transfer the sell_token and buy_token to this contract prior to calling
-    // trade. Due to this and the fact that the buyer is a parameter to trade, the buyer must tranfer the buy_token
-    // to the contract and call trade in the same transaction for safety.
-    fn trade(e: Env, to: Identifier, min: i128);
-
-    // Sends amount of sell_token from this contract to the admin. Must be authorized by admin
-    fn withdraw(e: Env, amount: i128);
-
-    // Updates the price. Must be authorized by admin
-    fn updt_price(e: Env, n: u32, d: u32);
-
-    // Get the current price
-    fn get_price(e: Env) -> Price;
-
-    fn get_sell(e: Env) -> BytesN<32>;
-
-    fn get_buy(e: Env) -> BytesN<32>;
+pub struct Offer {
+    // Owner of this offer. Sells sell_token to get buy_token.
+    pub seller: Address,
+    pub sell_token: BytesN<32>,
+    pub buy_token: BytesN<32>,
+    // Seller-defined price of the sell token in arbitrary units.
+    pub sell_price: u32,
+    // Seller-defined price of the buy token in arbitrary units.
+    pub buy_price: u32,
 }
 
 pub struct SingleOffer;
 
+/*
+How this contract should be used:
+
+1. Call `create` once to create the offer and register its seller.
+2. Seller may transfer arbitrary amounts of the `sell_token` for sale to the
+   contract address for trading. They may also update the offer price.
+3. Buyers may call `trade` to trade with the offer. The contract will
+   immediately perform the trade and send the respective amounts of `buy_token`
+   and `sell_token` to the seller and buyer respectively.
+4. Seller may call `withdraw` to claim any remaining `sell_token` balance.
+*/
 #[contractimpl]
-impl SingleOfferTrait for SingleOffer {
-    fn initialize(
+impl SingleOffer {
+    // Creates the offer for seller for the given token pair and initial price.
+    // See comment above the `Offer` struct for information on pricing.
+    pub fn create(
         e: Env,
-        admin: Identifier,
+        seller: Address,
         sell_token: BytesN<32>,
         buy_token: BytesN<32>,
-        n: u32,
-        d: u32,
+        sell_price: u32,
+        buy_price: u32,
     ) {
-        if has_administrator(&e) {
-            panic!("admin is already set");
+        if e.storage().has(&DataKey::Offer) {
+            panic!("offer is already created");
+        }
+        if buy_price == 0 || sell_price == 0 {
+            panic!("zero price is not allowed");
+        }
+        // Authorize the `create` call by seller to verify their identity.
+        seller.require_auth();
+        write_offer(
+            &e,
+            &Offer {
+                seller,
+                sell_token,
+                buy_token,
+                sell_price,
+                buy_price,
+            },
+        );
+    }
+
+    // Trades `buy_token_amount` of buy_token from buyer for `sell_token` amount
+    // defined by the price.
+    // `min_sell_amount` defines a lower bound on the price that the buyer would
+    // accept.
+    // Buyer needs to authorize the `trade` call and internal `xfer` call to
+    // the contract address.
+    pub fn trade(e: Env, buyer: Address, buy_token_amount: i128, min_sell_token_amount: i128) {
+        // Buyer needs to authorize the trade.
+        buyer.require_auth();
+
+        // Load the offer and prepare the token clients to do the trade.
+        let offer = load_offer(&e);
+        let sell_token_client = token::Client::new(&e, &offer.sell_token);
+        let buy_token_client = token::Client::new(&e, &offer.buy_token);
+
+        // Compute the amount of token that buyer needs to receive.
+        let sell_token_amount = buy_token_amount
+            .checked_mul(offer.sell_price as i128)
+            .unwrap_optimized()
+            / offer.buy_price as i128;
+
+        if sell_token_amount < min_sell_token_amount {
+            panic!("price is too low");
         }
 
-        if d == 0 {
-            panic!("d is zero but cannot be zero");
+        let contract = e.current_contract_address();
+
+        // Perform the trade in 3 `xfer` steps.
+        // Note, that we don't need to verify any balances - the contract would
+        // just trap and roll back in case if any of the transfers fails for
+        // any reason, including insufficient balance.
+
+        // Transfer the `buy_token` from buyer to this contract.
+        // This `xfer` call should be authorized by buyer.
+        // This could as well be a direct transfer to the seller, but sending to
+        // the contract address allows building more transparent signature
+        // payload where the buyer doesn't need to worry about sending token to
+        // some 'unknown' third party.
+        buy_token_client.xfer(&buyer, &contract, &buy_token_amount);
+        // Transfer the `sell_token` from contract to buyer.
+        sell_token_client.xfer(&contract, &buyer, &sell_token_amount);
+        // Transfer the `buy_token` to the seller immediately.
+        buy_token_client.xfer(&contract, &offer.seller, &buy_token_amount);
+    }
+
+    // Sends amount of token from this contract to the seller.
+    // This is intentionally flexible so that the seller can withdraw any
+    // outstanding balance of the contract (in case if they mistakenly
+    // transferred wrong token to it).
+    // Must be authorized by seller.
+    pub fn withdraw(e: Env, token: BytesN<32>, amount: i128) {
+        let offer = load_offer(&e);
+        offer.seller.require_auth();
+        token::Client::new(&e, &token).xfer(&e.current_contract_address(), &offer.seller, &amount);
+    }
+
+    // Updates the price.
+    // Must be authorized by seller.
+    pub fn updt_price(e: Env, sell_price: u32, buy_price: u32) {
+        if buy_price == 0 || sell_price == 0 {
+            panic!("zero price is not allowed");
         }
-
-        write_administrator(&e, admin);
-
-        put_sell_token(&e, sell_token);
-        put_buy_token(&e, buy_token);
-        put_price(&e, Price { n, d });
+        let mut offer = load_offer(&e);
+        offer.seller.require_auth();
+        offer.sell_price = sell_price;
+        offer.buy_price = buy_price;
+        write_offer(&e, &offer);
     }
 
-    fn trade(e: Env, to: Identifier, min: i128) {
-        let balance_buy_token = get_balance_buy(&e);
-
-        let price = load_price(&e);
-
-        let amount = balance_buy_token * price.d as i128 / price.n as i128;
-
-        if amount < min {
-            panic!("will receive less than min");
-        }
-
-        transfer_sell(&e, to, amount);
-
-        let admin = read_administrator(&e);
-        transfer_buy(&e, admin, balance_buy_token);
-    }
-
-    fn withdraw(e: Env, amount: i128) {
-        let invoker = e.invoker().into();
-        check_admin(&e, &invoker);
-        transfer_sell(&e, invoker, amount);
-    }
-
-    fn updt_price(e: Env, n: u32, d: u32) {
-        check_admin(&e, &e.invoker().into());
-
-        if d == 0 {
-            panic!("d is zero but cannot be zero")
-        }
-        put_price(&e, Price { n, d });
-    }
-
-    fn get_price(e: Env) -> Price {
-        load_price(&e)
-    }
-
-    fn get_sell(e: Env) -> BytesN<32> {
-        get_sell_token(&e)
-    }
-
-    fn get_buy(e: Env) -> BytesN<32> {
-        get_buy_token(&e)
+    // Returns the current state of the offer.
+    pub fn get_offer(e: Env) -> Offer {
+        load_offer(&e)
     }
 }
+
+fn load_offer(e: &Env) -> Offer {
+    e.storage().get_unchecked(&DataKey::Offer).unwrap()
+}
+
+fn write_offer(e: &Env, offer: &Offer) {
+    e.storage().set(&DataKey::Offer, offer);
+}
+
+mod test;
