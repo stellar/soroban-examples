@@ -1,13 +1,11 @@
 #![no_std]
 
 mod test;
-pub mod testutils;
 mod token;
 
 use num_integer::Roots;
-use soroban_sdk::{contractimpl, Bytes, BytesN, ConversionError, Env, RawVal, TryFromVal};
+use soroban_sdk::{contractimpl, Address, Bytes, BytesN, ConversionError, Env, RawVal, TryFromVal};
 use token::create_contract;
-use token::{Identifier, Signature};
 
 #[derive(Clone, Copy)]
 #[repr(u32)]
@@ -26,10 +24,6 @@ impl TryFromVal<Env, DataKey> for RawVal {
     fn try_from_val(_env: &Env, v: &DataKey) -> Result<Self, Self::Error> {
         Ok((*v as u32).into())
     }
-}
-
-fn get_contract_id(e: &Env) -> Identifier {
-    Identifier::Contract(e.get_current_contract())
 }
 
 fn get_token_a(e: &Env) -> BytesN<32> {
@@ -57,7 +51,7 @@ fn get_reserve_b(e: &Env) -> i128 {
 }
 
 fn get_balance(e: &Env, contract_id: BytesN<32>) -> i128 {
-    token::Client::new(e, &contract_id).balance(&get_contract_id(e))
+    token::Client::new(e, &contract_id).balance(&e.current_contract_address())
 }
 
 fn get_balance_a(e: &Env) -> i128 {
@@ -100,46 +94,58 @@ fn burn_shares(e: &Env, amount: i128) {
     let total = get_total_shares(e);
     let share_contract_id = get_token_share(e);
 
-    token::Client::new(e, &share_contract_id).clawback(
-        &Signature::Invoker,
-        &0,
-        &get_contract_id(e),
-        &amount,
-    );
+    token::Client::new(e, &share_contract_id).burn(&e.current_contract_address(), &amount);
     put_total_shares(e, total - amount);
 }
 
-fn mint_shares(e: &Env, to: Identifier, amount: i128) {
+fn mint_shares(e: &Env, to: Address, amount: i128) {
     let total = get_total_shares(e);
     let share_contract_id = get_token_share(e);
 
-    token::Client::new(e, &share_contract_id).mint(&Signature::Invoker, &0, &to, &amount);
+    token::Client::new(e, &share_contract_id).mint(&e.current_contract_address(), &to, &amount);
 
     put_total_shares(e, total + amount);
 }
 
-fn transfer(e: &Env, contract_id: BytesN<32>, to: Identifier, amount: i128) {
-    token::Client::new(e, &contract_id).xfer(&Signature::Invoker, &0, &to, &amount);
+fn transfer(e: &Env, contract_id: BytesN<32>, to: Address, amount: i128) {
+    token::Client::new(e, &contract_id).xfer(&e.current_contract_address(), &to, &amount);
 }
 
-fn transfer_a(e: &Env, to: Identifier, amount: i128) {
+fn transfer_a(e: &Env, to: Address, amount: i128) {
     transfer(e, get_token_a(e), to, amount);
 }
 
-fn transfer_b(e: &Env, to: Identifier, amount: i128) {
+fn transfer_b(e: &Env, to: Address, amount: i128) {
     transfer(e, get_token_b(e), to, amount);
 }
 
-/*
-How to use this contract to swap
+fn get_deposit_amounts(
+    desired_a: i128,
+    min_a: i128,
+    desired_b: i128,
+    min_b: i128,
+    reserve_a: i128,
+    reserve_b: i128,
+) -> (i128, i128) {
+    if reserve_a == 0 && reserve_b == 0 {
+        return (desired_a, desired_b);
+    }
 
-1. call initialize(provider, USDC_ADDR, BTC_ADDR).
-2. provider sends 100 USDC and 100 BTC to this contracts address and calls deposit(provider) in the same transaction.
-   provider now has 100 pool share tokens, and this contract has 100 USDC and 100 BTC.
-3. swapper sends 100 USDC to this contract and calls swap(swapper, 0, 49) in the same transaction. 49 BTC will be sent to swapper.
-4. provider sends 100 pool share tokens to this contract, and then calls withdraw(provider). 51 BTC and 200 USDC will be sent to
-   provider, and the 100 pool share tokens in this contract will be burned.
-*/
+    let amount_b = desired_a * reserve_b / reserve_a;
+    if amount_b <= desired_b {
+        if amount_b < min_b {
+            panic!("amount_b less than min")
+        }
+        (desired_a, amount_b)
+    } else {
+        let amount_a = desired_b * reserve_a / reserve_b;
+        if amount_a > desired_a || desired_a < min_a {
+            panic!("amount_a invalid")
+        }
+        (amount_a, desired_b)
+    }
+}
+
 pub trait LiquidityPoolTrait {
     // Sets the token contract addresses for this pool
     fn initialize(e: Env, token_wasm_hash: BytesN<32>, token_a: BytesN<32>, token_b: BytesN<32>);
@@ -147,25 +153,20 @@ pub trait LiquidityPoolTrait {
     // Returns the token contract address for the pool share token
     fn share_id(e: Env) -> BytesN<32>;
 
-    // Mints pool shares for the "to" Identifier. The amount minted is determined based on the difference
-    // between the reserves stored by this contract, and the actual balance of token_a and token_b for this
-    // contract. This means that an account calling deposit must first send token_a and token_b to this contract,
-    // and them call deposit in the same transaction. If these steps aren't done atomically, then the depositer
-    // could lose their tokens.
-    fn deposit(e: Env, to: Identifier);
+    // Deposits token_a and token_b. Also mints pool shares for the "to" Identifier. The amount minted
+    // is determined based on the difference between the reserves stored by this contract, and
+    // the actual balance of token_a and token_b for this contract.
+    fn deposit(e: Env, to: Address, desired_a: i128, min_a: i128, desired_b: i128, min_b: i128);
 
-    // Does a swap and sends out_a of token_a and out_b of token_b to the "to" Identifier if the constant product invariant still
-    // holds. The difference between the balance and reserve for each token in this contract determines the amounts that
-    // can be swapped. For this to be used safely, the swapper must send tokens to this contract and call swap in the
-    // same transaction. If these steps aren't done atomically, then the swapper could lose their tokens.
-    fn swap(e: Env, to: Identifier, out_a: i128, out_b: i128);
+    // If "buy_a" is true, the swap will buy token_a and sell token_b. This is flipped if "buy_a" is false.
+    // "out" is the amount being bought, with in_max being a safety to make sure you receive at least that amount.
+    // swap will xfer the selling token "to" to this contract, and then the contract will xfer the buying token to "to".
+    fn swap(e: Env, to: Address, buy_a: bool, out: i128, in_max: i128);
 
-    // Burns all pool share tokens in this contract, and sends the corresponding amount of token_a and token_b to
-    // "to". For this to be used safely, the withdrawer must send the pool share token to this contract and call
-    // withdraw in the same transaction. If these steps aren't done atomically, then the withdrawer
-    // could lose their tokens.
+    // xfers share_amount of pool share tokens to this contract, burns all pools share tokens in this contracts, and sends the
+    // corresponding amount of token_a and token_b to "to".
     // Returns amount of both tokens withdrawn
-    fn withdraw(e: Env, to: Identifier) -> (i128, i128);
+    fn withdraw(e: Env, to: Address, share_amount: i128, min_a: i128, min_b: i128) -> (i128, i128);
 
     fn get_rsrvs(e: Env) -> (i128, i128);
 }
@@ -181,10 +182,10 @@ impl LiquidityPoolTrait for LiquidityPool {
 
         let share_contract_id = create_contract(&e, &token_wasm_hash, &token_a, &token_b);
         token::Client::new(&e, &share_contract_id).initialize(
-            &get_contract_id(&e),
+            &e.current_contract_address(),
             &7u32,
-            &Bytes::from_slice(&e, b"name"),
-            &Bytes::from_slice(&e, b"symbol"),
+            &Bytes::from_slice(&e, b"Pool Share Token"),
+            &Bytes::from_slice(&e, b"POOL"),
         );
 
         put_token_a(&e, token_a);
@@ -199,8 +200,22 @@ impl LiquidityPoolTrait for LiquidityPool {
         get_token_share(&e)
     }
 
-    fn deposit(e: Env, to: Identifier) {
+    fn deposit(e: Env, to: Address, desired_a: i128, min_a: i128, desired_b: i128, min_b: i128) {
+        // Depositor needs to authorize the deposit
+        to.require_auth();
+
         let (reserve_a, reserve_b) = (get_reserve_a(&e), get_reserve_b(&e));
+
+        // Calculate deposit amounts
+        let amounts = get_deposit_amounts(desired_a, min_a, desired_b, min_b, reserve_a, reserve_b);
+
+        let token_a_client = token::Client::new(&e, &get_token_a(&e));
+        let token_b_client = token::Client::new(&e, &get_token_b(&e));
+
+        token_a_client.xfer(&to, &e.current_contract_address(), &amounts.0);
+        token_b_client.xfer(&to, &e.current_contract_address(), &amounts.1);
+
+        // Now calculate how many new pool shares to mint
         let (balance_a, balance_b) = (get_balance_a(&e), get_balance_b(&e));
         let total_shares = get_total_shares(&e);
 
@@ -218,8 +233,33 @@ impl LiquidityPoolTrait for LiquidityPool {
         put_reserve_b(&e, balance_b);
     }
 
-    fn swap(e: Env, to: Identifier, out_a: i128, out_b: i128) {
+    fn swap(e: Env, to: Address, buy_a: bool, out: i128, in_max: i128) {
+        to.require_auth();
+
         let (reserve_a, reserve_b) = (get_reserve_a(&e), get_reserve_b(&e));
+        let (reserve_sell, reserve_buy) = if buy_a {
+            (reserve_b, reserve_a)
+        } else {
+            (reserve_a, reserve_b)
+        };
+
+        // First calculate how much needs to be sold to buy amount out from the pool
+        let n = reserve_sell * out * 1000;
+        let d = (reserve_buy - out) * 997;
+        let sell_amount = (n / d) + 1;
+        if sell_amount > in_max {
+            panic!("in amount is over max")
+        }
+
+        // Xfer the amount being sold to the contract
+        let sell_token = if buy_a {
+            get_token_b(&e)
+        } else {
+            get_token_a(&e)
+        };
+        let sell_token_client = token::Client::new(&e, &sell_token);
+        sell_token_client.xfer(&to, &e.current_contract_address(), &sell_amount);
+
         let (balance_a, balance_b) = (get_balance_a(&e), get_balance_b(&e));
 
         // residue_numerator and residue_denominator are the amount that the invariant considers after
@@ -237,6 +277,9 @@ impl LiquidityPoolTrait for LiquidityPool {
             };
             residue_denominator * reserve + adj_delta
         };
+
+        let (out_a, out_b) = if buy_a { (out, 0) } else { (0, out) };
+
         let new_inv_a = new_invariant_factor(balance_a, reserve_a, out_a);
         let new_inv_b = new_invariant_factor(balance_b, reserve_b, out_b);
         let old_inv_a = residue_denominator * reserve_a;
@@ -246,19 +289,35 @@ impl LiquidityPoolTrait for LiquidityPool {
             panic!("constant product invariant does not hold");
         }
 
-        transfer_a(&e, to.clone(), out_a);
-        transfer_b(&e, to, out_b);
+        if buy_a {
+            transfer_a(&e, to, out_a);
+        } else {
+            transfer_b(&e, to, out_b);
+        }
+
         put_reserve_a(&e, balance_a - out_a);
         put_reserve_b(&e, balance_b - out_b);
     }
 
-    fn withdraw(e: Env, to: Identifier) -> (i128, i128) {
+    fn withdraw(e: Env, to: Address, share_amount: i128, min_a: i128, min_b: i128) -> (i128, i128) {
+        to.require_auth();
+
+        // First transfer the pool shares that need to be redeemed
+        let share_token_client = token::Client::new(&e, &get_token_share(&e));
+        share_token_client.xfer(&to, &e.current_contract_address(), &share_amount);
+
         let (balance_a, balance_b) = (get_balance_a(&e), get_balance_b(&e));
         let balance_shares = get_balance_shares(&e);
+
         let total_shares = get_total_shares(&e);
 
+        // Now calculate the withdraw amounts
         let out_a = (balance_a * balance_shares) / total_shares;
         let out_b = (balance_b * balance_shares) / total_shares;
+
+        if out_a < min_a || out_b < min_b {
+            panic!("min not satisfied");
+        }
 
         burn_shares(&e, balance_shares);
         transfer_a(&e, to.clone(), out_a);

@@ -7,6 +7,7 @@ test: build
 	cargo test --features testutils
 
 build:
+	cargo build --target wasm32-unknown-unknown --release -p soroban-token-contract
 	cargo build --target wasm32-unknown-unknown --release -p soroban-cross-contract-a-contract
 	cargo build --target wasm32-unknown-unknown --release -p soroban-atomic-swap-contract
 	cargo build --target wasm32-unknown-unknown --release
@@ -20,6 +21,7 @@ test-optimized: build-optimized
 	cargo test --features testutils
 
 build-optimized:
+	cargo +nightly build --target wasm32-unknown-unknown --release -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort -p soroban-token-contract
 	cargo +nightly build --target wasm32-unknown-unknown --release -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort -p soroban-cross-contract-a-contract
 	cargo +nightly build --target wasm32-unknown-unknown --release -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort -p soroban-atomic-swap-contract
 	cargo +nightly build --target wasm32-unknown-unknown --release -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort
