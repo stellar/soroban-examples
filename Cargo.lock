@@ -999,6 +999,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "soroban-liquidity-pool-contract"
+version = "0.0.0"
+dependencies = [
+ "num-integer",
+ "soroban-sdk",
+]
+
+[[package]]
 name = "soroban-logging-contract"
 version = "0.0.0"
 dependencies = [
