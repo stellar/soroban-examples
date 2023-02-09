@@ -184,8 +184,8 @@ impl LiquidityPoolTrait for LiquidityPool {
         token::Client::new(&e, &share_contract_id).initialize(
             &e.current_contract_address(),
             &7u32,
-            &Bytes::from_slice(&e, b"name"),
-            &Bytes::from_slice(&e, b"symbol"),
+            &Bytes::from_slice(&e, b"Pool Share Token"),
+            &Bytes::from_slice(&e, b"POOL"),
         );
 
         put_token_a(&e, token_a);
@@ -237,16 +237,11 @@ impl LiquidityPoolTrait for LiquidityPool {
         to.require_auth();
 
         let (reserve_a, reserve_b) = (get_reserve_a(&e), get_reserve_b(&e));
-
-        let reserve_sell: i128;
-        let reserve_buy: i128;
-        if buy_a {
-            reserve_sell = reserve_b;
-            reserve_buy = reserve_a;
+        let (reserve_sell, reserve_buy) = if buy_a {
+            (reserve_b, reserve_a)
         } else {
-            reserve_sell = reserve_a;
-            reserve_buy = reserve_b;
-        }
+            (reserve_a, reserve_b)
+        };
 
         // First calculate how much needs to be sold to buy amount out from the pool
         let n = reserve_sell * out * 1000;
@@ -283,8 +278,7 @@ impl LiquidityPoolTrait for LiquidityPool {
             residue_denominator * reserve + adj_delta
         };
 
-        let out_a = if buy_a { out } else { 0 };
-        let out_b = if !buy_a { out } else { 0 };
+        let (out_a, out_b) = if buy_a { (out, 0) } else { (0, out) };
 
         let new_inv_a = new_invariant_factor(balance_a, reserve_a, out_a);
         let new_inv_b = new_invariant_factor(balance_b, reserve_b, out_b);
