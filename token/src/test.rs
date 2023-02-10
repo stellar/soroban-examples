@@ -1,4 +1,6 @@
 #![cfg(test)]
+#![allow(clippy::too_many_lines)]
+
 extern crate std;
 
 use crate::{contract::Token, TokenClient};
@@ -12,7 +14,7 @@ fn create_token(e: &Env, admin: &Address) -> TokenClient {
 
 #[test]
 fn test() {
-    let e: Env = Default::default();
+    let e: Env = Env::default();
 
     let admin1 = Address::random(&e);
     let admin2 = Address::random(&e);
@@ -96,10 +98,10 @@ fn test() {
             (&admin2, &user2, false).into_val(&e),
         )]
     );
-    assert_eq!(token.authorized(&user2), false);
+    assert!(!token.authorized(&user2));
 
     token.set_auth(&admin2, &user3, &true);
-    assert_eq!(token.authorized(&user3), true);
+    assert!(token.authorized(&user3));
 
     token.clawback(&admin2, &user3, &100);
     assert_eq!(
@@ -131,7 +133,7 @@ fn test() {
 
 #[test]
 fn test_burn() {
-    let e: Env = Default::default();
+    let e: Env = Env::default();
 
     let admin = Address::random(&e);
     let user1 = Address::random(&e);
@@ -175,7 +177,7 @@ fn test_burn() {
 #[test]
 #[should_panic(expected = "insufficient balance")]
 fn xfer_insufficient_balance() {
-    let e: Env = Default::default();
+    let e: Env = Env::default();
     let admin = Address::random(&e);
     let user1 = Address::random(&e);
     let user2 = Address::random(&e);
@@ -190,7 +192,7 @@ fn xfer_insufficient_balance() {
 #[test]
 #[should_panic(expected = "can't receive when deauthorized")]
 fn xfer_receive_deauthorized() {
-    let e: Env = Default::default();
+    let e: Env = Env::default();
     let admin = Address::random(&e);
     let user1 = Address::random(&e);
     let user2 = Address::random(&e);
@@ -206,7 +208,7 @@ fn xfer_receive_deauthorized() {
 #[test]
 #[should_panic(expected = "can't spend when deauthorized")]
 fn xfer_spend_deauthorized() {
-    let e: Env = Default::default();
+    let e: Env = Env::default();
     let admin = Address::random(&e);
     let user1 = Address::random(&e);
     let user2 = Address::random(&e);
@@ -222,7 +224,7 @@ fn xfer_spend_deauthorized() {
 #[test]
 #[should_panic(expected = "insufficient allowance")]
 fn xfer_from_insufficient_allowance() {
-    let e: Env = Default::default();
+    let e: Env = Env::default();
     let admin = Address::random(&e);
     let user1 = Address::random(&e);
     let user2 = Address::random(&e);
@@ -241,7 +243,7 @@ fn xfer_from_insufficient_allowance() {
 #[test]
 #[should_panic(expected = "already initialized")]
 fn initialize_already_initialized() {
-    let e: Env = Default::default();
+    let e: Env = Env::default();
     let admin = Address::random(&e);
     let token = create_token(&e, &admin);
 
@@ -251,7 +253,7 @@ fn initialize_already_initialized() {
 #[test]
 #[should_panic(expected = "Decimal must fit in a u8")]
 fn decimal_is_over_max() {
-    let e = Default::default();
+    let e = Env::default();
     let admin = Address::random(&e);
     let token = TokenClient::new(&e, &e.register_contract(None, Token {}));
     token.initialize(
