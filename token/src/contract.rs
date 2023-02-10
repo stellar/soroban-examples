@@ -48,6 +48,12 @@ pub trait TokenTrait {
     fn symbol(e: Env) -> Bytes;
 }
 
+fn check_nonnegative_amount(amount: i128) {
+    if amount < 0 {
+        panic!("negative amount is not allowed: {}", amount)
+    }
+}
+
 pub struct Token;
 
 #[contractimpl]
@@ -70,6 +76,8 @@ impl TokenTrait for Token {
     fn incr_allow(e: Env, from: Address, spender: Address, amount: i128) {
         from.require_auth();
 
+        check_nonnegative_amount(amount);
+
         let allowance = read_allowance(&e, from.clone(), spender.clone());
         let new_allowance = allowance
             .checked_add(amount)
@@ -81,6 +89,8 @@ impl TokenTrait for Token {
 
     fn decr_allow(e: Env, from: Address, spender: Address, amount: i128) {
         from.require_auth();
+
+        check_nonnegative_amount(amount);
 
         let allowance = read_allowance(&e, from.clone(), spender.clone());
         if amount >= allowance {
@@ -106,6 +116,7 @@ impl TokenTrait for Token {
     fn xfer(e: Env, from: Address, to: Address, amount: i128) {
         from.require_auth();
 
+        check_nonnegative_amount(amount);
         spend_balance(&e, from.clone(), amount);
         receive_balance(&e, to.clone(), amount);
         event::transfer(&e, from, to, amount);
@@ -114,6 +125,7 @@ impl TokenTrait for Token {
     fn xfer_from(e: Env, spender: Address, from: Address, to: Address, amount: i128) {
         spender.require_auth();
 
+        check_nonnegative_amount(amount);
         spend_allowance(&e, from.clone(), spender, amount);
         spend_balance(&e, from.clone(), amount);
         receive_balance(&e, to.clone(), amount);
@@ -123,6 +135,7 @@ impl TokenTrait for Token {
     fn burn(e: Env, from: Address, amount: i128) {
         from.require_auth();
 
+        check_nonnegative_amount(amount);
         spend_balance(&e, from.clone(), amount);
         event::burn(&e, from, amount);
     }
@@ -130,12 +143,14 @@ impl TokenTrait for Token {
     fn burn_from(e: Env, spender: Address, from: Address, amount: i128) {
         spender.require_auth();
 
+        check_nonnegative_amount(amount);
         spend_allowance(&e, from.clone(), spender, amount);
         spend_balance(&e, from.clone(), amount);
         event::burn(&e, from, amount)
     }
 
     fn clawback(e: Env, admin: Address, from: Address, amount: i128) {
+        check_nonnegative_amount(amount);
         check_admin(&e, &admin);
         admin.require_auth();
         spend_balance(&e, from.clone(), amount);
@@ -150,6 +165,7 @@ impl TokenTrait for Token {
     }
 
     fn mint(e: Env, admin: Address, to: Address, amount: i128) {
+        check_nonnegative_amount(amount);
         check_admin(&e, &admin);
         admin.require_auth();
         receive_balance(&e, to.clone(), amount);
