@@ -44,7 +44,7 @@ pub enum AccError {
 }
 
 const XFER_FN: Symbol = symbol!("xfer");
-const APPROVE_FN: Symbol = symbol!("approve");
+const INCR_ALLOW_FN: Symbol = symbol!("incr_allow");
 
 #[contractimpl]
 impl AccountContract {
@@ -159,7 +159,7 @@ fn verify_authorization_policy(
     }
 
     // Otherwise, we're only interested in functions that spend tokens.
-    if context.fn_name != XFER_FN && context.fn_name != APPROVE_FN {
+    if context.fn_name != XFER_FN && context.fn_name != INCR_ALLOW_FN {
         return Ok(());
     }
 
@@ -180,7 +180,6 @@ fn verify_authorization_policy(
         // 'amount' is the third argument in both `approve` and `xfer`.
         // If the contract has a different signature, it's safer to panic
         // here, as it's expected to have the standard interface.
-        // let spent = i128::try_from_val(&env, context.args.get(2).unwrap());
         let spent: i128 = context
             .args
             .get(2)
