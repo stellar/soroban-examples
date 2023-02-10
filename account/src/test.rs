@@ -5,6 +5,7 @@ use ed25519_dalek::Keypair;
 use ed25519_dalek::Signer;
 use rand::thread_rng;
 use soroban_auth::AuthorizationContext;
+use soroban_sdk::Symbol;
 use soroban_sdk::{
     symbol, testutils::Address as _, testutils::BytesN as _, vec, Address, BytesN, Env, IntoVal,
 };
@@ -34,10 +35,15 @@ fn sign(e: &Env, signer: &Keypair, payload: &BytesN<32>) -> Signature {
     }
 }
 
-fn token_auth_context(e: &Env, token_id: &BytesN<32>, amount: i128) -> AuthorizationContext {
+fn token_auth_context(
+    e: &Env,
+    token_id: &BytesN<32>,
+    fn_name: Symbol,
+    amount: i128,
+) -> AuthorizationContext {
     AuthorizationContext {
         contract: token_id.clone(),
-        fn_name: symbol!("xfer"),
+        fn_name,
         args: ((), (), amount).into_val(e),
     }
 }
@@ -64,7 +70,10 @@ fn test_token_auth() {
         .try_check_auth(
             &payload,
             &vec![&env, sign(&env, &signers[0], &payload)],
-            &vec![&env, token_auth_context(&env, &token, 1000)],
+            &vec![
+                &env,
+                token_auth_context(&env, &token, symbol!("xfer"), 1000),
+            ],
         )
         .unwrap()
         .unwrap();
@@ -90,19 +99,56 @@ fn test_token_auth() {
             .try_check_auth(
                 &payload,
                 &vec![&env, sign(&env, &signers[0], &payload)],
-                &vec![&env, token_auth_context(&env, &token, 1001)],
+                &vec![
+                    &env,
+                    token_auth_context(&env, &token, symbol!("xfer"), 1001)
+                ],
             )
             .err()
             .unwrap()
             .unwrap(),
         AccError::NotEnoughSigners
     );
+    assert_eq!(
+        account_contract
+            .try_check_auth(
+                &payload,
+                &vec![&env, sign(&env, &signers[0], &payload)],
+                &vec![
+                    &env,
+                    token_auth_context(&env, &token, symbol!("incr_allow"), 1001)
+                ],
+            )
+            .err()
+            .unwrap()
+            .unwrap(),
+        AccError::NotEnoughSigners
+    );
+    assert_eq!(
+        account_contract
+            .try_check_auth(
+                &payload,
+                &vec![&env, sign(&env, &signers[0], &payload)],
+                &vec![
+                    &env,
+                    token_auth_context(&env, &token, symbol!("burn"), 1001)
+                ],
+            )
+            .err()
+            .unwrap()
+            .unwrap(),
+        AccError::NotEnoughSigners
+    );
+
     // 1 signer can still transfer 1000 units.
     account_contract
         .try_check_auth(
             &payload,
             &vec![&env, sign(&env, &signers[0], &payload)],
-            &vec![&env, token_auth_context(&env, &token, 1000)],
+            &vec![
+                &env,
+                token_auth_context(&env, &token, symbol!("incr_allow"), 1000),
+            ],
         )
         .unwrap()
         .unwrap();
@@ -115,7 +161,10 @@ fn test_token_auth() {
                 sign(&env, &signers[0], &payload),
                 sign(&env, &signers[1], &payload),
             ],
-            &vec![&env, token_auth_context(&env, &token, 10000)],
+            &vec![
+                &env,
+                token_auth_context(&env, &token, symbol!("xfer"), 10000),
+            ],
         )
         .unwrap()
         .unwrap();
