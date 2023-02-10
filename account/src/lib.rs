@@ -182,7 +182,6 @@ fn verify_authorization_policy(
         // 'amount' is the third argument in both `approve` and `xfer`.
         // If the contract has a different signature, it's safer to panic
         // here, as it's expected to have the standard interface.
-        // let spent = i128::try_from_val(&env, context.args.get(2).unwrap());
         let spent: i128 = context
             .args
             .get(2)
