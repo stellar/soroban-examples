@@ -45,7 +45,6 @@ pub enum AccError {
 
 const XFER_FN: Symbol = symbol!("xfer");
 const INCR_ALLOW_FN: Symbol = symbol!("incr_allow");
-const BURN_FN: Symbol = symbol!("burn");
 
 #[contractimpl]
 impl AccountContract {
@@ -160,8 +159,7 @@ fn verify_authorization_policy(
     }
 
     // Otherwise, we're only interested in functions that spend tokens.
-    if context.fn_name != XFER_FN && context.fn_name != INCR_ALLOW_FN && context.fn_name != BURN_FN
-    {
+    if context.fn_name != XFER_FN && context.fn_name != INCR_ALLOW_FN {
         return Ok(());
     }
 

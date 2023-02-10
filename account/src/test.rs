@@ -124,21 +124,6 @@ fn test_token_auth() {
             .unwrap(),
         AccError::NotEnoughSigners
     );
-    assert_eq!(
-        account_contract
-            .try_check_auth(
-                &payload,
-                &vec![&env, sign(&env, &signers[0], &payload)],
-                &vec![
-                    &env,
-                    token_auth_context(&env, &token, symbol!("burn"), 1001)
-                ],
-            )
-            .err()
-            .unwrap()
-            .unwrap(),
-        AccError::NotEnoughSigners
-    );
 
     // 1 signer can still transfer 1000 units.
     account_contract
