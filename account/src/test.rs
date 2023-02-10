@@ -81,7 +81,7 @@ fn test_token_auth() {
     let account_address = Address::from_contract_id(&env, &account_contract.contract_id);
     // Add a spend limit of 1000 per 1 signer.
     account_contract.add_limit(&token, &1000);
-    // Verify that this call is needs to be authorized.
+    // Verify that this call needs to be authorized.
     assert_eq!(
         env.recorded_top_authorizations(),
         std::vec![(
