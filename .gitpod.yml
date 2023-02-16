@@ -27,9 +27,8 @@ tasks:
     init: |
       cargo clean
       cargo fetch
-      make build test
+      make all
     command: |
-      gp ports await 23000
       gp open README.md
       gp open increment/src/lib.rs
       gp open increment/src/test.rs
