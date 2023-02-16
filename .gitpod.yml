@@ -27,14 +27,13 @@ tasks:
     init: |
       cargo clean
       cargo fetch
-      make build test
+      make all
     command: |
-      gp ports await 23000
       gp open README.md
       gp open increment/src/lib.rs
       gp open increment/src/test.rs
       gp open README.md
-      soroban invoke --id 1 --wasm target/wasm32-unknown-unknown/release/soroban_increment_contract.wasm --fn increment
+      soroban contract invoke --id 1 --wasm target/wasm32-unknown-unknown/release/soroban_increment_contract.wasm --fn increment
 vscode:
   extensions:
     - rust-lang.rust-analyzer
