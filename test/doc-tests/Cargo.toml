@@ -1,0 +1,17 @@
+[package]
+name = "cli-tests"
+version = "0.0.0"
+authors = ["Stellar Development Foundation <info@stellar.org>"]
+license = "Apache-2.0"
+edition = "2021"
+publish = false
+
+
+[lib]
+crate-type = ["cdylib"]
+doctest = false
+
+[dev-dependencies]
+predicates = "2.1.5"
+soroban-test = "0.7.1"
+soroban-cli = "0.7.1"
