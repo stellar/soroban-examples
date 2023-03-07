@@ -1,10 +1,10 @@
 #![no_std]
 
-use soroban_sdk::{contractimpl, symbol, Env, Symbol};
+use soroban_sdk::{contractimpl, Env, Symbol};
 
 pub struct Contract;
 
-const KEY: Symbol = symbol!("value");
+const KEY: Symbol = Symbol::short("value");
 
 #[contractimpl]
 impl Contract {

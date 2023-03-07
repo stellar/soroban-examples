@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use super::*;
-use soroban_sdk::{symbol, vec, Env};
+use soroban_sdk::{vec, Env, Symbol};
 
 #[test]
 fn test() {
@@ -9,6 +9,9 @@ fn test() {
     let contract_id = env.register_contract(None, HelloContract);
     let client = HelloContractClient::new(&env, &contract_id);
 
-    let words = client.hello(&symbol!("Dev"));
-    assert_eq!(words, vec![&env, symbol!("Hello"), symbol!("Dev"),]);
+    let words = client.hello(&Symbol::short("Dev"));
+    assert_eq!(
+        words,
+        vec![&env, Symbol::short("Hello"), Symbol::short("Dev"),]
+    );
 }

@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contracterror, contractimpl, log, symbol, Env, Symbol};
+use soroban_sdk::{contracterror, contractimpl, log, Env, Symbol};
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
@@ -8,7 +8,7 @@ pub enum Error {
     LimitReached = 1,
 }
 
-const COUNTER: Symbol = symbol!("COUNTER");
+const COUNTER: Symbol = Symbol::short("COUNTER");
 const MAX: u32 = 5;
 
 pub struct IncrementContract;

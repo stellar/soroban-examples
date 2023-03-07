@@ -1,7 +1,7 @@
 #![no_std]
-use soroban_sdk::{contractimpl, symbol, Env, Symbol};
+use soroban_sdk::{contractimpl, Env, Symbol};
 
-const COUNTER: Symbol = symbol!("COUNTER");
+const COUNTER: Symbol = Symbol::short("COUNTER");
 
 pub struct IncrementContract;
 
@@ -27,7 +27,8 @@ impl IncrementContract {
         //   - The "COUNTER" symbol.
         //   - The "increment" symbol.
         // The event data is the count.
-        env.events().publish((COUNTER, symbol!("increment")), count);
+        env.events()
+            .publish((COUNTER, Symbol::short("increment")), count);
 
         // Return the count to the caller.
         count

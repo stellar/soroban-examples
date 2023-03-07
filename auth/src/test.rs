@@ -2,7 +2,7 @@
 extern crate std;
 use super::*;
 
-use soroban_sdk::{symbol, testutils::Address as _, Address, Env, IntoVal};
+use soroban_sdk::{testutils::Address as _, Address, Env, IntoVal, Symbol};
 
 #[test]
 fn test() {
@@ -24,7 +24,7 @@ fn test() {
             // Identifier of the called contract
             contract_id.clone(),
             // Name of the called function
-            symbol!("increment"),
+            Symbol::short("increment"),
             // Arguments used to call `increment` (converted to the env-managed vector via `into_val`)
             (user_1.clone(), 5_u32).into_val(&env)
         )]

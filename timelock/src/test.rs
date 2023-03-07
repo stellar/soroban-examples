@@ -3,7 +3,7 @@ extern crate std;
 
 use super::*;
 use soroban_sdk::testutils::{Address as _, Ledger, LedgerInfo};
-use soroban_sdk::{symbol, vec, Address, Env, IntoVal};
+use soroban_sdk::{vec, Address, Env, IntoVal, Symbol};
 
 mod token {
     soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
@@ -89,7 +89,7 @@ fn test_deposit_and_claim() {
         std::vec![(
             test.deposit_address.clone(),
             test.contract.contract_id.clone(),
-            symbol!("deposit"),
+            Symbol::short("deposit"),
             (
                 test.deposit_address.clone(),
                 test.token.contract_id.clone(),
@@ -118,7 +118,7 @@ fn test_deposit_and_claim() {
         std::vec![(
             test.claim_addresses[1].clone(),
             test.contract.contract_id.clone(),
-            symbol!("claim"),
+            Symbol::short("claim"),
             (test.claim_addresses[1].clone(),).into_val(&test.env),
         )]
     );

@@ -2,7 +2,7 @@
 extern crate std;
 
 use crate::{token, SingleOfferClient};
-use soroban_sdk::{symbol, testutils::Address as _, Address, BytesN, Env, IntoVal};
+use soroban_sdk::{testutils::Address as _, Address, BytesN, Env, IntoVal, Symbol};
 
 fn create_token_contract(e: &Env, admin: &Address) -> token::Client {
     token::Client::new(&e, &e.register_stellar_asset_contract(admin.clone()))
@@ -25,7 +25,7 @@ fn create_single_offer_contract(
         std::vec![(
             seller.clone(),
             offer.contract_id.clone(),
-            symbol!("create"),
+            Symbol::short("create"),
             (
                 seller,
                 sell_token.clone(),
@@ -77,7 +77,7 @@ fn test() {
         std::vec![(
             buyer.clone(),
             offer.contract_id.clone(),
-            symbol!("trade"),
+            Symbol::short("trade"),
             (&buyer, 20_i128, 10_i128).into_val(&e)
         )]
     );
@@ -97,7 +97,7 @@ fn test() {
         std::vec![(
             seller.clone(),
             offer.contract_id.clone(),
-            symbol!("withdraw"),
+            Symbol::short("withdraw"),
             (sell_token.contract_id.clone(), 70_i128).into_val(&e)
         )]
     );
@@ -113,7 +113,7 @@ fn test() {
         std::vec![(
             seller.clone(),
             offer.contract_id.clone(),
-            symbol!("updt_price"),
+            Symbol::new(&e, "updt_price"),
             (1_u32, 1_u32).into_val(&e)
         )]
     );

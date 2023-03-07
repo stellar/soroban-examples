@@ -3,7 +3,7 @@ extern crate std;
 
 use crate::{token, LiquidityPoolClient};
 
-use soroban_sdk::{symbol, testutils::Address as _, Address, BytesN, Env, IntoVal};
+use soroban_sdk::{testutils::Address as _, Address, BytesN, Env, IntoVal, Symbol};
 
 fn create_token_contract(e: &Env, admin: &Address) -> token::Client {
     token::Client::new(&e, &e.register_stellar_asset_contract(admin.clone()))
@@ -65,7 +65,7 @@ fn test() {
         std::vec![(
             user1.clone(),
             liqpool.contract_id.clone(),
-            symbol!("deposit"),
+            Symbol::short("deposit"),
             (&user1, 100_i128, 100_i128, 100_i128, 100_i128).into_val(&e)
         )]
     );
@@ -83,7 +83,7 @@ fn test() {
         std::vec![(
             user1.clone(),
             liqpool.contract_id.clone(),
-            symbol!("swap"),
+            Symbol::short("swap"),
             (&user1, false, 49_i128, 100_i128).into_val(&e)
         )]
     );
@@ -99,7 +99,7 @@ fn test() {
         std::vec![(
             user1.clone(),
             liqpool.contract_id.clone(),
-            symbol!("withdraw"),
+            Symbol::short("withdraw"),
             (&user1, 100_i128, 197_i128, 51_i128).into_val(&e)
         )]
     );

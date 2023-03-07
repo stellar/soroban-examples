@@ -13,7 +13,7 @@
 
 use soroban_auth::AuthorizationContext;
 use soroban_sdk::{
-    contracterror, contractimpl, contracttype, symbol, BytesN, Env, Map, Symbol, TryIntoVal, Vec,
+    contracterror, contractimpl, contracttype, BytesN, Env, Map, Symbol, TryIntoVal, Vec,
 };
 
 struct AccountContract;
@@ -43,8 +43,7 @@ pub enum AccError {
     UnknownSigner = 4,
 }
 
-const XFER_FN: Symbol = symbol!("xfer");
-const INCR_ALLOW_FN: Symbol = symbol!("incr_allow");
+const XFER_FN: Symbol = Symbol::short("xfer");
 
 #[contractimpl]
 impl AccountContract {
@@ -159,7 +158,7 @@ fn verify_authorization_policy(
     }
 
     // Otherwise, we're only interested in functions that spend tokens.
-    if context.fn_name != XFER_FN && context.fn_name != INCR_ALLOW_FN {
+    if context.fn_name != XFER_FN && context.fn_name != Symbol::new(env, "incr_allow") {
         return Ok(());
     }
 

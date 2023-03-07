@@ -2,7 +2,7 @@
 extern crate std;
 
 use super::*;
-use soroban_sdk::{symbol, testutils::Address as _, Address, Env, IntoVal};
+use soroban_sdk::{testutils::Address as _, Address, Env, IntoVal, Symbol};
 mod token {
     soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
     pub type TokenClient = Client;
@@ -50,7 +50,7 @@ fn test_atomic_swap() {
             (
                 a.clone(),
                 contract.contract_id.clone(),
-                symbol!("swap"),
+                Symbol::short("swap"),
                 (
                     token_a.contract_id.clone(),
                     token_b.contract_id.clone(),
@@ -62,7 +62,7 @@ fn test_atomic_swap() {
             (
                 b.clone(),
                 contract.contract_id.clone(),
-                symbol!("swap"),
+                Symbol::short("swap"),
                 (
                     token_b.contract_id.clone(),
                     token_a.contract_id.clone(),
