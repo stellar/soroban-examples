@@ -1,7 +1,7 @@
 #![no_std]
-use soroban_sdk::{contractimpl, log, symbol, Env, Symbol};
+use soroban_sdk::{contractimpl, log, Env, Symbol};
 
-const COUNTER: Symbol = symbol!("COUNTER");
+const COUNTER: Symbol = Symbol::short("COUNTER");
 
 pub struct IncrementContract;
 

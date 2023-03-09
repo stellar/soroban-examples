@@ -3,7 +3,7 @@ extern crate std;
 
 use super::*;
 use assert_unordered::assert_eq_unordered;
-use soroban_sdk::{symbol, testutils::Address as _, Address, Env, IntoVal};
+use soroban_sdk::{testutils::Address as _, Address, Env, IntoVal, Symbol};
 
 mod token {
     soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
@@ -94,7 +94,7 @@ fn test_atomic_multi_swap() {
             (
                 swaps_a[0].address.clone(),
                 swap_contract_id.clone(),
-                symbol!("swap"),
+                Symbol::short("swap"),
                 (
                     token_a.contract_id.clone(),
                     token_b.contract_id.clone(),
@@ -106,7 +106,7 @@ fn test_atomic_multi_swap() {
             (
                 swaps_a[1].address.clone(),
                 swap_contract_id.clone(),
-                symbol!("swap"),
+                Symbol::short("swap"),
                 (
                     token_a.contract_id.clone(),
                     token_b.contract_id.clone(),
@@ -118,7 +118,7 @@ fn test_atomic_multi_swap() {
             (
                 swaps_b[1].address.clone(),
                 swap_contract_id.clone(),
-                symbol!("swap"),
+                Symbol::short("swap"),
                 (
                     token_b.contract_id.clone(),
                     token_a.contract_id.clone(),
@@ -130,7 +130,7 @@ fn test_atomic_multi_swap() {
             (
                 swaps_b[2].address.clone(),
                 swap_contract_id.clone(),
-                symbol!("swap"),
+                Symbol::short("swap"),
                 (
                     token_b.contract_id.clone(),
                     token_a.contract_id.clone(),
@@ -217,7 +217,7 @@ fn test_multi_swap_with_duplicate_account() {
             (
                 address_a.clone(),
                 swap_contract_id.clone(),
-                symbol!("swap"),
+                Symbol::short("swap"),
                 (
                     token_a.contract_id.clone(),
                     token_b.contract_id.clone(),
@@ -229,7 +229,7 @@ fn test_multi_swap_with_duplicate_account() {
             (
                 address_a.clone(),
                 swap_contract_id.clone(),
-                symbol!("swap"),
+                Symbol::short("swap"),
                 (
                     token_a.contract_id.clone(),
                     token_b.contract_id.clone(),
@@ -241,7 +241,7 @@ fn test_multi_swap_with_duplicate_account() {
             (
                 address_b.clone(),
                 swap_contract_id.clone(),
-                symbol!("swap"),
+                Symbol::short("swap"),
                 (
                     token_b.contract_id.clone(),
                     token_a.contract_id.clone(),
@@ -253,7 +253,7 @@ fn test_multi_swap_with_duplicate_account() {
             (
                 address_b.clone(),
                 swap_contract_id.clone(),
-                symbol!("swap"),
+                Symbol::short("swap"),
                 (
                     token_b.contract_id.clone(),
                     token_a.contract_id.clone(),

@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contractimpl, contracttype, symbol, Env, Symbol};
+use soroban_sdk::{contractimpl, contracttype, Env, Symbol};
 
 #[contracttype]
 #[derive(Clone, Default, Debug, Eq, PartialEq)]
@@ -8,7 +8,7 @@ pub struct State {
     pub last_incr: u32,
 }
 
-const STATE: Symbol = symbol!("STATE");
+const STATE: Symbol = Symbol::short("STATE");
 
 pub struct IncrementContract;
 

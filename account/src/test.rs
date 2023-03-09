@@ -5,10 +5,7 @@ use ed25519_dalek::Keypair;
 use ed25519_dalek::Signer;
 use rand::thread_rng;
 use soroban_auth::AuthorizationContext;
-use soroban_sdk::Symbol;
-use soroban_sdk::{
-    symbol, testutils::Address as _, testutils::BytesN as _, vec, Address, BytesN, Env, IntoVal,
-};
+use soroban_sdk::{testutils::BytesN as _, vec, Address, BytesN, Env, IntoVal, Symbol};
 
 use crate::AccError;
 use crate::{AccountContract, AccountContractClient, Signature};
@@ -72,7 +69,7 @@ fn test_token_auth() {
             &vec![&env, sign(&env, &signers[0], &payload)],
             &vec![
                 &env,
-                token_auth_context(&env, &token, symbol!("xfer"), 1000),
+                token_auth_context(&env, &token, Symbol::new(&env, "xfer"), 1000),
             ],
         )
         .unwrap()
@@ -87,7 +84,7 @@ fn test_token_auth() {
         std::vec![(
             account_address.clone(),
             account_contract.contract_id.clone(),
-            symbol!("add_limit"),
+            Symbol::short("add_limit"),
             (token.clone(), 1000_i128).into_val(&env),
         )]
     );
@@ -101,7 +98,7 @@ fn test_token_auth() {
                 &vec![&env, sign(&env, &signers[0], &payload)],
                 &vec![
                     &env,
-                    token_auth_context(&env, &token, symbol!("xfer"), 1001)
+                    token_auth_context(&env, &token, Symbol::new(&env, "xfer"), 1001)
                 ],
             )
             .err()
@@ -116,7 +113,7 @@ fn test_token_auth() {
                 &vec![&env, sign(&env, &signers[0], &payload)],
                 &vec![
                     &env,
-                    token_auth_context(&env, &token, symbol!("incr_allow"), 1001)
+                    token_auth_context(&env, &token, Symbol::new(&env, "incr_allow"), 1001)
                 ],
             )
             .err()
@@ -132,7 +129,7 @@ fn test_token_auth() {
             &vec![&env, sign(&env, &signers[0], &payload)],
             &vec![
                 &env,
-                token_auth_context(&env, &token, symbol!("incr_allow"), 1000),
+                token_auth_context(&env, &token, Symbol::new(&env, "incr_allow"), 1000),
             ],
         )
         .unwrap()
@@ -148,7 +145,7 @@ fn test_token_auth() {
             ],
             &vec![
                 &env,
-                token_auth_context(&env, &token, symbol!("xfer"), 10000),
+                token_auth_context(&env, &token, Symbol::new(&env, "xfer"), 10000),
             ],
         )
         .unwrap()

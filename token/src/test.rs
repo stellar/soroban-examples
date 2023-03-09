@@ -2,7 +2,7 @@
 extern crate std;
 
 use crate::{contract::Token, TokenClient};
-use soroban_sdk::{symbol, testutils::Address as _, Address, Env, IntoVal};
+use soroban_sdk::{testutils::Address as _, Address, Env, IntoVal, Symbol};
 
 fn create_token(e: &Env, admin: &Address) -> TokenClient {
     let token = TokenClient::new(e, &e.register_contract(None, Token {}));
@@ -27,7 +27,7 @@ fn test() {
         std::vec![(
             admin1.clone(),
             token.contract_id.clone(),
-            symbol!("mint"),
+            Symbol::short("mint"),
             (&admin1, &user1, 1000_i128).into_val(&e),
         )]
     );
@@ -39,7 +39,7 @@ fn test() {
         std::vec![(
             user2.clone(),
             token.contract_id.clone(),
-            symbol!("incr_allow"),
+            Symbol::new(&e, "incr_allow"),
             (&user2, &user3, 500_i128).into_val(&e),
         )]
     );
@@ -51,7 +51,7 @@ fn test() {
         std::vec![(
             user1.clone(),
             token.contract_id.clone(),
-            symbol!("xfer"),
+            Symbol::short("xfer"),
             (&user1, &user2, 600_i128).into_val(&e),
         )]
     );
@@ -64,7 +64,7 @@ fn test() {
         std::vec![(
             user3.clone(),
             token.contract_id.clone(),
-            symbol!("xfer_from"),
+            Symbol::short("xfer_from"),
             (&user3, &user2, &user1, 400_i128).into_val(&e),
         )]
     );
@@ -81,7 +81,7 @@ fn test() {
         std::vec![(
             admin1.clone(),
             token.contract_id.clone(),
-            symbol!("set_admin"),
+            Symbol::short("set_admin"),
             (&admin1, &admin2).into_val(&e),
         )]
     );
@@ -92,7 +92,7 @@ fn test() {
         std::vec![(
             admin2.clone(),
             token.contract_id.clone(),
-            symbol!("set_auth"),
+            Symbol::short("set_auth"),
             (&admin2, &user2, false).into_val(&e),
         )]
     );
@@ -107,7 +107,7 @@ fn test() {
         std::vec![(
             admin2.clone(),
             token.contract_id.clone(),
-            symbol!("clawback"),
+            Symbol::short("clawback"),
             (&admin2, &user3, 100_i128).into_val(&e),
         )]
     );
@@ -122,7 +122,7 @@ fn test() {
         std::vec![(
             user2.clone(),
             token.contract_id.clone(),
-            symbol!("decr_allow"),
+            Symbol::new(&e, "decr_allow"),
             (&user2, &user3, 501_i128).into_val(&e),
         )]
     );
@@ -150,7 +150,7 @@ fn test_burn() {
         std::vec![(
             user2.clone(),
             token.contract_id.clone(),
-            symbol!("burn_from"),
+            Symbol::short("burn_from"),
             (&user2, &user1, 500_i128).into_val(&e),
         )]
     );
@@ -164,7 +164,7 @@ fn test_burn() {
         std::vec![(
             user1.clone(),
             token.contract_id.clone(),
-            symbol!("burn"),
+            Symbol::short("burn"),
             (&user1, 500_i128).into_val(&e),
         )]
     );
