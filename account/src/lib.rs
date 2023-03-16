@@ -1,6 +1,6 @@
 //! This a basic multi-sig account contract that with a customizable per-token
 //! authorization policy.
-//! 
+//!
 //! This demonstrates how to build the account contracts and how to use the
 //! authorization context in order to implement custom authorization policies
 //! that would govern all the account contract interactions.
@@ -81,11 +81,11 @@ impl AccountContract {
     // spend limits here).
     //
     // Soroban host guarantees that `__check_auth` is only being called during
-    // `require_auth` verification and hence this may mutate its own state 
+    // `require_auth` verification and hence this may mutate its own state
     // without the need for additional authorization (for example, this could
     // store per-time-period token spend limits instead of just enforcing the
     // limit per contract call).
-    // 
+    //
     // Note, that `__check_auth` function shouldn't call `require_auth` on the
     // contract's own address in order to avoid infinite recursion.
     #[allow(non_snake_case)]

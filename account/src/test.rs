@@ -65,7 +65,7 @@ fn test_token_auth() {
 
     let payload = BytesN::random(&env);
     let token = BytesN::random(&env);
-    // `__check_auth` can't be called directly, hence we need to use 
+    // `__check_auth` can't be called directly, hence we need to use
     // `invoke_account_contract_check_auth` testing utility that emulates being
     // called by the Soroban host during `require_auth` a call.
     env.invoke_account_contract_check_auth::<AccError>(
