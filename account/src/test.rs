@@ -4,7 +4,8 @@ extern crate std;
 use ed25519_dalek::Keypair;
 use ed25519_dalek::Signer;
 use rand::thread_rng;
-use soroban_auth::AuthorizationContext;
+use soroban_auth::{testutils::EnvAuthUtils, AuthorizationContext};
+use soroban_sdk::RawVal;
 use soroban_sdk::{testutils::BytesN as _, vec, BytesN, Env, IntoVal, Symbol};
 
 use crate::AccError;
@@ -22,7 +23,7 @@ fn create_account_contract(e: &Env) -> AccountContractClient {
     AccountContractClient::new(e, &e.register_contract(None, AccountContract {}))
 }
 
-fn sign(e: &Env, signer: &Keypair, payload: &BytesN<32>) -> Signature {
+fn sign(e: &Env, signer: &Keypair, payload: &BytesN<32>) -> RawVal {
     Signature {
         public_key: signer_public_key(e, signer),
         signature: signer
@@ -30,6 +31,7 @@ fn sign(e: &Env, signer: &Keypair, payload: &BytesN<32>) -> Signature {
             .to_bytes()
             .into_val(e),
     }
+    .into_val(e)
 }
 
 fn token_auth_context(
@@ -63,17 +65,29 @@ fn test_token_auth() {
 
     let payload = BytesN::random(&env);
     let token = BytesN::random(&env);
-    account_contract
-        .try_check_auth(
-            &payload,
-            &vec![&env, sign(&env, &signers[0], &payload)],
-            &vec![
-                &env,
-                token_auth_context(&env, &token, Symbol::new(&env, "xfer"), 1000),
-            ],
-        )
-        .unwrap()
-        .unwrap();
+    // `__check_auth` can't be called directly, hence we need to use
+    // `invoke_account_contract_check_auth` testing utility that emulates being
+    // called by the Soroban host during a `require_auth` call.
+    env.invoke_account_contract_check_auth::<AccError>(
+        &account_contract.contract_id,
+        &payload,
+        &vec![&env, sign(&env, &signers[0], &payload)],
+        &vec![
+            &env,
+            token_auth_context(&env, &token, Symbol::new(&env, "xfer"), 1000),
+        ],
+    )
+    .unwrap();
+    env.invoke_account_contract_check_auth::<AccError>(
+        &account_contract.contract_id,
+        &payload,
+        &vec![&env, sign(&env, &signers[0], &payload)],
+        &vec![
+            &env,
+            token_auth_context(&env, &token, Symbol::new(&env, "xfer"), 1000),
+        ],
+    )
+    .unwrap();
 
     // Add a spend limit of 1000 per 1 signer.
     account_contract.add_limit(&token, &1000);
@@ -91,62 +105,60 @@ fn test_token_auth() {
     // 1 signer no longer can perform the token operation that transfers more
     // than 1000 units.
     assert_eq!(
-        account_contract
-            .try_check_auth(
-                &payload,
-                &vec![&env, sign(&env, &signers[0], &payload)],
-                &vec![
-                    &env,
-                    token_auth_context(&env, &token, Symbol::new(&env, "xfer"), 1001)
-                ],
-            )
-            .err()
-            .unwrap()
-            .unwrap(),
-        AccError::NotEnoughSigners
-    );
-    assert_eq!(
-        account_contract
-            .try_check_auth(
-                &payload,
-                &vec![&env, sign(&env, &signers[0], &payload)],
-                &vec![
-                    &env,
-                    token_auth_context(&env, &token, Symbol::new(&env, "incr_allow"), 1001)
-                ],
-            )
-            .err()
-            .unwrap()
-            .unwrap(),
-        AccError::NotEnoughSigners
-    );
-
-    // 1 signer can still transfer 1000 units.
-    account_contract
-        .try_check_auth(
+        env.invoke_account_contract_check_auth::<AccError>(
+            &account_contract.contract_id,
             &payload,
             &vec![&env, sign(&env, &signers[0], &payload)],
             &vec![
                 &env,
-                token_auth_context(&env, &token, Symbol::new(&env, "incr_allow"), 1000),
+                token_auth_context(&env, &token, Symbol::new(&env, "xfer"), 1001)
             ],
         )
+        .err()
         .unwrap()
-        .unwrap();
-    // 2 signers can transfer any amount of token.
-    account_contract
-        .try_check_auth(
+        .unwrap(),
+        AccError::NotEnoughSigners
+    );
+    assert_eq!(
+        env.invoke_account_contract_check_auth::<AccError>(
+            &account_contract.contract_id,
             &payload,
+            &vec![&env, sign(&env, &signers[0], &payload)],
             &vec![
                 &env,
-                sign(&env, &signers[0], &payload),
-                sign(&env, &signers[1], &payload),
-            ],
-            &vec![
-                &env,
-                token_auth_context(&env, &token, Symbol::new(&env, "xfer"), 10000),
+                token_auth_context(&env, &token, Symbol::new(&env, "incr_allow"), 1001)
             ],
         )
+        .err()
         .unwrap()
-        .unwrap();
+        .unwrap(),
+        AccError::NotEnoughSigners
+    );
+
+    // 1 signer can still transfer 1000 units.
+    env.invoke_account_contract_check_auth::<AccError>(
+        &account_contract.contract_id,
+        &payload,
+        &vec![&env, sign(&env, &signers[0], &payload)],
+        &vec![
+            &env,
+            token_auth_context(&env, &token, Symbol::new(&env, "incr_allow"), 1000),
+        ],
+    )
+    .unwrap();
+    // 2 signers can transfer any amount of token.
+    env.invoke_account_contract_check_auth::<AccError>(
+        &account_contract.contract_id,
+        &payload,
+        &vec![
+            &env,
+            sign(&env, &signers[0], &payload),
+            sign(&env, &signers[1], &payload),
+        ],
+        &vec![
+            &env,
+            token_auth_context(&env, &token, Symbol::new(&env, "xfer"), 10000),
+        ],
+    )
+    .unwrap();
 }

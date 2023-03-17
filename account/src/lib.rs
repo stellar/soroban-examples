@@ -1,14 +1,9 @@
 //! This a basic multi-sig account contract that with a customizable per-token
 //! authorization policy.
+//!
 //! This demonstrates how to build the account contracts and how to use the
 //! authorization context in order to implement custom authorization policies
 //! that would govern all the account contract interactions.
-//!
-//! WARNING: Account contracts are still experimental and have some known
-//! limitations that will be eventually addressed:
-//! - `check_auth` function shouldn't call `require_auth` in order to avoid
-//!   infinite recursion.
-//! - `check_auth` has to be read-only as anyone can call it.
 #![no_std]
 
 use soroban_auth::AuthorizationContext;
@@ -70,19 +65,31 @@ impl AccountContract {
     }
 
     // This is the 'entry point' of the account contract and every account
-    // contract has to implemented it. `require_auth` calls for the Address of
+    // contract has to implement it. `require_auth` calls for the Address of
     // this contract will result in calling this `check_auth` function with
     // the appropriate arguments.
+    //
     // This should return `()` if authentication and authorization checks have
     // been passed and return an error (or panic) otherwise.
     //
-    // `check_auth` takes the payload that needed to be signed, arbitrarily
+    // `__check_auth` takes the payload that needed to be signed, arbitrarily
     // typed signatures (`Signature` contract type here) and authorization
     // context that contains all the invocations that this call tries to verify.
-    // `check_auth` has to authenticate the signatures. It also may use
+    //
+    // `__check_auth` has to authenticate the signatures. It also may use
     // `auth_context` to implement additional authorization policies (like token
     // spend limits here).
-    pub fn check_auth(
+    //
+    // Soroban host guarantees that `__check_auth` is only being called during
+    // `require_auth` verification and hence this may mutate its own state
+    // without the need for additional authorization (for example, this could
+    // store per-time-period token spend limits instead of just enforcing the
+    // limit per contract call).
+    //
+    // Note, that `__check_auth` function shouldn't call `require_auth` on the
+    // contract's own address in order to avoid infinite recursion.
+    #[allow(non_snake_case)]
+    pub fn __check_auth(
         env: Env,
         signature_payload: BytesN<32>,
         signatures: Vec<Signature>,

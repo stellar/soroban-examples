@@ -40,13 +40,18 @@ lto = true
 [workspace.dependencies.soroban-sdk]
 version = "0.6.0"
 git = "https://github.com/stellar/rs-soroban-sdk"
-rev = "7a2d3c4acc816f0b4214b3ca09d2e1aef8a33259"
+rev = "429ba557142bca0f1a4ef10131c8df584dd0719b"
 
 [workspace.dependencies.soroban-auth]
 version = "0.6.0"
 git = "https://github.com/stellar/rs-soroban-sdk"
-rev = "7a2d3c4acc816f0b4214b3ca09d2e1aef8a33259"
+rev = "429ba557142bca0f1a4ef10131c8df584dd0719b"
 
 # [patch."https://github.com/stellar/rs-soroban-sdk"]
 # soroban-sdk = { path = "../rs-soroban-sdk/soroban-sdk" }
 # soroban-auth = { path = "../rs-soroban-sdk/soroban-auth" }
+
+# [patch."https://github.com/stellar/rs-soroban-env"]
+# soroban-env-common = { path = "../rs-soroban-env/soroban-env-common" }
+# soroban-env-guest = { path = "../rs-soroban-env/soroban-env-guest" }
+# soroban-env-host = { path = "../rs-soroban-env/soroban-env-host/" }
