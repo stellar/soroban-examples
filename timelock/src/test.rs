@@ -26,7 +26,6 @@ struct ClaimableBalanceTest {
     claim_addresses: [Address; 3],
     token: TokenClient,
     contract: ClaimableBalanceContractClient,
-    contract_address: Address,
 }
 
 impl ClaimableBalanceTest {
@@ -54,14 +53,12 @@ impl ClaimableBalanceTest {
         token.mint(&token_admin, &deposit_address, &1000);
 
         let contract = create_claimable_balance_contract(&env);
-        let contract_address = Address::from_contract_id(&env, &contract.contract_id);
         ClaimableBalanceTest {
             env,
             deposit_address,
             claim_addresses,
             token,
             contract,
-            contract_address,
         }
     }
 }
@@ -109,7 +106,7 @@ fn test_deposit_and_claim() {
     );
 
     assert_eq!(test.token.balance(&test.deposit_address), 200);
-    assert_eq!(test.token.balance(&test.contract_address), 800);
+    assert_eq!(test.token.balance(&test.contract.address()), 800);
     assert_eq!(test.token.balance(&test.claim_addresses[1]), 0);
 
     test.contract.claim(&test.claim_addresses[1]);
@@ -124,7 +121,7 @@ fn test_deposit_and_claim() {
     );
 
     assert_eq!(test.token.balance(&test.deposit_address), 200);
-    assert_eq!(test.token.balance(&test.contract_address), 0);
+    assert_eq!(test.token.balance(&test.contract.address()), 0);
     assert_eq!(test.token.balance(&test.claim_addresses[1]), 800);
 }
 

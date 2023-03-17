@@ -5,7 +5,7 @@ use ed25519_dalek::Keypair;
 use ed25519_dalek::Signer;
 use rand::thread_rng;
 use soroban_auth::AuthorizationContext;
-use soroban_sdk::{testutils::BytesN as _, vec, Address, BytesN, Env, IntoVal, Symbol};
+use soroban_sdk::{testutils::BytesN as _, vec, BytesN, Env, IntoVal, Symbol};
 
 use crate::AccError;
 use crate::{AccountContract, AccountContractClient, Signature};
@@ -75,14 +75,13 @@ fn test_token_auth() {
         .unwrap()
         .unwrap();
 
-    let account_address = Address::from_contract_id(&env, &account_contract.contract_id);
     // Add a spend limit of 1000 per 1 signer.
     account_contract.add_limit(&token, &1000);
     // Verify that this call needs to be authorized.
     assert_eq!(
         env.recorded_top_authorizations(),
         std::vec![(
-            account_address.clone(),
+            account_contract.address(),
             account_contract.contract_id.clone(),
             Symbol::short("add_limit"),
             (token.clone(), 1000_i128).into_val(&env),

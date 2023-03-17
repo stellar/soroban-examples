@@ -859,7 +859,7 @@ dependencies = [
 [[package]]
 name = "soroban-auth"
 version = "0.6.0"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=754c43bd87fe3fd69773ab5e3dc9cbe5a4852c37#754c43bd87fe3fd69773ab5e3dc9cbe5a4852c37"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=7a2d3c4acc816f0b4214b3ca09d2e1aef8a33259#7a2d3c4acc816f0b4214b3ca09d2e1aef8a33259"
 dependencies = [
  "soroban-sdk",
 ]
@@ -997,7 +997,7 @@ dependencies = [
 [[package]]
 name = "soroban-ledger-snapshot"
 version = "0.6.0"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=754c43bd87fe3fd69773ab5e3dc9cbe5a4852c37#754c43bd87fe3fd69773ab5e3dc9cbe5a4852c37"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=7a2d3c4acc816f0b4214b3ca09d2e1aef8a33259#7a2d3c4acc816f0b4214b3ca09d2e1aef8a33259"
 dependencies = [
  "serde",
  "serde_json",
@@ -1034,7 +1034,7 @@ dependencies = [
 [[package]]
 name = "soroban-sdk"
 version = "0.6.0"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=754c43bd87fe3fd69773ab5e3dc9cbe5a4852c37#754c43bd87fe3fd69773ab5e3dc9cbe5a4852c37"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=7a2d3c4acc816f0b4214b3ca09d2e1aef8a33259#7a2d3c4acc816f0b4214b3ca09d2e1aef8a33259"
 dependencies = [
  "bytes-lit",
  "ed25519-dalek",
@@ -1049,7 +1049,7 @@ dependencies = [
 [[package]]
 name = "soroban-sdk-macros"
 version = "0.6.0"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=754c43bd87fe3fd69773ab5e3dc9cbe5a4852c37#754c43bd87fe3fd69773ab5e3dc9cbe5a4852c37"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=7a2d3c4acc816f0b4214b3ca09d2e1aef8a33259#7a2d3c4acc816f0b4214b3ca09d2e1aef8a33259"
 dependencies = [
  "darling",
  "itertools",
@@ -1072,7 +1072,7 @@ dependencies = [
 [[package]]
 name = "soroban-spec"
 version = "0.6.0"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=754c43bd87fe3fd69773ab5e3dc9cbe5a4852c37#754c43bd87fe3fd69773ab5e3dc9cbe5a4852c37"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=7a2d3c4acc816f0b4214b3ca09d2e1aef8a33259#7a2d3c4acc816f0b4214b3ca09d2e1aef8a33259"
 dependencies = [
  "base64",
  "darling",

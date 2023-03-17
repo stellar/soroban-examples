@@ -58,13 +58,11 @@ fn test() {
         1,
         2,
     );
-    let offer_address = Address::from_contract_id(&e, &offer.contract_id);
-
     // Give some sell_token to seller and buy_token to buyer.
     sell_token.mint(&token_admin, &seller, &1000);
     buy_token.mint(&token_admin, &buyer, &1000);
     // Deposit 100 sell_token from seller into offer.
-    sell_token.xfer(&seller, &offer_address, &100);
+    sell_token.xfer(&seller, &offer.address(), &100);
 
     // Try trading 20 buy_token for at least 11 sell_token - that wouldn't
     // succeed because the offer price would result in 10 sell_token.
@@ -84,10 +82,10 @@ fn test() {
 
     assert_eq!(sell_token.balance(&seller), 900);
     assert_eq!(sell_token.balance(&buyer), 10);
-    assert_eq!(sell_token.balance(&offer_address), 90);
+    assert_eq!(sell_token.balance(&offer.address()), 90);
     assert_eq!(buy_token.balance(&seller), 20);
     assert_eq!(buy_token.balance(&buyer), 980);
-    assert_eq!(buy_token.balance(&offer_address), 0);
+    assert_eq!(buy_token.balance(&offer.address()), 0);
 
     // Withdraw 70 sell_token from offer.
     offer.withdraw(&sell_token.contract_id, &70);
@@ -103,7 +101,7 @@ fn test() {
     );
 
     assert_eq!(sell_token.balance(&seller), 970);
-    assert_eq!(sell_token.balance(&offer_address), 20);
+    assert_eq!(sell_token.balance(&offer.address()), 20);
 
     // The price here is 1 sell_token = 1 buy_token.
     offer.updt_price(&1, &1);
@@ -122,8 +120,8 @@ fn test() {
     offer.trade(&buyer, &10_i128, &9_i128);
     assert_eq!(sell_token.balance(&seller), 970);
     assert_eq!(sell_token.balance(&buyer), 20);
-    assert_eq!(sell_token.balance(&offer_address), 10);
+    assert_eq!(sell_token.balance(&offer.address()), 10);
     assert_eq!(buy_token.balance(&seller), 30);
     assert_eq!(buy_token.balance(&buyer), 970);
-    assert_eq!(buy_token.balance(&offer_address), 0);
+    assert_eq!(buy_token.balance(&offer.address()), 0);
 }
