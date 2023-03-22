@@ -40,12 +40,12 @@ lto = true
 [workspace.dependencies.soroban-sdk]
 version = "0.6.0"
 git = "https://github.com/stellar/rs-soroban-sdk"
-rev = "429ba557142bca0f1a4ef10131c8df584dd0719b"
+rev = "9947607e2f9bf733cbfd264d92560b75308f0294"
 
 [workspace.dependencies.soroban-auth]
 version = "0.6.0"
 git = "https://github.com/stellar/rs-soroban-sdk"
-rev = "429ba557142bca0f1a4ef10131c8df584dd0719b"
+rev = "9947607e2f9bf733cbfd264d92560b75308f0294"
 
 # [patch."https://github.com/stellar/rs-soroban-sdk"]
 # soroban-sdk = { path = "../rs-soroban-sdk/soroban-sdk" }
