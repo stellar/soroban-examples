@@ -1,9 +1,8 @@
 //! This contract demonstrates a sample implementation of the Soroban token
 //! interface.
-use crate::admin::{check_admin, has_administrator, write_administrator};
-use crate::allowance::{read_allowance, spend_allowance, write_allowance};
-use crate::balance::{is_authorized, write_authorization};
-use crate::balance::{read_balance, receive_balance, spend_balance};
+use crate::admin;
+use crate::allowance;
+use crate::balance::{is_authorized, write_authorization, self};
 use crate::event;
 use crate::metadata::{
     read_decimal, read_name, read_symbol, write_decimal, write_name, write_symbol,
@@ -49,9 +48,7 @@ pub trait TokenTrait {
 }
 
 fn check_nonnegative_amount(amount: i128) {
-    if amount < 0 {
-        panic!("negative amount is not allowed: {}", amount)
-    }
+    assert!(amount >= 0, "negative amount is not allowed: {amount}");
 }
 
 pub struct Token;
@@ -59,10 +56,8 @@ pub struct Token;
 #[contractimpl]
 impl TokenTrait for Token {
     fn initialize(e: Env, admin: Address, decimal: u32, name: Bytes, symbol: Bytes) {
-        if has_administrator(&e) {
-            panic!("already initialized")
-        }
-        write_administrator(&e, &admin);
+        assert!(!admin::has(&e), "already initialized");
+        admin::write(&e, &admin);
 
         write_decimal(&e, u8::try_from(decimal).expect("Decimal must fit in a u8"));
         write_name(&e, name);
@@ -70,7 +65,7 @@ impl TokenTrait for Token {
     }
 
     fn allowance(e: Env, from: Address, spender: Address) -> i128 {
-        read_allowance(&e, from, spender)
+        allowance::read(&e, from, spender)
     }
 
     fn incr_allow(e: Env, from: Address, spender: Address, amount: i128) {
@@ -78,12 +73,12 @@ impl TokenTrait for Token {
 
         check_nonnegative_amount(amount);
 
-        let allowance = read_allowance(&e, from.clone(), spender.clone());
+        let allowance = allowance::read(&e, from.clone(), spender.clone());
         let new_allowance = allowance
             .checked_add(amount)
             .expect("Updated allowance doesn't fit in an i128");
 
-        write_allowance(&e, from.clone(), spender.clone(), new_allowance);
+        allowance::write(&e, from.clone(), spender.clone(), new_allowance);
         event::incr_allow(&e, from, spender, amount);
     }
 
@@ -92,21 +87,21 @@ impl TokenTrait for Token {
 
         check_nonnegative_amount(amount);
 
-        let allowance = read_allowance(&e, from.clone(), spender.clone());
+        let allowance = allowance::read(&e, from.clone(), spender.clone());
         if amount >= allowance {
-            write_allowance(&e, from.clone(), spender.clone(), 0);
+            allowance::write(&e, from.clone(), spender.clone(), 0);
         } else {
-            write_allowance(&e, from.clone(), spender.clone(), allowance - amount);
+            allowance::write(&e, from.clone(), spender.clone(), allowance - amount);
         }
         event::decr_allow(&e, from, spender, amount);
     }
 
     fn balance(e: Env, id: Address) -> i128 {
-        read_balance(&e, id)
+        balance::read(&e, id)
     }
 
     fn spendable(e: Env, id: Address) -> i128 {
-        read_balance(&e, id)
+        balance::read(&e, id)
     }
 
     fn authorized(e: Env, id: Address) -> bool {
@@ -117,8 +112,8 @@ impl TokenTrait for Token {
         from.require_auth();
 
         check_nonnegative_amount(amount);
-        spend_balance(&e, from.clone(), amount);
-        receive_balance(&e, to.clone(), amount);
+        balance::spend(&e, from.clone(), amount);
+        balance::receive(&e, to.clone(), amount);
         event::transfer(&e, from, to, amount);
     }
 
@@ -126,17 +121,17 @@ impl TokenTrait for Token {
         spender.require_auth();
 
         check_nonnegative_amount(amount);
-        spend_allowance(&e, from.clone(), spender, amount);
-        spend_balance(&e, from.clone(), amount);
-        receive_balance(&e, to.clone(), amount);
-        event::transfer(&e, from, to, amount)
+        allowance::spend(&e, from.clone(), spender, amount);
+        balance::spend(&e, from.clone(), amount);
+        balance::receive(&e, to.clone(), amount);
+        event::transfer(&e, from, to, amount);
     }
 
     fn burn(e: Env, from: Address, amount: i128) {
         from.require_auth();
 
         check_nonnegative_amount(amount);
-        spend_balance(&e, from.clone(), amount);
+        balance::spend(&e, from.clone(), amount);
         event::burn(&e, from, amount);
     }
 
@@ -144,21 +139,21 @@ impl TokenTrait for Token {
         spender.require_auth();
 
         check_nonnegative_amount(amount);
-        spend_allowance(&e, from.clone(), spender, amount);
-        spend_balance(&e, from.clone(), amount);
-        event::burn(&e, from, amount)
+        allowance::spend(&e, from.clone(), spender, amount);
+        balance::spend(&e, from.clone(), amount);
+        event::burn(&e, from, amount);
     }
 
     fn clawback(e: Env, admin: Address, from: Address, amount: i128) {
         check_nonnegative_amount(amount);
-        check_admin(&e, &admin);
+        admin::check(&e, &admin);
         admin.require_auth();
-        spend_balance(&e, from.clone(), amount);
+        balance::spend(&e, from.clone(), amount);
         event::clawback(&e, admin, from, amount);
     }
 
     fn set_auth(e: Env, admin: Address, id: Address, authorize: bool) {
-        check_admin(&e, &admin);
+        admin::check(&e, &admin);
         admin.require_auth();
         write_authorization(&e, id.clone(), authorize);
         event::set_auth(&e, admin, id, authorize);
@@ -166,16 +161,16 @@ impl TokenTrait for Token {
 
     fn mint(e: Env, admin: Address, to: Address, amount: i128) {
         check_nonnegative_amount(amount);
-        check_admin(&e, &admin);
+        admin::check(&e, &admin);
         admin.require_auth();
-        receive_balance(&e, to.clone(), amount);
+        balance::receive(&e, to.clone(), amount);
         event::mint(&e, admin, to, amount);
     }
 
     fn set_admin(e: Env, admin: Address, new_admin: Address) {
-        check_admin(&e, &admin);
+        admin::check(&e, &admin);
         admin.require_auth();
-        write_administrator(&e, &new_admin);
+        admin::write(&e, &new_admin);
         event::set_admin(&e, admin, new_admin);
     }
 

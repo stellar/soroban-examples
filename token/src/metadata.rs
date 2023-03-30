@@ -8,7 +8,7 @@ pub fn read_decimal(e: &Env) -> u32 {
 
 pub fn write_decimal(e: &Env, d: u8) {
     let key = DataKey::Decimals;
-    e.storage().set(&key, &u32::from(d))
+    e.storage().set(&key, &u32::from(d));
 }
 
 pub fn read_name(e: &Env) -> Bytes {
@@ -18,7 +18,7 @@ pub fn read_name(e: &Env) -> Bytes {
 
 pub fn write_name(e: &Env, d: Bytes) {
     let key = DataKey::Name;
-    e.storage().set(&key, &d)
+    e.storage().set(&key, &d);
 }
 
 pub fn read_symbol(e: &Env) -> Bytes {
@@ -28,5 +28,5 @@ pub fn read_symbol(e: &Env) -> Bytes {
 
 pub fn write_symbol(e: &Env, d: Bytes) {
     let key = DataKey::Symbol;
-    e.storage().set(&key, &d)
+    e.storage().set(&key, &d);
 }
