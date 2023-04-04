@@ -62,7 +62,7 @@ fn test() {
     sell_token.mint(&token_admin, &seller, &1000);
     buy_token.mint(&token_admin, &buyer, &1000);
     // Deposit 100 sell_token from seller into offer.
-    sell_token.xfer(&seller, &offer.address(), &100);
+    sell_token.transfer(&seller, &offer.address(), &100);
 
     // Try trading 20 buy_token for at least 11 sell_token - that wouldn't
     // succeed because the offer price would result in 10 sell_token.
