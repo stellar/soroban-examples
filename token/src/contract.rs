@@ -1,6 +1,6 @@
 //! This contract demonstrates a sample implementation of the Soroban token
 //! interface.
-use crate::admin::{check_admin, has_administrator, write_administrator};
+use crate::admin::{has_administrator, read_administrator, write_administrator};
 use crate::allowance::{read_allowance, spend_allowance, write_allowance};
 use crate::balance::{is_authorized, write_authorization};
 use crate::balance::{read_balance, receive_balance, spend_balance};
@@ -33,13 +33,13 @@ pub trait TokenTrait {
 
     fn burn_from(e: Env, spender: Address, from: Address, amount: i128);
 
-    fn clawback(e: Env, admin: Address, from: Address, amount: i128);
+    fn clawback(e: Env, from: Address, amount: i128);
 
-    fn set_authorized(e: Env, admin: Address, id: Address, authorize: bool);
+    fn set_authorized(e: Env, id: Address, authorize: bool);
 
-    fn mint(e: Env, admin: Address, to: Address, amount: i128);
+    fn mint(e: Env, to: Address, amount: i128);
 
-    fn set_admin(e: Env, admin: Address, new_admin: Address);
+    fn set_admin(e: Env, new_admin: Address);
 
     fn decimals(e: Env) -> u32;
 
@@ -149,31 +149,31 @@ impl TokenTrait for Token {
         event::burn(&e, from, amount)
     }
 
-    fn clawback(e: Env, admin: Address, from: Address, amount: i128) {
+    fn clawback(e: Env, from: Address, amount: i128) {
         check_nonnegative_amount(amount);
-        check_admin(&e, &admin);
+        let admin = read_administrator(&e);
         admin.require_auth();
         spend_balance(&e, from.clone(), amount);
         event::clawback(&e, admin, from, amount);
     }
 
-    fn set_authorized(e: Env, admin: Address, id: Address, authorize: bool) {
-        check_admin(&e, &admin);
+    fn set_authorized(e: Env, id: Address, authorize: bool) {
+        let admin = read_administrator(&e);
         admin.require_auth();
         write_authorization(&e, id.clone(), authorize);
         event::set_authorized(&e, admin, id, authorize);
     }
 
-    fn mint(e: Env, admin: Address, to: Address, amount: i128) {
+    fn mint(e: Env, to: Address, amount: i128) {
         check_nonnegative_amount(amount);
-        check_admin(&e, &admin);
+        let admin = read_administrator(&e);
         admin.require_auth();
         receive_balance(&e, to.clone(), amount);
         event::mint(&e, admin, to, amount);
     }
 
-    fn set_admin(e: Env, admin: Address, new_admin: Address) {
-        check_admin(&e, &admin);
+    fn set_admin(e: Env, new_admin: Address) {
+        let admin = read_administrator(&e);
         admin.require_auth();
         write_administrator(&e, &new_admin);
         event::set_admin(&e, admin, new_admin);

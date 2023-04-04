@@ -130,7 +130,11 @@ impl SingleOffer {
     pub fn withdraw(e: Env, token: BytesN<32>, amount: i128) {
         let offer = load_offer(&e);
         offer.seller.require_auth();
-        token::Client::new(&e, &token).transfer(&e.current_contract_address(), &offer.seller, &amount);
+        token::Client::new(&e, &token).transfer(
+            &e.current_contract_address(),
+            &offer.seller,
+            &amount,
+        );
     }
 
     // Updates the price.

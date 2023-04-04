@@ -28,8 +28,8 @@ fn test_atomic_swap() {
 
     let token_a = create_token_contract(&env, &token_admin);
     let token_b = create_token_contract(&env, &token_admin);
-    token_a.mint(&token_admin, &a, &1000);
-    token_b.mint(&token_admin, &b, &5000);
+    token_a.mint(&a, &1000);
+    token_b.mint(&b, &5000);
 
     let contract = create_atomic_swap_contract(&env);
 

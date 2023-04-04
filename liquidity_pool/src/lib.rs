@@ -102,7 +102,7 @@ fn mint_shares(e: &Env, to: Address, amount: i128) {
     let total = get_total_shares(e);
     let share_contract_id = get_token_share(e);
 
-    token::Client::new(e, &share_contract_id).mint(&e.current_contract_address(), &to, &amount);
+    token::Client::new(e, &share_contract_id).mint(&to, &amount);
 
     put_total_shares(e, total + amount);
 }

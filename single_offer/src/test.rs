@@ -59,8 +59,8 @@ fn test() {
         2,
     );
     // Give some sell_token to seller and buy_token to buyer.
-    sell_token.mint(&token_admin, &seller, &1000);
-    buy_token.mint(&token_admin, &buyer, &1000);
+    sell_token.mint(&seller, &1000);
+    buy_token.mint(&buyer, &1000);
     // Deposit 100 sell_token from seller into offer.
     sell_token.transfer(&seller, &offer.address(), &100);
 

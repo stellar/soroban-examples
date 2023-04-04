@@ -21,14 +21,14 @@ fn test() {
     let user3 = Address::random(&e);
     let token = create_token(&e, &admin1);
 
-    token.mint(&admin1, &user1, &1000);
+    token.mint(&user1, &1000);
     assert_eq!(
         e.recorded_top_authorizations(),
         std::vec![(
             admin1.clone(),
             token.contract_id.clone(),
             Symbol::short("mint"),
-            (&admin1, &user1, 1000_i128).into_val(&e),
+            (&user1, 1000_i128).into_val(&e),
         )]
     );
     assert_eq!(token.balance(&user1), 1000);
@@ -75,40 +75,40 @@ fn test() {
     assert_eq!(token.balance(&user1), 500);
     assert_eq!(token.balance(&user3), 300);
 
-    token.set_admin(&admin1, &admin2);
+    token.set_admin(&admin2);
     assert_eq!(
         e.recorded_top_authorizations(),
         std::vec![(
             admin1.clone(),
             token.contract_id.clone(),
             Symbol::short("set_admin"),
-            (&admin1, &admin2).into_val(&e),
+            (&admin2,).into_val(&e), //THIS DOESN'T WORK
         )]
     );
 
-    token.set_authorized(&admin2, &user2, &false);
+    token.set_authorized(&user2, &false);
     assert_eq!(
         e.recorded_top_authorizations(),
         std::vec![(
             admin2.clone(),
             token.contract_id.clone(),
             Symbol::new(&e, "set_authorized"),
-            (&admin2, &user2, false).into_val(&e),
+            (&user2, false).into_val(&e),
         )]
     );
     assert_eq!(token.authorized(&user2), false);
 
-    token.set_authorized(&admin2, &user3, &true);
+    token.set_authorized(&user3, &true);
     assert_eq!(token.authorized(&user3), true);
 
-    token.clawback(&admin2, &user3, &100);
+    token.clawback(&user3, &100);
     assert_eq!(
         e.recorded_top_authorizations(),
         std::vec![(
             admin2.clone(),
             token.contract_id.clone(),
             Symbol::short("clawback"),
-            (&admin2, &user3, 100_i128).into_val(&e),
+            (&user3, 100_i128).into_val(&e),
         )]
     );
     assert_eq!(token.balance(&user3), 200);
@@ -138,7 +138,7 @@ fn test_burn() {
     let user2 = Address::random(&e);
     let token = create_token(&e, &admin);
 
-    token.mint(&admin, &user1, &1000);
+    token.mint(&user1, &1000);
     assert_eq!(token.balance(&user1), 1000);
 
     token.increase_allowance(&user1, &user2, &500);
@@ -181,7 +181,7 @@ fn transfer_insufficient_balance() {
     let user2 = Address::random(&e);
     let token = create_token(&e, &admin);
 
-    token.mint(&admin, &user1, &1000);
+    token.mint(&user1, &1000);
     assert_eq!(token.balance(&user1), 1000);
 
     token.transfer(&user1, &user2, &1001);
@@ -196,10 +196,10 @@ fn transfer_receive_deauthorized() {
     let user2 = Address::random(&e);
     let token = create_token(&e, &admin);
 
-    token.mint(&admin, &user1, &1000);
+    token.mint(&user1, &1000);
     assert_eq!(token.balance(&user1), 1000);
 
-    token.set_authorized(&admin, &user2, &false);
+    token.set_authorized(&user2, &false);
     token.transfer(&user1, &user2, &1);
 }
 
@@ -212,10 +212,10 @@ fn transfer_spend_deauthorized() {
     let user2 = Address::random(&e);
     let token = create_token(&e, &admin);
 
-    token.mint(&admin, &user1, &1000);
+    token.mint(&user1, &1000);
     assert_eq!(token.balance(&user1), 1000);
 
-    token.set_authorized(&admin, &user1, &false);
+    token.set_authorized(&user1, &false);
     token.transfer(&user1, &user2, &1);
 }
 
@@ -229,7 +229,7 @@ fn transfer_from_insufficient_allowance() {
     let user3 = Address::random(&e);
     let token = create_token(&e, &admin);
 
-    token.mint(&admin, &user1, &1000);
+    token.mint(&user1, &1000);
     assert_eq!(token.balance(&user1), 1000);
 
     token.increase_allowance(&user1, &user3, &100);
