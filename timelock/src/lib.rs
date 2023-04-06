@@ -76,7 +76,7 @@ impl ClaimableBalanceContract {
         from.require_auth();
 
         // Transfer token from `from` to this contract address.
-        token::Client::new(&env, &token).xfer(&from, &env.current_contract_address(), &amount);
+        token::Client::new(&env, &token).transfer(&from, &env.current_contract_address(), &amount);
         // Store all the necessary info to allow one of the claimants to claim it.
         env.storage().set(
             &DataKey::Balance,
@@ -112,7 +112,7 @@ impl ClaimableBalanceContract {
 
         // Transfer the stored amount of token to claimant after passing
         // all the checks.
-        token::Client::new(&env, &claimable_balance.token).xfer(
+        token::Client::new(&env, &claimable_balance.token).transfer(
             &env.current_contract_address(),
             &claimant,
             &claimable_balance.amount,

@@ -102,13 +102,13 @@ fn mint_shares(e: &Env, to: Address, amount: i128) {
     let total = get_total_shares(e);
     let share_contract_id = get_token_share(e);
 
-    token::Client::new(e, &share_contract_id).mint(&e.current_contract_address(), &to, &amount);
+    token::Client::new(e, &share_contract_id).mint(&to, &amount);
 
     put_total_shares(e, total + amount);
 }
 
 fn transfer(e: &Env, contract_id: BytesN<32>, to: Address, amount: i128) {
-    token::Client::new(e, &contract_id).xfer(&e.current_contract_address(), &to, &amount);
+    token::Client::new(e, &contract_id).transfer(&e.current_contract_address(), &to, &amount);
 }
 
 fn transfer_a(e: &Env, to: Address, amount: i128) {
@@ -160,10 +160,10 @@ pub trait LiquidityPoolTrait {
 
     // If "buy_a" is true, the swap will buy token_a and sell token_b. This is flipped if "buy_a" is false.
     // "out" is the amount being bought, with in_max being a safety to make sure you receive at least that amount.
-    // swap will xfer the selling token "to" to this contract, and then the contract will xfer the buying token to "to".
+    // swap will transfer the selling token "to" to this contract, and then the contract will transfer the buying token to "to".
     fn swap(e: Env, to: Address, buy_a: bool, out: i128, in_max: i128);
 
-    // xfers share_amount of pool share tokens to this contract, burns all pools share tokens in this contracts, and sends the
+    // transfers share_amount of pool share tokens to this contract, burns all pools share tokens in this contracts, and sends the
     // corresponding amount of token_a and token_b to "to".
     // Returns amount of both tokens withdrawn
     fn withdraw(e: Env, to: Address, share_amount: i128, min_a: i128, min_b: i128) -> (i128, i128);
@@ -212,8 +212,8 @@ impl LiquidityPoolTrait for LiquidityPool {
         let token_a_client = token::Client::new(&e, &get_token_a(&e));
         let token_b_client = token::Client::new(&e, &get_token_b(&e));
 
-        token_a_client.xfer(&to, &e.current_contract_address(), &amounts.0);
-        token_b_client.xfer(&to, &e.current_contract_address(), &amounts.1);
+        token_a_client.transfer(&to, &e.current_contract_address(), &amounts.0);
+        token_b_client.transfer(&to, &e.current_contract_address(), &amounts.1);
 
         // Now calculate how many new pool shares to mint
         let (balance_a, balance_b) = (get_balance_a(&e), get_balance_b(&e));
@@ -251,14 +251,14 @@ impl LiquidityPoolTrait for LiquidityPool {
             panic!("in amount is over max")
         }
 
-        // Xfer the amount being sold to the contract
+        // Transfer the amount being sold to the contract
         let sell_token = if buy_a {
             get_token_b(&e)
         } else {
             get_token_a(&e)
         };
         let sell_token_client = token::Client::new(&e, &sell_token);
-        sell_token_client.xfer(&to, &e.current_contract_address(), &sell_amount);
+        sell_token_client.transfer(&to, &e.current_contract_address(), &sell_amount);
 
         let (balance_a, balance_b) = (get_balance_a(&e), get_balance_b(&e));
 
@@ -304,7 +304,7 @@ impl LiquidityPoolTrait for LiquidityPool {
 
         // First transfer the pool shares that need to be redeemed
         let share_token_client = token::Client::new(&e, &get_token_share(&e));
-        share_token_client.xfer(&to, &e.current_contract_address(), &share_amount);
+        share_token_client.transfer(&to, &e.current_contract_address(), &share_amount);
 
         let (balance_a, balance_b) = (get_balance_a(&e), get_balance_b(&e));
         let balance_shares = get_balance_shares(&e);

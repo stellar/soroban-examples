@@ -51,10 +51,10 @@ fn test() {
     let contract_share: [u8; 32] = liqpool.share_id().into();
     let token_share = token::Client::new(&e, &contract_share);
 
-    token1.mint(&admin1, &user1, &1000);
+    token1.mint(&user1, &1000);
     assert_eq!(token1.balance(&user1), 1000);
 
-    token2.mint(&admin2, &user1, &1000);
+    token2.mint(&user1, &1000);
     assert_eq!(token2.balance(&user1), 1000);
 
     liqpool.deposit(&user1, &100, &100, &100, &100);
