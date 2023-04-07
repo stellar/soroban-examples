@@ -1,6 +1,6 @@
 //! This contract demonstrates a sample implementation of the Soroban token
 //! interface.
-use crate::admin::{check_admin, has_administrator, write_administrator};
+use crate::admin::{has_administrator, read_administrator, write_administrator};
 use crate::allowance::{read_allowance, spend_allowance, write_allowance};
 use crate::balance::{is_authorized, write_authorization};
 use crate::balance::{read_balance, receive_balance, spend_balance};
@@ -15,31 +15,31 @@ pub trait TokenTrait {
 
     fn allowance(e: Env, from: Address, spender: Address) -> i128;
 
-    fn incr_allow(e: Env, from: Address, spender: Address, amount: i128);
+    fn increase_allowance(e: Env, from: Address, spender: Address, amount: i128);
 
-    fn decr_allow(e: Env, from: Address, spender: Address, amount: i128);
+    fn decrease_allowance(e: Env, from: Address, spender: Address, amount: i128);
 
     fn balance(e: Env, id: Address) -> i128;
 
-    fn spendable(e: Env, id: Address) -> i128;
+    fn spendable_balance(e: Env, id: Address) -> i128;
 
     fn authorized(e: Env, id: Address) -> bool;
 
-    fn xfer(e: Env, from: Address, to: Address, amount: i128);
+    fn transfer(e: Env, from: Address, to: Address, amount: i128);
 
-    fn xfer_from(e: Env, spender: Address, from: Address, to: Address, amount: i128);
+    fn transfer_from(e: Env, spender: Address, from: Address, to: Address, amount: i128);
 
     fn burn(e: Env, from: Address, amount: i128);
 
     fn burn_from(e: Env, spender: Address, from: Address, amount: i128);
 
-    fn clawback(e: Env, admin: Address, from: Address, amount: i128);
+    fn clawback(e: Env, from: Address, amount: i128);
 
-    fn set_auth(e: Env, admin: Address, id: Address, authorize: bool);
+    fn set_authorized(e: Env, id: Address, authorize: bool);
 
-    fn mint(e: Env, admin: Address, to: Address, amount: i128);
+    fn mint(e: Env, to: Address, amount: i128);
 
-    fn set_admin(e: Env, admin: Address, new_admin: Address);
+    fn set_admin(e: Env, new_admin: Address);
 
     fn decimals(e: Env) -> u32;
 
@@ -73,7 +73,7 @@ impl TokenTrait for Token {
         read_allowance(&e, from, spender)
     }
 
-    fn incr_allow(e: Env, from: Address, spender: Address, amount: i128) {
+    fn increase_allowance(e: Env, from: Address, spender: Address, amount: i128) {
         from.require_auth();
 
         check_nonnegative_amount(amount);
@@ -84,10 +84,10 @@ impl TokenTrait for Token {
             .expect("Updated allowance doesn't fit in an i128");
 
         write_allowance(&e, from.clone(), spender.clone(), new_allowance);
-        event::incr_allow(&e, from, spender, amount);
+        event::increase_allowance(&e, from, spender, amount);
     }
 
-    fn decr_allow(e: Env, from: Address, spender: Address, amount: i128) {
+    fn decrease_allowance(e: Env, from: Address, spender: Address, amount: i128) {
         from.require_auth();
 
         check_nonnegative_amount(amount);
@@ -98,14 +98,14 @@ impl TokenTrait for Token {
         } else {
             write_allowance(&e, from.clone(), spender.clone(), allowance - amount);
         }
-        event::decr_allow(&e, from, spender, amount);
+        event::decrease_allowance(&e, from, spender, amount);
     }
 
     fn balance(e: Env, id: Address) -> i128 {
         read_balance(&e, id)
     }
 
-    fn spendable(e: Env, id: Address) -> i128 {
+    fn spendable_balance(e: Env, id: Address) -> i128 {
         read_balance(&e, id)
     }
 
@@ -113,7 +113,7 @@ impl TokenTrait for Token {
         is_authorized(&e, id)
     }
 
-    fn xfer(e: Env, from: Address, to: Address, amount: i128) {
+    fn transfer(e: Env, from: Address, to: Address, amount: i128) {
         from.require_auth();
 
         check_nonnegative_amount(amount);
@@ -122,7 +122,7 @@ impl TokenTrait for Token {
         event::transfer(&e, from, to, amount);
     }
 
-    fn xfer_from(e: Env, spender: Address, from: Address, to: Address, amount: i128) {
+    fn transfer_from(e: Env, spender: Address, from: Address, to: Address, amount: i128) {
         spender.require_auth();
 
         check_nonnegative_amount(amount);
@@ -149,31 +149,31 @@ impl TokenTrait for Token {
         event::burn(&e, from, amount)
     }
 
-    fn clawback(e: Env, admin: Address, from: Address, amount: i128) {
+    fn clawback(e: Env, from: Address, amount: i128) {
         check_nonnegative_amount(amount);
-        check_admin(&e, &admin);
+        let admin = read_administrator(&e);
         admin.require_auth();
         spend_balance(&e, from.clone(), amount);
         event::clawback(&e, admin, from, amount);
     }
 
-    fn set_auth(e: Env, admin: Address, id: Address, authorize: bool) {
-        check_admin(&e, &admin);
+    fn set_authorized(e: Env, id: Address, authorize: bool) {
+        let admin = read_administrator(&e);
         admin.require_auth();
         write_authorization(&e, id.clone(), authorize);
-        event::set_auth(&e, admin, id, authorize);
+        event::set_authorized(&e, admin, id, authorize);
     }
 
-    fn mint(e: Env, admin: Address, to: Address, amount: i128) {
+    fn mint(e: Env, to: Address, amount: i128) {
         check_nonnegative_amount(amount);
-        check_admin(&e, &admin);
+        let admin = read_administrator(&e);
         admin.require_auth();
         receive_balance(&e, to.clone(), amount);
         event::mint(&e, admin, to, amount);
     }
 
-    fn set_admin(e: Env, admin: Address, new_admin: Address) {
-        check_admin(&e, &admin);
+    fn set_admin(e: Env, new_admin: Address) {
+        let admin = read_administrator(&e);
         admin.require_auth();
         write_administrator(&e, &new_admin);
         event::set_admin(&e, admin, new_admin);

@@ -74,7 +74,7 @@ fn test_token_auth() {
         &vec![&env, sign(&env, &signers[0], &payload)],
         &vec![
             &env,
-            token_auth_context(&env, &token, Symbol::new(&env, "xfer"), 1000),
+            token_auth_context(&env, &token, Symbol::new(&env, "transfer"), 1000),
         ],
     )
     .unwrap();
@@ -84,7 +84,7 @@ fn test_token_auth() {
         &vec![&env, sign(&env, &signers[0], &payload)],
         &vec![
             &env,
-            token_auth_context(&env, &token, Symbol::new(&env, "xfer"), 1000),
+            token_auth_context(&env, &token, Symbol::new(&env, "transfer"), 1000),
         ],
     )
     .unwrap();
@@ -111,7 +111,7 @@ fn test_token_auth() {
             &vec![&env, sign(&env, &signers[0], &payload)],
             &vec![
                 &env,
-                token_auth_context(&env, &token, Symbol::new(&env, "xfer"), 1001)
+                token_auth_context(&env, &token, Symbol::new(&env, "transfer"), 1001)
             ],
         )
         .err()
@@ -126,7 +126,7 @@ fn test_token_auth() {
             &vec![&env, sign(&env, &signers[0], &payload)],
             &vec![
                 &env,
-                token_auth_context(&env, &token, Symbol::new(&env, "incr_allow"), 1001)
+                token_auth_context(&env, &token, Symbol::new(&env, "increase_allowance"), 1001)
             ],
         )
         .err()
@@ -142,7 +142,7 @@ fn test_token_auth() {
         &vec![&env, sign(&env, &signers[0], &payload)],
         &vec![
             &env,
-            token_auth_context(&env, &token, Symbol::new(&env, "incr_allow"), 1000),
+            token_auth_context(&env, &token, Symbol::new(&env, "increase_allowance"), 1000),
         ],
     )
     .unwrap();
@@ -157,7 +157,7 @@ fn test_token_auth() {
         ],
         &vec![
             &env,
-            token_auth_context(&env, &token, Symbol::new(&env, "xfer"), 10000),
+            token_auth_context(&env, &token, Symbol::new(&env, "transfer"), 10000),
         ],
     )
     .unwrap();

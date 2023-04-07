@@ -1,12 +1,12 @@
 use soroban_sdk::{Address, Env, Symbol};
 
-pub(crate) fn incr_allow(e: &Env, from: Address, to: Address, amount: i128) {
-    let topics = (Symbol::new(e, "incr_allow"), from, to);
+pub(crate) fn increase_allowance(e: &Env, from: Address, to: Address, amount: i128) {
+    let topics = (Symbol::new(e, "increase_allowance"), from, to);
     e.events().publish(topics, amount);
 }
 
-pub(crate) fn decr_allow(e: &Env, from: Address, to: Address, amount: i128) {
-    let topics = (Symbol::new(e, "decr_allow"), from, to);
+pub(crate) fn decrease_allowance(e: &Env, from: Address, to: Address, amount: i128) {
+    let topics = (Symbol::new(e, "decrease_allowance"), from, to);
     e.events().publish(topics, amount);
 }
 
@@ -25,8 +25,8 @@ pub(crate) fn clawback(e: &Env, admin: Address, from: Address, amount: i128) {
     e.events().publish(topics, amount);
 }
 
-pub(crate) fn set_auth(e: &Env, admin: Address, id: Address, authorize: bool) {
-    let topics = (Symbol::short("set_auth"), admin, id);
+pub(crate) fn set_authorized(e: &Env, admin: Address, id: Address, authorize: bool) {
+    let topics = (Symbol::new(e, "set_authorized"), admin, id);
     e.events().publish(topics, authorize);
 }
 

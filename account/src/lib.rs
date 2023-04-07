@@ -38,7 +38,7 @@ pub enum AccError {
     UnknownSigner = 4,
 }
 
-const XFER_FN: Symbol = Symbol::short("xfer");
+const TRANSFER_FN: Symbol = Symbol::short("transfer");
 
 #[contractimpl]
 impl AccountContract {
@@ -104,7 +104,7 @@ impl AccountContract {
         let curr_contract_id = env.current_contract_id();
 
         // This is a map for tracking the token spend limits per token. This
-        // makes sure that if e.g. multiple `xfer` calls are being authorized
+        // makes sure that if e.g. multiple `transfer` calls are being authorized
         // for the same token we still respect the limit for the total
         // transferred amount (and not the 'per-call' limits).
         let mut spend_left_per_token = Map::<BytesN<32>, i128>::new(&env);
@@ -165,7 +165,7 @@ fn verify_authorization_policy(
     }
 
     // Otherwise, we're only interested in functions that spend tokens.
-    if context.fn_name != XFER_FN && context.fn_name != Symbol::new(env, "incr_allow") {
+    if context.fn_name != TRANSFER_FN && context.fn_name != Symbol::new(env, "increase_allowance") {
         return Ok(());
     }
 
@@ -183,7 +183,7 @@ fn verify_authorization_policy(
 
     // 'None' means that the contract is outside of the policy.
     if let Some(spend_left) = spend_left {
-        // 'amount' is the third argument in both `approve` and `xfer`.
+        // 'amount' is the third argument in both `approve` and `transfer`.
         // If the contract has a different signature, it's safer to panic
         // here, as it's expected to have the standard interface.
         let spent: i128 = context

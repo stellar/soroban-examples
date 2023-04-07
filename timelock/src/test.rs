@@ -50,7 +50,7 @@ impl ClaimableBalanceTest {
         let token_admin = Address::random(&env);
 
         let token = create_token_contract(&env, &token_admin);
-        token.mint(&token_admin, &deposit_address, &1000);
+        token.mint(&deposit_address, &1000);
 
         let contract = create_claimable_balance_contract(&env);
         ClaimableBalanceTest {

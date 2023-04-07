@@ -62,13 +62,13 @@ fn test_atomic_multi_swap() {
 
     let token_a = create_token_contract(&env, &token_admin);
     let token_b = create_token_contract(&env, &token_admin);
-    token_a.mint(&token_admin, &swaps_a[0].address, &2000);
-    token_a.mint(&token_admin, &swaps_a[1].address, &3000);
-    token_a.mint(&token_admin, &swaps_a[2].address, &4000);
+    token_a.mint(&swaps_a[0].address, &2000);
+    token_a.mint(&swaps_a[1].address, &3000);
+    token_a.mint(&swaps_a[2].address, &4000);
 
-    token_b.mint(&token_admin, &swaps_b[0].address, &300);
-    token_b.mint(&token_admin, &swaps_b[1].address, &295);
-    token_b.mint(&token_admin, &swaps_b[2].address, &400);
+    token_b.mint(&swaps_b[0].address, &300);
+    token_b.mint(&swaps_b[1].address, &295);
+    token_b.mint(&swaps_b[2].address, &400);
 
     let contract = create_atomic_multiswap_contract(&env);
 
@@ -194,8 +194,8 @@ fn test_multi_swap_with_duplicate_account() {
 
     let token_a = create_token_contract(&env, &token_admin);
     let token_b = create_token_contract(&env, &token_admin);
-    token_a.mint(&token_admin, &address_a, &3000);
-    token_b.mint(&token_admin, &address_b, &291);
+    token_a.mint(&address_a, &3000);
+    token_b.mint(&address_b, &291);
 
     let contract = create_atomic_multiswap_contract(&env);
 

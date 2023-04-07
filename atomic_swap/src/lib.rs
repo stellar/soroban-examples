@@ -58,15 +58,15 @@ fn move_token(
     from: &Address,
     to: &Address,
     approve_amount: i128,
-    xfer_amount: i128,
+    transfer_amount: i128,
 ) {
     let token = token::Client::new(&env, &token);
     let contract_address = env.current_contract_address();
     // This call needs to be authorized by `from` address. Since it increases
     // the allowance on behalf of the contract, `from` doesn't need to know `to`
     // at the signature time.
-    token.incr_allow(&from, &contract_address, &approve_amount);
-    token.xfer_from(&contract_address, &from, to, &xfer_amount);
+    token.increase_allowance(&from, &contract_address, &approve_amount);
+    token.transfer_from(&contract_address, &from, to, &transfer_amount);
 }
 
 mod test;
