@@ -21,6 +21,7 @@ members = [
     "atomic_multiswap",
     "account",
     "alloc",
+    "simple_account",
 ]
 
 [profile.release-with-logs]

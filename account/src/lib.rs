@@ -66,7 +66,7 @@ impl AccountContract {
 
     // This is the 'entry point' of the account contract and every account
     // contract has to implement it. `require_auth` calls for the Address of
-    // this contract will result in calling this `check_auth` function with
+    // this contract will result in calling this `__check_auth` function with
     // the appropriate arguments.
     //
     // This should return `()` if authentication and authorization checks have
