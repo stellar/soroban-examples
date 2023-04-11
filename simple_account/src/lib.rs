@@ -1,8 +1,8 @@
 //! This a minimal exapmle of an account contract.
 //!
-//! The account is owned by a single ed25519 public key that is also used for 
+//! The account is owned by a single ed25519 public key that is also used for
 //! authentication.
-//! 
+//!
 //! For a more advanced example that demonstrates all the capabilities of the
 //! Soroban account contracts see `src/account` example.
 #![no_std]
@@ -42,7 +42,7 @@ impl SimpleAccount {
     // (not used in this example).
     //
     // In this example `__check_auth` only verifies the signature.
-    //    
+    //
     // Note, that `__check_auth` function shouldn't call `require_auth` on the
     // contract's own address in order to avoid infinite recursion.
     #[allow(non_snake_case)]
