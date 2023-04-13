@@ -14,10 +14,10 @@ doctest = false
 testutils = ["soroban-sdk/testutils"]
 
 [dependencies]
-soroban-sdk = { workspace = true }
+soroban-sdk = "0.7.0"
 
 [dev_dependencies]
-soroban-sdk = { workspace = true, features = ["testutils"] }
+soroban-sdk = { version = "0.7.0", features = ["testutils"] }
 
 [profile.release]
 opt-level = "z"
