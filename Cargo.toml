@@ -22,6 +22,7 @@ members = [
     "account",
     "alloc",
     "test/doc-tests",            # include in members for Rust Analyzer
+    "simple_account",
 ]
 
 # exclude from `cargo build`
