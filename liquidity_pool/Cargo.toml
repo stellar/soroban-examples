@@ -8,6 +8,7 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
+soroban-token-contract = { path = "../token" }
 soroban-sdk = { workspace = true }
 num-integer = { version = "0.1.45", default-features = false, features = ["i128"] }
 

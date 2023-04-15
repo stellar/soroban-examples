@@ -11,6 +11,7 @@ crate-type = ["cdylib"]
 doctest = false
 
 [dependencies]
+soroban-atomic-swap-contract = { path = "../atomic_swap" }
 soroban-sdk = { workspace = true }
 
 [dev_dependencies]

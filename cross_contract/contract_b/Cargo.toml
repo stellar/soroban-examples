@@ -11,6 +11,7 @@ crate-type = ["cdylib"]
 doctest = false
 
 [dependencies]
+soroban-cross-contract-a-contract = { path = "../contract_a" }
 soroban-sdk = { workspace = true }
 
 [dev_dependencies]

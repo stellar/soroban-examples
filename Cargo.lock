@@ -866,6 +866,7 @@ name = "soroban-atomic-multiswap-contract"
 version = "0.0.0"
 dependencies = [
  "assert_unordered",
+ "soroban-atomic-swap-contract",
  "soroban-sdk",
 ]
 
@@ -903,6 +904,7 @@ dependencies = [
 name = "soroban-cross-contract-b-contract"
 version = "0.0.0"
 dependencies = [
+ "soroban-cross-contract-a-contract",
  "soroban-sdk",
 ]
 
@@ -1033,6 +1035,7 @@ version = "0.0.0"
 dependencies = [
  "num-integer",
  "soroban-sdk",
+ "soroban-token-contract",
 ]
 
 [[package]]
