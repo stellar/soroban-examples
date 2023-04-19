@@ -11,11 +11,25 @@ crate-type = ["cdylib"]
 doctest = false
 
 [dependencies]
-soroban-sdk = { workspace = true }
-soroban-auth = { workspace = true }
+soroban-sdk = { version = "0.7.0"}
+soroban-auth = { version = "0.7.0"}
 
 [dev_dependencies]
-soroban-sdk = { workspace = true, features = ["testutils"]  }
-soroban-auth = { workspace = true, features = ["testutils"]  }
+soroban-sdk = { version = "0.7.0", features = ["testutils"] }
+soroban-auth = { version = "0.7.0", features = ["testutils"] }
 ed25519-dalek = { version = "1.0.1" }
 rand = { version = "0.7.3" }
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
+lto = true
+
+[profile.release-with-logs]
+inherits = "release"
+debug-assertions = true
