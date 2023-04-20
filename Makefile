@@ -21,10 +21,22 @@ test: build
 	done
 
 watch:
-	cargo watch --clear --watch-when-idle --shell '$(MAKE)'
+	@for dir in $(SUBDIRS) ; do \
+		cd $$dir; \
+		make watch || break; \
+		cd $(ROOT_DIR); \
+	done
 
 fmt:
-	cargo fmt --all
+	@for dir in $(SUBDIRS) ; do \
+		cd $$dir; \
+		make fmt || break; \
+		cd $(ROOT_DIR); \
+	done
 
 clean:
-	cargo clean
+	@for dir in $(SUBDIRS) ; do \
+		cd $$dir; \
+		make clean || break; \
+		cd $(ROOT_DIR); \
+	done
