@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 
-members = [   
+members = [
     "hello_world",
     "increment",
     "auth",
@@ -15,14 +15,18 @@ members = [
     "events",
     "token",
     "logging",
-    "errors", 
+    "errors",
     "timelock",
     "atomic_swap",
     "atomic_multiswap",
     "account",
     "alloc",
+    "test/doc-tests",            # include in members for Rust Analyzer
     "simple_account",
 ]
+
+# exclude from `cargo build`
+exclude = ["test/doc-tests"]
 
 [profile.release-with-logs]
 inherits = "release"
@@ -41,12 +45,12 @@ lto = true
 [workspace.dependencies.soroban-sdk]
 version = "0.7.0"
 git = "https://github.com/stellar/rs-soroban-sdk"
-rev = "29b505cf95f2fd4fbe639fdb163b606c44920837"
+rev = "8abd3353c728f09ee1c8a2544f67a853e915afc2"
 
 [workspace.dependencies.soroban-auth]
 version = "0.7.0"
 git = "https://github.com/stellar/rs-soroban-sdk"
-rev = "29b505cf95f2fd4fbe639fdb163b606c44920837"
+rev = "8abd3353c728f09ee1c8a2544f67a853e915afc2"
 
 # [patch."https://github.com/stellar/rs-soroban-sdk"]
 # soroban-sdk = { path = "../rs-soroban-sdk/soroban-sdk" }
