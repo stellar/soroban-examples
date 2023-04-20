@@ -1,4 +1,4 @@
-$(MAKE)FILES = $(shell find . -maxdepth 3 -type f -name $(MAKE)file)
+$(MAKE)FILES = $(shell find . -maxdepth 3 -type f -name Makefile)
 SUBDIRS   = $(filter-out ./,$(dir $($(MAKE)FILES)))
 ROOT_DIR = $(shell pwd)
 
