@@ -8,10 +8,7 @@ test: build
 
 build:
 	cargo build --target wasm32-unknown-unknown --release -p soroban-token-contract
-	@cd target/wasm32-unknown-unknown/release/ && \
-		for i in *.wasm ; do \
-			ls -l "$$i"; \
-		done
+	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
 watch:
 	cargo watch --clear --watch-when-idle --shell '$(MAKE)'

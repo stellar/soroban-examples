@@ -1,20 +1,24 @@
+MAKEFILES = $(shell find . -maxdepth 3 -type f -name Makefile)
+SUBDIRS   = $(filter-out ./,$(dir $(MAKEFILES)))
+ROOT_DIR = $(shell pwd)
+
 default: build
 
 all: build test
 
-test: build
-	cargo test
-	cargo test --features testutils
-
 build:
-	cargo build --target wasm32-unknown-unknown --release -p soroban-token-contract
-	cargo build --target wasm32-unknown-unknown --release -p soroban-cross-contract-a-contract
-	cargo build --target wasm32-unknown-unknown --release -p soroban-atomic-swap-contract
-	cargo build --target wasm32-unknown-unknown --release
-	cd target/wasm32-unknown-unknown/release/ && \
-		for i in *.wasm ; do \
-			ls -l "$$i"; \
-		done
+	@for dir in $(SUBDIRS) ; do \
+		cd $$dir; \
+		make build || break; \
+		cd $(ROOT_DIR); \
+	done
+
+test: build
+	@for dir in $(SUBDIRS) ; do \
+		cd $$dir; \
+		make test || break; \
+		cd $(ROOT_DIR); \
+	done
 
 watch:
 	cargo watch --clear --watch-when-idle --shell '$(MAKE)'
