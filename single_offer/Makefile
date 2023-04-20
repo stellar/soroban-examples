@@ -8,7 +8,7 @@ test: build
 
 build:
 	cargo build --target wasm32-unknown-unknown --release -p soroban-single-offer-contract
-	cd target/wasm32-unknown-unknown/release/ && \
+	@cd target/wasm32-unknown-unknown/release/ && \
 		for i in *.wasm ; do \
 			ls -l "$$i"; \
 		done
