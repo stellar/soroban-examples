@@ -40,7 +40,6 @@ jobs:
       run: rustup run nightly rust-analyzer analysis-stats alloc/ 2>&1 | (! grep ERROR)
       run: rustup run nightly rust-analyzer analysis-stats hello_world/ 2>&1 | (! grep ERROR)
       run: rustup run nightly rust-analyzer analysis-stats auth/ 2>&1 | (! grep ERROR)
-      run: rustup run nightly rust-analyzer analysis-stats  2>&1 | (! grep ERROR)
       run: rustup run nightly rust-analyzer analysis-stats custom_types/ 2>&1 | (! grep ERROR)
       run: rustup run nightly rust-analyzer analysis-stats single_offer/ 2>&1 | (! grep ERROR)
       run: rustup run nightly rust-analyzer analysis-stats liquidity_pool/ 2>&1 | (! grep ERROR)
