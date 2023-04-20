@@ -14,7 +14,7 @@ watch:
 	cargo watch --clear --watch-when-idle --shell '$(MAKE)'
 
 fmt:
-	cargo fmt --all
+	cargo fmt --all --check
 
 clean:
 	cargo clean
