@@ -11,7 +11,7 @@ use soroban_sdk::{contractimpl, contracttype, Address, BytesN, Env, Vec};
 
 mod atomic_swap {
     soroban_sdk::contractimport!(
-        file = "../target/wasm32-unknown-unknown/release/soroban_atomic_swap_contract.wasm"
+        file = "../atomic_swap/target/wasm32-unknown-unknown/release/soroban_atomic_swap_contract.wasm"
     );
 }
 
