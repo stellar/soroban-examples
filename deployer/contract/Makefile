@@ -1,6 +1,6 @@
 default: build
 
-all: build test
+all: test
 
 test: build
 	cargo test
