@@ -32,7 +32,7 @@ jobs:
     - run: rustup update
     - run: rustup +nightly component add rust-analyzer
     - name: Check if rust-analyzer encounters any errors parsing project
-    - run: rustup run nightly rust-analyzer analysis-stats token/ 2>&1 | (! grep ERROR)
+      run: rustup run nightly rust-analyzer analysis-stats token/ 2>&1 | (! grep ERROR)
     - run: rustup run nightly rust-analyzer analysis-stats deployer/deployer/ 2>&1 | (! grep ERROR)
     - run: rustup run nightly rust-analyzer analysis-stats deployer/contract/ 2>&1 | (! grep ERROR)
     - run: rustup run nightly rust-analyzer analysis-stats simple_account/ 2>&1 | (! grep ERROR)
