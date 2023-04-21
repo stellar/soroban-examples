@@ -7,7 +7,7 @@ test: build
 	cargo test --features testutils
 
 build:
-	cargo build --target wasm32-unknown-unknown --release -p soroban-alloc-contract
+	cargo build --target wasm32-unknown-unknown --release 
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
 fmt:

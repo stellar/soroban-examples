@@ -11,7 +11,7 @@ build:
 	@cd ../atomic_swap && make build || break; 
 
 	@cd $(CUR_DIR);
-	cargo build --target wasm32-unknown-unknown --release -p soroban-atomic-multiswap-contract
+	cargo build --target wasm32-unknown-unknown --release 
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
 fmt:

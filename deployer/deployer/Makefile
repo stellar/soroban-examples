@@ -12,7 +12,7 @@ build:
 	@cd ../contract && make build || break; 
 
 	@cd $(CUR_DIR);
-	cargo build --target wasm32-unknown-unknown --release -p soroban-deployer-contract
+	cargo build --target wasm32-unknown-unknown --release 
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
 fmt:
