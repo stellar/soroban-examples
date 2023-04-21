@@ -1,6 +1,5 @@
 $(MAKE)FILES = $(shell find . -maxdepth 3 -type f -name Makefile)
 SUBDIRS   = $(filter-out ./,$(dir $($(MAKE)FILES)))
-ROOT_DIR = $(shell pwd)
 
 default: build
 
@@ -8,28 +7,20 @@ all: test
 
 build:
 	@for dir in $(SUBDIRS) ; do \
-		cd $$dir; \
-		$(MAKE) build || break; \
-		cd $(ROOT_DIR); \
+		$(MAKE) -C $$dir build || break; \
 	done
 
 test: build
 	@for dir in $(SUBDIRS) ; do \
-		cd $$dir; \
-		$(MAKE) test || break; \
-		cd $(ROOT_DIR); \
+		$(MAKE) -C $$dir test || break; \
 	done
 
 fmt:
 	@for dir in $(SUBDIRS) ; do \
-		cd $$dir; \
-		$(MAKE) fmt || break; \
-		cd $(ROOT_DIR); \
+		$(MAKE) -C $$dir fmt || break; \
 	done
 
 clean:
 	@for dir in $(SUBDIRS) ; do \
-		cd $$dir; \
-		$(MAKE) clean || break; \
-		cd $(ROOT_DIR); \
+		$(MAKE) -C $$dir clean || break; \
 	done
