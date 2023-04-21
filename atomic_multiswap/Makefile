@@ -1,7 +1,7 @@
 CUR_DIR = $(shell pwd)
 default: build
 
-all: build test
+all: test
 
 test: build
 	cargo test
@@ -13,9 +13,6 @@ build:
 	@cd $(CUR_DIR);
 	cargo build --target wasm32-unknown-unknown --release -p soroban-atomic-multiswap-contract
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
-
-watch:
-	cargo watch --clear --watch-when-idle --shell '$(MAKE)'
 
 fmt:
 	cargo fmt --all --check

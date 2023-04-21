@@ -4,7 +4,7 @@ ROOT_DIR = $(shell pwd)
 
 default: build
 
-all: build test
+all: test
 
 build:
 	@for dir in $(SUBDIRS) ; do \
@@ -17,13 +17,6 @@ test: build
 	@for dir in $(SUBDIRS) ; do \
 		cd $$dir; \
 		$(MAKE) test || break; \
-		cd $(ROOT_DIR); \
-	done
-
-watch:
-	@for dir in $(SUBDIRS) ; do \
-		cd $$dir; \
-		$(MAKE) watch || break; \
 		cd $(ROOT_DIR); \
 	done
 
