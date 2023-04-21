@@ -1,5 +1,5 @@
-$(MAKE)FILES = $(shell find . -maxdepth 3 -type f -name Makefile)
-SUBDIRS   = $(filter-out ./,$(dir $($(MAKE)FILES)))
+$MAKEFILES = $(shell find . -maxdepth 3 -type f -name Makefile)
+SUBDIRS   = $(filter-out ./,$(dir $($MAKEFILES)))
 
 default: build
 
