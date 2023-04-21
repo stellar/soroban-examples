@@ -1,4 +1,3 @@
-CUR_DIR = $(shell pwd)
 default: build
 
 all: test
@@ -8,9 +7,7 @@ test: build
 	cargo test --features testutils
 
 build:
-	@cd ../atomic_swap && make build || break; 
-
-	@cd $(CUR_DIR);
+	$(MAKE) -C ../atomic_swap || break; 
 	cargo build --target wasm32-unknown-unknown --release 
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
