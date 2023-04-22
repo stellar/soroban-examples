@@ -4,7 +4,7 @@ use soroban_sdk::{contractimpl, BytesN, Env};
 
 mod contract_a {
     soroban_sdk::contractimport!(
-        file = "../../target/wasm32-unknown-unknown/release/soroban_cross_contract_a_contract.wasm"
+        file = "../contract_a/target/wasm32-unknown-unknown/release/soroban_cross_contract_a_contract.wasm"
     );
 }
 

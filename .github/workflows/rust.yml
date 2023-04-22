@@ -23,7 +23,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - run: rustup update
-    - run: cargo fmt --all --check
+    - run: make fmt
 
   rust-analyzer-compat:
     runs-on: ubuntu-latest
@@ -32,7 +32,26 @@ jobs:
     - run: rustup update
     - run: rustup +nightly component add rust-analyzer
     - name: Check if rust-analyzer encounters any errors parsing project
-      run: rustup run nightly rust-analyzer analysis-stats . 2>&1 | (! grep ERROR)
+      run: rustup run nightly rust-analyzer analysis-stats token/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats deployer/deployer/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats deployer/contract/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats simple_account/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats timelock/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats alloc/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats hello_world/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats auth/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats custom_types/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats single_offer/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats liquidity_pool/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats increment/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats atomic_multiswap/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats cross_contract/contract_b/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats cross_contract/contract_a/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats errors/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats account/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats events/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats logging/ 2>&1 | (! grep ERROR)
+    - run: rustup run nightly rust-analyzer analysis-stats atomic_swap/ 2>&1 | (! grep ERROR)
 
   build-and-test:
     strategy:
