@@ -957,6 +957,15 @@ name = "soroban-token-contract"
 version = "0.0.6"
 dependencies = [
  "soroban-sdk",
+ "soroban-token-sdk",
+]
+
+[[package]]
+name = "soroban-token-sdk"
+version = "0.7.0"
+source = "git+https://github.com/stellar/rs-soroban-sdk?rev=9bbac60c25cee9aa995025db5af828c243d15690#9bbac60c25cee9aa995025db5af828c243d15690"
+dependencies = [
+ "soroban-sdk",
 ]
 
 [[package]]
