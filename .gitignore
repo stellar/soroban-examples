@@ -1,5 +1,4 @@
-/target/
-/target-tiny/
+target/
 /.sccache/
 .DS_Store
 .soroban
