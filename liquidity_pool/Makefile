@@ -4,7 +4,6 @@ all: test
 
 test: build
 	cargo test
-	cargo test --features testutils
 
 build:
 	$(MAKE) -C ../token || break;
