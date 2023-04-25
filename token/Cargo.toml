@@ -9,6 +9,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 soroban-sdk = { version = "0.7.0", git = "https://github.com/stellar/rs-soroban-sdk", rev = "9bbac60c25cee9aa995025db5af828c243d15690"}
+soroban-token-sdk = { version = "0.7.0", git = "https://github.com/stellar/rs-soroban-sdk", rev = "9bbac60c25cee9aa995025db5af828c243d15690"}
 
 [dev_dependencies]
 soroban-sdk = { version = "0.7.0", git = "https://github.com/stellar/rs-soroban-sdk", rev = "9bbac60c25cee9aa995025db5af828c243d15690", features = ["testutils"] }

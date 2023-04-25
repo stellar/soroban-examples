@@ -5,10 +5,9 @@ use crate::allowance::{read_allowance, spend_allowance, write_allowance};
 use crate::balance::{is_authorized, write_authorization};
 use crate::balance::{read_balance, receive_balance, spend_balance};
 use crate::event;
-use crate::metadata::{
-    read_decimal, read_name, read_symbol, write_decimal, write_name, write_symbol,
-};
+use crate::metadata::{read_decimal, read_name, read_symbol, write_metadata};
 use soroban_sdk::{contractimpl, Address, Bytes, Env};
+use soroban_token_sdk::TokenMetadata;
 
 pub trait TokenTrait {
     fn initialize(e: Env, admin: Address, decimal: u32, name: Bytes, symbol: Bytes);
@@ -63,10 +62,18 @@ impl TokenTrait for Token {
             panic!("already initialized")
         }
         write_administrator(&e, &admin);
+        if decimal > u8::MAX.into() {
+            panic!("Decimal must fit in a u8");
+        }
 
-        write_decimal(&e, u8::try_from(decimal).expect("Decimal must fit in a u8"));
-        write_name(&e, name);
-        write_symbol(&e, symbol);
+        write_metadata(
+            &e,
+            TokenMetadata {
+                decimal,
+                name,
+                symbol,
+            },
+        )
     }
 
     fn allowance(e: Env, from: Address, spender: Address) -> i128 {
