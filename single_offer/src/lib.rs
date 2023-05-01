@@ -3,11 +3,9 @@
 //! It demonstrates one of the ways of how trading might be implemented.
 #![no_std]
 
-use soroban_sdk::{contractimpl, contracttype, unwrap::UnwrapOptimized, Address, BytesN, Env};
-
-mod token {
-    soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
-}
+use soroban_sdk::{
+    contractimpl, contracttype, token, unwrap::UnwrapOptimized, Address, BytesN, Env,
+};
 
 #[derive(Clone)]
 #[contracttype]
