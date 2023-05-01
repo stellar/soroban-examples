@@ -4,11 +4,7 @@
 //! This example demonstrates how multi-party authorization can be implemented.
 #![no_std]
 
-use soroban_sdk::{contractimpl, Address, BytesN, Env, IntoVal};
-
-mod token {
-    soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
-}
+use soroban_sdk::{contractimpl, token, Address, BytesN, Env, IntoVal};
 
 pub struct AtomicSwapContract;
 
