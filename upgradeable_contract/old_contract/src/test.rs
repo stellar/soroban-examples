@@ -9,11 +9,14 @@ mod old_contract {
     );
 }
 
-fn install_new_wasm(e: &Env) -> BytesN<32> {
+mod new_contract {
     soroban_sdk::contractimport!(
         file = "../new_contract/target/wasm32-unknown-unknown/release/soroban_upgradeable_contract_new_contract.wasm"
     );
-    e.install_contract_wasm(WASM)
+}
+
+fn install_new_wasm(e: &Env) -> BytesN<32> {
+    e.install_contract_wasm(new_contract::WASM)
 }
 
 #[test]
@@ -34,4 +37,9 @@ fn test() {
 
     client.upgrade(&new_wasm_hash);
     assert_eq!(2, client.version());
+
+    // new_v2_fn was added in the new contract, so the existing
+    // client is out of date. Generate a new one.
+    let client = new_contract::Client::new(&env, &contract_id);
+    assert_eq!(1010101, client.new_v2_fn());
 }

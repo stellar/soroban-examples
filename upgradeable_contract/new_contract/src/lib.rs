@@ -20,6 +20,10 @@ impl UpgradeableContract {
         2
     }
 
+    pub fn new_v2_fn() -> u32 {
+        1010101
+    }
+
     pub fn upgrade(e: Env, new_wasm_hash: BytesN<32>) {
         let admin: Address = e.storage().get_unchecked(&DataKey::Admin).unwrap();
         admin.require_auth();
