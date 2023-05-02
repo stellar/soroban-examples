@@ -6,11 +6,7 @@
 //! For simplicity, the contract only supports invoker-based auth.
 #![no_std]
 
-use soroban_sdk::{contractimpl, contracttype, Address, BytesN, Env, Vec};
-
-mod token {
-    soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
-}
+use soroban_sdk::{contractimpl, contracttype, token, Address, BytesN, Env, Vec};
 
 #[derive(Clone)]
 #[contracttype]

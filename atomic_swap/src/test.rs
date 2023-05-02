@@ -2,13 +2,8 @@
 extern crate std;
 
 use super::*;
-use soroban_sdk::{testutils::Address as _, Address, Env, IntoVal, Symbol};
-mod token {
-    soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
-    pub type TokenClient = Client;
-}
-
-use token::TokenClient;
+use soroban_sdk::{testutils::Address as _, token, Address, Env, IntoVal, Symbol};
+use token::Client as TokenClient;
 
 fn create_token_contract(e: &Env, admin: &Address) -> TokenClient {
     TokenClient::new(e, &e.register_stellar_asset_contract(admin.clone()))
