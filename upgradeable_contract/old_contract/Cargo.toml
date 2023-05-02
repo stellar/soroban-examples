@@ -1,5 +1,5 @@
 [package]
-name = "soroban-deployer-contract"
+name = "soroban-upgradeable-contract-old-contract"
 version = "0.0.0"
 authors = ["Stellar Development Foundation <info@stellar.org>"]
 license = "Apache-2.0"
@@ -11,7 +11,7 @@ crate-type = ["cdylib"]
 doctest = false
 
 [dependencies]
-soroban-sdk = { version = "0.7.0", git = "https://github.com/stellar/rs-soroban-sdk", rev = "9383a6ae6f21c24cfe74a53759949b2c83d53e78"}
+soroban-sdk = { version = "0.7.0", git = "https://github.com/stellar/rs-soroban-sdk", rev = "9383a6ae6f21c24cfe74a53759949b2c83d53e78" }
 
 [dev_dependencies]
 soroban-sdk = { version = "0.7.0", git = "https://github.com/stellar/rs-soroban-sdk", rev = "9383a6ae6f21c24cfe74a53759949b2c83d53e78", features = ["testutils"] }
