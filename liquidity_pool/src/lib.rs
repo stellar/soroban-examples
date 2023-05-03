@@ -4,7 +4,9 @@ mod test;
 mod token;
 
 use num_integer::Roots;
-use soroban_sdk::{contractimpl, Address, Bytes, BytesN, ConversionError, Env, RawVal, TryFromVal};
+use soroban_sdk::{
+    contractimpl, contractmeta, Address, Bytes, BytesN, ConversionError, Env, RawVal, TryFromVal,
+};
 use token::create_contract;
 
 #[derive(Clone, Copy)]
@@ -145,6 +147,12 @@ fn get_deposit_amounts(
         (amount_a, desired_b)
     }
 }
+
+// Metadata that is added on to the WASM custom section
+contractmeta!(
+    key = "Description",
+    val = "Constant product AMM with a .3% swap fee"
+);
 
 pub trait LiquidityPoolTrait {
     // Sets the token contract addresses for this pool
