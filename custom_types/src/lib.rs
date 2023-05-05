@@ -2,7 +2,7 @@
 use soroban_sdk::{contractimpl, contracttype, Env, Symbol};
 
 #[contracttype]
-#[derive(Clone, Default, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct State {
     pub count: u32,
     pub last_incr: u32,
