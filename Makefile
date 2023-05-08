@@ -7,20 +7,20 @@ all: test
 
 build:
 	@for dir in $(SUBDIRS) ; do \
-		$(MAKE) -C $$dir build || break; \
+		$(MAKE) -C $$dir build || exit 1; \
 	done
 
 test: build
 	@for dir in $(SUBDIRS) ; do \
-		$(MAKE) -C $$dir test || break; \
+		$(MAKE) -C $$dir test || exit 1; \
 	done
 
 fmt:
 	@for dir in $(SUBDIRS) ; do \
-		$(MAKE) -C $$dir fmt || break; \
+		$(MAKE) -C $$dir fmt || exit 1; \
 	done
 
 clean:
 	@for dir in $(SUBDIRS) ; do \
-		$(MAKE) -C $$dir clean || break; \
+		$(MAKE) -C $$dir clean || exit 1; \
 	done
