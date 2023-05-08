@@ -33,7 +33,12 @@ impl IncrementContract {
     pub fn get_state(env: Env) -> State {
         env.storage()
             .get(&STATE)
-            .unwrap_or_else(|| Ok(State::default())) // If no value set, assume 0.
+            .unwrap_or_else(|| {
+                Ok(State {
+                    count: 0,
+                    last_incr: 0,
+                })
+            }) // If no value set, assume 0.
             .unwrap() // Panic if the value of COUNTER is not a State.
     }
 }
