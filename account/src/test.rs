@@ -49,7 +49,8 @@ fn token_auth_context(
 
 #[test]
 fn test_token_auth() {
-    let env: Env = Default::default();
+    let env = Env::default();
+    env.mock_all_auths();
 
     let account_contract = create_account_contract(&env);
 
@@ -93,8 +94,8 @@ fn test_token_auth() {
     account_contract.add_limit(&token, &1000);
     // Verify that this call needs to be authorized.
     assert_eq!(
-        env.recorded_top_authorizations(),
-        std::vec![(
+        env.auths(),
+        [(
             account_contract.address(),
             account_contract.contract_id.clone(),
             Symbol::short("add_limit"),

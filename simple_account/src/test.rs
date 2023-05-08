@@ -30,7 +30,7 @@ fn sign(e: &Env, signer: &Keypair, payload: &BytesN<32>) -> RawVal {
 
 #[test]
 fn test_account() {
-    let env: Env = Default::default();
+    let env = Env::default();
 
     let account_contract = create_account_contract(&env);
 

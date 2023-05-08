@@ -5,16 +5,16 @@ use crate::{token, LiquidityPoolClient};
 
 use soroban_sdk::{testutils::Address as _, Address, BytesN, Env, IntoVal, Symbol};
 
-fn create_token_contract(e: &Env, admin: &Address) -> token::Client {
-    token::Client::new(&e, &e.register_stellar_asset_contract(admin.clone()))
+fn create_token_contract<'a>(e: &Env, admin: &Address) -> token::Client<'a> {
+    token::Client::new(e, &e.register_stellar_asset_contract(admin.clone()))
 }
 
-fn create_liqpool_contract(
+fn create_liqpool_contract<'a>(
     e: &Env,
     token_wasm_hash: &BytesN<32>,
     token_a: &BytesN<32>,
     token_b: &BytesN<32>,
-) -> LiquidityPoolClient {
+) -> LiquidityPoolClient<'a> {
     let liqpool = LiquidityPoolClient::new(e, &e.register_contract(None, crate::LiquidityPool {}));
     liqpool.initialize(token_wasm_hash, token_a, token_b);
     liqpool
@@ -29,7 +29,8 @@ fn install_token_wasm(e: &Env) -> BytesN<32> {
 
 #[test]
 fn test() {
-    let e: Env = Default::default();
+    let e = Env::default();
+    e.mock_all_auths();
 
     let mut admin1 = Address::random(&e);
     let mut admin2 = Address::random(&e);
@@ -59,8 +60,8 @@ fn test() {
 
     liqpool.deposit(&user1, &100, &100, &100, &100);
     assert_eq!(
-        e.recorded_top_authorizations(),
-        std::vec![(
+        e.auths(),
+        [(
             user1.clone(),
             liqpool.contract_id.clone(),
             Symbol::short("deposit"),
@@ -77,8 +78,8 @@ fn test() {
 
     liqpool.swap(&user1, &false, &49, &100);
     assert_eq!(
-        e.recorded_top_authorizations(),
-        std::vec![(
+        e.auths(),
+        [(
             user1.clone(),
             liqpool.contract_id.clone(),
             Symbol::short("swap"),
@@ -93,8 +94,8 @@ fn test() {
 
     liqpool.withdraw(&user1, &100, &197, &51);
     assert_eq!(
-        e.recorded_top_authorizations(),
-        std::vec![(
+        e.auths(),
+        [(
             user1.clone(),
             liqpool.contract_id.clone(),
             Symbol::short("withdraw"),

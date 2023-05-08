@@ -6,7 +6,7 @@ use assert_unordered::assert_eq_unordered;
 use soroban_sdk::{testutils::Address as _, token, Address, Env, IntoVal, Symbol};
 use token::Client as TokenClient;
 
-fn create_token_contract(e: &Env, admin: &Address) -> TokenClient {
+fn create_token_contract<'a>(e: &Env, admin: &Address) -> TokenClient<'a> {
     TokenClient::new(e, &e.register_stellar_asset_contract(admin.clone()))
 }
 
@@ -16,7 +16,9 @@ fn create_atomic_multiswap_contract(e: &Env) -> AtomicMultiSwapContractClient {
 
 #[test]
 fn test_atomic_multi_swap() {
-    let env: Env = Default::default();
+    let env = Env::default();
+    env.mock_all_auths();
+
     let swaps_a = [
         SwapSpec {
             address: Address::random(&env),
@@ -83,7 +85,7 @@ fn test_atomic_multi_swap() {
     // authorized calls, even though `multi_swap` was the overall top-level
     // invocation.
     assert_eq_unordered!(
-        env.recorded_top_authorizations(),
+        env.auths(),
         std::vec![
             (
                 swaps_a[0].address.clone(),
@@ -156,7 +158,7 @@ fn test_atomic_multi_swap() {
 
 #[test]
 fn test_multi_swap_with_duplicate_account() {
-    let env: Env = Default::default();
+    let env = Env::default();
     let address_a = Address::random(&env);
     let address_b = Address::random(&env);
     let swaps_a = [
@@ -206,7 +208,7 @@ fn test_multi_swap_with_duplicate_account() {
     // Notice that the same address may participate in multiple swaps. Separate
     // authorizations are recorded (and required on-chain) for every swap.
     assert_eq_unordered!(
-        env.recorded_top_authorizations(),
+        env.auths(),
         std::vec![
             (
                 address_a.clone(),

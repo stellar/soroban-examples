@@ -4,7 +4,7 @@ extern crate std;
 use crate::{contract::Token, TokenClient};
 use soroban_sdk::{testutils::Address as _, Address, Env, IntoVal, Symbol};
 
-fn create_token(e: &Env, admin: &Address) -> TokenClient {
+fn create_token<'a>(e: &Env, admin: &Address) -> TokenClient<'a> {
     let token = TokenClient::new(e, &e.register_contract(None, Token {}));
     token.initialize(admin, &7, &"name".into_val(e), &"symbol".into_val(e));
     token
@@ -12,7 +12,8 @@ fn create_token(e: &Env, admin: &Address) -> TokenClient {
 
 #[test]
 fn test() {
-    let e: Env = Default::default();
+    let e = Env::default();
+    e.mock_all_auths();
 
     let admin1 = Address::random(&e);
     let admin2 = Address::random(&e);
@@ -23,8 +24,8 @@ fn test() {
 
     token.mint(&user1, &1000);
     assert_eq!(
-        e.recorded_top_authorizations(),
-        std::vec![(
+        e.auths(),
+        [(
             admin1.clone(),
             token.contract_id.clone(),
             Symbol::short("mint"),
@@ -35,8 +36,8 @@ fn test() {
 
     token.increase_allowance(&user2, &user3, &500);
     assert_eq!(
-        e.recorded_top_authorizations(),
-        std::vec![(
+        e.auths(),
+        [(
             user2.clone(),
             token.contract_id.clone(),
             Symbol::new(&e, "increase_allowance"),
@@ -47,8 +48,8 @@ fn test() {
 
     token.transfer(&user1, &user2, &600);
     assert_eq!(
-        e.recorded_top_authorizations(),
-        std::vec![(
+        e.auths(),
+        [(
             user1.clone(),
             token.contract_id.clone(),
             Symbol::short("transfer"),
@@ -60,8 +61,8 @@ fn test() {
 
     token.transfer_from(&user3, &user2, &user1, &400);
     assert_eq!(
-        e.recorded_top_authorizations(),
-        std::vec![(
+        e.auths(),
+        [(
             user3.clone(),
             token.contract_id.clone(),
             Symbol::new(&e, "transfer_from"),
@@ -77,8 +78,8 @@ fn test() {
 
     token.set_admin(&admin2);
     assert_eq!(
-        e.recorded_top_authorizations(),
-        std::vec![(
+        e.auths(),
+        [(
             admin1.clone(),
             token.contract_id.clone(),
             Symbol::short("set_admin"),
@@ -88,8 +89,8 @@ fn test() {
 
     token.set_authorized(&user2, &false);
     assert_eq!(
-        e.recorded_top_authorizations(),
-        std::vec![(
+        e.auths(),
+        [(
             admin2.clone(),
             token.contract_id.clone(),
             Symbol::new(&e, "set_authorized"),
@@ -103,8 +104,8 @@ fn test() {
 
     token.clawback(&user3, &100);
     assert_eq!(
-        e.recorded_top_authorizations(),
-        std::vec![(
+        e.auths(),
+        [(
             admin2.clone(),
             token.contract_id.clone(),
             Symbol::short("clawback"),
@@ -118,8 +119,8 @@ fn test() {
     assert_eq!(token.allowance(&user2, &user3), 500);
     token.decrease_allowance(&user2, &user3, &501);
     assert_eq!(
-        e.recorded_top_authorizations(),
-        std::vec![(
+        e.auths(),
+        [(
             user2.clone(),
             token.contract_id.clone(),
             Symbol::new(&e, "decrease_allowance"),
@@ -131,7 +132,7 @@ fn test() {
 
 #[test]
 fn test_burn() {
-    let e: Env = Default::default();
+    let e = Env::default();
 
     let admin = Address::random(&e);
     let user1 = Address::random(&e);
@@ -146,8 +147,8 @@ fn test_burn() {
 
     token.burn_from(&user2, &user1, &500);
     assert_eq!(
-        e.recorded_top_authorizations(),
-        std::vec![(
+        e.auths(),
+        [(
             user2.clone(),
             token.contract_id.clone(),
             Symbol::short("burn_from"),
@@ -160,8 +161,8 @@ fn test_burn() {
 
     token.burn(&user1, &500);
     assert_eq!(
-        e.recorded_top_authorizations(),
-        std::vec![(
+        e.auths(),
+        [(
             user1.clone(),
             token.contract_id.clone(),
             Symbol::short("burn"),
@@ -175,7 +176,7 @@ fn test_burn() {
 #[test]
 #[should_panic(expected = "insufficient balance")]
 fn transfer_insufficient_balance() {
-    let e: Env = Default::default();
+    let e = Env::default();
     let admin = Address::random(&e);
     let user1 = Address::random(&e);
     let user2 = Address::random(&e);
@@ -190,7 +191,7 @@ fn transfer_insufficient_balance() {
 #[test]
 #[should_panic(expected = "can't receive when deauthorized")]
 fn transfer_receive_deauthorized() {
-    let e: Env = Default::default();
+    let e = Env::default();
     let admin = Address::random(&e);
     let user1 = Address::random(&e);
     let user2 = Address::random(&e);
@@ -206,7 +207,7 @@ fn transfer_receive_deauthorized() {
 #[test]
 #[should_panic(expected = "can't spend when deauthorized")]
 fn transfer_spend_deauthorized() {
-    let e: Env = Default::default();
+    let e = Env::default();
     let admin = Address::random(&e);
     let user1 = Address::random(&e);
     let user2 = Address::random(&e);
@@ -222,7 +223,7 @@ fn transfer_spend_deauthorized() {
 #[test]
 #[should_panic(expected = "insufficient allowance")]
 fn transfer_from_insufficient_allowance() {
-    let e: Env = Default::default();
+    let e = Env::default();
     let admin = Address::random(&e);
     let user1 = Address::random(&e);
     let user2 = Address::random(&e);
@@ -241,7 +242,7 @@ fn transfer_from_insufficient_allowance() {
 #[test]
 #[should_panic(expected = "already initialized")]
 fn initialize_already_initialized() {
-    let e: Env = Default::default();
+    let e = Env::default();
     let admin = Address::random(&e);
     let token = create_token(&e, &admin);
 

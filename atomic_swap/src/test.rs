@@ -5,7 +5,7 @@ use super::*;
 use soroban_sdk::{testutils::Address as _, token, Address, Env, IntoVal, Symbol};
 use token::Client as TokenClient;
 
-fn create_token_contract(e: &Env, admin: &Address) -> TokenClient {
+fn create_token_contract<'a>(e: &Env, admin: &Address) -> TokenClient<'a> {
     TokenClient::new(e, &e.register_stellar_asset_contract(admin.clone()))
 }
 
@@ -15,7 +15,9 @@ fn create_atomic_swap_contract(e: &Env) -> AtomicSwapContractClient {
 
 #[test]
 fn test_atomic_swap() {
-    let env: Env = Default::default();
+    let env = Env::default();
+    env.mock_all_auths();
+
     let a = Address::random(&env);
     let b = Address::random(&env);
 
@@ -40,7 +42,7 @@ fn test_atomic_swap() {
     );
 
     assert_eq!(
-        env.recorded_top_authorizations(),
+        env.auths(),
         std::vec![
             (
                 a.clone(),
