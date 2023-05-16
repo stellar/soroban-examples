@@ -11,7 +11,7 @@ build:
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
 fmt:
-	cargo fmt --all --check
+	cargo fmt --all
 
 clean:
 	cargo clean
