@@ -74,12 +74,25 @@ fn test() {
     // Verify that authorization is required for the buyer.
     assert_eq!(
         e.auths(),
-        [(
-            buyer.clone(),
-            offer.contract_id.clone(),
-            Symbol::short("trade"),
-            (&buyer, 20_i128, 10_i128).into_val(&e)
-        )]
+        [
+            (
+                buyer.clone(),
+                offer.contract_id.clone(),
+                Symbol::short("trade"),
+                (&buyer, 20_i128, 10_i128).into_val(&e)
+            ),
+            (
+                buyer.clone(),
+                buy_token.contract_id.clone(),
+                Symbol::new(&e, "transfer"),
+                (
+                    buyer.clone(),
+                    Address::from_contract_id(&offer.contract_id),
+                    20_i128
+                )
+                    .into_val(&e)
+            )
+        ]
     );
 
     assert_eq!(sell_token.balance(&seller), 900);
