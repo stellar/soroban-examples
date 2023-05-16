@@ -8,6 +8,9 @@ on:
 env:
   RUSTFLAGS: -D warnings
 
+defaults:
+  shell: bash
+
 jobs:
 
   complete:
