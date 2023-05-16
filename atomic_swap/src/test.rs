@@ -57,6 +57,12 @@ fn test_atomic_swap() {
                     .into_val(&env),
             ),
             (
+                a.clone(),
+                token_a.contract_id.clone(),
+                Symbol::new(&env, "increase_allowance"),
+                (a.clone(), contract.address(), 1000_i128).into_val(&env),
+            ),
+            (
                 b.clone(),
                 contract.contract_id.clone(),
                 Symbol::short("swap"),
@@ -67,6 +73,12 @@ fn test_atomic_swap() {
                     950_i128
                 )
                     .into_val(&env),
+            ),
+            (
+                b.clone(),
+                token_b.contract_id.clone(),
+                Symbol::new(&env, "increase_allowance"),
+                (b.clone(), contract.address(), 5000_i128).into_val(&env),
             ),
         ]
     );
