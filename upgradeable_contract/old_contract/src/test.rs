@@ -22,6 +22,7 @@ fn install_new_wasm(e: &Env) -> BytesN<32> {
 #[test]
 fn test() {
     let env = Env::default();
+    env.mock_all_auths();
 
     // Note that we use register_contract_wasm instead of register_contract
     // because the old contracts WASM is expected to exist in storage.

@@ -100,6 +100,17 @@ fn test_atomic_multi_swap() {
                     .into_val(&env),
             ),
             (
+                swaps_a[0].address.clone(),
+                token_a.contract_id.clone(),
+                Symbol::new(&env, "increase_allowance"),
+                (
+                    swaps_a[0].address.clone(),
+                    Address::from_contract_id(&swap_contract_id),
+                    2000_i128,
+                )
+                    .into_val(&env),
+            ),
+            (
                 swaps_a[1].address.clone(),
                 swap_contract_id.clone(),
                 Symbol::short("swap"),
@@ -108,6 +119,17 @@ fn test_atomic_multi_swap() {
                     token_b.contract_id.clone(),
                     3000_i128,
                     350_i128
+                )
+                    .into_val(&env),
+            ),
+            (
+                swaps_a[1].address.clone(),
+                token_a.contract_id.clone(),
+                Symbol::new(&env, "increase_allowance"),
+                (
+                    swaps_a[1].address.clone(),
+                    Address::from_contract_id(&swap_contract_id),
+                    3000_i128,
                 )
                     .into_val(&env),
             ),
@@ -124,6 +146,17 @@ fn test_atomic_multi_swap() {
                     .into_val(&env),
             ),
             (
+                swaps_b[1].address.clone(),
+                token_b.contract_id.clone(),
+                Symbol::new(&env, "increase_allowance"),
+                (
+                    swaps_b[1].address.clone(),
+                    Address::from_contract_id(&swap_contract_id),
+                    295_i128,
+                )
+                    .into_val(&env),
+            ),
+            (
                 swaps_b[2].address.clone(),
                 swap_contract_id.clone(),
                 Symbol::short("swap"),
@@ -134,7 +167,18 @@ fn test_atomic_multi_swap() {
                     2900_i128,
                 )
                     .into_val(&env),
-            )
+            ),
+            (
+                swaps_b[2].address.clone(),
+                token_b.contract_id.clone(),
+                Symbol::new(&env, "increase_allowance"),
+                (
+                    swaps_b[2].address.clone(),
+                    Address::from_contract_id(&swap_contract_id),
+                    400_i128,
+                )
+                    .into_val(&env),
+            ),
         ]
     );
     // Balance has to be checked after the auth checks because auth is only
