@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use crate::{Deployer, DeployerClient};
-use soroban_sdk::{Bytes, Env, IntoVal, Symbol};
+use soroban_sdk::{BytesN, Env, IntoVal, Symbol};
 
 // The contract that will be deployed by the deployer contract.
 mod contract {
@@ -20,7 +20,7 @@ fn test() {
     let wasm_hash = env.install_contract_wasm(contract::WASM);
 
     // Deploy contract using deployer, and include an init function to call.
-    let salt = Bytes::from_array(&env, &[0; 32]);
+    let salt = BytesN::from_array(&env, &[0; 32]);
     let init_fn = Symbol::short("init");
     let init_fn_args = (5u32,).into_val(&env);
     let (contract_id, init_result) = client.deploy(&salt, &wasm_hash, &init_fn, &init_fn_args);

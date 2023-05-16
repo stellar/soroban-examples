@@ -79,26 +79,39 @@ fn test_deposit_and_claim() {
 
     assert_eq!(
         test.env.auths(),
-        [(
-            test.deposit_address.clone(),
-            test.contract.contract_id.clone(),
-            Symbol::short("deposit"),
+        [
+            (
+                test.deposit_address.clone(),
+                test.contract.contract_id.clone(),
+                Symbol::short("deposit"),
+                (
+                    test.deposit_address.clone(),
+                    test.token.contract_id.clone(),
+                    800_i128,
+                    vec![
+                        &test.env,
+                        test.claim_addresses[0].clone(),
+                        test.claim_addresses[1].clone()
+                    ],
+                    TimeBound {
+                        kind: TimeBoundKind::Before,
+                        timestamp: 12346,
+                    },
+                )
+                    .into_val(&test.env),
+            ),
             (
                 test.deposit_address.clone(),
                 test.token.contract_id.clone(),
-                800_i128,
-                vec![
-                    &test.env,
-                    test.claim_addresses[0].clone(),
-                    test.claim_addresses[1].clone()
-                ],
-                TimeBound {
-                    kind: TimeBoundKind::Before,
-                    timestamp: 12346,
-                },
-            )
-                .into_val(&test.env),
-        )]
+                Symbol::short("transfer"),
+                (
+                    test.deposit_address.clone(),
+                    Address::from_contract_id(&test.contract.contract_id.clone()),
+                    800_i128,
+                )
+                    .into_val(&test.env),
+            ),
+        ]
     );
 
     assert_eq!(test.token.balance(&test.deposit_address), 200);
