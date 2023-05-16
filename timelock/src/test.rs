@@ -106,7 +106,7 @@ fn test_deposit_and_claim() {
                 Symbol::short("transfer"),
                 (
                     test.deposit_address.clone(),
-                    Address::from_contract_id(&test.contract.contract_id.clone()),
+                    &test.contract.address(),
                     800_i128,
                 )
                     .into_val(&test.env),

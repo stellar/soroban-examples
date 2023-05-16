@@ -87,7 +87,7 @@ fn test() {
                 Symbol::new(&e, "transfer"),
                 (
                     buyer.clone(),
-                    Address::from_contract_id(&offer.contract_id),
+                    offer.address(),
                     20_i128
                 )
                     .into_val(&e)
