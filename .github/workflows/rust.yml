@@ -9,7 +9,8 @@ env:
   RUSTFLAGS: -D warnings
 
 defaults:
-  shell: bash
+  run:
+    shell: bash
 
 jobs:
 
