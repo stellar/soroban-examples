@@ -133,6 +133,7 @@ fn test() {
 #[test]
 fn test_burn() {
     let e = Env::default();
+    e.mock_all_auths();
 
     let admin = Address::random(&e);
     let user1 = Address::random(&e);
@@ -177,6 +178,8 @@ fn test_burn() {
 #[should_panic(expected = "insufficient balance")]
 fn transfer_insufficient_balance() {
     let e = Env::default();
+    e.mock_all_auths();
+
     let admin = Address::random(&e);
     let user1 = Address::random(&e);
     let user2 = Address::random(&e);
@@ -192,6 +195,8 @@ fn transfer_insufficient_balance() {
 #[should_panic(expected = "can't receive when deauthorized")]
 fn transfer_receive_deauthorized() {
     let e = Env::default();
+    e.mock_all_auths();
+
     let admin = Address::random(&e);
     let user1 = Address::random(&e);
     let user2 = Address::random(&e);
@@ -208,6 +213,8 @@ fn transfer_receive_deauthorized() {
 #[should_panic(expected = "can't spend when deauthorized")]
 fn transfer_spend_deauthorized() {
     let e = Env::default();
+    e.mock_all_auths();
+
     let admin = Address::random(&e);
     let user1 = Address::random(&e);
     let user2 = Address::random(&e);
@@ -224,6 +231,8 @@ fn transfer_spend_deauthorized() {
 #[should_panic(expected = "insufficient allowance")]
 fn transfer_from_insufficient_allowance() {
     let e = Env::default();
+    e.mock_all_auths();
+
     let admin = Address::random(&e);
     let user1 = Address::random(&e);
     let user2 = Address::random(&e);
