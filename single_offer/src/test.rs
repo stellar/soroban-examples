@@ -85,12 +85,7 @@ fn test() {
                 buyer.clone(),
                 buy_token.contract_id.clone(),
                 Symbol::new(&e, "transfer"),
-                (
-                    buyer.clone(),
-                    offer.address(),
-                    20_i128
-                )
-                    .into_val(&e)
+                (buyer.clone(), offer.address(), 20_i128).into_val(&e)
             )
         ]
     );
