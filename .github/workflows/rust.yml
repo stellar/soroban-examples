@@ -8,10 +8,6 @@ on:
 env:
   RUSTFLAGS: -D warnings
 
-defaults:
-  run:
-    shell: bash
-
 jobs:
 
   complete:
@@ -27,7 +23,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - run: rustup update
-    - run: "rustfmt **/*.rs"
+    - run: |
+      shopt -s globstar
+      rustfmt **/*.rs
 
   rust-analyzer-compat:
     runs-on: ubuntu-latest
