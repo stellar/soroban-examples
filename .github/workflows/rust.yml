@@ -22,7 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - run: |
+    - id: dirs
+      run: |
         dirs=$(find . -type d -mindepth 1 -maxdepth 1 | jq -Rnc '[inputs | "\(.)"]')
         echo "dirs=$dirs" >> $GITHUB_OUTPUT
     outputs:
