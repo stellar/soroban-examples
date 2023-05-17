@@ -24,7 +24,7 @@ jobs:
     - uses: actions/checkout@v3
     - id: dirs
       run: |
-        dirs=$(find . -type d -not -path '*/.*' -mindepth 1 -maxdepth 1 | jq -Rnc '[inputs | "\(.)"]')
+        dirs=$(find . -type f -name 'Makefile' -mindepth 2 | xargs dirname | jq -Rnc '[inputs | "\(.)"]')
         echo "dirs=$dirs" >> $GITHUB_OUTPUT
     outputs:
       dirs: ${{ steps.dirs.outputs.dirs }}
