@@ -18,49 +18,58 @@ jobs:
     - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
       run: exit 1
 
+  dirs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - id: dirs
+      run: |
+        dirs=$(find . -type f -name 'Makefile' -mindepth 2 | xargs dirname | sed 's|^\./||' | jq -Rnc '[inputs | "\(.)"]')
+        echo "dirs=$dirs" >> $GITHUB_OUTPUT
+    outputs:
+      dirs: ${{ steps.dirs.outputs.dirs }}
+
   fmt:
+    needs: dirs
+    strategy:
+      matrix:
+        working-directory: ${{ fromJSON(needs.dirs.outputs.dirs) }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.working-directory }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - run: rustup update
-    - run: |
-        shopt -s globstar
-        rustfmt **/*.rs
+    - run: cargo fmt --all --check
 
   rust-analyzer-compat:
+    needs: dirs
+    strategy:
+      matrix:
+        working-directory: ${{ fromJSON(needs.dirs.outputs.dirs) }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.working-directory }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - run: rustup update
     - run: rustup +nightly component add rust-analyzer
     - name: Check if rust-analyzer encounters any errors parsing project
-      run: rustup run nightly rust-analyzer analysis-stats token/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats deployer/deployer/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats deployer/contract/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats simple_account/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats timelock/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats alloc/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats hello_world/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats auth/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats custom_types/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats single_offer/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats liquidity_pool/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats increment/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats atomic_multiswap/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats cross_contract/contract_b/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats cross_contract/contract_a/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats errors/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats account/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats events/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats logging/ 2>&1 | (! grep ERROR)
-    - run: rustup run nightly rust-analyzer analysis-stats atomic_swap/ 2>&1 | (! grep ERROR)
+      run: rustup run nightly rust-analyzer analysis-stats 2>&1 | (! grep ERROR)
 
   build-and-test:
+    needs: dirs
     strategy:
       matrix:
+        working-directory: ${{ fromJSON(needs.dirs.outputs.dirs) }}
         sys:
         - os: ubuntu-latest
           target: x86_64-unknown-linux-gnu
+    defaults:
+      run:
+        working-directory: ${{ matrix.working-directory }}
     runs-on: ${{ matrix.sys.os }}
     steps:
     - uses: actions/checkout@v3
