@@ -23,7 +23,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - run: |
-        dirs=$(find . -type d -mindepth 1 -maxdepth 1 | jq -Rn '[inputs | "\(.)"]')
+        dirs=$(find . -type d -mindepth 1 -maxdepth 1 | jq -Rnc '[inputs | "\(.)"]')
         echo "dirs=$dirs" >> $GITHUB_OUTPUT
     outputs:
       dirs: ${{ steps.dirs.outputs.dirs }}
