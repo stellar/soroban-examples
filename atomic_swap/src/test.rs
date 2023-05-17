@@ -5,7 +5,7 @@ use super::*;
 use soroban_sdk::{testutils::Address as _, token, Address, Env, IntoVal, Symbol};
 use token::Client as TokenClient;
 
-fn create_token_contract(e: &Env, admin: &Address) -> TokenClient {
+fn create_token_contract<'a>(e: &Env, admin: &Address) -> TokenClient<'a> {
     TokenClient::new(e, &e.register_stellar_asset_contract(admin.clone()))
 }
 
@@ -15,7 +15,9 @@ fn create_atomic_swap_contract(e: &Env) -> AtomicSwapContractClient {
 
 #[test]
 fn test_atomic_swap() {
-    let env: Env = Default::default();
+    let env = Env::default();
+    env.mock_all_auths();
+
     let a = Address::random(&env);
     let b = Address::random(&env);
 
@@ -40,7 +42,7 @@ fn test_atomic_swap() {
     );
 
     assert_eq!(
-        env.recorded_top_authorizations(),
+        env.auths(),
         std::vec![
             (
                 a.clone(),
@@ -55,6 +57,12 @@ fn test_atomic_swap() {
                     .into_val(&env),
             ),
             (
+                a.clone(),
+                token_a.contract_id.clone(),
+                Symbol::new(&env, "increase_allowance"),
+                (a.clone(), contract.address(), 1000_i128).into_val(&env),
+            ),
+            (
                 b.clone(),
                 contract.contract_id.clone(),
                 Symbol::short("swap"),
@@ -65,6 +73,12 @@ fn test_atomic_swap() {
                     950_i128
                 )
                     .into_val(&env),
+            ),
+            (
+                b.clone(),
+                token_b.contract_id.clone(),
+                Symbol::new(&env, "increase_allowance"),
+                (b.clone(), contract.address(), 5000_i128).into_val(&env),
             ),
         ]
     );

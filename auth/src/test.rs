@@ -7,6 +7,8 @@ use soroban_sdk::{testutils::Address as _, Address, Env, IntoVal, Symbol};
 #[test]
 fn test() {
     let env = Env::default();
+    env.mock_all_auths();
+
     let contract_id = env.register_contract(None, IncrementContract);
     let client = IncrementContractClient::new(&env, &contract_id);
 
@@ -17,8 +19,8 @@ fn test() {
     // Verify that the user indeed had to authorize a call of `increment` with
     // the expected arguments:
     assert_eq!(
-        env.recorded_top_authorizations(),
-        std::vec![(
+        env.auths(),
+        [(
             // Address for which auth is performed
             user_1.clone(),
             // Identifier of the called contract

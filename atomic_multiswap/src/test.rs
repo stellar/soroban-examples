@@ -6,7 +6,7 @@ use assert_unordered::assert_eq_unordered;
 use soroban_sdk::{testutils::Address as _, token, Address, Env, IntoVal, Symbol};
 use token::Client as TokenClient;
 
-fn create_token_contract(e: &Env, admin: &Address) -> TokenClient {
+fn create_token_contract<'a>(e: &Env, admin: &Address) -> TokenClient<'a> {
     TokenClient::new(e, &e.register_stellar_asset_contract(admin.clone()))
 }
 
@@ -16,7 +16,9 @@ fn create_atomic_multiswap_contract(e: &Env) -> AtomicMultiSwapContractClient {
 
 #[test]
 fn test_atomic_multi_swap() {
-    let env: Env = Default::default();
+    let env = Env::default();
+    env.mock_all_auths();
+
     let swaps_a = [
         SwapSpec {
             address: Address::random(&env),
@@ -83,7 +85,7 @@ fn test_atomic_multi_swap() {
     // authorized calls, even though `multi_swap` was the overall top-level
     // invocation.
     assert_eq_unordered!(
-        env.recorded_top_authorizations(),
+        env.auths(),
         std::vec![
             (
                 swaps_a[0].address.clone(),
@@ -94,6 +96,17 @@ fn test_atomic_multi_swap() {
                     token_b.contract_id.clone(),
                     2000_i128,
                     290_i128
+                )
+                    .into_val(&env),
+            ),
+            (
+                swaps_a[0].address.clone(),
+                token_a.contract_id.clone(),
+                Symbol::new(&env, "increase_allowance"),
+                (
+                    swaps_a[0].address.clone(),
+                    Address::from_contract_id(&swap_contract_id),
+                    2000_i128,
                 )
                     .into_val(&env),
             ),
@@ -110,6 +123,17 @@ fn test_atomic_multi_swap() {
                     .into_val(&env),
             ),
             (
+                swaps_a[1].address.clone(),
+                token_a.contract_id.clone(),
+                Symbol::new(&env, "increase_allowance"),
+                (
+                    swaps_a[1].address.clone(),
+                    Address::from_contract_id(&swap_contract_id),
+                    3000_i128,
+                )
+                    .into_val(&env),
+            ),
+            (
                 swaps_b[1].address.clone(),
                 swap_contract_id.clone(),
                 Symbol::short("swap"),
@@ -118,6 +142,17 @@ fn test_atomic_multi_swap() {
                     token_a.contract_id.clone(),
                     295_i128,
                     1950_i128,
+                )
+                    .into_val(&env),
+            ),
+            (
+                swaps_b[1].address.clone(),
+                token_b.contract_id.clone(),
+                Symbol::new(&env, "increase_allowance"),
+                (
+                    swaps_b[1].address.clone(),
+                    Address::from_contract_id(&swap_contract_id),
+                    295_i128,
                 )
                     .into_val(&env),
             ),
@@ -132,7 +167,18 @@ fn test_atomic_multi_swap() {
                     2900_i128,
                 )
                     .into_val(&env),
-            )
+            ),
+            (
+                swaps_b[2].address.clone(),
+                token_b.contract_id.clone(),
+                Symbol::new(&env, "increase_allowance"),
+                (
+                    swaps_b[2].address.clone(),
+                    Address::from_contract_id(&swap_contract_id),
+                    400_i128,
+                )
+                    .into_val(&env),
+            ),
         ]
     );
     // Balance has to be checked after the auth checks because auth is only
@@ -156,7 +202,9 @@ fn test_atomic_multi_swap() {
 
 #[test]
 fn test_multi_swap_with_duplicate_account() {
-    let env: Env = Default::default();
+    let env = Env::default();
+    env.mock_all_auths();
+
     let address_a = Address::random(&env);
     let address_b = Address::random(&env);
     let swaps_a = [
@@ -206,7 +254,7 @@ fn test_multi_swap_with_duplicate_account() {
     // Notice that the same address may participate in multiple swaps. Separate
     // authorizations are recorded (and required on-chain) for every swap.
     assert_eq_unordered!(
-        env.recorded_top_authorizations(),
+        env.auths(),
         std::vec![
             (
                 address_a.clone(),
@@ -222,6 +270,17 @@ fn test_multi_swap_with_duplicate_account() {
             ),
             (
                 address_a.clone(),
+                token_a.contract_id.clone(),
+                Symbol::new(&env, "increase_allowance"),
+                (
+                    address_a.clone(),
+                    Address::from_contract_id(&swap_contract_id),
+                    1000_i128,
+                )
+                    .into_val(&env),
+            ),
+            (
+                address_a.clone(),
                 swap_contract_id.clone(),
                 Symbol::short("swap"),
                 (
@@ -229,6 +288,17 @@ fn test_multi_swap_with_duplicate_account() {
                     token_b.contract_id.clone(),
                     2000_i128,
                     190_i128
+                )
+                    .into_val(&env),
+            ),
+            (
+                address_a.clone(),
+                token_a.contract_id.clone(),
+                Symbol::new(&env, "increase_allowance"),
+                (
+                    address_a.clone(),
+                    Address::from_contract_id(&swap_contract_id),
+                    2000_i128,
                 )
                     .into_val(&env),
             ),
@@ -246,6 +316,17 @@ fn test_multi_swap_with_duplicate_account() {
             ),
             (
                 address_b.clone(),
+                token_b.contract_id.clone(),
+                Symbol::new(&env, "increase_allowance"),
+                (
+                    address_b.clone(),
+                    Address::from_contract_id(&swap_contract_id),
+                    101_i128,
+                )
+                    .into_val(&env),
+            ),
+            (
+                address_b.clone(),
                 swap_contract_id.clone(),
                 Symbol::short("swap"),
                 (
@@ -255,7 +336,18 @@ fn test_multi_swap_with_duplicate_account() {
                     2000_i128
                 )
                     .into_val(&env),
-            )
+            ),
+            (
+                address_b.clone(),
+                token_b.contract_id.clone(),
+                Symbol::new(&env, "increase_allowance"),
+                (
+                    address_b.clone(),
+                    Address::from_contract_id(&swap_contract_id),
+                    190_i128,
+                )
+                    .into_val(&env),
+            ),
         ]
     );
 

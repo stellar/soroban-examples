@@ -4,25 +4,25 @@ extern crate std;
 use crate::{token, SingleOfferClient};
 use soroban_sdk::{testutils::Address as _, Address, BytesN, Env, IntoVal, Symbol};
 
-fn create_token_contract(e: &Env, admin: &Address) -> token::Client {
-    token::Client::new(&e, &e.register_stellar_asset_contract(admin.clone()))
+fn create_token_contract<'a>(e: &Env, admin: &Address) -> token::Client<'a> {
+    token::Client::new(e, &e.register_stellar_asset_contract(admin.clone()))
 }
 
-fn create_single_offer_contract(
+fn create_single_offer_contract<'a>(
     e: &Env,
     seller: &Address,
     sell_token: &BytesN<32>,
     buy_token: &BytesN<32>,
     sell_price: u32,
     buy_price: u32,
-) -> SingleOfferClient {
+) -> SingleOfferClient<'a> {
     let offer = SingleOfferClient::new(e, &e.register_contract(None, crate::SingleOffer {}));
     offer.create(seller, sell_token, buy_token, &sell_price, &buy_price);
 
     // Verify that authorization is required for the seller.
     assert_eq!(
-        e.recorded_top_authorizations(),
-        std::vec![(
+        e.auths(),
+        [(
             seller.clone(),
             offer.contract_id.clone(),
             Symbol::short("create"),
@@ -42,7 +42,9 @@ fn create_single_offer_contract(
 
 #[test]
 fn test() {
-    let e: Env = Default::default();
+    let e = Env::default();
+    e.mock_all_auths();
+
     let token_admin = Address::random(&e);
     let seller = Address::random(&e);
     let buyer = Address::random(&e);
@@ -71,13 +73,21 @@ fn test() {
     offer.trade(&buyer, &20_i128, &10_i128);
     // Verify that authorization is required for the buyer.
     assert_eq!(
-        e.recorded_top_authorizations(),
-        std::vec![(
-            buyer.clone(),
-            offer.contract_id.clone(),
-            Symbol::short("trade"),
-            (&buyer, 20_i128, 10_i128).into_val(&e)
-        )]
+        e.auths(),
+        [
+            (
+                buyer.clone(),
+                offer.contract_id.clone(),
+                Symbol::short("trade"),
+                (&buyer, 20_i128, 10_i128).into_val(&e)
+            ),
+            (
+                buyer.clone(),
+                buy_token.contract_id.clone(),
+                Symbol::new(&e, "transfer"),
+                (buyer.clone(), offer.address(), 20_i128).into_val(&e)
+            )
+        ]
     );
 
     assert_eq!(sell_token.balance(&seller), 900);
@@ -91,8 +101,8 @@ fn test() {
     offer.withdraw(&sell_token.contract_id, &70);
     // Verify that the seller has to authorize this.
     assert_eq!(
-        e.recorded_top_authorizations(),
-        std::vec![(
+        e.auths(),
+        [(
             seller.clone(),
             offer.contract_id.clone(),
             Symbol::short("withdraw"),
@@ -107,8 +117,8 @@ fn test() {
     offer.updt_price(&1, &1);
     // Verify that the seller has to authorize this.
     assert_eq!(
-        e.recorded_top_authorizations(),
-        std::vec![(
+        e.auths(),
+        [(
             seller.clone(),
             offer.contract_id.clone(),
             Symbol::new(&e, "updt_price"),

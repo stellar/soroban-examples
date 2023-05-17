@@ -6,25 +6,27 @@ use soroban_sdk::testutils::{Address as _, Ledger, LedgerInfo};
 use soroban_sdk::{token, vec, Address, Env, IntoVal, Symbol};
 use token::Client as TokenClient;
 
-fn create_token_contract(e: &Env, admin: &Address) -> TokenClient {
+fn create_token_contract<'a>(e: &Env, admin: &Address) -> TokenClient<'a> {
     TokenClient::new(e, &e.register_stellar_asset_contract(admin.clone()))
 }
 
-fn create_claimable_balance_contract(e: &Env) -> ClaimableBalanceContractClient {
+fn create_claimable_balance_contract<'a>(e: &Env) -> ClaimableBalanceContractClient<'a> {
     ClaimableBalanceContractClient::new(e, &e.register_contract(None, ClaimableBalanceContract {}))
 }
 
-struct ClaimableBalanceTest {
+struct ClaimableBalanceTest<'a> {
     env: Env,
     deposit_address: Address,
     claim_addresses: [Address; 3],
-    token: TokenClient,
-    contract: ClaimableBalanceContractClient,
+    token: TokenClient<'a>,
+    contract: ClaimableBalanceContractClient<'a>,
 }
 
-impl ClaimableBalanceTest {
+impl<'a> ClaimableBalanceTest<'a> {
     fn setup() -> Self {
-        let env: Env = Default::default();
+        let env = Env::default();
+        env.mock_all_auths();
+
         env.ledger().set(LedgerInfo {
             timestamp: 12345,
             protocol_version: 1,
@@ -76,27 +78,40 @@ fn test_deposit_and_claim() {
     );
 
     assert_eq!(
-        test.env.recorded_top_authorizations(),
-        std::vec![(
-            test.deposit_address.clone(),
-            test.contract.contract_id.clone(),
-            Symbol::short("deposit"),
+        test.env.auths(),
+        [
+            (
+                test.deposit_address.clone(),
+                test.contract.contract_id.clone(),
+                Symbol::short("deposit"),
+                (
+                    test.deposit_address.clone(),
+                    test.token.contract_id.clone(),
+                    800_i128,
+                    vec![
+                        &test.env,
+                        test.claim_addresses[0].clone(),
+                        test.claim_addresses[1].clone()
+                    ],
+                    TimeBound {
+                        kind: TimeBoundKind::Before,
+                        timestamp: 12346,
+                    },
+                )
+                    .into_val(&test.env),
+            ),
             (
                 test.deposit_address.clone(),
                 test.token.contract_id.clone(),
-                800_i128,
-                vec![
-                    &test.env,
-                    test.claim_addresses[0].clone(),
-                    test.claim_addresses[1].clone()
-                ],
-                TimeBound {
-                    kind: TimeBoundKind::Before,
-                    timestamp: 12346,
-                },
-            )
-                .into_val(&test.env),
-        )]
+                Symbol::short("transfer"),
+                (
+                    test.deposit_address.clone(),
+                    &test.contract.address(),
+                    800_i128,
+                )
+                    .into_val(&test.env),
+            ),
+        ]
     );
 
     assert_eq!(test.token.balance(&test.deposit_address), 200);
@@ -105,8 +120,8 @@ fn test_deposit_and_claim() {
 
     test.contract.claim(&test.claim_addresses[1]);
     assert_eq!(
-        test.env.recorded_top_authorizations(),
-        std::vec![(
+        test.env.auths(),
+        [(
             test.claim_addresses[1].clone(),
             test.contract.contract_id.clone(),
             Symbol::short("claim"),

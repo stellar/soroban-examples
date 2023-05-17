@@ -14,10 +14,10 @@ doctest = false
 testutils = ["soroban-sdk/testutils"]
 
 [dependencies]
-soroban-sdk = { version = "0.7.0", git = "https://github.com/stellar/rs-soroban-sdk", rev = "9383a6ae6f21c24cfe74a53759949b2c83d53e78"}
+soroban-sdk = { version = "0.8.1" }
 
 [dev_dependencies]
-soroban-sdk = { version = "0.7.0", git = "https://github.com/stellar/rs-soroban-sdk", rev = "9383a6ae6f21c24cfe74a53759949b2c83d53e78", features = ["testutils"] }
+soroban-sdk = { version = "0.8.1", features = ["testutils"] }
 
 [profile.release]
 opt-level = "z"

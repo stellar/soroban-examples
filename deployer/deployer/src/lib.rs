@@ -1,6 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{contractimpl, Bytes, BytesN, Env, RawVal, Symbol, Vec};
+use soroban_sdk::{contractimpl, BytesN, Env, RawVal, Symbol, Vec};
 
 pub struct Deployer;
 
@@ -11,7 +11,7 @@ impl Deployer {
     /// result of the init function.
     pub fn deploy(
         env: Env,
-        salt: Bytes,
+        salt: BytesN<32>,
         wasm_hash: BytesN<32>,
         init_fn: Symbol,
         init_args: Vec<RawVal>,
