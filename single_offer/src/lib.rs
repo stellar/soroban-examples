@@ -4,7 +4,7 @@
 #![no_std]
 
 use soroban_sdk::{
-    contractimpl, contracttype, token, unwrap::UnwrapOptimized, Address, BytesN, Env,
+    contractimpl, contracttype, token, unwrap::UnwrapOptimized, Address, Env,
 };
 
 #[derive(Clone)]
@@ -22,8 +22,8 @@ pub enum DataKey {
 pub struct Offer {
     // Owner of this offer. Sells sell_token to get buy_token.
     pub seller: Address,
-    pub sell_token: BytesN<32>,
-    pub buy_token: BytesN<32>,
+    pub sell_token: Address,
+    pub buy_token: Address,
     // Seller-defined price of the sell token in arbitrary units.
     pub sell_price: u32,
     // Seller-defined price of the buy token in arbitrary units.
@@ -50,8 +50,8 @@ impl SingleOffer {
     pub fn create(
         e: Env,
         seller: Address,
-        sell_token: BytesN<32>,
-        buy_token: BytesN<32>,
+        sell_token: Address,
+        buy_token: Address,
         sell_price: u32,
         buy_price: u32,
     ) {
@@ -125,7 +125,7 @@ impl SingleOffer {
     // outstanding balance of the contract (in case if they mistakenly
     // transferred wrong token to it).
     // Must be authorized by seller.
-    pub fn withdraw(e: Env, token: BytesN<32>, amount: i128) {
+    pub fn withdraw(e: Env, token: Address, amount: i128) {
         let offer = load_offer(&e);
         offer.seller.require_auth();
         token::Client::new(&e, &token).transfer(

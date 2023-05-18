@@ -9,8 +9,7 @@
 
 struct SimpleAccount;
 
-use soroban_auth::AuthorizationContext;
-use soroban_sdk::{contractimpl, contracttype, BytesN, Env, Vec};
+use soroban_sdk::{auth::Context, contractimpl, contracttype, BytesN, Env, Vec};
 
 #[derive(Clone)]
 #[contracttype]
@@ -50,7 +49,7 @@ impl SimpleAccount {
         env: Env,
         signature_payload: BytesN<32>,
         signature_args: Vec<BytesN<64>>,
-        _auth_context: Vec<AuthorizationContext>,
+        _auth_context: Vec<Context>,
     ) {
         if signature_args.len() != 1 {
             panic!("incorrect number of signature args");

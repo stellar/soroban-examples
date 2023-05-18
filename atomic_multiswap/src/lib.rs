@@ -7,7 +7,7 @@
 //! This example demonstrates how authorized calls can be batched together.
 #![no_std]
 
-use soroban_sdk::{contractimpl, contracttype, Address, BytesN, Env, Vec};
+use soroban_sdk::{contractimpl, contracttype, Address, Env, Vec};
 
 mod atomic_swap {
     soroban_sdk::contractimport!(
@@ -33,9 +33,9 @@ impl AtomicMultiSwapContract {
     // but they don't need to authorize `multi_swap` itself.
     pub fn multi_swap(
         env: Env,
-        swap_contract: BytesN<32>,
-        token_a: BytesN<32>,
-        token_b: BytesN<32>,
+        swap_contract: Address,
+        token_a: Address,
+        token_b: Address,
         swaps_a: Vec<SwapSpec>,
         swaps_b: Vec<SwapSpec>,
     ) {

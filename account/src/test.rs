@@ -4,9 +4,9 @@ extern crate std;
 use ed25519_dalek::Keypair;
 use ed25519_dalek::Signer;
 use rand::thread_rng;
-use soroban_auth::{testutils::EnvAuthUtils, AuthorizationContext};
+use soroban_sdk::testutils::Address;
 use soroban_sdk::RawVal;
-use soroban_sdk::{testutils::BytesN as _, vec, BytesN, Env, IntoVal, Symbol};
+use soroban_sdk::{auth::Context, testutils::BytesN as _, vec, BytesN, Env, IntoVal, Symbol};
 
 use crate::AccError;
 use crate::{AccountContract, AccountContractClient, Signature};
@@ -34,13 +34,8 @@ fn sign(e: &Env, signer: &Keypair, payload: &BytesN<32>) -> RawVal {
     .into_val(e)
 }
 
-fn token_auth_context(
-    e: &Env,
-    token_id: &BytesN<32>,
-    fn_name: Symbol,
-    amount: i128,
-) -> AuthorizationContext {
-    AuthorizationContext {
+fn token_auth_context(e: &Env, token_id: &BytesN<32>, fn_name: Symbol, amount: i128) -> Context {
+    Context {
         contract: token_id.clone(),
         fn_name,
         args: ((), (), amount).into_val(e),
@@ -67,10 +62,10 @@ fn test_token_auth() {
     let payload = BytesN::random(&env);
     let token = BytesN::random(&env);
     // `__check_auth` can't be called directly, hence we need to use
-    // `invoke_account_contract_check_auth` testing utility that emulates being
+    // `try_invoke_contract_check_auth` testing utility that emulates being
     // called by the Soroban host during a `require_auth` call.
-    env.invoke_account_contract_check_auth::<AccError>(
-        &account_contract.contract_id,
+    env.try_invoke_contract_check_auth::<AccError>(
+        &account_contract.address.contract_id(),
         &payload,
         &vec![&env, sign(&env, &signers[0], &payload)],
         &vec![
@@ -79,8 +74,8 @@ fn test_token_auth() {
         ],
     )
     .unwrap();
-    env.invoke_account_contract_check_auth::<AccError>(
-        &account_contract.contract_id,
+    env.try_invoke_contract_check_auth::<AccError>(
+        &account_contract.address.contract_id(),
         &payload,
         &vec![&env, sign(&env, &signers[0], &payload)],
         &vec![
@@ -96,8 +91,8 @@ fn test_token_auth() {
     assert_eq!(
         env.auths(),
         [(
-            account_contract.address(),
-            account_contract.contract_id.clone(),
+            account_contract.address.clone(),
+            account_contract.address.clone(),
             Symbol::short("add_limit"),
             (token.clone(), 1000_i128).into_val(&env),
         )]
@@ -106,8 +101,8 @@ fn test_token_auth() {
     // 1 signer no longer can perform the token operation that transfers more
     // than 1000 units.
     assert_eq!(
-        env.invoke_account_contract_check_auth::<AccError>(
-            &account_contract.contract_id,
+        env.try_invoke_contract_check_auth::<AccError>(
+            &account_contract.address.contract_id(),
             &payload,
             &vec![&env, sign(&env, &signers[0], &payload)],
             &vec![
@@ -121,8 +116,8 @@ fn test_token_auth() {
         AccError::NotEnoughSigners
     );
     assert_eq!(
-        env.invoke_account_contract_check_auth::<AccError>(
-            &account_contract.contract_id,
+        env.try_invoke_contract_check_auth::<AccError>(
+            &account_contract.address.contract_id(),
             &payload,
             &vec![&env, sign(&env, &signers[0], &payload)],
             &vec![
@@ -137,8 +132,8 @@ fn test_token_auth() {
     );
 
     // 1 signer can still transfer 1000 units.
-    env.invoke_account_contract_check_auth::<AccError>(
-        &account_contract.contract_id,
+    env.try_invoke_contract_check_auth::<AccError>(
+        &account_contract.address.contract_id(),
         &payload,
         &vec![&env, sign(&env, &signers[0], &payload)],
         &vec![
@@ -148,8 +143,8 @@ fn test_token_auth() {
     )
     .unwrap();
     // 2 signers can transfer any amount of token.
-    env.invoke_account_contract_check_auth::<AccError>(
-        &account_contract.contract_id,
+    env.try_invoke_contract_check_auth::<AccError>(
+        &account_contract.address.contract_id(),
         &payload,
         &vec![
             &env,

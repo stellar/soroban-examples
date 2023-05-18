@@ -6,7 +6,7 @@
 //! For simplicity, the contract only supports invoker-based auth.
 #![no_std]
 
-use soroban_sdk::{contractimpl, contracttype, token, Address, BytesN, Env, Vec};
+use soroban_sdk::{contractimpl, contracttype, token, Address, Env, Vec};
 
 #[derive(Clone)]
 #[contracttype]
@@ -32,7 +32,7 @@ pub struct TimeBound {
 #[derive(Clone)]
 #[contracttype]
 pub struct ClaimableBalance {
-    pub token: BytesN<32>,
+    pub token: Address,
     pub amount: i128,
     pub claimants: Vec<Address>,
     pub time_bound: TimeBound,
@@ -56,7 +56,7 @@ impl ClaimableBalanceContract {
     pub fn deposit(
         env: Env,
         from: Address,
-        token: BytesN<32>,
+        token: Address,
         amount: i128,
         claimants: Vec<Address>,
         time_bound: TimeBound,
