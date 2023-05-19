@@ -8,10 +8,10 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-soroban-sdk = { version = "0.8.3", path = "/Users/leighmcculloch/Code/rs-soroban-sdk/soroban-sdk" }
+soroban-sdk = { version = "0.8.4" }
 
 [dev_dependencies]
-soroban-sdk = { version = "0.8.3", path = "/Users/leighmcculloch/Code/rs-soroban-sdk/soroban-sdk", features = ["testutils"] }
+soroban-sdk = { version = "0.8.4", features = ["testutils"] }
 
 [profile.release]
 opt-level = "z"
