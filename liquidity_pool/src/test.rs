@@ -12,8 +12,8 @@ fn create_token_contract<'a>(e: &Env, admin: &Address) -> token::Client<'a> {
 fn create_liqpool_contract<'a>(
     e: &Env,
     token_wasm_hash: &BytesN<32>,
-    token_a: &BytesN<32>,
-    token_b: &BytesN<32>,
+    token_a: &Address,
+    token_b: &Address,
 ) -> LiquidityPoolClient<'a> {
     let liqpool = LiquidityPoolClient::new(e, &e.register_contract(None, crate::LiquidityPool {}));
     liqpool.initialize(token_wasm_hash, token_a, token_b);
@@ -37,7 +37,7 @@ fn test() {
 
     let mut token1 = create_token_contract(&e, &admin1);
     let mut token2 = create_token_contract(&e, &admin2);
-    if &token2.contract_id < &token1.contract_id {
+    if &token2.address < &token1.address {
         std::mem::swap(&mut token1, &mut token2);
         std::mem::swap(&mut admin1, &mut admin2);
     }
@@ -45,12 +45,11 @@ fn test() {
     let liqpool = create_liqpool_contract(
         &e,
         &install_token_wasm(&e),
-        &token1.contract_id,
-        &token2.contract_id,
+        &token1.address,
+        &token2.address,
     );
 
-    let contract_share: [u8; 32] = liqpool.share_id().into();
-    let token_share = token::Client::new(&e, &contract_share);
+    let token_share = token::Client::new(&e, &liqpool.share_id());
 
     token1.mint(&user1, &1000);
     assert_eq!(token1.balance(&user1), 1000);
@@ -64,31 +63,31 @@ fn test() {
         [
             (
                 user1.clone(),
-                liqpool.contract_id.clone(),
+                liqpool.address.clone(),
                 Symbol::short("deposit"),
                 (&user1, 100_i128, 100_i128, 100_i128, 100_i128).into_val(&e)
             ),
             (
                 user1.clone(),
-                token1.contract_id.clone(),
+                token1.address.clone(),
                 Symbol::short("transfer"),
-                (&user1, liqpool.address(), 100_i128).into_val(&e)
+                (&user1, &liqpool.address, 100_i128).into_val(&e)
             ),
             (
                 user1.clone(),
-                token2.contract_id.clone(),
+                token2.address.clone(),
                 Symbol::short("transfer"),
-                (&user1, liqpool.address(), 100_i128).into_val(&e)
+                (&user1, &liqpool.address, 100_i128).into_val(&e)
             ),
         ]
     );
 
     assert_eq!(token_share.balance(&user1), 100);
-    assert_eq!(token_share.balance(&liqpool.address()), 0);
+    assert_eq!(token_share.balance(&liqpool.address), 0);
     assert_eq!(token1.balance(&user1), 900);
-    assert_eq!(token1.balance(&liqpool.address()), 100);
+    assert_eq!(token1.balance(&liqpool.address), 100);
     assert_eq!(token2.balance(&user1), 900);
-    assert_eq!(token2.balance(&liqpool.address()), 100);
+    assert_eq!(token2.balance(&liqpool.address), 100);
 
     liqpool.swap(&user1, &false, &49, &100);
     assert_eq!(
@@ -96,23 +95,23 @@ fn test() {
         [
             (
                 user1.clone(),
-                liqpool.contract_id.clone(),
+                liqpool.address.clone(),
                 Symbol::short("swap"),
                 (&user1, false, 49_i128, 100_i128).into_val(&e)
             ),
             (
                 user1.clone(),
-                token1.contract_id.clone(),
+                token1.address.clone(),
                 Symbol::short("transfer"),
-                (&user1, liqpool.address(), 97_i128).into_val(&e)
+                (&user1, &liqpool.address, 97_i128).into_val(&e)
             )
         ]
     );
 
     assert_eq!(token1.balance(&user1), 803);
-    assert_eq!(token1.balance(&liqpool.address()), 197);
+    assert_eq!(token1.balance(&liqpool.address), 197);
     assert_eq!(token2.balance(&user1), 949);
-    assert_eq!(token2.balance(&liqpool.address()), 51);
+    assert_eq!(token2.balance(&liqpool.address), 51);
 
     liqpool.withdraw(&user1, &100, &197, &51);
     assert_eq!(
@@ -120,15 +119,15 @@ fn test() {
         [
             (
                 user1.clone(),
-                liqpool.contract_id.clone(),
+                liqpool.address.clone(),
                 Symbol::short("withdraw"),
                 (&user1, 100_i128, 197_i128, 51_i128).into_val(&e)
             ),
             (
                 user1.clone(),
-                token_share.contract_id.clone(),
+                token_share.address.clone(),
                 Symbol::short("transfer"),
-                (&user1, liqpool.address(), 100_i128).into_val(&e)
+                (&user1, &liqpool.address, 100_i128).into_val(&e)
             )
         ]
     );
@@ -136,7 +135,7 @@ fn test() {
     assert_eq!(token1.balance(&user1), 1000);
     assert_eq!(token2.balance(&user1), 1000);
     assert_eq!(token_share.balance(&user1), 0);
-    assert_eq!(token1.balance(&liqpool.address()), 0);
-    assert_eq!(token2.balance(&liqpool.address()), 0);
-    assert_eq!(token_share.balance(&liqpool.address()), 0);
+    assert_eq!(token1.balance(&liqpool.address), 0);
+    assert_eq!(token2.balance(&liqpool.address), 0);
+    assert_eq!(token_share.balance(&liqpool.address), 0);
 }

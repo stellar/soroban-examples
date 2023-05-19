@@ -4,7 +4,7 @@
 //! This example demonstrates how multi-party authorization can be implemented.
 #![no_std]
 
-use soroban_sdk::{contractimpl, token, Address, BytesN, Env, IntoVal};
+use soroban_sdk::{contractimpl, token, Address, Env, IntoVal};
 
 pub struct AtomicSwapContract;
 
@@ -17,8 +17,8 @@ impl AtomicSwapContract {
         env: Env,
         a: Address,
         b: Address,
-        token_a: BytesN<32>,
-        token_b: BytesN<32>,
+        token_a: Address,
+        token_b: Address,
         amount_a: i128,
         min_b_for_a: i128,
         amount_b: i128,
@@ -43,26 +43,26 @@ impl AtomicSwapContract {
         );
 
         // Perform the swap via two token transfers.
-        move_token(&env, token_a, &a, &b, amount_a, min_a_for_b);
-        move_token(&env, token_b, &b, &a, amount_b, min_b_for_a);
+        move_token(&env, &token_a, &a, &b, amount_a, min_a_for_b);
+        move_token(&env, &token_b, &b, &a, amount_b, min_b_for_a);
     }
 }
 
 fn move_token(
     env: &Env,
-    token: BytesN<32>,
+    token: &Address,
     from: &Address,
     to: &Address,
     approve_amount: i128,
     transfer_amount: i128,
 ) {
-    let token = token::Client::new(&env, &token);
+    let token = token::Client::new(env, token);
     let contract_address = env.current_contract_address();
     // This call needs to be authorized by `from` address. Since it increases
     // the allowance on behalf of the contract, `from` doesn't need to know `to`
     // at the signature time.
-    token.increase_allowance(&from, &contract_address, &approve_amount);
-    token.transfer_from(&contract_address, &from, to, &transfer_amount);
+    token.increase_allowance(from, &contract_address, &approve_amount);
+    token.transfer_from(&contract_address, from, to, &transfer_amount);
 }
 
 mod test;

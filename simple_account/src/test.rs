@@ -4,10 +4,12 @@ extern crate std;
 use ed25519_dalek::Keypair;
 use ed25519_dalek::Signer;
 use rand::thread_rng;
-use soroban_auth::testutils::EnvAuthUtils;
 use soroban_sdk::RawVal;
 use soroban_sdk::Status;
-use soroban_sdk::{testutils::BytesN as _, vec, BytesN, Env, IntoVal};
+use soroban_sdk::{
+    testutils::{Address as _, BytesN as _},
+    vec, BytesN, Env, IntoVal,
+};
 
 use crate::SimpleAccount;
 use crate::SimpleAccountClient;
@@ -39,10 +41,10 @@ fn test_account() {
 
     let payload = BytesN::random(&env);
     // `__check_auth` can't be called directly, hence we need to use
-    // `invoke_account_contract_check_auth` testing utility that emulates being
+    // `try_invoke_contract_check_auth` testing utility that emulates being
     // called by the Soroban host during a `require_auth` call.
-    env.invoke_account_contract_check_auth::<Status>(
-        &account_contract.contract_id,
+    env.try_invoke_contract_check_auth::<Status>(
+        &account_contract.address.contract_id(),
         &payload,
         &vec![&env, sign(&env, &signer, &payload)],
         &vec![&env],
@@ -53,8 +55,8 @@ fn test_account() {
     // Now pass a random bytes array instead of the signature - this should
     // result in an error as this is not a valid signature.
     assert!(env
-        .invoke_account_contract_check_auth::<Status>(
-            &account_contract.contract_id,
+        .try_invoke_contract_check_auth::<Status>(
+            &account_contract.address.contract_id(),
             &payload,
             &vec![&env, BytesN::<64>::random(&env).into()],
             &vec![&env],

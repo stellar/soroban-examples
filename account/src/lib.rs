@@ -6,9 +6,9 @@
 //! that would govern all the account contract interactions.
 #![no_std]
 
-use soroban_auth::AuthorizationContext;
 use soroban_sdk::{
-    contracterror, contractimpl, contracttype, BytesN, Env, Map, Symbol, TryIntoVal, Vec,
+    auth::Context, contracterror, contractimpl, contracttype, Address, BytesN, Env, Map, Symbol,
+    TryIntoVal, Vec,
 };
 
 struct AccountContract;
@@ -93,7 +93,7 @@ impl AccountContract {
         env: Env,
         signature_payload: BytesN<32>,
         signatures: Vec<Signature>,
-        auth_context: Vec<AuthorizationContext>,
+        auth_context: Vec<Context>,
     ) -> Result<(), AccError> {
         // Perform authentication.
         authenticate(&env, &signature_payload, &signatures)?;
@@ -101,7 +101,7 @@ impl AccountContract {
         let tot_signers: u32 = env.storage().get(&DataKey::SignerCnt).unwrap().unwrap();
         let all_signed = tot_signers == signatures.len();
 
-        let curr_contract_id = env.current_contract_id();
+        let curr_contract = env.current_contract_address();
 
         // This is a map for tracking the token spend limits per token. This
         // makes sure that if e.g. multiple `transfer` calls are being authorized
@@ -113,7 +113,7 @@ impl AccountContract {
             verify_authorization_policy(
                 &env,
                 &context.unwrap(),
-                &curr_contract_id,
+                &curr_contract,
                 all_signed,
                 &mut spend_left_per_token,
             )?;
@@ -152,13 +152,13 @@ fn authenticate(
 
 fn verify_authorization_policy(
     env: &Env,
-    context: &AuthorizationContext,
-    curr_contract_id: &BytesN<32>,
+    context: &Context,
+    curr_contract: &Address,
     all_signed: bool,
     spend_left_per_token: &mut Map<BytesN<32>, i128>,
 ) -> Result<(), AccError> {
     // For the account control every signer must sign the invocation.
-    if &context.contract == curr_contract_id {
+    if &context.contract() == curr_contract {
         if !all_signed {
             return Err(AccError::NotEnoughSigners);
         }

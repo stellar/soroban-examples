@@ -64,7 +64,7 @@ fn test_deposit_and_claim() {
     let test = ClaimableBalanceTest::setup();
     test.contract.deposit(
         &test.deposit_address,
-        &test.token.contract_id,
+        &test.token.address,
         &800,
         &vec![
             &test.env,
@@ -82,11 +82,11 @@ fn test_deposit_and_claim() {
         [
             (
                 test.deposit_address.clone(),
-                test.contract.contract_id.clone(),
+                test.contract.address.clone(),
                 Symbol::short("deposit"),
                 (
                     test.deposit_address.clone(),
-                    test.token.contract_id.clone(),
+                    test.token.address.clone(),
                     800_i128,
                     vec![
                         &test.env,
@@ -102,11 +102,11 @@ fn test_deposit_and_claim() {
             ),
             (
                 test.deposit_address.clone(),
-                test.token.contract_id.clone(),
+                test.token.address.clone(),
                 Symbol::short("transfer"),
                 (
                     test.deposit_address.clone(),
-                    &test.contract.address(),
+                    &test.contract.address,
                     800_i128,
                 )
                     .into_val(&test.env),
@@ -115,7 +115,7 @@ fn test_deposit_and_claim() {
     );
 
     assert_eq!(test.token.balance(&test.deposit_address), 200);
-    assert_eq!(test.token.balance(&test.contract.address()), 800);
+    assert_eq!(test.token.balance(&test.contract.address), 800);
     assert_eq!(test.token.balance(&test.claim_addresses[1]), 0);
 
     test.contract.claim(&test.claim_addresses[1]);
@@ -123,14 +123,14 @@ fn test_deposit_and_claim() {
         test.env.auths(),
         [(
             test.claim_addresses[1].clone(),
-            test.contract.contract_id.clone(),
+            test.contract.address.clone(),
             Symbol::short("claim"),
             (test.claim_addresses[1].clone(),).into_val(&test.env),
         )]
     );
 
     assert_eq!(test.token.balance(&test.deposit_address), 200);
-    assert_eq!(test.token.balance(&test.contract.address()), 0);
+    assert_eq!(test.token.balance(&test.contract.address), 0);
     assert_eq!(test.token.balance(&test.claim_addresses[1]), 800);
 }
 
@@ -140,7 +140,7 @@ fn test_double_deposit_not_possible() {
     let test = ClaimableBalanceTest::setup();
     test.contract.deposit(
         &test.deposit_address,
-        &test.token.contract_id,
+        &test.token.address,
         &1,
         &vec![&test.env, test.claim_addresses[0].clone()],
         &TimeBound {
@@ -150,7 +150,7 @@ fn test_double_deposit_not_possible() {
     );
     test.contract.deposit(
         &test.deposit_address,
-        &test.token.contract_id,
+        &test.token.address,
         &1,
         &vec![&test.env, test.claim_addresses[0].clone()],
         &TimeBound {
@@ -166,7 +166,7 @@ fn test_unauthorized_claim_not_possible() {
     let test = ClaimableBalanceTest::setup();
     test.contract.deposit(
         &test.deposit_address,
-        &test.token.contract_id,
+        &test.token.address,
         &800,
         &vec![
             &test.env,
@@ -188,7 +188,7 @@ fn test_out_of_time_bound_claim_not_possible() {
     let test = ClaimableBalanceTest::setup();
     test.contract.deposit(
         &test.deposit_address,
-        &test.token.contract_id,
+        &test.token.address,
         &800,
         &vec![&test.env, test.claim_addresses[0].clone()],
         &TimeBound {
@@ -206,7 +206,7 @@ fn test_double_claim_not_possible() {
     let test = ClaimableBalanceTest::setup();
     test.contract.deposit(
         &test.deposit_address,
-        &test.token.contract_id,
+        &test.token.address,
         &800,
         &vec![&test.env, test.claim_addresses[0].clone()],
         &TimeBound {
@@ -226,7 +226,7 @@ fn test_deposit_after_claim_not_possible() {
     let test = ClaimableBalanceTest::setup();
     test.contract.deposit(
         &test.deposit_address,
-        &test.token.contract_id,
+        &test.token.address,
         &800,
         &vec![&test.env, test.claim_addresses[0].clone()],
         &TimeBound {
@@ -239,7 +239,7 @@ fn test_deposit_after_claim_not_possible() {
     assert_eq!(test.token.balance(&test.claim_addresses[0]), 800);
     test.contract.deposit(
         &test.deposit_address,
-        &test.token.contract_id,
+        &test.token.address,
         &200,
         &vec![&test.env, test.claim_addresses[0].clone()],
         &TimeBound {

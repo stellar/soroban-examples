@@ -27,7 +27,7 @@ fn test() {
         e.auths(),
         [(
             admin1.clone(),
-            token.contract_id.clone(),
+            token.address.clone(),
             Symbol::short("mint"),
             (&user1, 1000_i128).into_val(&e),
         )]
@@ -39,7 +39,7 @@ fn test() {
         e.auths(),
         [(
             user2.clone(),
-            token.contract_id.clone(),
+            token.address.clone(),
             Symbol::new(&e, "increase_allowance"),
             (&user2, &user3, 500_i128).into_val(&e),
         )]
@@ -51,7 +51,7 @@ fn test() {
         e.auths(),
         [(
             user1.clone(),
-            token.contract_id.clone(),
+            token.address.clone(),
             Symbol::short("transfer"),
             (&user1, &user2, 600_i128).into_val(&e),
         )]
@@ -64,7 +64,7 @@ fn test() {
         e.auths(),
         [(
             user3.clone(),
-            token.contract_id.clone(),
+            token.address.clone(),
             Symbol::new(&e, "transfer_from"),
             (&user3, &user2, &user1, 400_i128).into_val(&e),
         )]
@@ -81,7 +81,7 @@ fn test() {
         e.auths(),
         [(
             admin1.clone(),
-            token.contract_id.clone(),
+            token.address.clone(),
             Symbol::short("set_admin"),
             (&admin2,).into_val(&e), //THIS DOESN'T WORK
         )]
@@ -92,7 +92,7 @@ fn test() {
         e.auths(),
         [(
             admin2.clone(),
-            token.contract_id.clone(),
+            token.address.clone(),
             Symbol::new(&e, "set_authorized"),
             (&user2, false).into_val(&e),
         )]
@@ -107,7 +107,7 @@ fn test() {
         e.auths(),
         [(
             admin2.clone(),
-            token.contract_id.clone(),
+            token.address.clone(),
             Symbol::short("clawback"),
             (&user3, 100_i128).into_val(&e),
         )]
@@ -122,7 +122,7 @@ fn test() {
         e.auths(),
         [(
             user2.clone(),
-            token.contract_id.clone(),
+            token.address.clone(),
             Symbol::new(&e, "decrease_allowance"),
             (&user2, &user3, 501_i128).into_val(&e),
         )]
@@ -151,7 +151,7 @@ fn test_burn() {
         e.auths(),
         [(
             user2.clone(),
-            token.contract_id.clone(),
+            token.address.clone(),
             Symbol::short("burn_from"),
             (&user2, &user1, 500_i128).into_val(&e),
         )]
@@ -165,7 +165,7 @@ fn test_burn() {
         e.auths(),
         [(
             user1.clone(),
-            token.contract_id.clone(),
+            token.address.clone(),
             Symbol::short("burn"),
             (&user1, 500_i128).into_val(&e),
         )]
@@ -261,7 +261,7 @@ fn initialize_already_initialized() {
 #[test]
 #[should_panic(expected = "Decimal must fit in a u8")]
 fn decimal_is_over_max() {
-    let e = Default::default();
+    let e = Env::default();
     let admin = Address::random(&e);
     let token = TokenClient::new(&e, &e.register_contract(None, Token {}));
     token.initialize(

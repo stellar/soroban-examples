@@ -33,8 +33,8 @@ fn test_atomic_swap() {
     contract.swap(
         &a,
         &b,
-        &token_a.contract_id,
-        &token_b.contract_id,
+        &token_a.address,
+        &token_b.address,
         &1000,
         &4500,
         &5000,
@@ -46,11 +46,11 @@ fn test_atomic_swap() {
         std::vec![
             (
                 a.clone(),
-                contract.contract_id.clone(),
+                contract.address.clone(),
                 Symbol::short("swap"),
                 (
-                    token_a.contract_id.clone(),
-                    token_b.contract_id.clone(),
+                    token_a.address.clone(),
+                    token_b.address.clone(),
                     1000_i128,
                     4500_i128
                 )
@@ -58,17 +58,17 @@ fn test_atomic_swap() {
             ),
             (
                 a.clone(),
-                token_a.contract_id.clone(),
+                token_a.address.clone(),
                 Symbol::new(&env, "increase_allowance"),
-                (a.clone(), contract.address(), 1000_i128).into_val(&env),
+                (a.clone(), &contract.address, 1000_i128).into_val(&env),
             ),
             (
                 b.clone(),
-                contract.contract_id.clone(),
+                contract.address.clone(),
                 Symbol::short("swap"),
                 (
-                    token_b.contract_id.clone(),
-                    token_a.contract_id.clone(),
+                    token_b.address.clone(),
+                    token_a.address.clone(),
                     5000_i128,
                     950_i128
                 )
@@ -76,9 +76,9 @@ fn test_atomic_swap() {
             ),
             (
                 b.clone(),
-                token_b.contract_id.clone(),
+                token_b.address.clone(),
                 Symbol::new(&env, "increase_allowance"),
-                (b.clone(), contract.address(), 5000_i128).into_val(&env),
+                (b.clone(), &contract.address, 5000_i128).into_val(&env),
             ),
         ]
     );

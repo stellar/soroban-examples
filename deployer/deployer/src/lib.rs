@@ -1,6 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{contractimpl, BytesN, Env, RawVal, Symbol, Vec};
+use soroban_sdk::{contractimpl, Address, BytesN, Env, RawVal, Symbol, Vec};
 
 pub struct Deployer;
 
@@ -15,7 +15,7 @@ impl Deployer {
         wasm_hash: BytesN<32>,
         init_fn: Symbol,
         init_args: Vec<RawVal>,
-    ) -> (BytesN<32>, RawVal) {
+    ) -> (Address, RawVal) {
         // Deploy the contract using the installed WASM code with given hash.
         let id = env
             .deployer()
