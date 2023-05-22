@@ -25,8 +25,6 @@ tasks:
       clear
   - name: CLI - Sandbox
     init: |
-      cargo clean
-      cargo fetch
       make all
     command: |
       gp open README.md

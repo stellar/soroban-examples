@@ -16,14 +16,15 @@ ENV SCCACHE_DIR=/workspace/.sccache
 # https://github.com/gitpod-io/workspace-images/issues/933#issuecomment-1272616892
 RUN rustup self uninstall -y
 RUN rm -rf .rustup
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain none -y
 
-RUN rustup update stable
-RUN rustup target add --toolchain stable wasm32-unknown-unknown
-RUN rustup component add --toolchain stable rust-src
-RUN rustup update nightly
-RUN rustup target add --toolchain nightly wasm32-unknown-unknown
-RUN rustup component add --toolchain nightly rust-src
-RUN rustup default stable
+RUN rustup install 1.69
+RUN rustup target add --toolchain 1.69 wasm32-unknown-unknown
+RUN rustup component add --toolchain 1.69 rust-src
+RUN rustup default 1.69
 
 RUN sudo apt-get update && sudo apt-get install -y binaryen
+
+# Enable sparse registry support, which will cause cargo to download only what
+# it needs from crates.io, rather than the entire registry.
+ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
