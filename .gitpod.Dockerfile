@@ -24,3 +24,7 @@ RUN rustup component add --toolchain 1.69 rust-src
 RUN rustup default stable
 
 RUN sudo apt-get update && sudo apt-get install -y binaryen
+
+# Enable sparse registry support, which will cause cargo to download only what
+# it needs from crates.io, rather than the entire registry.
+ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
