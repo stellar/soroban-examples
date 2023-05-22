@@ -21,7 +21,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --defau
 RUN rustup install 1.69
 RUN rustup target add --toolchain 1.69 wasm32-unknown-unknown
 RUN rustup component add --toolchain 1.69 rust-src
-RUN rustup default stable
+RUN rustup default 1.69
 
 RUN sudo apt-get update && sudo apt-get install -y binaryen
 
