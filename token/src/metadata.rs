@@ -1,4 +1,4 @@
-use soroban_sdk::{Bytes, Env};
+use soroban_sdk::{Env, String};
 use soroban_token_sdk::{TokenMetadata, TokenUtils};
 
 pub fn read_decimal(e: &Env) -> u32 {
@@ -6,12 +6,12 @@ pub fn read_decimal(e: &Env) -> u32 {
     util.get_metadata_unchecked().unwrap().decimal
 }
 
-pub fn read_name(e: &Env) -> Bytes {
+pub fn read_name(e: &Env) -> String {
     let util = TokenUtils::new(e);
     util.get_metadata_unchecked().unwrap().name
 }
 
-pub fn read_symbol(e: &Env) -> Bytes {
+pub fn read_symbol(e: &Env) -> String {
     let util = TokenUtils::new(e);
     util.get_metadata_unchecked().unwrap().symbol
 }
