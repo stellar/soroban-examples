@@ -83,7 +83,7 @@ fn test() {
             admin1.clone(),
             token.address.clone(),
             Symbol::short("set_admin"),
-            (&admin2,).into_val(&e), //THIS DOESN'T WORK
+            (&admin2,).into_val(&e),
         )]
     );
 
