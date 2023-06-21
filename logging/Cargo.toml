@@ -7,7 +7,6 @@ edition = "2021"
 publish = false
 
 [lib]
-crate-type = ["cdylib"]
 doctest = false
 
 [features]
