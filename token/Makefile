@@ -6,7 +6,7 @@ test: build
 	cargo test
 
 build:
-	cargo rustc --crate-type cdylib --target wasm32-unknown-unknown --release
+	soroban contract build
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
 fmt:
