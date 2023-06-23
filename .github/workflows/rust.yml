@@ -76,8 +76,10 @@ jobs:
     - uses: stellar/actions/rust-cache@main
     - run: rustup update
     - run: rustup target add ${{ matrix.sys.target }}
-    # TODO: Replace with stellar/binaries install of soroban-cli.
-    - run: cargo install --locked --git https://github.com/stellar/soroban-tools --rev 622a69f soroban-cli
+    - uses: stellar/binaries@v16
+      with:
+        name: soroban-cli
+        version: 0.8.7
     - run: make test
       env:
         CARGO_BUILD_TARGET: ${{ matrix.sys.target }}
