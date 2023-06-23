@@ -7,7 +7,7 @@ test: build
 
 build:
 	$(MAKE) -C ../contract_a || break; 
-	cargo build --target wasm32-unknown-unknown --release 
+	soroban contract build
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
 fmt:

@@ -6,11 +6,8 @@ test: build
 	cargo test
 
 build:
-	cargo build --target wasm32-unknown-unknown --release 
+	soroban contract build
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
-
-watch:
-	cargo watch --clear --watch-when-idle --shell '$(MAKE)'
 
 fmt:
 	cargo fmt --all
