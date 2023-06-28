@@ -22,7 +22,7 @@ fn test() {
 }
 
 #[test]
-#[should_panic(expected = "Status(ContractError(1))")]
+#[should_panic(expected = "HostError: Error(Contract, #1)")]
 fn test_panic() {
     let env = Env::default();
     let contract_id = env.register_contract(None, IncrementContract);
