@@ -16,7 +16,7 @@ mod new_contract {
 }
 
 fn install_new_wasm(e: &Env) -> BytesN<32> {
-    e.install_contract_wasm(new_contract::WASM)
+    e.deployer().upload_contract_wasm(new_contract::WASM)
 }
 
 #[test]
