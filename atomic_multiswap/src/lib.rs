@@ -7,7 +7,7 @@
 //! This example demonstrates how authorized calls can be batched together.
 #![no_std]
 
-use soroban_sdk::{contractimpl, contracttype, Address, Env, Vec};
+use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Vec};
 
 mod atomic_swap {
     soroban_sdk::contractimport!(
@@ -23,6 +23,7 @@ pub struct SwapSpec {
     pub min_recv: i128,
 }
 
+#[contract]
 pub struct AtomicMultiSwapContract;
 
 #[contractimpl]
@@ -42,9 +43,8 @@ impl AtomicMultiSwapContract {
         let mut swaps_b = swaps_b;
         let swap_client = atomic_swap::Client::new(&env, &swap_contract);
         for acc_a in swaps_a.iter() {
-            let acc_a = acc_a.unwrap();
             for i in 0..swaps_b.len() {
-                let acc_b = swaps_b.get(i).unwrap().unwrap();
+                let acc_b = swaps_b.get(i).unwrap();
 
                 if acc_a.amount >= acc_b.min_recv && acc_a.min_recv <= acc_b.amount {
                     // As this is a simple 'batching' contract, there is no need
