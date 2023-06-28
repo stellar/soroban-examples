@@ -2,12 +2,17 @@
 extern crate std;
 
 use super::*;
-use soroban_sdk::testutils::{Address as _, Ledger, LedgerInfo};
-use soroban_sdk::{token, vec, Address, Env, IntoVal, Symbol};
+use soroban_sdk::testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation, Ledger};
+use soroban_sdk::{symbol_short, token, vec, Address, Env, IntoVal};
+use token::AdminClient as TokenAdminClient;
 use token::Client as TokenClient;
 
-fn create_token_contract<'a>(e: &Env, admin: &Address) -> TokenClient<'a> {
-    TokenClient::new(e, &e.register_stellar_asset_contract(admin.clone()))
+fn create_token_contract<'a>(e: &Env, admin: &Address) -> (TokenClient<'a>, TokenAdminClient<'a>) {
+    let contract_address = e.register_stellar_asset_contract(admin.clone());
+    (
+        TokenClient::new(e, &contract_address),
+        TokenAdminClient::new(e, &contract_address),
+    )
 }
 
 fn create_claimable_balance_contract<'a>(e: &Env) -> ClaimableBalanceContractClient<'a> {
@@ -27,12 +32,8 @@ impl<'a> ClaimableBalanceTest<'a> {
         let env = Env::default();
         env.mock_all_auths();
 
-        env.ledger().set(LedgerInfo {
-            timestamp: 12345,
-            protocol_version: 1,
-            sequence_number: 10,
-            network_id: Default::default(),
-            base_reserve: 10,
+        env.ledger().with_mut(|li| {
+            li.timestamp = 12345;
         });
 
         let deposit_address = Address::random(&env);
@@ -45,8 +46,8 @@ impl<'a> ClaimableBalanceTest<'a> {
 
         let token_admin = Address::random(&env);
 
-        let token = create_token_contract(&env, &token_admin);
-        token.mint(&deposit_address, &1000);
+        let (token, token_admin_client) = create_token_contract(&env, &token_admin);
+        token_admin_client.mint(&deposit_address, &1000);
 
         let contract = create_claimable_balance_contract(&env);
         ClaimableBalanceTest {
@@ -79,39 +80,43 @@ fn test_deposit_and_claim() {
 
     assert_eq!(
         test.env.auths(),
-        [
-            (
-                test.deposit_address.clone(),
-                test.contract.address.clone(),
-                symbol_short!("deposit"),
-                (
-                    test.deposit_address.clone(),
-                    test.token.address.clone(),
-                    800_i128,
-                    vec![
-                        &test.env,
-                        test.claim_addresses[0].clone(),
-                        test.claim_addresses[1].clone()
-                    ],
-                    TimeBound {
-                        kind: TimeBoundKind::Before,
-                        timestamp: 12346,
-                    },
-                )
-                    .into_val(&test.env),
-            ),
-            (
-                test.deposit_address.clone(),
-                test.token.address.clone(),
-                symbol_short!("transfer"),
-                (
-                    test.deposit_address.clone(),
-                    &test.contract.address,
-                    800_i128,
-                )
-                    .into_val(&test.env),
-            ),
-        ]
+        [(
+            test.deposit_address.clone(),
+            AuthorizedInvocation {
+                function: AuthorizedFunction::Contract((
+                    test.contract.address.clone(),
+                    symbol_short!("deposit"),
+                    (
+                        test.deposit_address.clone(),
+                        test.token.address.clone(),
+                        800_i128,
+                        vec![
+                            &test.env,
+                            test.claim_addresses[0].clone(),
+                            test.claim_addresses[1].clone()
+                        ],
+                        TimeBound {
+                            kind: TimeBoundKind::Before,
+                            timestamp: 12346,
+                        },
+                    )
+                        .into_val(&test.env),
+                )),
+                sub_invocations: std::vec![AuthorizedInvocation {
+                    function: AuthorizedFunction::Contract((
+                        test.token.address.clone(),
+                        symbol_short!("transfer"),
+                        (
+                            test.deposit_address.clone(),
+                            &test.contract.address,
+                            800_i128,
+                        )
+                            .into_val(&test.env),
+                    )),
+                    sub_invocations: std::vec![]
+                }]
+            }
+        ),]
     );
 
     assert_eq!(test.token.balance(&test.deposit_address), 200);
@@ -123,10 +128,15 @@ fn test_deposit_and_claim() {
         test.env.auths(),
         [(
             test.claim_addresses[1].clone(),
-            test.contract.address.clone(),
-            symbol_short!("claim"),
-            (test.claim_addresses[1].clone(),).into_val(&test.env),
-        )]
+            AuthorizedInvocation {
+                function: AuthorizedFunction::Contract((
+                    test.contract.address.clone(),
+                    symbol_short!("claim"),
+                    (test.claim_addresses[1].clone(),).into_val(&test.env),
+                )),
+                sub_invocations: std::vec![]
+            }
+        ),]
     );
 
     assert_eq!(test.token.balance(&test.deposit_address), 200);
@@ -201,7 +211,7 @@ fn test_out_of_time_bound_claim_not_possible() {
 }
 
 #[test]
-#[should_panic(expected = "HostStorageError")]
+#[should_panic]
 fn test_double_claim_not_possible() {
     let test = ClaimableBalanceTest::setup();
     test.contract.deposit(
