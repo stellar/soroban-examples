@@ -47,7 +47,7 @@ fn test_atomic_swap() {
             (
                 a.clone(),
                 contract.address.clone(),
-                Symbol::short("swap"),
+                symbol_short!("swap"),
                 (
                     token_a.address.clone(),
                     token_b.address.clone(),
@@ -65,7 +65,7 @@ fn test_atomic_swap() {
             (
                 b.clone(),
                 contract.address.clone(),
-                Symbol::short("swap"),
+                symbol_short!("swap"),
                 (
                     token_b.address.clone(),
                     token_a.address.clone(),

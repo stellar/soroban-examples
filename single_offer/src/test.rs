@@ -25,7 +25,7 @@ fn create_single_offer_contract<'a>(
         [(
             seller.clone(),
             offer.address.clone(),
-            Symbol::short("create"),
+            symbol_short!("create"),
             (
                 seller,
                 sell_token.clone(),
@@ -72,7 +72,7 @@ fn test() {
             (
                 buyer.clone(),
                 offer.address.clone(),
-                Symbol::short("trade"),
+                symbol_short!("trade"),
                 (&buyer, 20_i128, 10_i128).into_val(&e)
             ),
             (
@@ -99,7 +99,7 @@ fn test() {
         [(
             seller.clone(),
             offer.address.clone(),
-            Symbol::short("withdraw"),
+            symbol_short!("withdraw"),
             (sell_token.address.clone(), 70_i128).into_val(&e)
         )]
     );

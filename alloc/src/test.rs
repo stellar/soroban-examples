@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use super::{AllocContract, AllocContractClient};
-use soroban_sdk::{testutils::Logger, Env};
+use soroban_sdk::{testutils::Logs, Env};
 
 extern crate std;
 
@@ -14,5 +14,5 @@ fn test() {
     assert_eq!(client.sum(&2), 1);
     assert_eq!(client.sum(&5), 10);
 
-    std::println!("{}", env.logger().all().join("\n"));
+    std::println!("{}", env.logs().all().join("\n"));
 }

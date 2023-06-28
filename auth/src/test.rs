@@ -26,7 +26,7 @@ fn test() {
             // Identifier of the called contract
             contract_id.clone(),
             // Name of the called function
-            Symbol::short("increment"),
+            symbol_short!("increment"),
             // Arguments used to call `increment` (converted to the env-managed vector via `into_val`)
             (user_1.clone(), 5_u32).into_val(&env)
         )]

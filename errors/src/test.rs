@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use super::*;
-use soroban_sdk::{testutils::Logger, Env};
+use soroban_sdk::{testutils::Logs, Env};
 
 extern crate std;
 
@@ -18,7 +18,7 @@ fn test() {
     assert_eq!(client.try_increment(), Ok(Ok(5)));
     assert_eq!(client.try_increment(), Err(Ok(Error::LimitReached)));
 
-    std::println!("{}", env.logger().all().join("\n"));
+    std::println!("{}", env.logs().all().join("\n"));
 }
 
 #[test]

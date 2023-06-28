@@ -64,19 +64,19 @@ fn test() {
             (
                 user1.clone(),
                 liqpool.address.clone(),
-                Symbol::short("deposit"),
+                symbol_short!("deposit"),
                 (&user1, 100_i128, 100_i128, 100_i128, 100_i128).into_val(&e)
             ),
             (
                 user1.clone(),
                 token1.address.clone(),
-                Symbol::short("transfer"),
+                symbol_short!("transfer"),
                 (&user1, &liqpool.address, 100_i128).into_val(&e)
             ),
             (
                 user1.clone(),
                 token2.address.clone(),
-                Symbol::short("transfer"),
+                symbol_short!("transfer"),
                 (&user1, &liqpool.address, 100_i128).into_val(&e)
             ),
         ]
@@ -96,13 +96,13 @@ fn test() {
             (
                 user1.clone(),
                 liqpool.address.clone(),
-                Symbol::short("swap"),
+                symbol_short!("swap"),
                 (&user1, false, 49_i128, 100_i128).into_val(&e)
             ),
             (
                 user1.clone(),
                 token1.address.clone(),
-                Symbol::short("transfer"),
+                symbol_short!("transfer"),
                 (&user1, &liqpool.address, 97_i128).into_val(&e)
             )
         ]
@@ -120,13 +120,13 @@ fn test() {
             (
                 user1.clone(),
                 liqpool.address.clone(),
-                Symbol::short("withdraw"),
+                symbol_short!("withdraw"),
                 (&user1, 100_i128, 197_i128, 51_i128).into_val(&e)
             ),
             (
                 user1.clone(),
                 token_share.address.clone(),
-                Symbol::short("transfer"),
+                symbol_short!("transfer"),
                 (&user1, &liqpool.address, 100_i128).into_val(&e)
             )
         ]

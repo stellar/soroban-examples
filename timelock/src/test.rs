@@ -83,7 +83,7 @@ fn test_deposit_and_claim() {
             (
                 test.deposit_address.clone(),
                 test.contract.address.clone(),
-                Symbol::short("deposit"),
+                symbol_short!("deposit"),
                 (
                     test.deposit_address.clone(),
                     test.token.address.clone(),
@@ -103,7 +103,7 @@ fn test_deposit_and_claim() {
             (
                 test.deposit_address.clone(),
                 test.token.address.clone(),
-                Symbol::short("transfer"),
+                symbol_short!("transfer"),
                 (
                     test.deposit_address.clone(),
                     &test.contract.address,
@@ -124,7 +124,7 @@ fn test_deposit_and_claim() {
         [(
             test.claim_addresses[1].clone(),
             test.contract.address.clone(),
-            Symbol::short("claim"),
+            symbol_short!("claim"),
             (test.claim_addresses[1].clone(),).into_val(&test.env),
         )]
     );
