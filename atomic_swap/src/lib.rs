@@ -4,15 +4,16 @@
 //! This example demonstrates how multi-party authorization can be implemented.
 #![no_std]
 
-use soroban_sdk::{contractimpl, token, Address, Env, IntoVal};
+use soroban_sdk::{contract, contractimpl, token, Address, Env, IntoVal};
 
+#[contract]
 pub struct AtomicSwapContract;
 
 #[contractimpl]
 impl AtomicSwapContract {
     // Swap token A for token B atomically. Settle for the minimum requested price
-    // for each party (this is an arbitrary choice to demonstrate the usage of
-    // allowance; full amounts could be swapped as well).
+    // for each party (this is an arbitrary choice; both parties could have
+    // received the full amount as well).
     pub fn swap(
         env: Env,
         a: Address,
@@ -42,7 +43,7 @@ impl AtomicSwapContract {
             (token_b.clone(), token_a.clone(), amount_b, min_a_for_b).into_val(&env),
         );
 
-        // Perform the swap via two token transfers.
+        // Perform the swap by moving tokens from a to b and from b to a.
         move_token(&env, &token_a, &a, &b, amount_a, min_a_for_b);
         move_token(&env, &token_b, &b, &a, amount_b, min_b_for_a);
     }
@@ -53,16 +54,24 @@ fn move_token(
     token: &Address,
     from: &Address,
     to: &Address,
-    approve_amount: i128,
+    max_spend_amount: i128,
     transfer_amount: i128,
 ) {
     let token = token::Client::new(env, token);
     let contract_address = env.current_contract_address();
-    // This call needs to be authorized by `from` address. Since it increases
-    // the allowance on behalf of the contract, `from` doesn't need to know `to`
-    // at the signature time.
-    token.increase_allowance(from, &contract_address, &approve_amount);
-    token.transfer_from(&contract_address, from, to, &transfer_amount);
+    // This call needs to be authorized by `from` address. It transfers the
+    // maximum spend amount to the swap contract's address in order to decouple
+    // the signature from `to` address (so that parties don't need to know each
+    // other).
+    token.transfer(from, &contract_address, &max_spend_amount);
+    // Transfer the necessary amount to `to`.
+    token.transfer(&contract_address, to, &transfer_amount);
+    // Refund the remaining balance to `from`.
+    token.transfer(
+        &contract_address,
+        from,
+        &(&max_spend_amount - &transfer_amount),
+    );
 }
 
 mod test;
