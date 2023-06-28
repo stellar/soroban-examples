@@ -11,13 +11,14 @@
 //! See `account` example for demonstration of an acount contract with
 //! a custom authentication scheme and a custom authorization policy.
 #![no_std]
-use soroban_sdk::{contractimpl, contracttype, Address, Env};
+use soroban_sdk::{contract, contractimpl, contracttype, Address, Env};
 
 #[contracttype]
 pub enum DataKey {
     Counter(Address),
 }
 
+#[contract]
 pub struct IncrementContract;
 
 #[contractimpl]
@@ -48,17 +49,13 @@ impl IncrementContract {
         let key = DataKey::Counter(user.clone());
 
         // Get the current count for the invoker.
-        let mut count: u32 = env
-            .storage()
-            .get(&key)
-            .unwrap_or(Ok(0)) // If no value set, assume 0.
-            .unwrap(); // Panic if the value of COUNTER is not u32.
+        let mut count: u32 = env.storage().persistent().get(&key).unwrap_or_default();
 
         // Increment the count.
         count += value;
 
         // Save the count.
-        env.storage().set(&key, &count);
+        env.storage().persistent().set(&key, &count);
 
         // Return the count to the caller.
         count
