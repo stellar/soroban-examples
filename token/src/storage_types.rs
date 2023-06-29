@@ -7,6 +7,12 @@ pub struct AllowanceDataKey {
     pub spender: Address,
 }
 
+#[contracttype]
+pub struct AllowanceValue {
+    pub amount: i128,
+    pub expiration_ledger: u32,
+}
+
 #[derive(Clone)]
 #[contracttype]
 pub enum DataKey {

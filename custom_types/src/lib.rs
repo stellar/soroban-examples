@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contractimpl, contracttype, Env, Symbol};
+use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, Env, Symbol};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -8,8 +8,9 @@ pub struct State {
     pub last_incr: u32,
 }
 
-const STATE: Symbol = Symbol::short("STATE");
+const STATE: Symbol = symbol_short!("STATE");
 
+#[contract]
 pub struct IncrementContract;
 
 #[contractimpl]
@@ -24,20 +25,17 @@ impl IncrementContract {
         state.last_incr = incr;
 
         // Save the count.
-        env.storage().set(&STATE, &state);
+        env.storage().instance().set(&STATE, &state);
 
         // Return the count to the caller.
         state.count
     }
     /// Return the current state.
     pub fn get_state(env: Env) -> State {
-        env.storage()
-            .get(&STATE)
-            .unwrap_or(Ok(State {
-                count: 0,
-                last_incr: 0,
-            })) // If no value set, assume 0.
-            .unwrap() // Panic if the value of COUNTER is not a State.
+        env.storage().instance().get(&STATE).unwrap_or(State {
+            count: 0,
+            last_incr: 0,
+        }) // If no value set, assume 0.
     }
 }
 

@@ -3,7 +3,11 @@ extern crate std;
 
 use crate::{token, LiquidityPoolClient};
 
-use soroban_sdk::{testutils::Address as _, Address, BytesN, Env, IntoVal, Symbol};
+use soroban_sdk::{
+    symbol_short,
+    testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation},
+    Address, BytesN, Env, IntoVal,
+};
 
 fn create_token_contract<'a>(e: &Env, admin: &Address) -> token::Client<'a> {
     token::Client::new(e, &e.register_stellar_asset_contract(admin.clone()))
@@ -24,7 +28,7 @@ fn install_token_wasm(e: &Env) -> BytesN<32> {
     soroban_sdk::contractimport!(
         file = "../token/target/wasm32-unknown-unknown/release/soroban_token_contract.wasm"
     );
-    e.install_contract_wasm(WASM)
+    e.deployer().upload_contract_wasm(WASM)
 }
 
 #[test]
@@ -60,26 +64,34 @@ fn test() {
     liqpool.deposit(&user1, &100, &100, &100, &100);
     assert_eq!(
         e.auths(),
-        [
-            (
-                user1.clone(),
-                liqpool.address.clone(),
-                Symbol::short("deposit"),
-                (&user1, 100_i128, 100_i128, 100_i128, 100_i128).into_val(&e)
-            ),
-            (
-                user1.clone(),
-                token1.address.clone(),
-                Symbol::short("transfer"),
-                (&user1, &liqpool.address, 100_i128).into_val(&e)
-            ),
-            (
-                user1.clone(),
-                token2.address.clone(),
-                Symbol::short("transfer"),
-                (&user1, &liqpool.address, 100_i128).into_val(&e)
-            ),
-        ]
+        std::vec![(
+            user1.clone(),
+            AuthorizedInvocation {
+                function: AuthorizedFunction::Contract((
+                    liqpool.address.clone(),
+                    symbol_short!("deposit"),
+                    (&user1, 100_i128, 100_i128, 100_i128, 100_i128).into_val(&e)
+                )),
+                sub_invocations: std::vec![
+                    AuthorizedInvocation {
+                        function: AuthorizedFunction::Contract((
+                            token1.address.clone(),
+                            symbol_short!("transfer"),
+                            (&user1, &liqpool.address, 100_i128).into_val(&e)
+                        )),
+                        sub_invocations: std::vec![]
+                    },
+                    AuthorizedInvocation {
+                        function: AuthorizedFunction::Contract((
+                            token2.address.clone(),
+                            symbol_short!("transfer"),
+                            (&user1, &liqpool.address, 100_i128).into_val(&e)
+                        )),
+                        sub_invocations: std::vec![]
+                    }
+                ]
+            }
+        )]
     );
 
     assert_eq!(token_share.balance(&user1), 100);
@@ -92,20 +104,24 @@ fn test() {
     liqpool.swap(&user1, &false, &49, &100);
     assert_eq!(
         e.auths(),
-        [
-            (
-                user1.clone(),
-                liqpool.address.clone(),
-                Symbol::short("swap"),
-                (&user1, false, 49_i128, 100_i128).into_val(&e)
-            ),
-            (
-                user1.clone(),
-                token1.address.clone(),
-                Symbol::short("transfer"),
-                (&user1, &liqpool.address, 97_i128).into_val(&e)
-            )
-        ]
+        std::vec![(
+            user1.clone(),
+            AuthorizedInvocation {
+                function: AuthorizedFunction::Contract((
+                    liqpool.address.clone(),
+                    symbol_short!("swap"),
+                    (&user1, false, 49_i128, 100_i128).into_val(&e)
+                )),
+                sub_invocations: std::vec![AuthorizedInvocation {
+                    function: AuthorizedFunction::Contract((
+                        token1.address.clone(),
+                        symbol_short!("transfer"),
+                        (&user1, &liqpool.address, 97_i128).into_val(&e)
+                    )),
+                    sub_invocations: std::vec![]
+                }]
+            }
+        )]
     );
 
     assert_eq!(token1.balance(&user1), 803);
@@ -113,23 +129,29 @@ fn test() {
     assert_eq!(token2.balance(&user1), 949);
     assert_eq!(token2.balance(&liqpool.address), 51);
 
+    e.budget().reset_unlimited();
     liqpool.withdraw(&user1, &100, &197, &51);
+
     assert_eq!(
         e.auths(),
-        [
-            (
-                user1.clone(),
-                liqpool.address.clone(),
-                Symbol::short("withdraw"),
-                (&user1, 100_i128, 197_i128, 51_i128).into_val(&e)
-            ),
-            (
-                user1.clone(),
-                token_share.address.clone(),
-                Symbol::short("transfer"),
-                (&user1, &liqpool.address, 100_i128).into_val(&e)
-            )
-        ]
+        std::vec![(
+            user1.clone(),
+            AuthorizedInvocation {
+                function: AuthorizedFunction::Contract((
+                    liqpool.address.clone(),
+                    symbol_short!("withdraw"),
+                    (&user1, 100_i128, 197_i128, 51_i128).into_val(&e)
+                )),
+                sub_invocations: std::vec![AuthorizedInvocation {
+                    function: AuthorizedFunction::Contract((
+                        token_share.address.clone(),
+                        symbol_short!("transfer"),
+                        (&user1, &liqpool.address, 100_i128).into_val(&e)
+                    )),
+                    sub_invocations: std::vec![]
+                }]
+            }
+        )]
     );
 
     assert_eq!(token1.balance(&user1), 1000);

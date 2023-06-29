@@ -2,11 +2,20 @@
 extern crate std;
 
 use super::*;
-use soroban_sdk::{testutils::Address as _, token, Address, Env, IntoVal, Symbol};
+use soroban_sdk::{
+    symbol_short,
+    testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation},
+    token, Address, Env, IntoVal,
+};
+use token::AdminClient as TokenAdminClient;
 use token::Client as TokenClient;
 
-fn create_token_contract<'a>(e: &Env, admin: &Address) -> TokenClient<'a> {
-    TokenClient::new(e, &e.register_stellar_asset_contract(admin.clone()))
+fn create_token_contract<'a>(e: &Env, admin: &Address) -> (TokenClient<'a>, TokenAdminClient<'a>) {
+    let contract_address = e.register_stellar_asset_contract(admin.clone());
+    (
+        TokenClient::new(e, &contract_address),
+        TokenAdminClient::new(e, &contract_address),
+    )
 }
 
 fn create_atomic_swap_contract(e: &Env) -> AtomicSwapContractClient {
@@ -23,10 +32,10 @@ fn test_atomic_swap() {
 
     let token_admin = Address::random(&env);
 
-    let token_a = create_token_contract(&env, &token_admin);
-    let token_b = create_token_contract(&env, &token_admin);
-    token_a.mint(&a, &1000);
-    token_b.mint(&b, &5000);
+    let (token_a, token_a_admin) = create_token_contract(&env, &token_admin);
+    let (token_b, token_b_admin) = create_token_contract(&env, &token_admin);
+    token_a_admin.mint(&a, &1000);
+    token_b_admin.mint(&b, &5000);
 
     let contract = create_atomic_swap_contract(&env);
 
@@ -46,39 +55,51 @@ fn test_atomic_swap() {
         std::vec![
             (
                 a.clone(),
-                contract.address.clone(),
-                Symbol::short("swap"),
-                (
-                    token_a.address.clone(),
-                    token_b.address.clone(),
-                    1000_i128,
-                    4500_i128
-                )
-                    .into_val(&env),
-            ),
-            (
-                a.clone(),
-                token_a.address.clone(),
-                Symbol::new(&env, "increase_allowance"),
-                (a.clone(), &contract.address, 1000_i128).into_val(&env),
-            ),
-            (
-                b.clone(),
-                contract.address.clone(),
-                Symbol::short("swap"),
-                (
-                    token_b.address.clone(),
-                    token_a.address.clone(),
-                    5000_i128,
-                    950_i128
-                )
-                    .into_val(&env),
+                AuthorizedInvocation {
+                    function: AuthorizedFunction::Contract((
+                        contract.address.clone(),
+                        symbol_short!("swap"),
+                        (
+                            token_a.address.clone(),
+                            token_b.address.clone(),
+                            1000_i128,
+                            4500_i128
+                        )
+                            .into_val(&env),
+                    )),
+                    sub_invocations: std::vec![AuthorizedInvocation {
+                        function: AuthorizedFunction::Contract((
+                            token_a.address.clone(),
+                            symbol_short!("transfer"),
+                            (a.clone(), contract.address.clone(), 1000_i128,).into_val(&env),
+                        )),
+                        sub_invocations: std::vec![]
+                    }]
+                }
             ),
             (
                 b.clone(),
-                token_b.address.clone(),
-                Symbol::new(&env, "increase_allowance"),
-                (b.clone(), &contract.address, 5000_i128).into_val(&env),
+                AuthorizedInvocation {
+                    function: AuthorizedFunction::Contract((
+                        contract.address.clone(),
+                        symbol_short!("swap"),
+                        (
+                            token_b.address.clone(),
+                            token_a.address.clone(),
+                            5000_i128,
+                            950_i128
+                        )
+                            .into_val(&env),
+                    )),
+                    sub_invocations: std::vec![AuthorizedInvocation {
+                        function: AuthorizedFunction::Contract((
+                            token_b.address.clone(),
+                            symbol_short!("transfer"),
+                            (b.clone(), contract.address.clone(), 5000_i128,).into_val(&env),
+                        )),
+                        sub_invocations: std::vec![]
+                    }]
+                }
             ),
         ]
     );
