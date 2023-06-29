@@ -2,7 +2,11 @@ default: test
 
 all: test
 
-test: cargo test
+build:
+	cargo build
+
+test: 
+	cargo test
 
 fmt:
 	cargo fmt --all
