@@ -1,7 +1,7 @@
 use soroban_sdk::{symbol_short, Address, Env, Symbol};
 
 pub(crate) fn approve(e: &Env, from: Address, to: Address, amount: i128, expiration_ledger: u32) {
-    let topics = (Symbol::new(e, "increase_allowance"), from, to);
+    let topics = (Symbol::new(e, "approve"), from, to);
     e.events().publish(topics, (amount, expiration_ledger));
 }
 
