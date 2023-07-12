@@ -6,6 +6,7 @@ use crate::balance::{is_authorized, write_authorization};
 use crate::balance::{read_balance, receive_balance, spend_balance};
 use crate::event;
 use crate::metadata::{read_decimal, read_name, read_symbol, write_metadata};
+use crate::storage_types::INSTANCE_BUMP_AMOUNT;
 use soroban_sdk::{contract, contractimpl, Address, Env, String};
 use soroban_token_sdk::TokenMetadata;
 
@@ -76,6 +77,7 @@ impl TokenTrait for Token {
     }
 
     fn allowance(e: Env, from: Address, spender: Address) -> i128 {
+        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
         read_allowance(&e, from, spender).amount
     }
 
@@ -84,19 +86,24 @@ impl TokenTrait for Token {
 
         check_nonnegative_amount(amount);
 
+        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
+
         write_allowance(&e, from.clone(), spender.clone(), amount, expiration_ledger);
         event::approve(&e, from, spender, amount, expiration_ledger);
     }
 
     fn balance(e: Env, id: Address) -> i128 {
+        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
         read_balance(&e, id)
     }
 
     fn spendable_balance(e: Env, id: Address) -> i128 {
+        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
         read_balance(&e, id)
     }
 
     fn authorized(e: Env, id: Address) -> bool {
+        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
         is_authorized(&e, id)
     }
 
@@ -104,6 +111,9 @@ impl TokenTrait for Token {
         from.require_auth();
 
         check_nonnegative_amount(amount);
+
+        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
+
         spend_balance(&e, from.clone(), amount);
         receive_balance(&e, to.clone(), amount);
         event::transfer(&e, from, to, amount);
@@ -113,6 +123,9 @@ impl TokenTrait for Token {
         spender.require_auth();
 
         check_nonnegative_amount(amount);
+
+        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
+
         spend_allowance(&e, from.clone(), spender, amount);
         spend_balance(&e, from.clone(), amount);
         receive_balance(&e, to.clone(), amount);
@@ -123,6 +136,9 @@ impl TokenTrait for Token {
         from.require_auth();
 
         check_nonnegative_amount(amount);
+
+        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
+
         spend_balance(&e, from.clone(), amount);
         event::burn(&e, from, amount);
     }
@@ -131,6 +147,9 @@ impl TokenTrait for Token {
         spender.require_auth();
 
         check_nonnegative_amount(amount);
+
+        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
+
         spend_allowance(&e, from.clone(), spender, amount);
         spend_balance(&e, from.clone(), amount);
         event::burn(&e, from, amount)
@@ -140,6 +159,9 @@ impl TokenTrait for Token {
         check_nonnegative_amount(amount);
         let admin = read_administrator(&e);
         admin.require_auth();
+
+        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
+
         spend_balance(&e, from.clone(), amount);
         event::clawback(&e, admin, from, amount);
     }
@@ -147,6 +169,9 @@ impl TokenTrait for Token {
     fn set_authorized(e: Env, id: Address, authorize: bool) {
         let admin = read_administrator(&e);
         admin.require_auth();
+
+        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
+
         write_authorization(&e, id.clone(), authorize);
         event::set_authorized(&e, admin, id, authorize);
     }
@@ -155,6 +180,9 @@ impl TokenTrait for Token {
         check_nonnegative_amount(amount);
         let admin = read_administrator(&e);
         admin.require_auth();
+
+        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
+
         receive_balance(&e, to.clone(), amount);
         event::mint(&e, admin, to, amount);
     }
@@ -162,6 +190,9 @@ impl TokenTrait for Token {
     fn set_admin(e: Env, new_admin: Address) {
         let admin = read_administrator(&e);
         admin.require_auth();
+
+        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
+
         write_administrator(&e, &new_admin);
         event::set_admin(&e, admin, new_admin);
     }
