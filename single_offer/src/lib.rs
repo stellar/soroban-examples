@@ -3,7 +3,9 @@
 //! It demonstrates one of the ways of how trading might be implemented.
 #![no_std]
 
-use soroban_sdk::{contractimpl, contracttype, token, unwrap::UnwrapOptimized, Address, Env};
+use soroban_sdk::{
+    contract, contractimpl, contracttype, token, unwrap::UnwrapOptimized, Address, Env,
+};
 
 #[derive(Clone)]
 #[contracttype]
@@ -28,6 +30,7 @@ pub struct Offer {
     pub buy_price: u32,
 }
 
+#[contract]
 pub struct SingleOffer;
 
 /*
@@ -53,7 +56,7 @@ impl SingleOffer {
         sell_price: u32,
         buy_price: u32,
     ) {
-        if e.storage().has(&DataKey::Offer) {
+        if e.storage().instance().has(&DataKey::Offer) {
             panic!("offer is already created");
         }
         if buy_price == 0 || sell_price == 0 {
@@ -153,11 +156,11 @@ impl SingleOffer {
 }
 
 fn load_offer(e: &Env) -> Offer {
-    e.storage().get_unchecked(&DataKey::Offer).unwrap()
+    e.storage().instance().get(&DataKey::Offer).unwrap()
 }
 
 fn write_offer(e: &Env, offer: &Offer) {
-    e.storage().set(&DataKey::Offer, offer);
+    e.storage().instance().set(&DataKey::Offer, offer);
 }
 
 mod test;

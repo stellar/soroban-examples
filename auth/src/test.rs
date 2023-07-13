@@ -1,8 +1,13 @@
 #![cfg(test)]
 extern crate std;
-use super::*;
 
-use soroban_sdk::{testutils::Address as _, Address, Env, IntoVal, Symbol};
+use soroban_sdk::{
+    symbol_short,
+    testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation},
+    Address, Env, IntoVal,
+};
+
+use crate::{IncrementContract, IncrementContractClient};
 
 #[test]
 fn test() {
@@ -20,15 +25,25 @@ fn test() {
     // the expected arguments:
     assert_eq!(
         env.auths(),
-        [(
-            // Address for which auth is performed
+        std::vec![(
+            // Address for which authorization check is performed
             user_1.clone(),
-            // Identifier of the called contract
-            contract_id.clone(),
-            // Name of the called function
-            Symbol::short("increment"),
-            // Arguments used to call `increment` (converted to the env-managed vector via `into_val`)
-            (user_1.clone(), 5_u32).into_val(&env)
+            // Invocation tree that needs to be authorized
+            AuthorizedInvocation {
+                // Function that is authorized. Can be a contract function or
+                // a host function that requires authorization.
+                function: AuthorizedFunction::Contract((
+                    // Address of the called contract
+                    contract_id.clone(),
+                    // Name of the called function
+                    symbol_short!("increment"),
+                    // Arguments used to call `increment` (converted to the env-managed vector via `into_val`)
+                    (user_1.clone(), 5_u32).into_val(&env),
+                )),
+                // The contract doesn't call any other contracts that require
+                // authorization,
+                sub_invocations: std::vec![]
+            }
         )]
     );
 

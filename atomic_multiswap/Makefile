@@ -7,7 +7,7 @@ test: build
 
 build:
 	$(MAKE) -C ../atomic_swap || break; 
-	cargo build --target wasm32-unknown-unknown --release 
+	soroban contract build
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
 fmt:

@@ -7,7 +7,7 @@ soroban_sdk::contractimport!(
 
 pub fn create_contract(
     e: &Env,
-    token_wasm_hash: &BytesN<32>,
+    token_wasm_hash: BytesN<32>,
     token_a: &Address,
     token_b: &Address,
 ) -> Address {
@@ -16,6 +16,6 @@ pub fn create_contract(
     salt.append(&token_b.to_xdr(e));
     let salt = e.crypto().sha256(&salt);
     e.deployer()
-        .with_current_contract(&salt)
+        .with_current_contract(salt)
         .deploy(token_wasm_hash)
 }
