@@ -8,7 +8,7 @@ use crate::event;
 use crate::metadata::{read_decimal, read_name, read_symbol, write_metadata};
 use crate::storage_types::INSTANCE_BUMP_AMOUNT;
 use soroban_sdk::{contract, contractimpl, Address, Env, String};
-use soroban_token_sdk::TokenMetadata;
+use soroban_token_sdk::metadata::TokenMetadata;
 
 pub trait TokenTrait {
     fn initialize(e: Env, admin: Address, decimal: u32, name: String, symbol: String);
