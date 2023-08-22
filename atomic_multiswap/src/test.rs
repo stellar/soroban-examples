@@ -26,7 +26,7 @@ fn create_atomic_multiswap_contract(e: &Env) -> AtomicMultiSwapContractClient {
 #[test]
 fn test_atomic_multi_swap() {
     let env = Env::default();
-    env.mock_all_auths();
+    env.mock_all_auths_allowing_non_root_auth();
 
     let swaps_a = [
         SwapSpec {
@@ -236,7 +236,7 @@ fn test_atomic_multi_swap() {
 #[test]
 fn test_multi_swap_with_duplicate_account() {
     let env = Env::default();
-    env.mock_all_auths();
+    env.mock_all_auths_allowing_non_root_auth();
 
     let address_a = Address::random(&env);
     let address_b = Address::random(&env);

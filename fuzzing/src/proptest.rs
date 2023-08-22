@@ -45,6 +45,7 @@ proptest! {
             min_temp_entry_expiration: u32::MAX,
             min_persistent_entry_expiration: u32::MAX,
             max_entry_expiration: u32::MAX,
+            autobump_ledgers: 0,
         });
 
         // Turn off the CPU/memory budget for testing.
