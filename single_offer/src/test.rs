@@ -11,11 +11,11 @@ use soroban_sdk::{
 fn create_token_contract<'a>(
     e: &Env,
     admin: &Address,
-) -> (token::Client<'a>, token::AdminClient<'a>) {
+) -> (token::Client<'a>, token::StellarAssetAdminClient<'a>) {
     let addr = e.register_stellar_asset_contract(admin.clone());
     (
         token::Client::new(e, &addr),
-        token::AdminClient::new(e, &addr),
+        token::StellarAssetAdminClient::new(e, &addr),
     )
 }
 

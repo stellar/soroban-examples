@@ -15,8 +15,8 @@ use proptest_arbitrary_interop::arb;
 use soroban_sdk::arbitrary::arbitrary::{self, Arbitrary};
 use soroban_sdk::arbitrary::fuzz_catch_panic;
 use soroban_sdk::testutils::{Address as _, Ledger, LedgerInfo};
-use soroban_sdk::token::AdminClient as TokenAdminClient;
 use soroban_sdk::token::Client as TokenClient;
+use soroban_sdk::token::StellarAssetAdminClient as TokenAdminClient;
 use soroban_sdk::{vec, Address, Env};
 
 #[derive(Arbitrary, Debug, Clone)]
@@ -45,7 +45,6 @@ proptest! {
             min_temp_entry_expiration: u32::MAX,
             min_persistent_entry_expiration: u32::MAX,
             max_entry_expiration: u32::MAX,
-            autobump_ledgers: 0,
         });
 
         // Turn off the CPU/memory budget for testing.

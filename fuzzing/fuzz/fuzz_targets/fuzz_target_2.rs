@@ -11,7 +11,7 @@ use soroban_ledger_snapshot::LedgerSnapshot;
 use soroban_sdk::arbitrary::arbitrary::{self, Arbitrary, Unstructured};
 use soroban_sdk::arbitrary::{fuzz_catch_panic, SorobanArbitrary};
 use soroban_sdk::testutils::{Address as _, LedgerInfo};
-use soroban_sdk::token::AdminClient as TokenAdminClient;
+use soroban_sdk::token::StellarAssetAdminClient as TokenAdminClient;
 use soroban_sdk::token::Client as TokenClient;
 use soroban_sdk::xdr::ScAddress;
 use soroban_sdk::{Address, Env, FromVal, Vec};
@@ -105,7 +105,6 @@ impl Config {
                 min_temp_entry_expiration: u32::MAX,
                 min_persistent_entry_expiration: u32::MAX,
                 max_entry_expiration: u32::MAX,
-                autobump_ledgers: 0,
             };
 
             LedgerSnapshot::from(init_ledger, None)
