@@ -2,7 +2,7 @@
 
 Example contracts for Soroban, preview release 10.
 
-Follow along with [The Documentation](https://soroban.stellar.org/docs/category/examples).
+Follow along with [The Documentation](https://soroban.stellar.org/docs/).
 
 Open a development environment on GitPod:
 
