@@ -7,44 +7,9 @@ use crate::balance::{read_balance, receive_balance, spend_balance};
 use crate::event;
 use crate::metadata::{read_decimal, read_name, read_symbol, write_metadata};
 use crate::storage_types::INSTANCE_BUMP_AMOUNT;
+use soroban_sdk::token::{self, Interface as _};
 use soroban_sdk::{contract, contractimpl, Address, Env, String};
 use soroban_token_sdk::TokenMetadata;
-
-pub trait TokenTrait {
-    fn initialize(e: Env, admin: Address, decimal: u32, name: String, symbol: String);
-
-    fn allowance(e: Env, from: Address, spender: Address) -> i128;
-
-    fn approve(e: Env, from: Address, spender: Address, amount: i128, expiration_ledger: u32);
-
-    fn balance(e: Env, id: Address) -> i128;
-
-    fn spendable_balance(e: Env, id: Address) -> i128;
-
-    fn authorized(e: Env, id: Address) -> bool;
-
-    fn transfer(e: Env, from: Address, to: Address, amount: i128);
-
-    fn transfer_from(e: Env, spender: Address, from: Address, to: Address, amount: i128);
-
-    fn burn(e: Env, from: Address, amount: i128);
-
-    fn burn_from(e: Env, spender: Address, from: Address, amount: i128);
-
-    fn clawback(e: Env, from: Address, amount: i128);
-
-    fn set_authorized(e: Env, id: Address, authorize: bool);
-
-    fn mint(e: Env, to: Address, amount: i128);
-
-    fn set_admin(e: Env, new_admin: Address);
-
-    fn decimals(e: Env) -> u32;
-
-    fn name(e: Env) -> String;
-
-    fn symbol(e: Env) -> String;
-}
 
 fn check_nonnegative_amount(amount: i128) {
     if amount < 0 {
@@ -56,8 +21,8 @@ fn check_nonnegative_amount(amount: i128) {
 pub struct Token;
 
 #[contractimpl]
-impl TokenTrait for Token {
-    fn initialize(e: Env, admin: Address, decimal: u32, name: String, symbol: String) {
+impl Token {
+    pub fn initialize(e: Env, admin: Address, decimal: u32, name: String, symbol: String) {
         if has_administrator(&e) {
             panic!("already initialized")
         }
@@ -76,6 +41,51 @@ impl TokenTrait for Token {
         )
     }
 
+    pub fn clawback(e: Env, from: Address, amount: i128) {
+        check_nonnegative_amount(amount);
+        let admin = read_administrator(&e);
+        admin.require_auth();
+
+        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
+
+        spend_balance(&e, from.clone(), amount);
+        event::clawback(&e, admin, from, amount);
+    }
+
+    pub fn set_authorized(e: Env, id: Address, authorize: bool) {
+        let admin = read_administrator(&e);
+        admin.require_auth();
+
+        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
+
+        write_authorization(&e, id.clone(), authorize);
+        event::set_authorized(&e, admin, id, authorize);
+    }
+
+    pub fn mint(e: Env, to: Address, amount: i128) {
+        check_nonnegative_amount(amount);
+        let admin = read_administrator(&e);
+        admin.require_auth();
+
+        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
+
+        receive_balance(&e, to.clone(), amount);
+        event::mint(&e, admin, to, amount);
+    }
+
+    pub fn set_admin(e: Env, new_admin: Address) {
+        let admin = read_administrator(&e);
+        admin.require_auth();
+
+        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
+
+        write_administrator(&e, &new_admin);
+        event::set_admin(&e, admin, new_admin);
+    }
+}
+
+#[contractimpl]
+impl token::Interface for Token {
     fn allowance(e: Env, from: Address, spender: Address) -> i128 {
         e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
         read_allowance(&e, from, spender).amount
@@ -153,48 +163,6 @@ impl TokenTrait for Token {
         spend_allowance(&e, from.clone(), spender, amount);
         spend_balance(&e, from.clone(), amount);
         event::burn(&e, from, amount)
-    }
-
-    fn clawback(e: Env, from: Address, amount: i128) {
-        check_nonnegative_amount(amount);
-        let admin = read_administrator(&e);
-        admin.require_auth();
-
-        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
-
-        spend_balance(&e, from.clone(), amount);
-        event::clawback(&e, admin, from, amount);
-    }
-
-    fn set_authorized(e: Env, id: Address, authorize: bool) {
-        let admin = read_administrator(&e);
-        admin.require_auth();
-
-        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
-
-        write_authorization(&e, id.clone(), authorize);
-        event::set_authorized(&e, admin, id, authorize);
-    }
-
-    fn mint(e: Env, to: Address, amount: i128) {
-        check_nonnegative_amount(amount);
-        let admin = read_administrator(&e);
-        admin.require_auth();
-
-        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
-
-        receive_balance(&e, to.clone(), amount);
-        event::mint(&e, admin, to, amount);
-    }
-
-    fn set_admin(e: Env, new_admin: Address) {
-        let admin = read_administrator(&e);
-        admin.require_auth();
-
-        e.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
-
-        write_administrator(&e, &new_admin);
-        event::set_admin(&e, admin, new_admin);
     }
 
     fn decimals(e: Env) -> u32 {
