@@ -47,7 +47,7 @@ fn check_time_bound(env: &Env, time_bound: &TimeBound) -> bool {
     let ledger_timestamp = env.ledger().timestamp();
 
     match time_bound.kind {
-        TimeBoundKind::Before => ledger_timestamp <= time_bound.timestamp,
+        TimeBoundKind::Before => ledger_timestamp < time_bound.timestamp,
         TimeBoundKind::After => ledger_timestamp >= time_bound.timestamp,
     }
 }
