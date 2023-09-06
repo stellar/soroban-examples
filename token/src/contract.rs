@@ -46,22 +46,26 @@ impl Token {
         let admin = read_administrator(&e);
         admin.require_auth();
 
-        e.storage().instance().bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+        e.storage()
+            .instance()
+            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
         spend_balance(&e, from.clone(), amount);
-        TokenUtils::new(&e)
-            .events().clawback(admin, from, amount);
+        TokenUtils::new(&e).events().clawback(admin, from, amount);
     }
 
     pub fn set_authorized(e: Env, id: Address, authorize: bool) {
         let admin = read_administrator(&e);
         admin.require_auth();
 
-        e.storage().instance().bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+        e.storage()
+            .instance()
+            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
         write_authorization(&e, id.clone(), authorize);
         TokenUtils::new(&e)
-            .events().set_authorized(admin, id, authorize);
+            .events()
+            .set_authorized(admin, id, authorize);
     }
 
     pub fn mint(e: Env, to: Address, amount: i128) {
@@ -69,22 +73,24 @@ impl Token {
         let admin = read_administrator(&e);
         admin.require_auth();
 
-        e.storage().instance().bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+        e.storage()
+            .instance()
+            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
         receive_balance(&e, to.clone(), amount);
-        TokenUtils::new(&e)
-            .events().mint(admin, to, amount);
+        TokenUtils::new(&e).events().mint(admin, to, amount);
     }
 
     pub fn set_admin(e: Env, new_admin: Address) {
         let admin = read_administrator(&e);
         admin.require_auth();
 
-        e.storage().instance().bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+        e.storage()
+            .instance()
+            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
         write_administrator(&e, &new_admin);
-        TokenUtils::new(&e)
-            .events().set_admin(admin, new_admin);
+        TokenUtils::new(&e).events().set_admin(admin, new_admin);
     }
 }
 
