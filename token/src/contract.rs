@@ -2,7 +2,6 @@
 //! interface.
 use crate::admin::{has_administrator, read_administrator, write_administrator};
 use crate::allowance::{read_allowance, spend_allowance, write_allowance};
-use crate::balance::{is_authorized, write_authorization};
 use crate::balance::{read_balance, receive_balance, spend_balance};
 use crate::metadata::{read_decimal, read_name, read_symbol, write_metadata};
 use crate::storage_types::{INSTANCE_BUMP_AMOUNT, INSTANCE_LIFETIME_THRESHOLD};
@@ -39,40 +38,6 @@ impl Token {
                 symbol,
             },
         )
-    }
-
-    pub fn clawback(e: Env, from: Address, amount: i128) {
-        check_nonnegative_amount(amount);
-        let admin = read_administrator(&e);
-        admin.require_auth();
-
-        e.storage()
-            .instance()
-            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
-
-        spend_balance(&e, from.clone(), amount);
-        TokenUtils::new(&e).events().clawback(admin, from, amount);
-    }
-
-    pub fn set_authorized(e: Env, id: Address, authorize: bool) {
-        let admin = read_administrator(&e);
-        admin.require_auth();
-
-        e.storage()
-            .instance()
-            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
-
-        write_authorization(&e, id.clone(), authorize);
-        TokenUtils::new(&e)
-            .events()
-            .set_authorized(admin, id, authorize);
-    }
-
-    pub fn authorized(e: Env, id: Address) -> bool {
-        e.storage()
-            .instance()
-            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
-        is_authorized(&e, id)
     }
 
     pub fn mint(e: Env, to: Address, amount: i128) {
