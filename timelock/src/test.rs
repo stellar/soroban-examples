@@ -5,7 +5,7 @@ use super::*;
 use soroban_sdk::testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation, Ledger};
 use soroban_sdk::{symbol_short, token, vec, Address, Env, IntoVal};
 use token::Client as TokenClient;
-use token::StellarAssetAdminClient as TokenAdminClient;
+use token::StellarAssetClient as TokenAdminClient;
 
 fn create_token_contract<'a>(e: &Env, admin: &Address) -> (TokenClient<'a>, TokenAdminClient<'a>) {
     let contract_address = e.register_stellar_asset_contract(admin.clone());

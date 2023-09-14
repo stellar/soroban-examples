@@ -68,6 +68,13 @@ impl Token {
             .set_authorized(admin, id, authorize);
     }
 
+    pub fn authorized(e: Env, id: Address) -> bool {
+        e.storage()
+            .instance()
+            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+        is_authorized(&e, id)
+    }
+
     pub fn mint(e: Env, to: Address, amount: i128) {
         check_nonnegative_amount(amount);
         let admin = read_administrator(&e);
@@ -130,13 +137,6 @@ impl token::Interface for Token {
             .instance()
             .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
         read_balance(&e, id)
-    }
-
-    fn authorized(e: Env, id: Address) -> bool {
-        e.storage()
-            .instance()
-            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
-        is_authorized(&e, id)
     }
 
     fn transfer(e: Env, from: Address, to: Address, amount: i128) {
