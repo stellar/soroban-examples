@@ -1,0 +1,20 @@
+[package]
+name = "soroban-workspace-contract-b"
+version.workspace = true
+authors = ["Stellar Development Foundation <info@stellar.org>"]
+license = "Apache-2.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = { workspace = true }
+soroban-workspace-contract-a-interface = { workspace = true }
+
+[dev_dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
+soroban-workspace-contract-a-interface = { workspace = true, features = ["testutils"] }
+soroban-workspace-contract-a = { workspace = true, features = ["testutils"] }
