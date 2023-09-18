@@ -1,6 +1,6 @@
 # soroban-examples <!-- omit in toc -->
 
-Example contracts for Soroban, preview release 10.
+Example contracts for Soroban.
 
 Follow along with [The Documentation](https://soroban.stellar.org/docs/).
 

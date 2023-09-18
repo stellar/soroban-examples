@@ -8,8 +8,8 @@ use soroban_sdk::{
     testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation},
     token, Address, Env, IntoVal,
 };
-use token::AdminClient as TokenAdminClient;
 use token::Client as TokenClient;
+use token::StellarAssetClient as TokenAdminClient;
 
 fn create_token_contract<'a>(e: &Env, admin: &Address) -> (TokenClient<'a>, TokenAdminClient<'a>) {
     let contract_address = e.register_stellar_asset_contract(admin.clone());
@@ -26,7 +26,7 @@ fn create_atomic_multiswap_contract(e: &Env) -> AtomicMultiSwapContractClient {
 #[test]
 fn test_atomic_multi_swap() {
     let env = Env::default();
-    env.mock_all_auths();
+    env.mock_all_auths_allowing_non_root_auth();
 
     let swaps_a = [
         SwapSpec {
@@ -236,7 +236,7 @@ fn test_atomic_multi_swap() {
 #[test]
 fn test_multi_swap_with_duplicate_account() {
     let env = Env::default();
-    env.mock_all_auths();
+    env.mock_all_auths_allowing_non_root_auth();
 
     let address_a = Address::random(&env);
     let address_b = Address::random(&env);
