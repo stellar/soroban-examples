@@ -1065,9 +1065,9 @@ checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
 
 [[package]]
 name = "soroban-env-common"
-version = "20.0.0-rc1"
+version = "20.0.0-rc2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b65261df4aec251bf503bdb9d08a11a0109ad010d22fb6068c5767bd612a76cc"
+checksum = "c2508a41765935d3bef43b2264667c4603725cf7ddd851321f1dc2b3bca8bb88"
 dependencies = [
  "arbitrary",
  "crate-git-revision",
@@ -1083,9 +1083,9 @@ dependencies = [
 
 [[package]]
 name = "soroban-env-guest"
-version = "20.0.0-rc1"
+version = "20.0.0-rc2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5353b943c5ce51df6ba333a734867b301d3b1628dc1aa7d00bd59658059c8193"
+checksum = "b41f1b3ebb747487ff9920822112a5816030e053734ed63c05f1a7db476f2768"
 dependencies = [
  "soroban-env-common",
  "static_assertions",
@@ -1093,9 +1093,9 @@ dependencies = [
 
 [[package]]
 name = "soroban-env-host"
-version = "20.0.0-rc1"
+version = "20.0.0-rc2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b79d564bb297c48be6250334cb33025abe66b90f981de87543b8abd796b3b52"
+checksum = "347fc729270de2fc8e312ba1872ef90fdc8dfcd0dacdd07a3bb7a038c41ea6d6"
 dependencies = [
  "backtrace",
  "ed25519-dalek",
@@ -1117,9 +1117,9 @@ dependencies = [
 
 [[package]]
 name = "soroban-env-macros"
-version = "20.0.0-rc1"
+version = "20.0.0-rc2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d827dbe18b79ade40d0d7cfca4a117b59ae1e0feb8dbd4a97f5fca479b04043d"
+checksum = "f16b7a75d77ae47143a07f92a35661c21e965f63bb4362d8491188a993687745"
 dependencies = [
  "itertools",
  "proc-macro2",
@@ -1142,9 +1142,9 @@ dependencies = [
 
 [[package]]
 name = "soroban-ledger-snapshot"
-version = "20.0.0-rc1"
+version = "20.0.0-rc2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "15b6817c444562363c619afa0519a8d15157bd8be3a2bf02bf7239245ed263a0"
+checksum = "d202c5870aeec1cb97bfd06a94b8fe691c513ba6da8638deb07d8660e90056ba"
 dependencies = [
  "serde",
  "serde_json",
@@ -1155,9 +1155,9 @@ dependencies = [
 
 [[package]]
 name = "soroban-native-sdk-macros"
-version = "20.0.0-rc1"
+version = "20.0.0-rc2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de68658cc0351f3dce994b409af3708fea744d31bbfbfa7335f7481b1be847a2"
+checksum = "fe8cf96e5c9308347bc6fa0735d0591475a20b43ed00f96ad2df623bbe9c1e88"
 dependencies = [
  "itertools",
  "proc-macro2",
@@ -1167,9 +1167,9 @@ dependencies = [
 
 [[package]]
 name = "soroban-sdk"
-version = "20.0.0-rc1"
+version = "20.0.0-rc2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1afc6bb5ed7a89a41fd6e38e30c61c736f905312c8721fbb708bf19ce96d85cb"
+checksum = "7d771d43a66ba0df14ff28ac1b37a6568da00afa12f28273a67fe92853ab28f8"
 dependencies = [
  "arbitrary",
  "bytes-lit",
@@ -1185,9 +1185,9 @@ dependencies = [
 
 [[package]]
 name = "soroban-sdk-macros"
-version = "20.0.0-rc1"
+version = "20.0.0-rc2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc90811bcfe1c0fb24fbb1ab8fdd05c98d677ec124b3ce8ef2c0219cb9b47753"
+checksum = "bf5a6dd2e08217fdd75f3f849256dda2614badda9095df233a47c7c8f9783493"
 dependencies = [
  "crate-git-revision",
  "darling",
@@ -1205,9 +1205,9 @@ dependencies = [
 
 [[package]]
 name = "soroban-spec"
-version = "20.0.0-rc1"
+version = "20.0.0-rc2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94e6202dfc8dfd3abcda4f2946d11806a573671d5948c6b2adc5fa8128feeca6"
+checksum = "7e2a55aab81d7cd1df66f85de3d815fb08fc5fa412270dc374e031e27528c711"
 dependencies = [
  "base64 0.13.1",
  "stellar-xdr",
@@ -1217,9 +1217,9 @@ dependencies = [
 
 [[package]]
 name = "soroban-spec-rust"
-version = "20.0.0-rc1"
+version = "20.0.0-rc2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f21ab4a805e72ba39b58a441466c4a8882b6d635a654fdbcbbae092465854d5"
+checksum = "1bcfa549d3362e6eafa3a51ad29d571f3dbae2cb9fe33d9f94c00a9f742f71df"
 dependencies = [
  "prettyplease",
  "proc-macro2",
