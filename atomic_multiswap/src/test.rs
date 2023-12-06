@@ -30,40 +30,40 @@ fn test_atomic_multi_swap() {
 
     let swaps_a = [
         SwapSpec {
-            address: Address::random(&env),
+            address: Address::generate(&env),
             amount: 2000,
             min_recv: 290,
         },
         SwapSpec {
-            address: Address::random(&env),
+            address: Address::generate(&env),
             amount: 3000,
             min_recv: 350,
         },
         SwapSpec {
-            address: Address::random(&env),
+            address: Address::generate(&env),
             amount: 4000,
             min_recv: 301,
         },
     ];
     let swaps_b = [
         SwapSpec {
-            address: Address::random(&env),
+            address: Address::generate(&env),
             amount: 300,
             min_recv: 2100,
         },
         SwapSpec {
-            address: Address::random(&env),
+            address: Address::generate(&env),
             amount: 295,
             min_recv: 1950,
         },
         SwapSpec {
-            address: Address::random(&env),
+            address: Address::generate(&env),
             amount: 400,
             min_recv: 2900,
         },
     ];
 
-    let token_admin = Address::random(&env);
+    let token_admin = Address::generate(&env);
 
     let (token_a, token_a_admin) = create_token_contract(&env, &token_admin);
     let (token_b, token_b_admin) = create_token_contract(&env, &token_admin);
@@ -238,8 +238,8 @@ fn test_multi_swap_with_duplicate_account() {
     let env = Env::default();
     env.mock_all_auths_allowing_non_root_auth();
 
-    let address_a = Address::random(&env);
-    let address_b = Address::random(&env);
+    let address_a = Address::generate(&env);
+    let address_b = Address::generate(&env);
     let swaps_a = [
         SwapSpec {
             address: address_a.clone(),
@@ -265,7 +265,7 @@ fn test_multi_swap_with_duplicate_account() {
         },
     ];
 
-    let token_admin = Address::random(&env);
+    let token_admin = Address::generate(&env);
 
     let (token_a, token_a_admin) = create_token_contract(&env, &token_admin);
     let (token_b, token_b_admin) = create_token_contract(&env, &token_admin);

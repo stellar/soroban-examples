@@ -61,7 +61,7 @@ fn test_deploy_from_address() {
     let wasm_hash = env.deployer().upload_contract_wasm(contract::WASM);
 
     // Define a deployer address that needs to authorize the deployment.
-    let deployer = Address::random(&env);
+    let deployer = Address::generate(&env);
 
     // Deploy contract using deployer, and include an init function to call.
     let salt = BytesN::from_array(&env, &[0; 32]);

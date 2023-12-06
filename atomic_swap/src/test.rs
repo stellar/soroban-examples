@@ -27,10 +27,10 @@ fn test_atomic_swap() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let a = Address::random(&env);
-    let b = Address::random(&env);
+    let a = Address::generate(&env);
+    let b = Address::generate(&env);
 
-    let token_admin = Address::random(&env);
+    let token_admin = Address::generate(&env);
 
     let (token_a, token_a_admin) = create_token_contract(&env, &token_admin);
     let (token_b, token_b_admin) = create_token_contract(&env, &token_admin);

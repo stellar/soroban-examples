@@ -114,7 +114,7 @@ impl Config {
 
         env.mock_all_auths();
 
-        let token_admin = Address::random(&env);
+        let token_admin = Address::generate(&env);
 
         // This is a bit ugly - anticipate which deposit step will succeed
         // and store that information for making assertians later.

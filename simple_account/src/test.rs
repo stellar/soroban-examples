@@ -44,7 +44,7 @@ fn test_account() {
     // `try_invoke_contract_check_auth` testing utility that emulates being
     // called by the Soroban host during a `require_auth` call.
     env.try_invoke_contract_check_auth::<Error>(
-        &account_contract.address.contract_id(),
+        &account_contract.address,
         &payload,
         &vec![&env, sign(&env, &signer, &payload)],
         &vec![&env],
@@ -56,7 +56,7 @@ fn test_account() {
     // result in an error as this is not a valid signature.
     assert!(env
         .try_invoke_contract_check_auth::<Error>(
-            &account_contract.address.contract_id(),
+            &account_contract.address,
             &payload,
             &vec![&env, BytesN::<64>::random(&env).into()],
             &vec![&env],

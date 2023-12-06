@@ -61,9 +61,9 @@ fn test() {
     let e = Env::default();
     e.mock_all_auths();
 
-    let token_admin = Address::random(&e);
-    let seller = Address::random(&e);
-    let buyer = Address::random(&e);
+    let token_admin = Address::generate(&e);
+    let seller = Address::generate(&e);
+    let buyer = Address::generate(&e);
 
     let sell_token = create_token_contract(&e, &token_admin);
     let sell_token_client = sell_token.0;

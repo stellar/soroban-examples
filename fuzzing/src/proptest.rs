@@ -50,9 +50,9 @@ proptest! {
         // Turn off the CPU/memory budget for testing.
         env.budget().reset_unlimited();
 
-        let depositor_address = Address::random(&env);
-        let claimant_address = Address::random(&env);
-        let token_admin = Address::random(&env);
+        let depositor_address = Address::generate(&env);
+        let claimant_address = Address::generate(&env);
+        let token_admin = Address::generate(&env);
 
         let token_contract_id = env.register_stellar_asset_contract(token_admin.clone());
         let token_client = TokenClient::new(&env, &token_contract_id);

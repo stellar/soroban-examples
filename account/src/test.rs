@@ -66,12 +66,12 @@ fn test_token_auth() {
     ]);
 
     let payload = BytesN::random(&env);
-    let token = Address::random(&env);
+    let token = Address::generate(&env);
     // `__check_auth` can't be called directly, hence we need to use
     // `try_invoke_contract_check_auth` testing utility that emulates being
     // called by the Soroban host during a `require_auth` call.
     env.try_invoke_contract_check_auth::<AccError>(
-        &account_contract.address.contract_id(),
+        &account_contract.address,
         &payload,
         &vec![&env, sign(&env, &signers[0], &payload)],
         &vec![
@@ -81,7 +81,7 @@ fn test_token_auth() {
     )
     .unwrap();
     env.try_invoke_contract_check_auth::<AccError>(
-        &account_contract.address.contract_id(),
+        &account_contract.address,
         &payload,
         &vec![&env, sign(&env, &signers[0], &payload)],
         &vec![
@@ -114,7 +114,7 @@ fn test_token_auth() {
     // than 1000 units.
     assert_eq!(
         env.try_invoke_contract_check_auth::<AccError>(
-            &account_contract.address.contract_id(),
+            &account_contract.address,
             &payload,
             &vec![&env, sign(&env, &signers[0], &payload)],
             &vec![
@@ -129,7 +129,7 @@ fn test_token_auth() {
     );
     assert_eq!(
         env.try_invoke_contract_check_auth::<AccError>(
-            &account_contract.address.contract_id(),
+            &account_contract.address,
             &payload,
             &vec![&env, sign(&env, &signers[0], &payload)],
             &vec![
@@ -145,7 +145,7 @@ fn test_token_auth() {
 
     // 1 signer can still transfer 1000 units.
     env.try_invoke_contract_check_auth::<AccError>(
-        &account_contract.address.contract_id(),
+        &account_contract.address,
         &payload,
         &vec![&env, sign(&env, &signers[0], &payload)],
         &vec![
@@ -156,7 +156,7 @@ fn test_token_auth() {
     .unwrap();
     // 2 signers can transfer any amount of token.
     env.try_invoke_contract_check_auth::<AccError>(
-        &account_contract.address.contract_id(),
+        &account_contract.address,
         &payload,
         &vec![
             &env,
