@@ -6,10 +6,7 @@ use ed25519_dalek::Signer;
 use rand::thread_rng;
 use soroban_sdk::Error;
 use soroban_sdk::Val;
-use soroban_sdk::{
-    testutils::{Address as _, BytesN as _},
-    vec, BytesN, Env, IntoVal,
-};
+use soroban_sdk::{testutils::BytesN as _, vec, BytesN, Env, IntoVal};
 
 use crate::SimpleAccount;
 use crate::SimpleAccountClient;
@@ -46,7 +43,7 @@ fn test_account() {
     env.try_invoke_contract_check_auth::<Error>(
         &account_contract.address,
         &payload,
-        &vec![&env, sign(&env, &signer, &payload)],
+        sign(&env, &signer, &payload),
         &vec![&env],
     )
     // Unwrap the result to make sure there is no error.
@@ -58,7 +55,7 @@ fn test_account() {
         .try_invoke_contract_check_auth::<Error>(
             &account_contract.address,
             &payload,
-            &vec![&env, BytesN::<64>::random(&env).into()],
+            BytesN::<64>::random(&env).into(),
             &vec![&env],
         )
         .is_err());

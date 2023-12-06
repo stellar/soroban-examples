@@ -73,7 +73,7 @@ fn test_token_auth() {
     env.try_invoke_contract_check_auth::<AccError>(
         &account_contract.address,
         &payload,
-        &vec![&env, sign(&env, &signers[0], &payload)],
+        vec![&env, sign(&env, &signers[0], &payload)].into(),
         &vec![
             &env,
             token_auth_context(&env, &token, Symbol::new(&env, "transfer"), 1000),
@@ -83,7 +83,7 @@ fn test_token_auth() {
     env.try_invoke_contract_check_auth::<AccError>(
         &account_contract.address,
         &payload,
-        &vec![&env, sign(&env, &signers[0], &payload)],
+        vec![&env, sign(&env, &signers[0], &payload)].into(),
         &vec![
             &env,
             token_auth_context(&env, &token, Symbol::new(&env, "transfer"), 1000),
@@ -116,7 +116,7 @@ fn test_token_auth() {
         env.try_invoke_contract_check_auth::<AccError>(
             &account_contract.address,
             &payload,
-            &vec![&env, sign(&env, &signers[0], &payload)],
+            vec![&env, sign(&env, &signers[0], &payload)].into(),
             &vec![
                 &env,
                 token_auth_context(&env, &token, Symbol::new(&env, "transfer"), 1001)
@@ -131,7 +131,7 @@ fn test_token_auth() {
         env.try_invoke_contract_check_auth::<AccError>(
             &account_contract.address,
             &payload,
-            &vec![&env, sign(&env, &signers[0], &payload)],
+            vec![&env, sign(&env, &signers[0], &payload)].into(),
             &vec![
                 &env,
                 token_auth_context(&env, &token, Symbol::new(&env, "approve"), 1001)
@@ -147,7 +147,7 @@ fn test_token_auth() {
     env.try_invoke_contract_check_auth::<AccError>(
         &account_contract.address,
         &payload,
-        &vec![&env, sign(&env, &signers[0], &payload)],
+        vec![&env, sign(&env, &signers[0], &payload)].into(),
         &vec![
             &env,
             token_auth_context(&env, &token, Symbol::new(&env, "approve"), 1000),
@@ -158,11 +158,12 @@ fn test_token_auth() {
     env.try_invoke_contract_check_auth::<AccError>(
         &account_contract.address,
         &payload,
-        &vec![
+        vec![
             &env,
             sign(&env, &signers[0], &payload),
             sign(&env, &signers[1], &payload),
-        ],
+        ]
+        .into(),
         &vec![
             &env,
             token_auth_context(&env, &token, Symbol::new(&env, "transfer"), 10000),
