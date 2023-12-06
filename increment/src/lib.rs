@@ -24,7 +24,7 @@ impl IncrementContract {
         // If the lifetime is already more than 100 ledgers, this is a no-op. Otherwise,
         // the lifetime is extended to 100 ledgers. This lifetime bump includes the contract
         // instance itself and all entries in storage().instance(), i.e, COUNTER.
-        env.storage().instance().bump(50, 100);
+        env.storage().instance().extend_ttl(50, 100);
 
         // Return the count to the caller.
         count

@@ -11,10 +11,10 @@ crate-type = ["cdylib"]
 doctest = false
 
 [dependencies]
-soroban-sdk = { version = "20.0.0-rc2" }
+soroban-sdk = { version = "20.0.0" }
 
 [dev_dependencies]
-soroban-sdk = { version = "20.0.0-rc2", features = ["testutils"] }
+soroban-sdk = { version = "20.0.0", features = ["testutils"] }
 ed25519-dalek = { version = "1.0.1" }
 rand = { version = "0.7.3" }
 
