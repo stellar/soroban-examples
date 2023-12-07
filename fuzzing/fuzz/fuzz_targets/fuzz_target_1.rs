@@ -32,9 +32,9 @@ fuzz_target!(|input: Input| {
         sequence_number: 10,
         network_id: Default::default(),
         base_reserve: 10,
-        min_temp_entry_expiration: u32::MAX,
-        min_persistent_entry_expiration: u32::MAX,
-        max_entry_expiration: u32::MAX,
+        min_temp_entry_ttl: u32::MAX,
+        min_persistent_entry_ttl: u32::MAX,
+        max_entry_ttl: u32::MAX,
     });
 
     // Turn off the CPU/memory budget for testing.
