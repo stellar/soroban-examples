@@ -43,9 +43,9 @@ proptest! {
             sequence_number: 10,
             network_id: Default::default(),
             base_reserve: 10,
-            min_temp_entry_ttl: u32::MAX,
-            min_persistent_entry_ttl: u32::MAX,
-            max_entry_ttl: u32::MAX,
+            min_temp_entry_ttl: 16,
+            min_persistent_entry_ttl: 16,
+            max_entry_ttl: 100_000,
         });
 
         // Turn off the CPU/memory budget for testing.
