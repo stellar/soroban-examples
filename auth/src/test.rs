@@ -17,8 +17,8 @@ fn test() {
     let contract_id = env.register_contract(None, IncrementContract);
     let client = IncrementContractClient::new(&env, &contract_id);
 
-    let user_1 = Address::random(&env);
-    let user_2 = Address::random(&env);
+    let user_1 = Address::generate(&env);
+    let user_2 = Address::generate(&env);
 
     assert_eq!(client.increment(&user_1, &5), 5);
     // Verify that the user indeed had to authorize a call of `increment` with

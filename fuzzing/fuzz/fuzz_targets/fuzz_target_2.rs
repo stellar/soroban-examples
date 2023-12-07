@@ -8,9 +8,8 @@
 use libfuzzer_sys::fuzz_target;
 use soroban_fuzzing_contract::*;
 use soroban_ledger_snapshot::LedgerSnapshot;
-use soroban_sdk::arbitrary::arbitrary::{self, Arbitrary, Unstructured};
-use soroban_sdk::arbitrary::{fuzz_catch_panic, SorobanArbitrary};
-use soroban_sdk::testutils::{Address as _, LedgerInfo};
+use soroban_sdk::testutils::{arbitrary::{arbitrary, fuzz_catch_panic, Arbitrary, SorobanArbitrary}, Address as _, LedgerInfo};
+use crate::arbitrary::Unstructured;
 use soroban_sdk::token::StellarAssetClient as TokenAdminClient;
 use soroban_sdk::token::Client as TokenClient;
 use soroban_sdk::xdr::ScAddress;
@@ -71,8 +70,8 @@ fuzz_target!(|input: Input| {
         // Advance time and create a new env from snapshot.
         let curr_env = {
             let mut snapshot = prev_env.to_snapshot();
-            snapshot.sequence_number += 1;
-            snapshot.timestamp = snapshot.timestamp.saturating_add(step.advance_time);
+            snapshot.ledger.sequence_number += 1;
+            snapshot.ledger.timestamp = snapshot.ledger.timestamp.saturating_add(step.advance_time);
             let env = Env::from_snapshot(snapshot);
             env.budget().reset_unlimited();
             env
@@ -102,19 +101,19 @@ impl Config {
                 sequence_number: 10,
                 network_id: Default::default(),
                 base_reserve: 10,
-                min_temp_entry_expiration: u32::MAX,
-                min_persistent_entry_expiration: u32::MAX,
-                max_entry_expiration: u32::MAX,
+                min_temp_entry_ttl: u32::MAX,
+                min_persistent_entry_ttl: u32::MAX,
+                max_entry_ttl: u32::MAX,
             };
 
             LedgerSnapshot::from(init_ledger, None)
         };
 
-        let env = Env::from_snapshot(snapshot);
+        let env = Env::from_ledger_snapshot(snapshot);
 
         env.mock_all_auths();
 
-        let token_admin = Address::random(&env);
+        let token_admin = Address::generate(&env);
 
         // This is a bit ugly - anticipate which deposit step will succeed
         // and store that information for making assertians later.

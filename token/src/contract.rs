@@ -47,7 +47,7 @@ impl Token {
 
         e.storage()
             .instance()
-            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+            .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
         receive_balance(&e, to.clone(), amount);
         TokenUtils::new(&e).events().mint(admin, to, amount);
@@ -59,7 +59,7 @@ impl Token {
 
         e.storage()
             .instance()
-            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+            .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
         write_administrator(&e, &new_admin);
         TokenUtils::new(&e).events().set_admin(admin, new_admin);
@@ -71,7 +71,7 @@ impl token::Interface for Token {
     fn allowance(e: Env, from: Address, spender: Address) -> i128 {
         e.storage()
             .instance()
-            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+            .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
         read_allowance(&e, from, spender).amount
     }
 
@@ -82,7 +82,7 @@ impl token::Interface for Token {
 
         e.storage()
             .instance()
-            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+            .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
         write_allowance(&e, from.clone(), spender.clone(), amount, expiration_ledger);
         TokenUtils::new(&e)
@@ -93,14 +93,7 @@ impl token::Interface for Token {
     fn balance(e: Env, id: Address) -> i128 {
         e.storage()
             .instance()
-            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
-        read_balance(&e, id)
-    }
-
-    fn spendable_balance(e: Env, id: Address) -> i128 {
-        e.storage()
-            .instance()
-            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+            .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
         read_balance(&e, id)
     }
 
@@ -111,7 +104,7 @@ impl token::Interface for Token {
 
         e.storage()
             .instance()
-            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+            .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
         spend_balance(&e, from.clone(), amount);
         receive_balance(&e, to.clone(), amount);
@@ -125,7 +118,7 @@ impl token::Interface for Token {
 
         e.storage()
             .instance()
-            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+            .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
         spend_allowance(&e, from.clone(), spender, amount);
         spend_balance(&e, from.clone(), amount);
@@ -140,7 +133,7 @@ impl token::Interface for Token {
 
         e.storage()
             .instance()
-            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+            .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
         spend_balance(&e, from.clone(), amount);
         TokenUtils::new(&e).events().burn(from, amount);
@@ -153,7 +146,7 @@ impl token::Interface for Token {
 
         e.storage()
             .instance()
-            .bump(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+            .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
         spend_allowance(&e, from.clone(), spender, amount);
         spend_balance(&e, from.clone(), amount);

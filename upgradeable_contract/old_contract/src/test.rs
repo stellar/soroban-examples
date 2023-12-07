@@ -29,7 +29,7 @@ fn test() {
     let contract_id = env.register_contract_wasm(None, old_contract::WASM);
 
     let client = old_contract::Client::new(&env, &contract_id);
-    let admin = Address::random(&env);
+    let admin = Address::generate(&env);
     client.init(&admin);
 
     assert_eq!(1, client.version());

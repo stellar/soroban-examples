@@ -12,9 +12,10 @@ use super::*;
 
 use ::proptest::prelude::*;
 use proptest_arbitrary_interop::arb;
-use soroban_sdk::arbitrary::arbitrary::{self, Arbitrary};
-use soroban_sdk::arbitrary::fuzz_catch_panic;
-use soroban_sdk::testutils::{Address as _, Ledger, LedgerInfo};
+use soroban_sdk::testutils::{
+    arbitrary::{arbitrary, fuzz_catch_panic, Arbitrary},
+    Address as _, Ledger, LedgerInfo,
+};
 use soroban_sdk::token::Client as TokenClient;
 use soroban_sdk::token::StellarAssetClient as TokenAdminClient;
 use soroban_sdk::{vec, Address, Env};
@@ -42,17 +43,17 @@ proptest! {
             sequence_number: 10,
             network_id: Default::default(),
             base_reserve: 10,
-            min_temp_entry_expiration: u32::MAX,
-            min_persistent_entry_expiration: u32::MAX,
-            max_entry_expiration: u32::MAX,
+            min_temp_entry_ttl: 16,
+            min_persistent_entry_ttl: 16,
+            max_entry_ttl: 100_000,
         });
 
         // Turn off the CPU/memory budget for testing.
         env.budget().reset_unlimited();
 
-        let depositor_address = Address::random(&env);
-        let claimant_address = Address::random(&env);
-        let token_admin = Address::random(&env);
+        let depositor_address = Address::generate(&env);
+        let claimant_address = Address::generate(&env);
+        let token_admin = Address::generate(&env);
 
         let token_contract_id = env.register_stellar_asset_contract(token_admin.clone());
         let token_client = TokenClient::new(&env, &token_contract_id);

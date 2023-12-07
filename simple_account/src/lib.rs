@@ -49,22 +49,16 @@ impl SimpleAccount {
     pub fn __check_auth(
         env: Env,
         signature_payload: BytesN<32>,
-        signature_args: Vec<BytesN<64>>,
+        signature: BytesN<64>,
         _auth_context: Vec<Context>,
     ) {
-        if signature_args.len() != 1 {
-            panic!("incorrect number of signature args");
-        }
         let public_key: BytesN<32> = env
             .storage()
             .instance()
             .get::<_, BytesN<32>>(&DataKey::Owner)
             .unwrap();
-        env.crypto().ed25519_verify(
-            &public_key,
-            &signature_payload.into(),
-            &signature_args.get(0).unwrap(),
-        );
+        env.crypto()
+            .ed25519_verify(&public_key, &signature_payload.into(), &signature);
     }
 }
 

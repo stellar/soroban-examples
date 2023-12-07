@@ -36,15 +36,15 @@ impl<'a> ClaimableBalanceTest<'a> {
             li.timestamp = 12345;
         });
 
-        let deposit_address = Address::random(&env);
+        let deposit_address = Address::generate(&env);
 
         let claim_addresses = [
-            Address::random(&env),
-            Address::random(&env),
-            Address::random(&env),
+            Address::generate(&env),
+            Address::generate(&env),
+            Address::generate(&env),
         ];
 
-        let token_admin = Address::random(&env);
+        let token_admin = Address::generate(&env);
 
         let (token, token_admin_client) = create_token_contract(&env, &token_admin);
         token_admin_client.mint(&deposit_address, &1000);
