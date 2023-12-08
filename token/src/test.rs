@@ -257,6 +257,7 @@ fn decimal_is_over_max() {
 
 #[test]
 fn test_zero_allowance() {
+    // Here we test that transfer_from with a 0 amount does not create an empty allowance
     let e = Env::default();
     e.mock_all_auths();
 
