@@ -9,6 +9,8 @@ use soroban_sdk::token::{self, Interface as _};
 use soroban_sdk::{contract, contractimpl, Address, Env, String};
 use soroban_token_sdk::metadata::TokenMetadata;
 use soroban_token_sdk::TokenUtils;
+#[cfg(test)]
+use crate::storage_types::{AllowanceDataKey, AllowanceValue, DataKey};
 
 fn check_nonnegative_amount(amount: i128) {
     if amount < 0 {
@@ -64,6 +66,14 @@ impl Token {
         write_administrator(&e, &new_admin);
         TokenUtils::new(&e).events().set_admin(admin, new_admin);
     }
+
+    #[cfg(test)]
+    pub fn get_allowance(e: Env, from: Address, spender: Address) -> Option<AllowanceValue> {
+        let key = DataKey::Allowance(AllowanceDataKey { from, spender });
+        let allowance = e.storage().temporary().get::<_, AllowanceValue>(&key);
+        allowance
+    }
+
 }
 
 #[contractimpl]
