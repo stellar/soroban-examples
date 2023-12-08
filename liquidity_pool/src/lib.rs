@@ -142,7 +142,7 @@ fn get_deposit_amounts(
         (desired_a, amount_b)
     } else {
         let amount_a = desired_b * reserve_a / reserve_b;
-        if amount_a > desired_a || desired_a < min_a {
+        if amount_a > desired_a || amount_a < min_a {
             panic!("amount_a invalid")
         }
         (amount_a, desired_b)
