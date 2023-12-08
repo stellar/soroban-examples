@@ -60,6 +60,6 @@ pub fn spend_allowance(e: &Env, from: Address, spender: Address, amount: i128) {
             spender,
             allowance.amount - amount,
             allowance.expiration_ledger,
-            );
+        );
     }
 }
