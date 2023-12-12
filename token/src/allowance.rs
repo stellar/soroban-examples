@@ -53,11 +53,13 @@ pub fn spend_allowance(e: &Env, from: Address, spender: Address, amount: i128) {
     if allowance.amount < amount {
         panic!("insufficient allowance");
     }
-    write_allowance(
-        e,
-        from,
-        spender,
-        allowance.amount - amount,
-        allowance.expiration_ledger,
-    );
+    if amount > 0 {
+        write_allowance(
+            e,
+            from,
+            spender,
+            allowance.amount - amount,
+            allowance.expiration_ledger,
+        );
+    }
 }

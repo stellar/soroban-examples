@@ -254,3 +254,18 @@ fn decimal_is_over_max() {
         &"symbol".into_val(&e),
     );
 }
+
+#[test]
+fn test_zero_allowance() {
+    // Here we test that transfer_from with a 0 amount does not create an empty allowance
+    let e = Env::default();
+    e.mock_all_auths();
+
+    let admin = Address::generate(&e);
+    let spender = Address::generate(&e);
+    let from = Address::generate(&e);
+    let token = create_token(&e, &admin);
+
+    token.transfer_from(&spender, &from, &spender, &0);
+    assert!(token.get_allowance(&from, &spender).is_none());
+}
