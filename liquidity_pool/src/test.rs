@@ -161,3 +161,54 @@ fn test() {
     assert_eq!(token2.balance(&liqpool.address), 0);
     assert_eq!(token_share.balance(&liqpool.address), 0);
 }
+
+
+#[test]
+#[should_panic(expected = "HostError: Error(WasmVm, InvalidAction)")]
+fn test_deposit_div_by_zero() {
+    let e = Env::default();
+    e.mock_all_auths();
+
+    // Create contracts
+    let mut admin1 = Address::generate(&e);
+    let mut admin2 = Address::generate(&e);
+
+    let mut token_a = create_token_contract(&e, &admin1);
+    let mut token_b = create_token_contract(&e, &admin2);
+    if &token_b.address < &token_a.address {
+        std::mem::swap(&mut token_a, &mut token_b);
+        std::mem::swap(&mut admin1, &mut admin2);
+    }
+    let liqpool = create_liqpool_contract(
+        &e,
+        &install_token_wasm(&e),
+        &token_a.address,
+        &token_b.address,
+    );
+
+    // Create a user
+    let user1 = Address::generate(&e);
+
+    token_a.mint(&user1, &1000);
+    assert_eq!(token_a.balance(&user1), 1000);
+
+    token_b.mint(&user1, &1000);
+    assert_eq!(token_b.balance(&user1), 1000);
+
+    // Try to get "deposit" to divide by zero
+    // STEP 1: increase the LP balance of tokenA
+    token_a.mint(&liqpool.address, &1);
+    assert_eq!(token_a.balance(&liqpool.address), 1);
+
+    // reserve_A and reserve_B are 0, and balance_A is 1
+    // we want to set reserve_A to 1 whilst keeping reserve_B at 0
+    // STEP 2: deposit 0 tokens of tokenA and 0 tokens of tokenB
+    liqpool.deposit(&user1, &0, &0, &0, &0);
+
+    assert_eq!(token_a.balance(&liqpool.address), 1);
+    assert_eq!(token_b.balance(&liqpool.address), 0);
+    assert_eq!(liqpool.get_rsrvs(), (1, 0));
+
+    // Another deposit will fail
+    liqpool.deposit(&user1, &100, &100, &100, &100);
+}
