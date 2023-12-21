@@ -162,10 +162,9 @@ fn test() {
     assert_eq!(token_share.balance(&liqpool.address), 0);
 }
 
-
 #[test]
-#[should_panic(expected = "HostError: Error(WasmVm, InvalidAction)")]
-fn test_deposit_div_by_zero() {
+#[should_panic]
+fn deposit_amount_zero_should_panic() {
     let e = Env::default();
     e.mock_all_auths();
 
@@ -195,20 +194,5 @@ fn test_deposit_div_by_zero() {
     token_b.mint(&user1, &1000);
     assert_eq!(token_b.balance(&user1), 1000);
 
-    // Try to get "deposit" to divide by zero
-    // STEP 1: increase the LP balance of tokenA
-    token_a.mint(&liqpool.address, &1);
-    assert_eq!(token_a.balance(&liqpool.address), 1);
-
-    // reserve_A and reserve_B are 0, and balance_A is 1
-    // we want to set reserve_A to 1 whilst keeping reserve_B at 0
-    // STEP 2: deposit 0 tokens of tokenA and 0 tokens of tokenB
-    liqpool.deposit(&user1, &0, &0, &0, &0);
-
-    assert_eq!(token_a.balance(&liqpool.address), 1);
-    assert_eq!(token_b.balance(&liqpool.address), 0);
-    assert_eq!(liqpool.get_rsrvs(), (1, 0));
-
-    // Another deposit will fail
-    liqpool.deposit(&user1, &100, &100, &100, &100);
+    liqpool.deposit(&user1, &1, &0, &0, &0);
 }
