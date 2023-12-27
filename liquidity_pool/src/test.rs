@@ -196,3 +196,57 @@ fn deposit_amount_zero_should_panic() {
 
     liqpool.deposit(&user1, &1, &0, &0, &0);
 }
+
+#[test]
+#[should_panic]
+fn swap_reserve_one_nonzero_other_zero() {
+    let e = Env::default();
+    e.mock_all_auths();
+
+    // Create contracts
+    let mut admin1 = Address::generate(&e);
+    let mut admin2 = Address::generate(&e);
+
+    let mut token_a = create_token_contract(&e, &admin1);
+    let mut token_b = create_token_contract(&e, &admin2);
+    if &token_b.address < &token_a.address {
+        std::mem::swap(&mut token_a, &mut token_b);
+        std::mem::swap(&mut admin1, &mut admin2);
+    }
+    let liqpool = create_liqpool_contract(
+        &e,
+        &install_token_wasm(&e),
+        &token_a.address,
+        &token_b.address,
+    );
+
+    // Create a user
+    let user1 = Address::generate(&e);
+
+    token_a.mint(&user1, &1000);
+    assert_eq!(token_a.balance(&user1), 1000);
+
+    token_b.mint(&user1, &1000);
+    assert_eq!(token_b.balance(&user1), 1000);
+
+    // Get to a situation where the reserves are 1 and 0
+    token_b.transfer(&user1, &liqpool.address, &1);
+    liqpool.swap(&user1, &false, &1, &1);
+    assert_eq!(liqpool.get_rsrvs(), (1, 0));
+
+    // Every deposit will now fail because `reserve_b = 0`.
+    // This means `amount_b` in `get_deposit_amounts` is 0, so
+    // the function either:
+    //   (a) panics on L140 with panic!("amount_b less than min"), OR
+    //   (b) on L144 when it computes `amount_a` by dividing by 0, OR
+    //   (c) succeeds, but with one amount == 0, which leads to a panic in `deposit`
+
+    // Case (A)
+    liqpool.deposit(&user1, &100, &100, &100, &100);
+
+    // Case (B)
+    // liqpool.deposit(&user1, &100, &100, &-1, &0);
+
+    // Case (C)
+    // liqpool.deposit(&user1, &100, &100, &0, &-1);
+}
