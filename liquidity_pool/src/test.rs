@@ -229,24 +229,8 @@ fn swap_reserve_one_nonzero_other_zero() {
     token_b.mint(&user1, &1000);
     assert_eq!(token_b.balance(&user1), 1000);
 
-    // Get to a situation where the reserves are 1 and 0
+    // Try to get to a situation where the reserves are 1 and 0.
+    // It shouldn't be possible.
     token_b.transfer(&user1, &liqpool.address, &1);
     liqpool.swap(&user1, &false, &1, &1);
-    assert_eq!(liqpool.get_rsrvs(), (1, 0));
-
-    // Every deposit will now fail because `reserve_b = 0`.
-    // This means `amount_b` in `get_deposit_amounts` is 0, so
-    // the function either:
-    //   (a) panics on L140 with panic!("amount_b less than min"), OR
-    //   (b) on L144 when it computes `amount_a` by dividing by 0, OR
-    //   (c) succeeds, but with one amount == 0, which leads to a panic in `deposit`
-
-    // Case (A)
-    liqpool.deposit(&user1, &100, &100, &100, &100);
-
-    // Case (B)
-    // liqpool.deposit(&user1, &100, &100, &-1, &0);
-
-    // Case (C)
-    // liqpool.deposit(&user1, &100, &100, &0, &-1);
 }

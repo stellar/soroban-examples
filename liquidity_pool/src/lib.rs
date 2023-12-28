@@ -312,8 +312,15 @@ impl LiquidityPoolTrait for LiquidityPool {
             transfer_b(&e, to, out_b);
         }
 
-        put_reserve_a(&e, balance_a - out_a);
-        put_reserve_b(&e, balance_b - out_b);
+        let new_reserve_a = balance_a - out_a;
+        let new_reserve_b = balance_b - out_b;
+
+        if new_reserve_a <= 0 || new_reserve_b <= 0 {
+            panic!("new reserves must be strictly positive");
+        }
+
+        put_reserve_a(&e, new_reserve_a);
+        put_reserve_b(&e, new_reserve_b);
     }
 
     fn withdraw(e: Env, to: Address, share_amount: i128, min_a: i128, min_b: i128) -> (i128, i128) {
