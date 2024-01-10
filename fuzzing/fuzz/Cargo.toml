@@ -3,6 +3,7 @@ name = "soroban-fuzzing-contract-fuzzer"
 version = "0.0.0"
 publish = false
 edition = "2021"
+rust-version = "1.74.0"
 
 [package.metadata]
 cargo-fuzz = true
