@@ -200,7 +200,7 @@ impl LiquidityPoolTrait for LiquidityPool {
 
         put_token_a(&e, token_a);
         put_token_b(&e, token_b);
-        put_token_share(&e, share_contract.try_into().unwrap());
+        put_token_share(&e, share_contract);
         put_total_shares(&e, 0);
         put_reserve_a(&e, 0);
         put_reserve_b(&e, 0);
