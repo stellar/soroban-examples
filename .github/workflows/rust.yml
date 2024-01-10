@@ -60,8 +60,8 @@ jobs:
     needs: dirs
     strategy:
       matrix:
-        rust: [msrv, latest]
         working-directory: ${{ fromJSON(needs.dirs.outputs.dirs) }}
+        rust: [msrv, latest]
         sys:
         - os: ubuntu-latest
           target: x86_64-unknown-linux-gnu
