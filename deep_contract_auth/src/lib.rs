@@ -11,7 +11,7 @@
 /// for contract A address and contract A provides proper authorization to make
 /// the calls succeed.
 
-mod contract_a {
+pub mod contract_a {
 
     use soroban_sdk::{
         auth::{ContractContext, InvokerContractAuthEntry, SubContractInvocation},
@@ -50,7 +50,7 @@ mod contract_a {
     }
 }
 
-mod contract_b {
+pub mod contract_b {
     use soroban_sdk::{contract, contractimpl, Address, Env};
 
     use crate::contract_c::ContractCClient;
@@ -67,7 +67,8 @@ mod contract_b {
         }
     }
 }
-mod contract_c {
+
+pub mod contract_c {
 
     use soroban_sdk::{contract, contractimpl, Address, Env};
 
@@ -81,4 +82,5 @@ mod contract_c {
         }
     }
 }
+
 mod test;
