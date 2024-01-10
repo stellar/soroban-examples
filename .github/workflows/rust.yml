@@ -83,7 +83,6 @@ jobs:
       # Rust will frequently add new warnings and checks.
       if: matrix.rust == 'msrv'
       run: echo RUSTFLAGS='-Dwarnings' >> $GITHUB_ENV
-      # run: echo RUSTFLAGS='-Dwarnings -Dclippy::all -Dclippy::pedantic' >> $GITHUB_ENV
     - run: rustup update
     - run: cargo version
     - run: rustup target add ${{ matrix.sys.target }}
