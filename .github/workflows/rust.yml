@@ -78,6 +78,7 @@ jobs:
         msrv="$(cargo metadata --format-version 1 --no-deps | jq -r '.packages | map(.rust_version) | map(values) | min')"
         rustup override set $msrv
         rustup component add clippy --toolchain $msrv
+        rustup target add ${{ matrix.sys.target }} --toolchain $msrv
     - name: Error on warnings and clippy checks
       # Only error on warnings and checks for the msrv, because new versions of
       # Rust will frequently add new warnings and checks.
