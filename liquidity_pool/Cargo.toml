@@ -2,6 +2,7 @@
 name = "soroban-liquidity-pool-contract"
 version = "0.0.0"
 edition = "2021"
+rust-version = "1.74.0"
 publish = false
 
 [lib]
