@@ -4,12 +4,12 @@ image:
 tasks:
   - name: Futurenet
     init: |
-      docker pull stellar/quickstart:soroban-dev
+      docker pull stellar/quickstart:testing
     command: |
       docker run --rm -it \
       --name stellar \
       -p 8000:8000 \
-      stellar/quickstart:soroban-dev \
+      stellar/quickstart:testing \
       --futurenet \
       --enable-soroban-rpc
   # This "CLI - Futurenet" task opens a terminal for you to interact with the
