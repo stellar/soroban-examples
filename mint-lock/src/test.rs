@@ -47,7 +47,7 @@ fn test() {
                     &minter,
                     MinterConfig {
                         limit: 100,
-                        limit_ledger_count: 17820,
+                        epoch_length: 17820,
                     },
                 )
                     .into_val(&env),
@@ -58,7 +58,7 @@ fn test() {
             &minter,
             &MinterConfig {
                 limit: 100,
-                limit_ledger_count: 17820,
+                epoch_length: 17820,
             },
         );
     let user = Address::generate(&env);
@@ -79,7 +79,7 @@ fn test() {
         (
             MinterConfig {
                 limit: 100,
-                limit_ledger_count: 17820
+                epoch_length: 17820
             },
             0,
             MinterStats { consumed_limit: 97 }

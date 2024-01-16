@@ -69,6 +69,14 @@
                   "map": [
                     {
                       "key": {
+                        "symbol": "epoch_length"
+                      },
+                      "val": {
+                        "u32": 17820
+                      }
+                    },
+                    {
+                      "key": {
                         "symbol": "limit"
                       },
                       "val": {
@@ -76,14 +84,6 @@
                           "hi": 0,
                           "lo": 100
                         }
-                      }
-                    },
-                    {
-                      "key": {
-                        "symbol": "limit_ledger_count"
-                      },
-                      "val": {
-                        "u32": 17820
                       }
                     }
                   ]
@@ -236,6 +236,14 @@
                   "map": [
                     {
                       "key": {
+                        "symbol": "epoch_length"
+                      },
+                      "val": {
+                        "u32": 17820
+                      }
+                    },
+                    {
+                      "key": {
                         "symbol": "limit"
                       },
                       "val": {
@@ -243,14 +251,6 @@
                           "hi": 0,
                           "lo": 100
                         }
-                      }
-                    },
-                    {
-                      "key": {
-                        "symbol": "limit_ledger_count"
-                      },
-                      "val": {
-                        "u32": 17820
                       }
                     }
                   ]
@@ -275,6 +275,9 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM"
                 },
                 {
+                  "u32": 17820
+                },
+                {
                   "u32": 0
                 }
               ]
@@ -296,6 +299,9 @@
                     },
                     {
                       "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM"
+                    },
+                    {
+                      "u32": 17820
                     },
                     {
                       "u32": 0
@@ -1317,6 +1323,14 @@
                   "map": [
                     {
                       "key": {
+                        "symbol": "epoch_length"
+                      },
+                      "val": {
+                        "u32": 17820
+                      }
+                    },
+                    {
+                      "key": {
                         "symbol": "limit"
                       },
                       "val": {
@@ -1324,14 +1338,6 @@
                           "hi": 0,
                           "lo": 100
                         }
-                      }
-                    },
-                    {
-                      "key": {
-                        "symbol": "limit_ledger_count"
-                      },
-                      "val": {
-                        "u32": 17820
                       }
                     }
                   ]
@@ -1364,7 +1370,7 @@
             "data": {
               "vec": [
                 {
-                  "bytes": "4b8a5533ee82c9f71bf95061b4573352251bb7f818af32403ed19b5d85907c78"
+                  "bytes": "76d596867b560262323c23240a9f45b576dee7bc0e5a26ae2ea7f210e5cb9008"
                 },
                 "void",
                 {
@@ -1389,6 +1395,14 @@
                                     "map": [
                                       {
                                         "key": {
+                                          "symbol": "epoch_length"
+                                        },
+                                        "val": {
+                                          "u32": 17820
+                                        }
+                                      },
+                                      {
+                                        "key": {
                                           "symbol": "limit"
                                         },
                                         "val": {
@@ -1396,14 +1410,6 @@
                                             "hi": 0,
                                             "lo": 100
                                           }
-                                        }
-                                      },
-                                      {
-                                        "key": {
-                                          "symbol": "limit_ledger_count"
-                                        },
-                                        "val": {
-                                          "u32": 17820
                                         }
                                       }
                                     ]
@@ -1837,6 +1843,14 @@
                   "map": [
                     {
                       "key": {
+                        "symbol": "epoch_length"
+                      },
+                      "val": {
+                        "u32": 17820
+                      }
+                    },
+                    {
+                      "key": {
                         "symbol": "limit"
                       },
                       "val": {
@@ -1844,14 +1858,6 @@
                           "hi": 0,
                           "lo": 100
                         }
-                      }
-                    },
-                    {
-                      "key": {
-                        "symbol": "limit_ledger_count"
-                      },
-                      "val": {
-                        "u32": 17820
                       }
                     }
                   ]

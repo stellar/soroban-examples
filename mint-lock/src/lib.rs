@@ -22,16 +22,17 @@ pub enum StorageKey {
     Admin,
     /// Minters are stored keyed by address. Value is a MinterConfig.
     Minter(Address),
-    /// Minter stats are stored keyed by epoch, which is the ledger number
-    /// divided by the number of ledgers in the epoch. Value is a MinterStats.
-    MinterStats(Address, u32),
+    /// Minter stats are stored keyed by address, epoch length, and epoch, which
+    /// is the ledger number divided by the number of ledgers in the epoch.
+    /// Value is a MinterStats.
+    MinterStats(Address, u32, u32),
 }
 
 #[contracttype]
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct MinterConfig {
     limit: i128,
-    limit_ledger_count: u32,
+    epoch_length: u32,
 }
 
 #[contracttype]
@@ -81,11 +82,15 @@ impl Contract {
             .persistent()
             .get::<_, MinterConfig>(&StorageKey::Minter(minter.clone()))
             .ok_or(Error::NotAuthorizedMinter)?;
-        let epoch = env.ledger().sequence() / config.limit_ledger_count;
+        let epoch = env.ledger().sequence() / config.epoch_length;
         let stats = env
             .storage()
             .temporary()
-            .get::<_, MinterStats>(&StorageKey::MinterStats(minter.clone(), epoch))
+            .get::<_, MinterStats>(&StorageKey::MinterStats(
+                minter.clone(),
+                config.epoch_length,
+                epoch,
+            ))
             .unwrap_or_default();
         Ok((config, epoch, stats))
     }
@@ -115,8 +120,9 @@ impl Contract {
             };
 
             // Check and track daily limit.
-            let epoch = env.ledger().sequence() / config.limit_ledger_count;
-            let minter_stats_key = StorageKey::MinterStats(minter.clone(), epoch);
+            let epoch = env.ledger().sequence() / config.epoch_length;
+            let minter_stats_key =
+                StorageKey::MinterStats(minter.clone(), config.epoch_length, epoch);
             let minter_stats = env
                 .storage()
                 .temporary()
@@ -131,11 +137,9 @@ impl Contract {
             env.storage()
                 .temporary()
                 .set::<_, MinterStats>(&minter_stats_key, &new_minter_stats);
-            env.storage().temporary().extend_ttl(
-                &minter_stats_key,
-                0,
-                epoch * config.limit_ledger_count,
-            );
+            env.storage()
+                .temporary()
+                .extend_ttl(&minter_stats_key, 0, epoch * config.epoch_length);
         }
 
         // Perform the mint.
