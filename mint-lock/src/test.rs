@@ -109,17 +109,20 @@ fn test_disallow_negative() {
 
     // Admin can always mint.
     let user = Address::generate(&env);
-    mint_lock_client
-        .mock_auths(&[MockAuth {
-            address: &admin,
-            invoke: &MockAuthInvoke {
-                contract: &mint_lock,
-                fn_name: "mint",
-                args: (&token, &user, -123i128).into_val(&env),
-                sub_invokes: &[],
-            },
-        }])
-        .mint(&admin, &token, &user, &-123);
+    assert_eq!(
+        mint_lock_client
+            .mock_auths(&[MockAuth {
+                address: &admin,
+                invoke: &MockAuthInvoke {
+                    contract: &mint_lock,
+                    fn_name: "mint",
+                    args: (&token, &user, -123i128).into_val(&env),
+                    sub_invokes: &[],
+                },
+            }])
+            .try_mint(&admin, &token, &user, &-123),
+        Err(Ok(Error::NegativeAmount)),
+    );
 
     // Authorized Minter can mint.
     let minter = Address::generate(&env);
@@ -148,39 +151,20 @@ fn test_disallow_negative() {
             },
         );
     let user = Address::generate(&env);
-    mint_lock_client
-        .mock_auths(&[MockAuth {
-            address: &minter,
-            invoke: &MockAuthInvoke {
-                contract: &mint_lock,
-                fn_name: "mint",
-                args: (&token, &user, -1000i128).into_val(&env),
-                sub_invokes: &[],
-            },
-        }])
-        .mint(&minter, &token, &user, &-1000i128);
     assert_eq!(
-        mint_lock_client.minter(&minter),
-        (
-            MinterConfig {
-                limit: 100,
-                epoch_length: 17820
-            },
-            0,
-            MinterStats { consumed_limit: -1000 }
-        )
+        mint_lock_client
+            .mock_auths(&[MockAuth {
+                address: &minter,
+                invoke: &MockAuthInvoke {
+                    contract: &mint_lock,
+                    fn_name: "mint",
+                    args: (&token, &user, -1000i128).into_val(&env),
+                    sub_invokes: &[],
+                },
+            }])
+            .try_mint(&minter, &token, &user, &-1000i128),
+        Err(Ok(Error::NegativeAmount)),
     );
-    mint_lock_client
-        .mock_auths(&[MockAuth {
-            address: &minter,
-            invoke: &MockAuthInvoke {
-                contract: &mint_lock,
-                fn_name: "mint",
-                args: (&token, &user, 1100i128).into_val(&env),
-                sub_invokes: &[],
-            },
-        }])
-        .mint(&minter, &token, &user, &1100i128);
     assert_eq!(
         mint_lock_client.minter(&minter),
         (
@@ -189,7 +173,7 @@ fn test_disallow_negative() {
                 epoch_length: 17820
             },
             0,
-            MinterStats { consumed_limit: 100 }
+            MinterStats { consumed_limit: 0 }
         )
     );
 }
