@@ -69,13 +69,21 @@
                   "map": [
                     {
                       "key": {
-                        "symbol": "daily_limit"
+                        "symbol": "limit"
                       },
                       "val": {
                         "i128": {
                           "hi": 0,
                           "lo": 100
                         }
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "limit_ledger_count"
+                      },
+                      "val": {
+                        "u32": 17820
                       }
                     }
                   ]
@@ -228,13 +236,21 @@
                   "map": [
                     {
                       "key": {
-                        "symbol": "daily_limit"
+                        "symbol": "limit"
                       },
                       "val": {
                         "i128": {
                           "hi": 0,
                           "lo": 100
                         }
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "limit_ledger_count"
+                      },
+                      "val": {
+                        "u32": 17820
                       }
                     }
                   ]
@@ -291,7 +307,7 @@
                   "map": [
                     {
                       "key": {
-                        "symbol": "consumed_daily_limit"
+                        "symbol": "consumed_limit"
                       },
                       "val": {
                         "i128": {
@@ -1301,13 +1317,21 @@
                   "map": [
                     {
                       "key": {
-                        "symbol": "daily_limit"
+                        "symbol": "limit"
                       },
                       "val": {
                         "i128": {
                           "hi": 0,
                           "lo": 100
                         }
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "limit_ledger_count"
+                      },
+                      "val": {
+                        "u32": 17820
                       }
                     }
                   ]
@@ -1340,7 +1364,7 @@
             "data": {
               "vec": [
                 {
-                  "bytes": "e9f3cc72256d18c46f548e31c779868682734bdc477190ee34cea0203526d099"
+                  "bytes": "4b8a5533ee82c9f71bf95061b4573352251bb7f818af32403ed19b5d85907c78"
                 },
                 "void",
                 {
@@ -1365,13 +1389,21 @@
                                     "map": [
                                       {
                                         "key": {
-                                          "symbol": "daily_limit"
+                                          "symbol": "limit"
                                         },
                                         "val": {
                                           "i128": {
                                             "hi": 0,
                                             "lo": 100
                                           }
+                                        }
+                                      },
+                                      {
+                                        "key": {
+                                          "symbol": "limit_ledger_count"
+                                        },
+                                        "val": {
+                                          "u32": 17820
                                         }
                                       }
                                     ]
@@ -1805,7 +1837,7 @@
                   "map": [
                     {
                       "key": {
-                        "symbol": "daily_limit"
+                        "symbol": "limit"
                       },
                       "val": {
                         "i128": {
@@ -1813,14 +1845,25 @@
                           "lo": 100
                         }
                       }
+                    },
+                    {
+                      "key": {
+                        "symbol": "limit_ledger_count"
+                      },
+                      "val": {
+                        "u32": 17820
+                      }
                     }
                   ]
+                },
+                {
+                  "u32": 0
                 },
                 {
                   "map": [
                     {
                       "key": {
-                        "symbol": "consumed_daily_limit"
+                        "symbol": "consumed_limit"
                       },
                       "val": {
                         "i128": {

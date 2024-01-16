@@ -43,11 +43,24 @@ fn test() {
             invoke: &MockAuthInvoke {
                 contract: &mint_lock,
                 fn_name: "set_minter",
-                args: (&minter, MinterConfig { daily_limit: 100 }).into_val(&env),
+                args: (
+                    &minter,
+                    MinterConfig {
+                        limit: 100,
+                        limit_ledger_count: 17820,
+                    },
+                )
+                    .into_val(&env),
                 sub_invokes: &[],
             },
         }])
-        .set_minter(&minter, &MinterConfig { daily_limit: 100 });
+        .set_minter(
+            &minter,
+            &MinterConfig {
+                limit: 100,
+                limit_ledger_count: 17820,
+            },
+        );
     let user = Address::generate(&env);
     mint_lock_client
         .mock_auths(&[MockAuth {
@@ -64,10 +77,12 @@ fn test() {
     assert_eq!(
         mint_lock_client.minter(&minter),
         (
-            MinterConfig { daily_limit: 100 },
-            MinterStats {
-                consumed_daily_limit: 97
-            }
+            MinterConfig {
+                limit: 100,
+                limit_ledger_count: 17820
+            },
+            0,
+            MinterStats { consumed_limit: 97 }
         )
     );
 }

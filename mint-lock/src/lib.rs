@@ -22,37 +22,30 @@ pub enum StorageKey {
     Admin,
     /// Minters are stored keyed by address. Value is a MinterConfig.
     Minter(Address),
-    /// Minter stats are stored keyed by day, which is the ledger number divided
-    /// by 17,280. Value is a MinterStats.
+    /// Minter stats are stored keyed by epoch, which is the ledger number
+    /// divided by the number of ledgers in the epoch. Value is a MinterStats.
     MinterStats(Address, u32),
 }
 
 #[contracttype]
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct MinterConfig {
-    daily_limit: i128,
+    limit: i128,
+    limit_ledger_count: u32,
 }
 
 #[contracttype]
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct MinterStats {
-    consumed_daily_limit: i128,
+    consumed_limit: i128,
 }
-
-const LEDGERS_PER_DAY: u32 = 17280;
 
 #[contract]
 pub struct Contract;
 
 #[contractimpl]
 impl Contract {
-    pub fn admin(env: Env) -> Address {
-        env.storage()
-            .instance()
-            .get::<_, Address>(&StorageKey::Admin)
-            .unwrap()
-    }
-
+    /// Set the admin.
     pub fn set_admin(env: Env, new_admin: Address) {
         if let Some(admin) = env
             .storage()
@@ -64,20 +57,15 @@ impl Contract {
         env.storage().instance().set(&StorageKey::Admin, &new_admin);
     }
 
-    pub fn minter(env: Env, minter: Address) -> (MinterConfig, MinterStats) {
-        let day = env.ledger().sequence() / LEDGERS_PER_DAY;
-        (
-            env.storage()
-                .persistent()
-                .get(&StorageKey::Minter(minter.clone()))
-                .unwrap(),
-            env.storage()
-                .temporary()
-                .get::<_, MinterStats>(&StorageKey::MinterStats(minter.clone(), day))
-                .unwrap_or_default(),
-        )
+    /// Return the admin address.
+    pub fn admin(env: Env) -> Address {
+        env.storage()
+            .instance()
+            .get::<_, Address>(&StorageKey::Admin)
+            .unwrap()
     }
 
+    /// Set the config of a minter. Requires auth from the admin.
     pub fn set_minter(env: Env, minter: Address, config: MinterConfig) {
         Self::admin(env.clone()).require_auth();
         env.storage()
@@ -85,16 +73,26 @@ impl Contract {
             .set(&StorageKey::Minter(minter), &config);
     }
 
-    pub fn remove_minter(env: Env, minter: Address) {
-        Self::admin(env.clone()).require_auth();
-        env.storage()
+    /// Returns the config, current epoch, and current epoch's stats for a
+    /// minter.
+    pub fn minter(env: Env, minter: Address) -> Result<(MinterConfig, u32, MinterStats), Error> {
+        let config = env
+            .storage()
             .persistent()
-            .remove(&StorageKey::Minter(minter));
+            .get::<_, MinterConfig>(&StorageKey::Minter(minter.clone()))
+            .ok_or(Error::NotAuthorizedMinter)?;
+        let epoch = env.ledger().sequence() / config.limit_ledger_count;
+        let stats = env
+            .storage()
+            .temporary()
+            .get::<_, MinterStats>(&StorageKey::MinterStats(minter.clone(), epoch))
+            .unwrap_or_default();
+        Ok((config, epoch, stats))
     }
 
-    /// Call the 'mint' function of the 'contract' with 'to' and 'amount'.
-    /// Authorized by the 'minter'.
-    /// Uses some of the authorized 'minter's daily limit.
+    /// Calls the 'mint' function of the 'contract' with 'to' and 'amount'.
+    /// Authorized by the 'minter'. Uses some of the authorized 'minter's
+    /// current epoch's limit.
     pub fn mint(
         env: Env,
         minter: Address,
@@ -108,7 +106,7 @@ impl Contract {
         // Verify minter is authorized by contract.
         let admin = Self::admin(env.clone());
         if admin != minter {
-            let Some(minter_config) = env
+            let Some(config) = env
                 .storage()
                 .persistent()
                 .get::<_, MinterConfig>(&StorageKey::Minter(minter.clone()))
@@ -117,25 +115,27 @@ impl Contract {
             };
 
             // Check and track daily limit.
-            let day = env.ledger().sequence() / LEDGERS_PER_DAY;
-            let minter_stats_key = StorageKey::MinterStats(minter.clone(), day);
+            let epoch = env.ledger().sequence() / config.limit_ledger_count;
+            let minter_stats_key = StorageKey::MinterStats(minter.clone(), epoch);
             let minter_stats = env
                 .storage()
                 .temporary()
                 .get::<_, MinterStats>(&minter_stats_key)
                 .unwrap_or_default();
             let new_minter_stats = MinterStats {
-                consumed_daily_limit: minter_stats.consumed_daily_limit + amount,
+                consumed_limit: minter_stats.consumed_limit + amount,
             };
-            if new_minter_stats.consumed_daily_limit > minter_config.daily_limit {
+            if new_minter_stats.consumed_limit > config.limit {
                 return Err(Error::DailyLimitInsufficient);
             }
             env.storage()
                 .temporary()
                 .set::<_, MinterStats>(&minter_stats_key, &new_minter_stats);
-            env.storage()
-                .temporary()
-                .extend_ttl(&minter_stats_key, 0, day * LEDGERS_PER_DAY);
+            env.storage().temporary().extend_ttl(
+                &minter_stats_key,
+                0,
+                epoch * config.limit_ledger_count,
+            );
         }
 
         // Perform the mint.
