@@ -86,3 +86,110 @@ fn test() {
         )
     );
 }
+
+#[contract]
+struct NoopMintContract;
+
+#[contractimpl]
+impl MintInterface for NoopMintContract {
+    fn mint(_env: Env, _to: Address, _amount: i128) {}
+}
+
+#[test]
+fn test_disallow_negative() {
+    let env = Env::default();
+    let mint_lock = env.register_contract(None, Contract);
+    let mint_lock_client = ContractClient::new(&env, &mint_lock);
+
+    let admin = Address::generate(&env);
+
+    mint_lock_client.set_admin(&admin);
+
+    let token = env.register_contract(None, NoopMintContract);
+
+    // Admin can always mint.
+    let user = Address::generate(&env);
+    mint_lock_client
+        .mock_auths(&[MockAuth {
+            address: &admin,
+            invoke: &MockAuthInvoke {
+                contract: &mint_lock,
+                fn_name: "mint",
+                args: (&token, &user, -123i128).into_val(&env),
+                sub_invokes: &[],
+            },
+        }])
+        .mint(&admin, &token, &user, &-123);
+
+    // Authorized Minter can mint.
+    let minter = Address::generate(&env);
+    mint_lock_client
+        .mock_auths(&[MockAuth {
+            address: &admin,
+            invoke: &MockAuthInvoke {
+                contract: &mint_lock,
+                fn_name: "set_minter",
+                args: (
+                    &minter,
+                    MinterConfig {
+                        limit: 100,
+                        epoch_length: 17820,
+                    },
+                )
+                    .into_val(&env),
+                sub_invokes: &[],
+            },
+        }])
+        .set_minter(
+            &minter,
+            &MinterConfig {
+                limit: 100,
+                epoch_length: 17820,
+            },
+        );
+    let user = Address::generate(&env);
+    mint_lock_client
+        .mock_auths(&[MockAuth {
+            address: &minter,
+            invoke: &MockAuthInvoke {
+                contract: &mint_lock,
+                fn_name: "mint",
+                args: (&token, &user, -1000i128).into_val(&env),
+                sub_invokes: &[],
+            },
+        }])
+        .mint(&minter, &token, &user, &-1000i128);
+    assert_eq!(
+        mint_lock_client.minter(&minter),
+        (
+            MinterConfig {
+                limit: 100,
+                epoch_length: 17820
+            },
+            0,
+            MinterStats { consumed_limit: -1000 }
+        )
+    );
+    mint_lock_client
+        .mock_auths(&[MockAuth {
+            address: &minter,
+            invoke: &MockAuthInvoke {
+                contract: &mint_lock,
+                fn_name: "mint",
+                args: (&token, &user, 1100i128).into_val(&env),
+                sub_invokes: &[],
+            },
+        }])
+        .mint(&minter, &token, &user, &1100i128);
+    assert_eq!(
+        mint_lock_client.minter(&minter),
+        (
+            MinterConfig {
+                limit: 100,
+                epoch_length: 17820
+            },
+            0,
+            MinterStats { consumed_limit: 100 }
+        )
+    );
+}
