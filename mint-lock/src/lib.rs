@@ -21,12 +21,13 @@ pub enum Error {
 pub enum StorageKey {
     /// Admin. Value is an Address.
     Admin,
-    /// Minters are stored keyed by address. Value is a MinterConfig.
-    Minter(Address),
-    /// Minter stats are stored keyed by address, epoch length, and epoch, which
-    /// is the ledger number divided by the number of ledgers in the epoch.
-    /// Value is a MinterStats.
-    MinterStats(Address, u32, u32),
+    /// Minters are stored keyed by the contract and minter addresses. Value is
+    /// a MinterConfig.
+    Minter(Address, Address),
+    /// Minter stats are stored keyed by contract and minter addresses, epoch
+    /// length, and epoch, which is the ledger number divided by the number of
+    /// ledgers in the epoch.  Value is a MinterStats.
+    MinterStats(Address, Address, u32, u32),
 }
 
 #[contracttype]
@@ -67,27 +68,33 @@ impl Contract {
             .unwrap()
     }
 
-    /// Set the config of a minter. Requires auth from the admin.
-    pub fn set_minter(env: Env, minter: Address, config: MinterConfig) {
+    /// Set the config of a minter for the given contract. Requires auth from
+    /// the admin.
+    pub fn set_minter(env: Env, contract: Address, minter: Address, config: MinterConfig) {
         Self::admin(env.clone()).require_auth();
         env.storage()
             .persistent()
-            .set(&StorageKey::Minter(minter), &config);
+            .set(&StorageKey::Minter(contract, minter), &config);
     }
 
     /// Returns the config, current epoch, and current epoch's stats for a
     /// minter.
-    pub fn minter(env: Env, minter: Address) -> Result<(MinterConfig, u32, MinterStats), Error> {
+    pub fn minter(
+        env: Env,
+        contract: Address,
+        minter: Address,
+    ) -> Result<(MinterConfig, u32, MinterStats), Error> {
         let config = env
             .storage()
             .persistent()
-            .get::<_, MinterConfig>(&StorageKey::Minter(minter.clone()))
+            .get::<_, MinterConfig>(&StorageKey::Minter(contract.clone(), minter.clone()))
             .ok_or(Error::NotAuthorizedMinter)?;
         let epoch = env.ledger().sequence() / config.epoch_length;
         let stats = env
             .storage()
             .temporary()
             .get::<_, MinterStats>(&StorageKey::MinterStats(
+                contract.clone(),
                 minter.clone(),
                 config.epoch_length,
                 epoch,
@@ -101,8 +108,8 @@ impl Contract {
     /// current epoch's limit.
     pub fn mint(
         env: Env,
-        minter: Address,
         contract: Address,
+        minter: Address,
         to: Address,
         amount: i128,
     ) -> Result<(), Error> {
@@ -120,15 +127,19 @@ impl Contract {
             let Some(config) = env
                 .storage()
                 .persistent()
-                .get::<_, MinterConfig>(&StorageKey::Minter(minter.clone()))
+                .get::<_, MinterConfig>(&StorageKey::Minter(contract.clone(), minter.clone()))
             else {
                 return Err(Error::NotAuthorizedMinter);
             };
 
             // Check and track daily limit.
             let epoch = env.ledger().sequence() / config.epoch_length;
-            let minter_stats_key =
-                StorageKey::MinterStats(minter.clone(), config.epoch_length, epoch);
+            let minter_stats_key = StorageKey::MinterStats(
+                contract.clone(),
+                minter.clone(),
+                config.epoch_length,
+                epoch,
+            );
             let minter_stats = env
                 .storage()
                 .temporary()
