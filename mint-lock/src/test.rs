@@ -32,7 +32,7 @@ fn test() {
                 sub_invokes: &[],
             },
         }])
-        .mint(&admin, &token, &user, &123);
+        .mint(&token, &admin, &user, &123);
     assert_eq!(token_client.balance(&user), 123);
 
     // Authorized Minter can mint.
@@ -44,6 +44,7 @@ fn test() {
                 contract: &mint_lock,
                 fn_name: "set_minter",
                 args: (
+                    &token,
                     &minter,
                     MinterConfig {
                         limit: 100,
@@ -55,6 +56,7 @@ fn test() {
             },
         }])
         .set_minter(
+            &token,
             &minter,
             &MinterConfig {
                 limit: 100,
@@ -72,10 +74,10 @@ fn test() {
                 sub_invokes: &[],
             },
         }])
-        .mint(&minter, &token, &user, &97i128);
+        .mint(&token, &minter, &user, &97i128);
     assert_eq!(token_client.balance(&user), 97);
     assert_eq!(
-        mint_lock_client.minter(&minter),
+        mint_lock_client.minter(&token, &minter),
         (
             MinterConfig {
                 limit: 100,
@@ -120,7 +122,7 @@ fn test_disallow_negative() {
                     sub_invokes: &[],
                 },
             }])
-            .try_mint(&admin, &token, &user, &-123),
+            .try_mint(&token, &admin, &user, &-123),
         Err(Ok(Error::NegativeAmount)),
     );
 
@@ -133,6 +135,7 @@ fn test_disallow_negative() {
                 contract: &mint_lock,
                 fn_name: "set_minter",
                 args: (
+                    &token,
                     &minter,
                     MinterConfig {
                         limit: 100,
@@ -144,6 +147,7 @@ fn test_disallow_negative() {
             },
         }])
         .set_minter(
+            &token,
             &minter,
             &MinterConfig {
                 limit: 100,
@@ -162,11 +166,11 @@ fn test_disallow_negative() {
                     sub_invokes: &[],
                 },
             }])
-            .try_mint(&minter, &token, &user, &-1000i128),
+            .try_mint(&token, &minter, &user, &-1000i128),
         Err(Ok(Error::NegativeAmount)),
     );
     assert_eq!(
-        mint_lock_client.minter(&minter),
+        mint_lock_client.minter(&token, &minter),
         (
             MinterConfig {
                 limit: 100,
