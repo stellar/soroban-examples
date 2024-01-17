@@ -9,11 +9,12 @@ trait MintInterface {
 }
 
 #[contracterror]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 #[repr(u32)]
-#[derive(Copy, Clone, PartialEq, Eq)]
 pub enum Error {
     NotAuthorizedMinter = 1,
     DailyLimitInsufficient = 2,
+    NegativeAmount = 3,
 }
 
 #[contracttype]
@@ -107,6 +108,11 @@ impl Contract {
     ) -> Result<(), Error> {
         // Verify minter is authenticated, and authorizing args.
         minter.require_auth_for_args((&contract, &to, amount).into_val(&env));
+
+        // Verify amount is positive.
+        if amount < 0 {
+            return Err(Error::NegativeAmount);
+        }
 
         // Verify minter is authorized by contract.
         let admin = Self::admin(env.clone());
