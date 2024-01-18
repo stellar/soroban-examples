@@ -161,3 +161,76 @@ fn test() {
     assert_eq!(token2.balance(&liqpool.address), 0);
     assert_eq!(token_share.balance(&liqpool.address), 0);
 }
+
+#[test]
+#[should_panic]
+fn deposit_amount_zero_should_panic() {
+    let e = Env::default();
+    e.mock_all_auths();
+
+    // Create contracts
+    let mut admin1 = Address::generate(&e);
+    let mut admin2 = Address::generate(&e);
+
+    let mut token_a = create_token_contract(&e, &admin1);
+    let mut token_b = create_token_contract(&e, &admin2);
+    if &token_b.address < &token_a.address {
+        std::mem::swap(&mut token_a, &mut token_b);
+        std::mem::swap(&mut admin1, &mut admin2);
+    }
+    let liqpool = create_liqpool_contract(
+        &e,
+        &install_token_wasm(&e),
+        &token_a.address,
+        &token_b.address,
+    );
+
+    // Create a user
+    let user1 = Address::generate(&e);
+
+    token_a.mint(&user1, &1000);
+    assert_eq!(token_a.balance(&user1), 1000);
+
+    token_b.mint(&user1, &1000);
+    assert_eq!(token_b.balance(&user1), 1000);
+
+    liqpool.deposit(&user1, &1, &0, &0, &0);
+}
+
+#[test]
+#[should_panic]
+fn swap_reserve_one_nonzero_other_zero() {
+    let e = Env::default();
+    e.mock_all_auths();
+
+    // Create contracts
+    let mut admin1 = Address::generate(&e);
+    let mut admin2 = Address::generate(&e);
+
+    let mut token_a = create_token_contract(&e, &admin1);
+    let mut token_b = create_token_contract(&e, &admin2);
+    if &token_b.address < &token_a.address {
+        std::mem::swap(&mut token_a, &mut token_b);
+        std::mem::swap(&mut admin1, &mut admin2);
+    }
+    let liqpool = create_liqpool_contract(
+        &e,
+        &install_token_wasm(&e),
+        &token_a.address,
+        &token_b.address,
+    );
+
+    // Create a user
+    let user1 = Address::generate(&e);
+
+    token_a.mint(&user1, &1000);
+    assert_eq!(token_a.balance(&user1), 1000);
+
+    token_b.mint(&user1, &1000);
+    assert_eq!(token_b.balance(&user1), 1000);
+
+    // Try to get to a situation where the reserves are 1 and 0.
+    // It shouldn't be possible.
+    token_b.transfer(&user1, &liqpool.address, &1);
+    liqpool.swap(&user1, &false, &1, &1);
+}

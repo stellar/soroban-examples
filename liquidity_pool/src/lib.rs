@@ -217,13 +217,20 @@ impl LiquidityPoolTrait for LiquidityPool {
         let (reserve_a, reserve_b) = (get_reserve_a(&e), get_reserve_b(&e));
 
         // Calculate deposit amounts
-        let amounts = get_deposit_amounts(desired_a, min_a, desired_b, min_b, reserve_a, reserve_b);
+        let (amount_a, amount_b) =
+            get_deposit_amounts(desired_a, min_a, desired_b, min_b, reserve_a, reserve_b);
+
+        if amount_a <= 0 || amount_b <= 0 {
+            // If one of the amounts can be zero, we can get into a situation
+            // where one of the reserves is 0, which leads to a divide by zero.
+            panic!("both amounts must be strictly positive");
+        }
 
         let token_a_client = token::Client::new(&e, &get_token_a(&e));
         let token_b_client = token::Client::new(&e, &get_token_b(&e));
 
-        token_a_client.transfer(&to, &e.current_contract_address(), &amounts.0);
-        token_b_client.transfer(&to, &e.current_contract_address(), &amounts.1);
+        token_a_client.transfer(&to, &e.current_contract_address(), &amount_a);
+        token_b_client.transfer(&to, &e.current_contract_address(), &amount_b);
 
         // Now calculate how many new pool shares to mint
         let (balance_a, balance_b) = (get_balance_a(&e), get_balance_b(&e));
@@ -305,8 +312,15 @@ impl LiquidityPoolTrait for LiquidityPool {
             transfer_b(&e, to, out_b);
         }
 
-        put_reserve_a(&e, balance_a - out_a);
-        put_reserve_b(&e, balance_b - out_b);
+        let new_reserve_a = balance_a - out_a;
+        let new_reserve_b = balance_b - out_b;
+
+        if new_reserve_a <= 0 || new_reserve_b <= 0 {
+            panic!("new reserves must be strictly positive");
+        }
+
+        put_reserve_a(&e, new_reserve_a);
+        put_reserve_b(&e, new_reserve_b);
     }
 
     fn withdraw(e: Env, to: Address, share_amount: i128, min_a: i128, min_b: i128) -> (i128, i128) {
