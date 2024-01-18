@@ -71,7 +71,7 @@ impl ClaimableBalanceContract {
             panic!("deposit amount must not be zero");
         }*/
 
-        if claimants.len() == 0 {
+        if claimants.is_empty() {
             panic!("need more than 0 claimants");
         }
         if claimants.len() > 10 {
