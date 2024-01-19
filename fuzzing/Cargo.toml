@@ -15,10 +15,10 @@ doctest = false
 testutils = []
 
 [dependencies]
-soroban-sdk = { version = "20.0.0" }
+soroban-sdk = { version = "20.2.0" }
 
 [dev_dependencies]
-soroban-sdk = { version = "20.0.0", features = ["testutils"] }
+soroban-sdk = { version = "20.2.0", features = ["testutils"] }
 arbitrary = { version = "1.1.3", features = ["derive"] }
 proptest  = "1.2.0"
 proptest-arbitrary-interop = "0.1.0"
