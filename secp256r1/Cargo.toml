@@ -1,0 +1,34 @@
+[package]
+name = "soroban-secp256r1-contract"
+version = "0.0.0"
+authors = ["Stellar Development Foundation <info@stellar.org>"]
+license = "Apache-2.0"
+edition = "2021"
+rust-version = "1.74.0"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = { version = "20.0.0" }
+p256 = { version = "0.13.2", default-features = false, features = ["ecdsa"] }
+
+[dev_dependencies]
+soroban-sdk = { version = "20.0.0", features = ["testutils"] }
+rand_core = { version = "0.6", features = ["getrandom"] }
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
+lto = true
+
+[profile.release-with-logs]
+inherits = "release"
+debug-assertions = true
