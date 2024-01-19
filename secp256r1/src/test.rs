@@ -1,10 +1,7 @@
 #![cfg(test)]
 
 use super::*;
-use soroban_sdk::{bytesn, Address, Bytes, Env};
-
-use p256::ecdsa::{signature::Signer, Signature, SigningKey};
-use rand_core::OsRng;
+use soroban_sdk::{bytesn, Address, Env};
 
 const WASM: &[u8] =
     include_bytes!("../target/wasm32-unknown-unknown/release/soroban_secp256r1_contract.wasm");
@@ -29,14 +26,6 @@ fn test(env: &Env, contract_id: &Address) {
 
     let client = ContractClient::new(env, contract_id);
 
-    // let signing_key = SigningKey::random(&mut OsRng);
-
-    // let msg = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
-    // let sig: Signature = signing_key.sign(msg);
-    // let sig = sig.to_bytes();
-    // let sig = sig.as_slice();
-
-    // let verifying_key = &*signing_key.verifying_key().to_sec1_bytes();
     let verifying_key = bytesn!(&env, 0x04f7281e35b4266fd87dfc808df32354d2dfd09a645c281a94ab70f3990cb09972ecdf72c1a8d92c24abe764ac895c8a7118cf580adf33ba7d7f44f2b4cf38bba7);
     let msg = bytesn!(
         &env,

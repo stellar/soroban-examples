@@ -17,7 +17,6 @@ p256 = { version = "0.13.2", default-features = false, features = ["ecdsa"] }
 
 [dev_dependencies]
 soroban-sdk = { version = "20.0.0", features = ["testutils"] }
-rand_core = { version = "0.6", features = ["getrandom"] }
 
 [profile.release]
 opt-level = "z"

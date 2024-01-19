@@ -1146,7 +1146,6 @@ name = "soroban-secp256r1-contract"
 version = "0.0.0"
 dependencies = [
  "p256",
- "rand_core",
  "soroban-sdk",
 ]
 
