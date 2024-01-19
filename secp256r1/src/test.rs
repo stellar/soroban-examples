@@ -34,4 +34,6 @@ fn test(env: &Env, contract_id: &Address) {
 
     let result = client.try_verify(&key, &msg, &sig);
     assert_eq!(result, Ok(Ok(())));
+
+    env.budget().print();
 }
