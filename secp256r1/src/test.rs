@@ -3,9 +3,6 @@
 use super::*;
 use soroban_sdk::{bytesn, Address, Env};
 
-const WASM: &[u8] =
-    include_bytes!("../target/wasm32-unknown-unknown/release/soroban_secp256r1_contract.wasm");
-
 #[test]
 fn test_native() {
     let env = Env::default();
@@ -15,6 +12,8 @@ fn test_native() {
 
 #[test]
 fn test_wasm() {
+    const WASM: &[u8] =
+        include_bytes!("../target/wasm32-unknown-unknown/release/soroban_secp256r1_contract.wasm");
     let env = Env::default();
     let contract_id = env.register_contract_wasm(None, WASM);
     test(&env, &contract_id);
