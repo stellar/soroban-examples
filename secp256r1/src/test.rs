@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-use super::*;
+use super::{Contract, ContractClient};
 use soroban_sdk::{bytesn, Address, Env};
 
 #[test]
