@@ -87,7 +87,7 @@
                 "bytes": "0000000000000000000000000000000000000000000000000000000000000001"
               },
               {
-                "symbol": "verify"
+                "symbol": "secp256r1_verify"
               }
             ],
             "data": {
@@ -120,7 +120,7 @@
                 "symbol": "fn_return"
               },
               {
-                "symbol": "verify"
+                "symbol": "secp256r1_verify"
               }
             ],
             "data": "void"

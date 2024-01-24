@@ -13,7 +13,7 @@ doctest = false
 
 [dependencies]
 soroban-sdk = { version = "20.0.0" }
-p256 = { version = "0.13.2", default-features = false, features = ["ecdsa"] }
+p256 = { version = "0.13.2", default-features = false, features = ["ecdsa", "pkcs8"] }
 
 [dev_dependencies]
 soroban-sdk = { version = "20.0.0", features = ["testutils"] }

@@ -32,7 +32,7 @@ fn test(env: &Env, contract_id: &Address) {
     // Set an unlimited budget because it'll fail with the default budget.
     env.budget().reset_unlimited();
 
-    let result = client.try_verify(&key, &msg, &sig);
+    let result = client.try_secp256r1_verify(&key, &msg, &sig);
     assert_eq!(result, Ok(Ok(())));
 
     env.budget().print();
