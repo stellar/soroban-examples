@@ -12,10 +12,10 @@ crate-type = ["cdylib"]
 doctest = false
 
 [dependencies]
-soroban-sdk = { version = "20.2.0" }
+soroban-sdk = { version = "20.3.1" }
 
 [dev_dependencies]
-soroban-sdk = { version = "20.2.0", features = ["testutils"] }
+soroban-sdk = { version = "20.3.1", features = ["testutils"] }
 
 [profile.release]
 opt-level = "z"
