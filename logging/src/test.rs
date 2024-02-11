@@ -21,6 +21,6 @@ fn test() {
     client.hello(&symbol_short!("Dev"));
 
     let logs = env.logs().all();
-    assert_eq!(logs, std::vec!["[Diagnostic Event] contract:0808080808080808080808080808080808080808080808080808080808080808, topics:[log], data:[\"Hello {}\", Dev]"]);
+    assert_eq!(logs, std::vec!["[Diagnostic Event] contract:CAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQMCJ, topics:[log], data:[\"Hello {}\", Dev]"]);
     std::println!("{}", logs.join("\n"));
 }
