@@ -31,7 +31,7 @@ sol! {
 #[contractimpl]
 impl Contract {
     pub fn exec(e: &Env, input: Bytes) -> Result<Bytes, Error> {
-        let mut input_buf = [0u8; 96];
+        let mut input_buf = [0u8; 128];
         let mut input_slice = &mut input_buf[..input.len() as usize];
         input.copy_into_slice(&mut input_slice);
 
