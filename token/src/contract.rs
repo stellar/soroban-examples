@@ -91,6 +91,10 @@ impl Token {
             return 0;
         }   
 
+        e.storage()
+            .instance()
+            .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+        
         read_supply(&e)
     }
 }
