@@ -3,6 +3,7 @@
 use crate::admin::{has_administrator, read_administrator, write_administrator};
 use crate::allowance::{read_allowance, spend_allowance, write_allowance};
 use crate::balance::{read_balance, receive_balance, spend_balance};
+use crate::supply::{has_supply, read_supply, write_supply, decrement_supply, increment_supply};
 use crate::metadata::{read_decimal, read_name, read_symbol, write_metadata};
 #[cfg(test)]
 use crate::storage_types::{AllowanceDataKey, AllowanceValue, DataKey};
@@ -23,13 +24,17 @@ pub struct Token;
 
 #[contractimpl]
 impl Token {
-    pub fn initialize(e: Env, admin: Address, decimal: u32, name: String, symbol: String) {
+    pub fn initialize(e: Env, admin: Address, decimal: u32, name: String, symbol: String, supply: i128) {
         if has_administrator(&e) {
             panic!("already initialized")
         }
         write_administrator(&e, &admin);
         if decimal > u8::MAX.into() {
             panic!("Decimal must fit in a u8");
+        }
+
+        if supply > 0 {
+            write_supply(&e, &supply);
         }
 
         write_metadata(
@@ -47,11 +52,18 @@ impl Token {
         let admin = read_administrator(&e);
         admin.require_auth();
 
+        if has_supply(&e) && amount > read_supply(&e) {
+            panic!("Amount greater than remaining supply");
+        }
+
         e.storage()
             .instance()
             .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
         receive_balance(&e, to.clone(), amount);
+        if has_supply(&e) {
+            decrement_supply(&e, &amount);
+        }
         TokenUtils::new(&e).events().mint(admin, to, amount);
     }
 
@@ -72,6 +84,14 @@ impl Token {
         let key = DataKey::Allowance(AllowanceDataKey { from, spender });
         let allowance = e.storage().temporary().get::<_, AllowanceValue>(&key);
         allowance
+    }
+
+    pub fn supply(e: Env) -> i128 {
+        if !has_supply(&e) {
+            return 0;
+        }   
+
+        read_supply(&e)
     }
 }
 
@@ -145,6 +165,10 @@ impl token::Interface for Token {
             .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
         spend_balance(&e, from.clone(), amount);
+        if has_supply(&e) {
+            increment_supply(&e, &amount);
+        }
+
         TokenUtils::new(&e).events().burn(from, amount);
     }
 
@@ -159,6 +183,10 @@ impl token::Interface for Token {
 
         spend_allowance(&e, from.clone(), spender, amount);
         spend_balance(&e, from.clone(), amount);
+        if has_supply(&e) {
+            increment_supply(&e, &amount);
+        }
+
         TokenUtils::new(&e).events().burn(from, amount)
     }
 
