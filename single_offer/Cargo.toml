@@ -2,7 +2,6 @@
 name = "soroban-single-offer-contract"
 version = "0.0.0"
 edition = "2021"
-rust-version = "1.74.0"
 publish = false
 
 [lib]
@@ -11,7 +10,7 @@ crate-type = ["cdylib"]
 [dependencies]
 soroban-sdk = { version = "20.3.1" }
 
-[dev_dependencies]
+[dev-dependencies]
 soroban-sdk = { version = "20.3.1", features = ["testutils"] }
 
 [profile.release]
