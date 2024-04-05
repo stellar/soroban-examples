@@ -7,8 +7,9 @@
 #![no_std]
 
 use soroban_sdk::{
-    auth::Context, contract, contracterror, contractimpl, contracttype, symbol_short, Address,
-    BytesN, Env, Map, Symbol, TryIntoVal, Vec,
+    auth::{Context, CustomAccountInterface},
+    contract, contracterror, contractimpl, contracttype, symbol_short, Address, BytesN, Env, Map,
+    Symbol, TryIntoVal, Vec,
 };
 #[contract]
 struct AccountContract;
@@ -68,6 +69,12 @@ impl AccountContract {
             .instance()
             .set(&DataKey::SpendLimit(token), &limit);
     }
+}
+
+#[contractimpl]
+impl CustomAccountInterface for AccountContract {
+    type Signature = Vec<Signature>;
+    type Error = AccError;
 
     // This is the 'entry point' of the account contract and every account
     // contract has to implement it. `require_auth` calls for the Address of
@@ -94,7 +101,7 @@ impl AccountContract {
     // Note, that `__check_auth` function shouldn't call `require_auth` on the
     // contract's own address in order to avoid infinite recursion.
     #[allow(non_snake_case)]
-    pub fn __check_auth(
+    fn __check_auth(
         env: Env,
         signature_payload: BytesN<32>,
         signatures: Vec<Signature>,
