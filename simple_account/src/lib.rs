@@ -27,10 +27,7 @@ impl SimpleAccount {
         }
         env.storage().instance().set(&DataKey::Owner, &public_key);
     }
-}
 
-#[contractimpl]
-impl SimpleAccount {
     // This is the 'entry point' of the account contract and every account
     // contract has to implement it. `require_auth` calls for the Address of
     // this contract will result in calling this `__check_auth` function with
