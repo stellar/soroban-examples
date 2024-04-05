@@ -10,10 +10,7 @@
 #[contract]
 struct SimpleAccount;
 
-use soroban_sdk::{
-    auth::{Context, CustomAccountInterface},
-    contract, contractimpl, contracttype, BytesN, Env, Vec,
-};
+use soroban_sdk::{auth::Context, contract, contractimpl, contracttype, BytesN, Env, Vec};
 
 #[derive(Clone)]
 #[contracttype]
@@ -33,10 +30,7 @@ impl SimpleAccount {
 }
 
 #[contractimpl]
-impl CustomAccountInterface for SimpleAccount {
-    type Signature = BytesN<64>;
-    type Error = ();
-
+impl SimpleAccount {
     // This is the 'entry point' of the account contract and every account
     // contract has to implement it. `require_auth` calls for the Address of
     // this contract will result in calling this `__check_auth` function with
@@ -55,22 +49,19 @@ impl CustomAccountInterface for SimpleAccount {
     // Note, that `__check_auth` function shouldn't call `require_auth` on the
     // contract's own address in order to avoid infinite recursion.
     #[allow(non_snake_case)]
-    fn __check_auth(
+    pub fn __check_auth(
         env: Env,
         signature_payload: BytesN<32>,
         signature: BytesN<64>,
         _auth_context: Vec<Context>,
-    ) -> Result<(), ()> {
+    ) {
         let public_key: BytesN<32> = env
             .storage()
             .instance()
             .get::<_, BytesN<32>>(&DataKey::Owner)
             .unwrap();
-        // Verifies the signature and panics if verification fails, causing an
-        // error to be passed back.
         env.crypto()
             .ed25519_verify(&public_key, &signature_payload.into(), &signature);
-        Ok(())
     }
 }
 
