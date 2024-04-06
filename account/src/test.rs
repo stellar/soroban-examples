@@ -30,7 +30,7 @@ fn create_account_contract(e: &Env) -> AccountContractClient {
 }
 
 fn sign(e: &Env, signer: &Keypair, payload: &BytesN<32>) -> Val {
-    Signature {
+    AccSignature {
         public_key: signer_public_key(e, signer),
         signature: signer
             .sign(payload.to_array().as_slice())

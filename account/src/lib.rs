@@ -16,7 +16,7 @@ struct AccountContract;
 
 #[contracttype]
 #[derive(Clone)]
-pub struct Signature {
+pub struct AccSignature {
     pub public_key: BytesN<32>,
     pub signature: BytesN<64>,
 }
@@ -73,7 +73,7 @@ impl AccountContract {
 
 #[contractimpl]
 impl CustomAccountInterface for AccountContract {
-    type Signature = Vec<Signature>;
+    type Signature = Vec<AccSignature>;
     type Error = AccError;
 
     // This is the 'entry point' of the account contract and every account
@@ -85,7 +85,7 @@ impl CustomAccountInterface for AccountContract {
     // been passed and return an error (or panic) otherwise.
     //
     // `__check_auth` takes the payload that needed to be signed, arbitrarily
-    // typed signatures (`Signature` contract type here) and authorization
+    // typed signatures (`Vec<AccSignature>` contract type here) and authorization
     // context that contains all the invocations that this call tries to verify.
     //
     // `__check_auth` has to authenticate the signatures. It also may use
@@ -104,7 +104,7 @@ impl CustomAccountInterface for AccountContract {
     fn __check_auth(
         env: Env,
         signature_payload: BytesN<32>,
-        signatures: Vec<Signature>,
+        signatures: Vec<AccSignature>,
         auth_context: Vec<Context>,
     ) -> Result<(), AccError> {
         // Perform authentication.
@@ -141,7 +141,7 @@ impl CustomAccountInterface for AccountContract {
 fn authenticate(
     env: &Env,
     signature_payload: &BytesN<32>,
-    signatures: &Vec<Signature>,
+    signatures: &Vec<AccSignature>,
 ) -> Result<(), AccError> {
     for i in 0..signatures.len() {
         let signature = signatures.get_unchecked(i);
