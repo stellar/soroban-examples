@@ -154,6 +154,9 @@ impl token::Interface for Token {
         TokenUtils::new(&e).events().transfer(from, to, amount)
     }
 
+    /**
+     * Burn process increments the supply with the burned amount. It means that those tokens are removed from the circulation.
+     */
     fn burn(e: Env, from: Address, amount: i128) {
         from.require_auth();
 
@@ -168,6 +171,9 @@ impl token::Interface for Token {
         TokenUtils::new(&e).events().burn(from, amount);
     }
 
+    /**
+     * Burn process increments the supply with the burned amount. It means that those tokens are removed from the circulation.
+     */
     fn burn_from(e: Env, spender: Address, from: Address, amount: i128) {
         spender.require_auth();
 
