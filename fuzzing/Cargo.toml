@@ -1,10 +1,7 @@
 [package]
 name = "soroban-fuzzing-contract"
 version = "0.0.0"
-authors = ["Stellar Development Foundation <info@stellar.org>"]
-license = "Apache-2.0"
 edition = "2021"
-rust-version = "1.74.0"
 publish = false
 
 [lib]
@@ -17,7 +14,7 @@ testutils = []
 [dependencies]
 soroban-sdk = { version = "20.3.1" }
 
-[dev_dependencies]
+[dev-dependencies]
 soroban-sdk = { version = "20.3.1", features = ["testutils"] }
 arbitrary = { version = "1.1.3", features = ["derive"] }
 proptest  = "1.2.0"

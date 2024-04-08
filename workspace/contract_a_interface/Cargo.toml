@@ -1,10 +1,7 @@
 [package]
 name = "soroban-workspace-contract-a-interface"
 version.workspace = true
-authors = ["Stellar Development Foundation <info@stellar.org>"]
-license = "Apache-2.0"
 edition = "2021"
-rust-version = "1.74.0"
 publish = false
 
 [lib]
@@ -17,5 +14,5 @@ testutils = []
 [dependencies]
 soroban-sdk = { workspace = true }
 
-[dev_dependencies]
+[dev-dependencies]
 soroban-sdk = { workspace = true, features = ["testutils"] }

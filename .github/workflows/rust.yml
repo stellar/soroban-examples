@@ -5,6 +5,9 @@ on:
     branches: [main, dev]
   pull_request:
 
+env:
+  MINIMUM_RUST_VERSION: 1.74.0
+
 jobs:
 
   complete:
@@ -75,9 +78,8 @@ jobs:
     - name: Use the minimum supported Rust version
       if: matrix.rust == 'msrv'
       run: |
-        msrv="$(cargo metadata --format-version 1 --no-deps | jq -r '.packages | map(.rust_version) | map(values) | min')"
-        rustup override set $msrv
-        rustup component add clippy --toolchain $msrv
+        rustup override set $MINIMUM_RUST_VERSION
+        rustup component add clippy --toolchain $MINIMUM_RUST_VERSION
     - name: Error on warnings and clippy checks
       # Only error on warnings and checks for the msrv, because new versions of
       # Rust will frequently add new warnings and checks.

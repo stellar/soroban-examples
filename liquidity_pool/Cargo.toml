@@ -2,7 +2,6 @@
 name = "soroban-liquidity-pool-contract"
 version = "0.0.0"
 edition = "2021"
-rust-version = "1.74.0"
 publish = false
 
 [lib]
@@ -12,7 +11,7 @@ crate-type = ["cdylib"]
 soroban-sdk = { version = "20.3.1" }
 num-integer = { version = "0.1.45", default-features = false, features = ["i128"] }
 
-[dev_dependencies]
+[dev-dependencies]
 soroban-sdk = { version = "20.3.1", features = ["testutils"] }
 
 [profile.release]

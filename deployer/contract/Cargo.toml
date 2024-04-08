@@ -1,10 +1,7 @@
 [package]
 name = "soroban-deployer-test-contract"
 version = "0.0.0"
-authors = ["Stellar Development Foundation <info@stellar.org>"]
-license = "Apache-2.0"
 edition = "2021"
-rust-version = "1.74.0"
 publish = false
 
 [lib]
@@ -14,7 +11,7 @@ doctest = false
 [dependencies]
 soroban-sdk = { version = "20.3.1" }
 
-[dev_dependencies]
+[dev-dependencies]
 soroban-sdk = { version = "20.3.1", features = ["testutils"] }
 
 [profile.release]
