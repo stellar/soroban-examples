@@ -2,4 +2,4 @@ target/
 /.sccache/
 .DS_Store
 .soroban
-errors/test_snapshots/
+test_snapshots
