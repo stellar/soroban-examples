@@ -15,7 +15,7 @@ use soroban_sdk::{
 };
 
 use crate::AccError;
-use crate::{AccountContract, AccountContractClient, Signature};
+use crate::{AccSignature, AccountContract, AccountContractClient};
 
 fn generate_keypair() -> Keypair {
     Keypair::generate(&mut thread_rng())
