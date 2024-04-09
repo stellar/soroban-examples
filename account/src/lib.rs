@@ -7,15 +7,16 @@
 #![no_std]
 
 use soroban_sdk::{
-    auth::Context, contract, contracterror, contractimpl, contracttype, symbol_short, Address,
-    BytesN, Env, Map, Symbol, TryIntoVal, Vec,
+    auth::{Context, CustomAccountInterface},
+    contract, contracterror, contractimpl, contracttype, symbol_short, Address, BytesN, Env, Map,
+    Symbol, TryIntoVal, Vec,
 };
 #[contract]
 struct AccountContract;
 
 #[contracttype]
 #[derive(Clone)]
-pub struct Signature {
+pub struct AccSignature {
     pub public_key: BytesN<32>,
     pub signature: BytesN<64>,
 }
@@ -68,6 +69,12 @@ impl AccountContract {
             .instance()
             .set(&DataKey::SpendLimit(token), &limit);
     }
+}
+
+#[contractimpl]
+impl CustomAccountInterface for AccountContract {
+    type Signature = Vec<AccSignature>;
+    type Error = AccError;
 
     // This is the 'entry point' of the account contract and every account
     // contract has to implement it. `require_auth` calls for the Address of
@@ -78,7 +85,7 @@ impl AccountContract {
     // been passed and return an error (or panic) otherwise.
     //
     // `__check_auth` takes the payload that needed to be signed, arbitrarily
-    // typed signatures (`Signature` contract type here) and authorization
+    // typed signatures (`Vec<AccSignature>` contract type here) and authorization
     // context that contains all the invocations that this call tries to verify.
     //
     // `__check_auth` has to authenticate the signatures. It also may use
@@ -94,10 +101,10 @@ impl AccountContract {
     // Note, that `__check_auth` function shouldn't call `require_auth` on the
     // contract's own address in order to avoid infinite recursion.
     #[allow(non_snake_case)]
-    pub fn __check_auth(
+    fn __check_auth(
         env: Env,
         signature_payload: BytesN<32>,
-        signatures: Vec<Signature>,
+        signatures: Vec<AccSignature>,
         auth_context: Vec<Context>,
     ) -> Result<(), AccError> {
         // Perform authentication.
@@ -134,7 +141,7 @@ impl AccountContract {
 fn authenticate(
     env: &Env,
     signature_payload: &BytesN<32>,
-    signatures: &Vec<Signature>,
+    signatures: &Vec<AccSignature>,
 ) -> Result<(), AccError> {
     for i in 0..signatures.len() {
         let signature = signatures.get_unchecked(i);

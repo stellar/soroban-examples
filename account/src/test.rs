@@ -15,7 +15,7 @@ use soroban_sdk::{
 };
 
 use crate::AccError;
-use crate::{AccountContract, AccountContractClient, Signature};
+use crate::{AccSignature, AccountContract, AccountContractClient};
 
 fn generate_keypair() -> Keypair {
     Keypair::generate(&mut thread_rng())
@@ -30,7 +30,7 @@ fn create_account_contract(e: &Env) -> AccountContractClient {
 }
 
 fn sign(e: &Env, signer: &Keypair, payload: &BytesN<32>) -> Val {
-    Signature {
+    AccSignature {
         public_key: signer_public_key(e, signer),
         signature: signer
             .sign(payload.to_array().as_slice())
