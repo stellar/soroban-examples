@@ -44,3 +44,20 @@ fn test() {
     let client = new_contract::Client::new(&env, &contract_id);
     assert_eq!(1010101, client.new_v2_fn());
 }
+
+#[test]
+#[should_panic(expected = "HostError: Error(Contract, #1)")]
+fn test_panic() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    // Note that we use register_contract_wasm instead of register_contract
+    // because the old contracts WASM is expected to exist in storage.
+    let contract_id = env.register_contract_wasm(None, old_contract::WASM);
+
+    let client = old_contract::Client::new(&env, &contract_id);
+    let admin = Address::generate(&env);
+    client.init(&admin);
+
+    client.init(&admin);
+}
