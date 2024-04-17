@@ -1,6 +1,7 @@
 #![cfg(test)]
 
 use soroban_sdk::{testutils::Address as _, Address, BytesN, Env};
+use super::*;
 
 mod old_contract {
     soroban_sdk::contractimport!(
@@ -46,8 +47,7 @@ fn test() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #1)")]
-fn test_panic() {
+fn test_cannot_re_init() {
     let env = Env::default();
     env.mock_all_auths();
 
@@ -58,6 +58,5 @@ fn test_panic() {
     let client = old_contract::Client::new(&env, &contract_id);
     let admin = Address::generate(&env);
     client.init(&admin);
-
-    client.init(&admin);
+    assert_eq!(client.try_init(&admin), Err(Ok(Error::AlreadyInitialized)));
 }
