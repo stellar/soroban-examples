@@ -22,7 +22,7 @@ pub struct UpgradeableContract;
 impl UpgradeableContract {
     pub fn init(e: Env, admin: Address) -> Result<(), Error> {
         if e.storage().instance().has(&DataKey::Admin) {
-            return Err(Error::AlreadyInitialized)
+            return Err(Error::AlreadyInitialized);
         }
         e.storage().instance().set(&DataKey::Admin, &admin);
         Ok(())
