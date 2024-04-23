@@ -54,9 +54,15 @@ fn test_cannot_re_init() {
     // Note that we use register_contract_wasm instead of register_contract
     // because the old contracts WASM is expected to exist in storage.
     let contract_id = env.register_contract_wasm(None, old_contract::WASM);
-
     let client = old_contract::Client::new(&env, &contract_id);
     let admin = Address::generate(&env);
     client.init(&admin);
-    assert_eq!(client.try_init(&admin), Err(Ok(Error::AlreadyInitialized)));
+
+    // `try_init` is expected to return an error. Since client is generated from Wasm,
+    // this is a generic SDK error.
+    let err: soroban_sdk::Error = client.try_init(&admin).err().unwrap().unwrap();
+    // Convert the SDK error to the contract error.
+    let contract_err: Error = err.try_into().unwrap();
+    // Make sure contract error has the expected value.
+    assert_eq!(contract_err, Error::AlreadyInitialized);
 }
