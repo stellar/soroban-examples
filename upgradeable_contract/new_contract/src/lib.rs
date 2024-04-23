@@ -1,6 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{contract, contractimpl, contracttype, Address, BytesN, Env};
+use soroban_sdk::{contract, contracterror, contractimpl, contracttype, Address, BytesN, Env};
 
 #[contracttype]
 #[derive(Clone)]
@@ -8,13 +8,24 @@ enum DataKey {
     Admin,
 }
 
+#[contracterror]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+#[repr(u32)]
+pub enum Error {
+    AlreadyInitialized = 1,
+}
+
 #[contract]
 pub struct UpgradeableContract;
 
 #[contractimpl]
 impl UpgradeableContract {
-    pub fn init(e: Env, admin: Address) {
+    pub fn init(e: Env, admin: Address) -> Result<(), Error> {
+        if e.storage().instance().has(&DataKey::Admin) {
+            return Err(Error::AlreadyInitialized);
+        }
         e.storage().instance().set(&DataKey::Admin, &admin);
+        Ok(())
     }
 
     pub fn version() -> u32 {
