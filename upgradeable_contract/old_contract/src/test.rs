@@ -1,7 +1,7 @@
 #![cfg(test)]
 
-use soroban_sdk::{testutils::Address as _, Address, BytesN, Env};
 use crate::Error;
+use soroban_sdk::{testutils::Address as _, Address, BytesN, Env};
 
 mod old_contract {
     soroban_sdk::contractimport!(
