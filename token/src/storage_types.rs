@@ -27,4 +27,5 @@ pub enum DataKey {
     Balance(Address),
     State(Address),
     Admin,
+    Supply
 }

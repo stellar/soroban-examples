@@ -8,9 +8,9 @@ use soroban_sdk::{
     Address, Env, IntoVal, Symbol,
 };
 
-fn create_token<'a>(e: &Env, admin: &Address) -> TokenClient<'a> {
+fn create_token<'a>(e: &Env, admin: &Address, supply: &i128) -> TokenClient<'a> {
     let token = TokenClient::new(e, &e.register_contract(None, Token {}));
-    token.initialize(admin, &7, &"name".into_val(e), &"symbol".into_val(e));
+    token.initialize(admin, &7, &"name".into_val(e), &"symbol".into_val(e), &supply);
     token
 }
 
@@ -24,7 +24,7 @@ fn test() {
     let user1 = Address::generate(&e);
     let user2 = Address::generate(&e);
     let user3 = Address::generate(&e);
-    let token = create_token(&e, &admin1);
+    let token = create_token(&e, &admin1, &0);
 
     token.mint(&user1, &1000);
     assert_eq!(
@@ -145,7 +145,7 @@ fn test_burn() {
     let admin = Address::generate(&e);
     let user1 = Address::generate(&e);
     let user2 = Address::generate(&e);
-    let token = create_token(&e, &admin);
+    let token = create_token(&e, &admin, &0);
 
     token.mint(&user1, &1000);
     assert_eq!(token.balance(&user1), 1000);
@@ -202,7 +202,7 @@ fn transfer_insufficient_balance() {
     let admin = Address::generate(&e);
     let user1 = Address::generate(&e);
     let user2 = Address::generate(&e);
-    let token = create_token(&e, &admin);
+    let token = create_token(&e, &admin, &0);
 
     token.mint(&user1, &1000);
     assert_eq!(token.balance(&user1), 1000);
@@ -220,7 +220,7 @@ fn transfer_from_insufficient_allowance() {
     let user1 = Address::generate(&e);
     let user2 = Address::generate(&e);
     let user3 = Address::generate(&e);
-    let token = create_token(&e, &admin);
+    let token = create_token(&e, &admin, &0);
 
     token.mint(&user1, &1000);
     assert_eq!(token.balance(&user1), 1000);
@@ -236,9 +236,9 @@ fn transfer_from_insufficient_allowance() {
 fn initialize_already_initialized() {
     let e = Env::default();
     let admin = Address::generate(&e);
-    let token = create_token(&e, &admin);
+    let token = create_token(&e, &admin, &0);
 
-    token.initialize(&admin, &10, &"name".into_val(&e), &"symbol".into_val(&e));
+    token.initialize(&admin, &10, &"name".into_val(&e), &"symbol".into_val(&e), &0);
 }
 
 #[test]
@@ -252,6 +252,7 @@ fn decimal_is_over_max() {
         &(u32::from(u8::MAX) + 1),
         &"name".into_val(&e),
         &"symbol".into_val(&e),
+        &0
     );
 }
 
@@ -264,8 +265,67 @@ fn test_zero_allowance() {
     let admin = Address::generate(&e);
     let spender = Address::generate(&e);
     let from = Address::generate(&e);
-    let token = create_token(&e, &admin);
+    let token = create_token(&e, &admin, &0);
 
     token.transfer_from(&spender, &from, &spender, &0);
     assert!(token.get_allowance(&from, &spender).is_none());
+}
+
+#[test]
+fn test_no_supply() {
+    let e = Env::default();
+    e.mock_all_auths();
+
+    let admin = Address::generate(&e);
+    let token = create_token(&e, &admin, &0);
+    assert_eq!(token.supply(), 0_i128);
+}
+
+#[test]
+fn test_supply() {
+    let e = Env::default();
+    e.mock_all_auths();
+
+    let admin = Address::generate(&e);
+    let address = Address::generate(&e);
+    let token = create_token(&e, &admin, &100);
+
+    token.mint(&address, &50);
+    assert_eq!(token.supply(), 50_i128);
+
+}
+
+#[test]
+#[should_panic(expected = "Amount greater than remaining supply")]
+fn test_mint_greater_than_supply() {
+    let e = Env::default();
+    e.mock_all_auths();
+
+    let admin = Address::generate(&e);
+    let address = Address::generate(&e);
+    let token = create_token(&e, &admin, &100);
+
+    token.mint(&address, &101);
+}
+
+#[test]
+fn test_burn_with_supply() {
+    let e = Env::default();
+    e.mock_all_auths();
+
+    let admin = Address::generate(&e);
+    let address1 = Address::generate(&e);
+    let address2 = Address::generate(&e);
+    let address3 = Address::generate(&e);
+
+    let token = create_token(&e, &admin, &100);
+
+    token.mint(&address1, &10);
+    token.mint(&address2, &20);
+    token.mint(&address3, &30);
+
+    assert_eq!(token.supply(), 40_i128);
+
+    token.burn(&address3, &25);
+    assert_eq!(token.supply(), 65_i128);
 }
