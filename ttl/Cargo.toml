@@ -1,0 +1,29 @@
+[package]
+name = "soroban-ttl-example"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = { version = "21.0.1-preview.3" }
+
+[dev-dependencies]
+soroban-sdk = { version = "21.0.1-preview.3", features = ["testutils"] }
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
+lto = true
+
+[profile.release-with-logs]
+inherits = "release"
+debug-assertions = true
