@@ -247,12 +247,7 @@ fn decimal_is_over_eighteen() {
     let e = Env::default();
     let admin = Address::generate(&e);
     let token = TokenClient::new(&e, &e.register_contract(None, Token {}));
-    token.initialize(
-        &admin,
-        &19,
-        &"name".into_val(&e),
-        &"symbol".into_val(&e),
-    );
+    token.initialize(&admin, &19, &"name".into_val(&e), &"symbol".into_val(&e));
 }
 
 #[test]
