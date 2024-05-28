@@ -36,7 +36,7 @@ impl TtlContract {
     }
 
     /// Extend the temporary entry TTL to become at least 7000 ledgers,
-    /// when its TTL is smaller than 1000 ledgers.
+    /// when its TTL is smaller than 3000 ledgers.
     pub fn extend_temporary(env: Env) {
         env.storage()
             .temporary()
