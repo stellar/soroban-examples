@@ -19,7 +19,7 @@ fn create_env() -> Env {
         // Minimum TTL for persistent entries - new persistent (and instance)
         // entries will have this TTL when created.
         li.min_persistent_entry_ttl = 500;
-        // Minimum TTL for temporary entries - new persistent (and instance)
+        // Minimum TTL for temporary entries - new temporary
         // entries will have this TTL when created.
         li.min_temp_entry_ttl = 100;
         // Maximum TTL of any entry. Note, that entries can have their TTL
