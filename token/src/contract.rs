@@ -28,8 +28,8 @@ impl Token {
             panic!("already initialized")
         }
         write_administrator(&e, &admin);
-        if decimal > u8::MAX.into() {
-            panic!("Decimal must fit in a u8");
+        if decimal > 18 {
+            panic!("Decimal must not be greater than 18");
         }
 
         write_metadata(
