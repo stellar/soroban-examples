@@ -242,17 +242,12 @@ fn initialize_already_initialized() {
 }
 
 #[test]
-#[should_panic(expected = "Decimal must fit in a u8")]
-fn decimal_is_over_max() {
+#[should_panic(expected = "Decimal must not be greater than 18")]
+fn decimal_is_over_eighteen() {
     let e = Env::default();
     let admin = Address::generate(&e);
     let token = TokenClient::new(&e, &e.register_contract(None, Token {}));
-    token.initialize(
-        &admin,
-        &(u32::from(u8::MAX) + 1),
-        &"name".into_val(&e),
-        &"symbol".into_val(&e),
-    );
+    token.initialize(&admin, &19, &"name".into_val(&e), &"symbol".into_val(&e));
 }
 
 #[test]
