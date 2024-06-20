@@ -76,10 +76,7 @@ impl CustomTypesContract {
     // increment count and return new one
     pub fn inc(env: Env) -> u32 {
         let mut count: u32 = env.storage().persistent().get(&COUNTER).unwrap_or(0); // Panic if the value of COUNTER is not u32.
-        // Increment the count.
         count += 1;
-
-        // Save the count.
         env.storage().persistent().set(&COUNTER, &count);
         count
     }
@@ -202,12 +199,4 @@ impl CustomTypesContract {
     pub fn tuple_strukt(_env: Env, tuple_strukt: TupleStruct) -> TupleStruct {
         tuple_strukt
     }
-
-    // pub fn timepoint(_env: Env, timepoint: TimePoint) -> TimePoint {
-    //     timepoint
-    // }
-
-    // pub fn duration(_env: Env, duration: Duration) -> Duration {
-    //     duration
-    // }
 }
