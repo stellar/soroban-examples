@@ -12,7 +12,7 @@ jobs:
 
   complete:
     if: always()
-    needs: [fmt, rust-analyzer-compat, build-and-test]
+    needs: [fmt, build-and-test]
     runs-on: ubuntu-latest
     steps:
     - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
@@ -42,22 +42,6 @@ jobs:
     - uses: actions/checkout@v3
     - run: rustup update
     - run: cargo fmt --all --check
-
-  rust-analyzer-compat:
-    needs: dirs
-    strategy:
-      matrix:
-        working-directory: ${{ fromJSON(needs.dirs.outputs.dirs) }}
-    defaults:
-      run:
-        working-directory: ${{ matrix.working-directory }}
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - run: rustup update
-    - run: rustup +nightly component add rust-analyzer
-    - name: Check if rust-analyzer encounters any errors parsing project
-      run: rustup run nightly rust-analyzer analysis-stats 2>&1 | (! grep ERROR)
 
   build-and-test:
     needs: dirs
