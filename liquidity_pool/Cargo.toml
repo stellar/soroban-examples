@@ -8,11 +8,11 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-soroban-sdk = { version = "21.2.0" }
+soroban-sdk = { version = "21.4.0" }
 num-integer = { version = "0.1.45", default-features = false, features = ["i128"] }
 
 [dev-dependencies]
-soroban-sdk = { version = "21.2.0", features = ["testutils"] }
+soroban-sdk = { version = "21.4.0", features = ["testutils"] }
 
 [profile.release]
 opt-level = "z"

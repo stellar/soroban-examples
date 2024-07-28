@@ -161,7 +161,7 @@ fn authenticate(
         }
         env.crypto().ed25519_verify(
             &signature.public_key,
-            &signature_payload.to_bytes().into(),
+            &signature_payload.clone().into(),
             &signature.signature,
         );
     }
