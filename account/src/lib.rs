@@ -8,8 +8,9 @@
 
 use soroban_sdk::{
     auth::{Context, CustomAccountInterface},
-    contract, contracterror, contractimpl, contracttype, symbol_short, Address, BytesN, Env, Map,
-    Symbol, TryIntoVal, Vec,
+    contract, contracterror, contractimpl, contracttype,
+    crypto::Hash,
+    symbol_short, Address, BytesN, Env, Map, Symbol, TryIntoVal, Vec,
 };
 #[contract]
 struct AccountContract;
@@ -103,7 +104,7 @@ impl CustomAccountInterface for AccountContract {
     #[allow(non_snake_case)]
     fn __check_auth(
         env: Env,
-        signature_payload: BytesN<32>,
+        signature_payload: Hash<32>,
         signatures: Vec<AccSignature>,
         auth_context: Vec<Context>,
     ) -> Result<(), AccError> {
@@ -140,7 +141,7 @@ impl CustomAccountInterface for AccountContract {
 
 fn authenticate(
     env: &Env,
-    signature_payload: &BytesN<32>,
+    signature_payload: &Hash<32>,
     signatures: &Vec<AccSignature>,
 ) -> Result<(), AccError> {
     for i in 0..signatures.len() {
