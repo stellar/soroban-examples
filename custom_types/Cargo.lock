@@ -997,6 +997,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "soroban-custom-types-contract"
+version = "0.0.0"
+dependencies = [
+ "soroban-sdk",
+]
+
+[[package]]
 name = "soroban-env-common"
 version = "20.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1118,13 +1125,6 @@ dependencies = [
  "soroban-spec-rust",
  "stellar-xdr",
  "syn 2.0.39",
-]
-
-[[package]]
-name = "soroban-simple-custom-types-contract"
-version = "0.0.0"
-dependencies = [
- "soroban-sdk",
 ]
 
 [[package]]

@@ -1,5 +1,5 @@
 [package]
-name = "soroban-simple-custom-types-contract"
+name = "soroban-custom-types-contract"
 version = "0.0.0"
 edition = "2021"
 publish = false
