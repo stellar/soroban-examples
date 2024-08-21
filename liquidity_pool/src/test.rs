@@ -10,7 +10,11 @@ use soroban_sdk::{
 };
 
 fn create_token_contract<'a>(e: &Env, admin: &Address) -> token::Client<'a> {
-    token::Client::new(e, &e.register_stellar_asset_contract(admin.clone()))
+    token::Client::new(
+        e,
+        &e.register_stellar_asset_contract_v2(admin.clone())
+            .address(),
+    )
 }
 
 fn create_liqpool_contract<'a>(

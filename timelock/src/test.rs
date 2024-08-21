@@ -8,10 +8,10 @@ use token::Client as TokenClient;
 use token::StellarAssetClient as TokenAdminClient;
 
 fn create_token_contract<'a>(e: &Env, admin: &Address) -> (TokenClient<'a>, TokenAdminClient<'a>) {
-    let contract_address = e.register_stellar_asset_contract(admin.clone());
+    let sac = e.register_stellar_asset_contract_v2(admin.clone());
     (
-        TokenClient::new(e, &contract_address),
-        TokenAdminClient::new(e, &contract_address),
+        token::Client::new(e, &sac.address()),
+        token::StellarAssetClient::new(e, &sac.address()),
     )
 }
 

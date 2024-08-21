@@ -130,7 +130,8 @@ impl Config {
             _ => None,
         });
 
-        let token_contract_id = env.register_stellar_asset_contract(token_admin.clone());
+        let sac = env.register_stellar_asset_contract_v2(token_admin.clone());
+        let token_contract_id = sac.address();
         let timelock_contract_id = env.register_contract(None, ClaimableBalanceContract {});
 
         if let Some((depositor_address, _, _)) = &deposit_info {
