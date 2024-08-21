@@ -55,7 +55,8 @@ proptest! {
         let claimant_address = Address::generate(&env);
         let token_admin = Address::generate(&env);
 
-        let token_contract_id = env.register_stellar_asset_contract(token_admin.clone());
+        let sac = env.register_stellar_asset_contract_v2(token_admin.clone());
+        let token_contract_id = sac.address();
         let token_client = TokenClient::new(&env, &token_contract_id);
         let token_admin_client = TokenAdminClient::new(&env, &token_contract_id);
 

@@ -17,7 +17,7 @@ fn test() {
 
     mint_lock_client.set_admin(&admin);
 
-    let token = env.register_stellar_asset_contract(mint_lock.clone());
+    let token = env.register_stellar_asset_contract_v2(mint_lock.clone()).address();
     let token_client = TokenClient::new(&env, &token);
 
     // Admin can always mint.
