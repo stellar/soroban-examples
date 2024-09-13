@@ -1,0 +1,12 @@
+{
+  "tasks": {
+    "build": "stellar contract build && ls -l target/wasm32-unknown-unknown/release/*.wasm",
+    "test": "cargo test",
+    "deploy": "./tasks/deploy.ts"
+  },
+  "imports": {
+    "@stellar/stellar-sdk": "npm:@stellar/stellar-sdk@^12.2.0",
+    "@std/crypto": "jsr:@std/crypto@^1.0.3",
+    "@std/encoding": "jsr:@std/encoding@^1.0.5"
+  }
+}
