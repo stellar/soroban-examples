@@ -201,8 +201,16 @@ impl CustomTypesContract {
     }
 
     pub fn get_object_vec_option(env: Env) -> Option<Vec<Test>> {
-        let obj: Test= Test{ a: 1, b: true, c: symbol_short!("hi") };
-        let obj2: Test= Test{ a: 2, b: false, c: symbol_short!("hello") };
+        let obj: Test = Test {
+            a: 1,
+            b: true,
+            c: symbol_short!("hi"),
+        };
+        let obj2: Test = Test {
+            a: 2,
+            b: false,
+            c: symbol_short!("hello"),
+        };
         Some(Vec::from_array(&env, [obj, obj2]))
     }
 }
