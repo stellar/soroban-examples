@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  MINIMUM_RUST_VERSION: 1.74.0
+  MINIMUM_RUST_VERSION: 1.81.0
 
 jobs:
 
@@ -77,10 +77,8 @@ jobs:
     - run: cargo version
     - run: rustup target add ${{ matrix.sys.target }}
     - run: rustup target add wasm32-unknown-unknown
-    - uses: stellar/binaries@v16
-      with:
-        name: soroban-cli
-        version: 0.8.7
+    - run: cargo install --locked cargo-binstall
+    - run: cargo binstall -y stellar-cli
     - run: make test
       env:
         CARGO_BUILD_TARGET: ${{ matrix.sys.target }}
