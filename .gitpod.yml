@@ -27,12 +27,6 @@ vscode:
     - rust-lang.rust-analyzer
     - vadimcn.vscode-lldb
 
-github:
-  prebuilds:
-    addBadge: true
-    addComment: true
-    pullRequests: true
-    pullRequestsFromForks: true
 ports:
   # This port is open for "Something with cargo test I think"??
   - port: 4226
