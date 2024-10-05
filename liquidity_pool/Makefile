@@ -7,7 +7,7 @@ test: build
 
 build:
 	$(MAKE) -C ../token || break;
-	soroban contract build
+	stellar contract build
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 fmt:
 	cargo fmt --all
