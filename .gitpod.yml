@@ -21,7 +21,7 @@ tasks:
       gp open increment/src/lib.rs
       gp open increment/src/test.rs
       gp open README.md
-      stellar contract inspect --wasm increment/target/wasm32-unknown-unknown/release/soroban_increment_contract.wasm
+      stellar version
 vscode:
   extensions:
     - rust-lang.rust-analyzer
