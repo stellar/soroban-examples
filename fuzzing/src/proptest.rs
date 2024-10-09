@@ -11,11 +11,9 @@ extern crate std;
 use super::*;
 
 use ::proptest::prelude::*;
+use arbitrary::Arbitrary;
 use proptest_arbitrary_interop::arb;
-use soroban_sdk::testutils::{
-    arbitrary::{arbitrary, fuzz_catch_panic, Arbitrary},
-    Address as _, Ledger, LedgerInfo,
-};
+use soroban_sdk::testutils::{arbitrary::arbitrary, Address as _, Ledger};
 use soroban_sdk::token::Client as TokenClient;
 use soroban_sdk::token::StellarAssetClient as TokenAdminClient;
 use soroban_sdk::{vec, Address, Env};
@@ -37,15 +35,9 @@ proptest! {
 
         env.mock_all_auths();
 
-        env.ledger().set(LedgerInfo {
-            timestamp: 12345,
-            protocol_version: 1,
-            sequence_number: 10,
-            network_id: Default::default(),
-            base_reserve: 10,
-            min_temp_entry_ttl: 16,
-            min_persistent_entry_ttl: 16,
-            max_entry_ttl: 100_000,
+        env.ledger().with_mut(|ledger_info| {
+            ledger_info.timestamp = 12345;
+            ledger_info.sequence_number = 10;
         });
 
         // Turn off the CPU/memory budget for testing.
@@ -60,15 +52,15 @@ proptest! {
         let token_client = TokenClient::new(&env, &token_contract_id);
         let token_admin_client = TokenAdminClient::new(&env, &token_contract_id);
 
-        let timelock_contract_id = env.register_contract(None, ClaimableBalanceContract { });
+        let timelock_contract_id = env.register(ClaimableBalanceContract, ());
         let timelock_client = ClaimableBalanceContractClient::new(&env, &timelock_contract_id);
 
         token_admin_client.mint(&depositor_address, &i128::max_value());
 
         // Deposit, then assert invariants.
         {
-            let _ = fuzz_catch_panic(|| {
-                timelock_client.deposit(
+            let _ =
+                timelock_client.try_deposit(
                     &depositor_address,
                     &token_contract_id,
                     &input.deposit_amount,
@@ -81,7 +73,6 @@ proptest! {
                         timestamp: 123456,
                     },
                 );
-            });
 
             assert_invariants(
                 &env,
@@ -92,21 +83,17 @@ proptest! {
         }
 
         // Claim, then assert invariants.
-        {
-            let _ = fuzz_catch_panic(|| {
-                timelock_client.claim(
-                    &claimant_address,
-                    &input.claim_amount,
-                );
-            });
 
-            assert_invariants(
-                &env,
-                &timelock_contract_id,
-                &token_client,
-                &input
-            );
-        }
+        let _ = timelock_client.try_claim(
+                &claimant_address,
+                &input.claim_amount);
+
+        assert_invariants(
+            &env,
+            &timelock_contract_id,
+            &token_client,
+            &input
+        );
     }
 }
 

@@ -27,7 +27,7 @@ fn create_single_offer_contract<'a>(
     sell_price: u32,
     buy_price: u32,
 ) -> SingleOfferClient<'a> {
-    let offer = SingleOfferClient::new(e, &e.register_contract(None, crate::SingleOffer {}));
+    let offer = SingleOfferClient::new(e, &e.register(crate::SingleOffer, ()));
     offer.create(seller, sell_token, buy_token, &sell_price, &buy_price);
 
     // Verify that authorization is required for the seller.

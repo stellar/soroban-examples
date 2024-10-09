@@ -66,10 +66,9 @@ impl ClaimableBalanceContract {
         claimants: Vec<Address>,
         time_bound: TimeBound,
     ) {
-        // Perhaps this check should be enabled...
-        /*if amount == 0 {
-            panic!("deposit amount must not be zero");
-        }*/
+        if amount <= 0 {
+            panic!("deposit must be positive");
+        }
 
         if claimants.is_empty() {
             panic!("need more than 0 claimants");

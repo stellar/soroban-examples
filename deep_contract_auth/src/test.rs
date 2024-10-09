@@ -12,9 +12,9 @@ extern crate std;
 #[test]
 fn test() {
     let env = Env::default();
-    let a_address = env.register_contract(None, ContractA);
-    let b_address = env.register_contract(None, ContractB);
-    let c_address = env.register_contract(None, ContractC);
+    let a_address = env.register(ContractA, ());
+    let b_address = env.register(ContractB, ());
+    let c_address = env.register(ContractC, ());
     let client = ContractAClient::new(&env, &a_address);
     client.call_b(&b_address, &c_address);
 }

@@ -8,7 +8,7 @@ extern crate std;
 #[test]
 fn test() {
     let env = Env::default();
-    let contract_id = env.register_contract(None, IncrementContract);
+    let contract_id = env.register(IncrementContract, ());
     let client = IncrementContractClient::new(&env, &contract_id);
 
     assert_eq!(client.try_increment(), Ok(Ok(1)));
@@ -25,7 +25,7 @@ fn test() {
 #[should_panic(expected = "HostError: Error(Contract, #1)")]
 fn test_panic() {
     let env = Env::default();
-    let contract_id = env.register_contract(None, IncrementContract);
+    let contract_id = env.register(IncrementContract, ());
     let client = IncrementContractClient::new(&env, &contract_id);
 
     assert_eq!(client.increment(), 1);

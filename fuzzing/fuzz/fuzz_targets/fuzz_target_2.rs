@@ -5,13 +5,16 @@
 
 #![no_main]
 
+use crate::arbitrary::Unstructured;
 use libfuzzer_sys::fuzz_target;
 use soroban_fuzzing_contract::*;
 use soroban_ledger_snapshot::LedgerSnapshot;
-use soroban_sdk::testutils::{arbitrary::{arbitrary, fuzz_catch_panic, Arbitrary, SorobanArbitrary}, Address as _, LedgerInfo};
-use crate::arbitrary::Unstructured;
-use soroban_sdk::token::StellarAssetClient as TokenAdminClient;
+use soroban_sdk::testutils::{
+    arbitrary::{arbitrary, Arbitrary, SorobanArbitrary},
+    Address as _, LedgerInfo,
+};
 use soroban_sdk::token::Client as TokenClient;
+use soroban_sdk::token::StellarAssetClient as TokenAdminClient;
 use soroban_sdk::xdr::ScAddress;
 use soroban_sdk::{Address, Env, FromVal, Vec};
 use std::vec::Vec as RustVec;
@@ -132,7 +135,7 @@ impl Config {
 
         let sac = env.register_stellar_asset_contract_v2(token_admin.clone());
         let token_contract_id = sac.address();
-        let timelock_contract_id = env.register_contract(None, ClaimableBalanceContract {});
+        let timelock_contract_id = env.register(ClaimableBalanceContract, ());
 
         if let Some((depositor_address, _, _)) = &deposit_info {
             let token_admin_client = TokenAdminClient::new(&env, &token_contract_id);
@@ -166,7 +169,7 @@ impl DepositCommand {
 
         // The contract needs to be re-registered each time the Env is created.
         let _timelock_contract_id =
-            env.register_contract(Some(&timelock_contract_id), ClaimableBalanceContract {});
+            env.register_at(&timelock_contract_id, ClaimableBalanceContract, ());
 
         let timelock_client = ClaimableBalanceContractClient::new(&env, &timelock_contract_id);
         let depositor_address =
@@ -178,15 +181,13 @@ impl DepositCommand {
             .collect();
         let time_bound = TimeBound::from_val(env, &self.time_bound);
 
-        let _ = fuzz_catch_panic(|| {
-            timelock_client.deposit(
-                &depositor_address,
-                &token_contract_id,
-                &self.amount,
-                &Vec::from_slice(&env, &claimant_addresses),
-                &time_bound,
-            );
-        });
+        let _ = timelock_client.try_deposit(
+            &depositor_address,
+            &token_contract_id,
+            &self.amount,
+            &Vec::from_slice(&env, &claimant_addresses),
+            &time_bound,
+        );
     }
 }
 
@@ -195,14 +196,12 @@ impl ClaimCommand {
         let timelock_contract_id = Address::from_val(env, &config.timelock_contract_id);
 
         let _timelock_contract_id =
-            env.register_contract(Some(&timelock_contract_id), ClaimableBalanceContract {});
+            env.register_at(&timelock_contract_id, ClaimableBalanceContract, ());
 
         let timelock_client = ClaimableBalanceContractClient::new(&env, &timelock_contract_id);
         let claimant_address = Address::from_val(env, &config.input.addresses[self.claimant_index]);
 
-        let _ = fuzz_catch_panic(|| {
-            timelock_client.claim(&claimant_address, &self.amount);
-        });
+        let _ = timelock_client.try_claim(&claimant_address, &self.amount);
     }
 }
 
@@ -230,8 +229,10 @@ fn assert_current(config: &Config, env: &Env) {
 
         // Call the token client to get the balance held in the timelock contract.
         // This consumes contract execution budget.
-        let actual_token_balance =
-            fuzz_catch_panic(|| token_client.balance(&timelock_contract_id)).unwrap_or(0);
+        let actual_token_balance: i128 = token_client
+            .try_balance(&timelock_contract_id)
+            .unwrap_or(Ok(0))
+            .unwrap();
 
         // There can only be a claimaible balance after the contract is initialized,
         // but once the balance is claimed there is no balance,

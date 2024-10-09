@@ -8,9 +8,12 @@
 
 use libfuzzer_sys::fuzz_target;
 use soroban_fuzzing_contract::*;
-use soroban_sdk::testutils::{arbitrary::{arbitrary, fuzz_catch_panic, Arbitrary}, Address as _, Ledger, LedgerInfo};
-use soroban_sdk::token::StellarAssetClient as TokenAdminClient;
+use soroban_sdk::testutils::{
+    arbitrary::{arbitrary, Arbitrary},
+    Address as _, Ledger, LedgerInfo,
+};
 use soroban_sdk::token::Client as TokenClient;
+use soroban_sdk::token::StellarAssetClient as TokenAdminClient;
 use soroban_sdk::{vec, Address, Env};
 
 #[derive(Arbitrary, Debug)]
@@ -47,34 +50,30 @@ fuzz_target!(|input: Input| {
     let token_client = TokenClient::new(&env, &token_contract_id);
     let token_admin_client = TokenAdminClient::new(&env, &token_contract_id);
 
-    let timelock_contract_id = env.register_contract(None, ClaimableBalanceContract {});
+    let timelock_contract_id = env.register(ClaimableBalanceContract, ());
     let timelock_client = ClaimableBalanceContractClient::new(&env, &timelock_contract_id);
 
     token_admin_client.mint(&depositor_address, &i128::max_value());
 
     // Deposit, then assert invariants.
     {
-        let _ = fuzz_catch_panic(|| {
-            timelock_client.deposit(
-                &depositor_address,
-                &token_contract_id,
-                &input.deposit_amount,
-                &vec![&env, claimant_address.clone()],
-                &TimeBound {
-                    kind: TimeBoundKind::Before,
-                    timestamp: 123456,
-                },
-            );
-        });
+        let _ = timelock_client.try_deposit(
+            &depositor_address,
+            &token_contract_id,
+            &input.deposit_amount,
+            &vec![&env, claimant_address.clone()],
+            &TimeBound {
+                kind: TimeBoundKind::Before,
+                timestamp: 123456,
+            },
+        );
 
         assert_invariants(&env, &timelock_contract_id, &token_client, &input);
     }
 
     // Claim, then assert invariants.
     {
-        let _ = fuzz_catch_panic(|| {
-            timelock_client.claim(&claimant_address, &input.claim_amount);
-        });
+        let _ = timelock_client.try_claim(&claimant_address, &input.claim_amount);
 
         assert_invariants(&env, &timelock_contract_id, &token_client, &input);
     }
