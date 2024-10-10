@@ -23,9 +23,13 @@ fn create_liqpool_contract<'a>(
     token_a: &Address,
     token_b: &Address,
 ) -> LiquidityPoolClient<'a> {
-    let liqpool = LiquidityPoolClient::new(e, &e.register_contract(None, crate::LiquidityPool {}));
-    liqpool.initialize(token_wasm_hash, token_a, token_b);
-    liqpool
+    LiquidityPoolClient::new(
+        e,
+        &e.register(
+            crate::LiquidityPool {},
+            (token_wasm_hash.clone(), token_a, token_b),
+        ),
+    )
 }
 
 fn install_token_wasm(e: &Env) -> BytesN<32> {

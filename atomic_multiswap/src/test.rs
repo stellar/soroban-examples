@@ -20,7 +20,7 @@ fn create_token_contract<'a>(e: &Env, admin: &Address) -> (TokenClient<'a>, Toke
 }
 
 fn create_atomic_multiswap_contract(e: &Env) -> AtomicMultiSwapContractClient {
-    AtomicMultiSwapContractClient::new(e, &e.register_contract(None, AtomicMultiSwapContract {}))
+    AtomicMultiSwapContractClient::new(e, &e.register(AtomicMultiSwapContract {}, ()))
 }
 
 #[test]
@@ -77,7 +77,7 @@ fn test_atomic_multi_swap() {
 
     let contract = create_atomic_multiswap_contract(&env);
 
-    let swap_contract_id = env.register_contract_wasm(None, atomic_swap::WASM);
+    let swap_contract_id = env.register(atomic_swap::WASM, ());
 
     contract.multi_swap(
         &swap_contract_id,
@@ -274,7 +274,7 @@ fn test_multi_swap_with_duplicate_account() {
 
     let contract = create_atomic_multiswap_contract(&env);
 
-    let swap_contract_id = env.register_contract_wasm(None, atomic_swap::WASM);
+    let swap_contract_id = env.register(atomic_swap::WASM, ());
 
     contract.multi_swap(
         &swap_contract_id,

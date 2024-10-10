@@ -10,6 +10,7 @@ use soroban_sdk::testutils::Address as _;
 use soroban_sdk::testutils::AuthorizedFunction;
 use soroban_sdk::testutils::AuthorizedInvocation;
 use soroban_sdk::Val;
+use soroban_sdk::Vec;
 use soroban_sdk::{
     auth::Context, testutils::BytesN as _, vec, Address, BytesN, Env, IntoVal, Symbol,
 };
@@ -25,8 +26,8 @@ fn signer_public_key(e: &Env, signer: &Keypair) -> BytesN<32> {
     signer.public.to_bytes().into_val(e)
 }
 
-fn create_account_contract(e: &Env) -> AccountContractClient {
-    AccountContractClient::new(e, &e.register_contract(None, AccountContract {}))
+fn create_account_contract(e: &Env, signers: Vec<BytesN<32>>) -> AccountContractClient {
+    AccountContractClient::new(e, &e.register(AccountContract {}, (signers,)))
 }
 
 fn sign(e: &Env, signer: &Keypair, payload: &BytesN<32>) -> Val {
@@ -53,17 +54,18 @@ fn test_token_auth() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let account_contract = create_account_contract(&env);
-
     let mut signers = [generate_keypair(), generate_keypair()];
     if signers[0].public.as_bytes() > signers[1].public.as_bytes() {
         signers.swap(0, 1);
     }
-    account_contract.init(&vec![
+    let account_contract = create_account_contract(
         &env,
-        signer_public_key(&env, &signers[0]),
-        signer_public_key(&env, &signers[1]),
-    ]);
+        vec![
+            &env,
+            signer_public_key(&env, &signers[0]),
+            signer_public_key(&env, &signers[1]),
+        ],
+    );
 
     let payload = BytesN::random(&env);
     let token = Address::generate(&env);

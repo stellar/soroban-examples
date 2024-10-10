@@ -6,7 +6,7 @@ use soroban_sdk::{vec, Env, String};
 #[test]
 fn test() {
     let env = Env::default();
-    let contract_id = env.register_contract(None, HelloContract);
+    let contract_id = env.register(HelloContract, ());
     let client = HelloContractClient::new(&env, &contract_id);
 
     let words = client.hello(&String::from_str(&env, "Dev"));

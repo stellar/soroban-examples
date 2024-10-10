@@ -37,7 +37,7 @@ fn create_env() -> Env {
 #[test]
 fn test_extend_ttl_behavior() {
     let env = create_env();
-    let contract_id = env.register_contract(None, TtlContract);
+    let contract_id = env.register(TtlContract, ());
     let client = TtlContractClient::new(&env, &contract_id);
 
     // Create initial entries and make sure their TTLs correspond to
@@ -111,7 +111,7 @@ fn test_extend_ttl_behavior() {
 #[test]
 fn test_temp_entry_removal() {
     let env = create_env();
-    let contract_id = env.register_contract(None, TtlContract);
+    let contract_id = env.register(TtlContract, ());
     let client = TtlContractClient::new(&env, &contract_id);
     client.setup();
     // Extend the contract instance to live more than 7001 ledgers.
@@ -137,7 +137,7 @@ fn test_temp_entry_removal() {
 #[should_panic(expected = "[testing-only] Accessed contract instance key that has been archived.")]
 fn test_persistent_entry_archival() {
     let env = create_env();
-    let contract_id = env.register_contract(None, TtlContract);
+    let contract_id = env.register(TtlContract, ());
     let client = TtlContractClient::new(&env, &contract_id);
     client.setup();
     // Extend the instance TTL to 10000 ledgers.
