@@ -1,7 +1,11 @@
 [workspace]
 resolver = "2"
 
-members = ["contract_a_interface", "contract_a", "contract_b"]
+members = [
+    "contract_a_interface",
+    "contract_a",
+    "contract_b",
+]
 
 [workspace.package]
 version = "0.0.0"
