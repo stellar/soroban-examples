@@ -36,6 +36,7 @@ jobs:
   fmt:
     needs: dirs
     strategy:
+      fail-fast: false
       matrix:
         working-directory: ${{ fromJSON(needs.dirs.outputs.dirs) }}
     defaults:
