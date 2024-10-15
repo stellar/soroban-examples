@@ -77,10 +77,9 @@ jobs:
     - run: cargo version
     - run: rustup target add ${{ matrix.sys.target }}
     - run: rustup target add wasm32-unknown-unknown
-    - uses: stellar/binaries@v16
+    - uses: stellar/stellar-cli@d538ea9a1b5bbf1847a987ccf316d34e55465313
       with:
-        name: soroban-cli
-        version: 0.8.7
+        version: 21.5.0
     - run: make test
       env:
         CARGO_BUILD_TARGET: ${{ matrix.sys.target }}
