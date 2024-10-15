@@ -79,7 +79,7 @@ jobs:
     - run: cargo version
     - run: rustup target add ${{ matrix.sys.target }}
     - run: rustup target add wasm32-unknown-unknown
-    - uses: stellar/stellar-cli@55f21a7686d4f533697789bc608ba936b94b8eb6
+    - uses: stellar/stellar-cli@11e3de1f3fa41d6f15bc7bbae050ba226cc34267
       with:
         version: 21.5.3
     - run: make test
