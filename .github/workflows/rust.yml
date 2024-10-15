@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  MINIMUM_RUST_VERSION: 1.81.0
+  MINIMUM_RUST_VERSION: 1.74.0
 
 jobs:
 
