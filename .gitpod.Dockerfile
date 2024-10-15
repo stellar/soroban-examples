@@ -6,10 +6,10 @@ RUN rustup self uninstall -y
 RUN rm -rf .rustup
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain none -y
 
-RUN rustup install stable
-RUN rustup target add --toolchain stable wasm32-unknown-unknown
-RUN rustup component add --toolchain stable rust-src
-RUN rustup default stable
+RUN rustup install 1.81
+RUN rustup target add --toolchain 1.81 wasm32-unknown-unknown
+RUN rustup component add --toolchain 1.81 rust-src
+RUN rustup default 1.81
 
 RUN sudo apt-get update && sudo apt-get install -y binaryen
 
