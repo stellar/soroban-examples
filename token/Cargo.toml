@@ -8,11 +8,11 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-soroban-sdk = { version = "21.6.0" }
-soroban-token-sdk = { version = "21.6.0" }
+soroban-sdk = { version = "21.7.4" }
+soroban-token-sdk = { version = "21.7.4" }
 
 [dev-dependencies]
-soroban-sdk = { version = "21.6.0", features = ["testutils"] }
+soroban-sdk = { version = "21.7.4", features = ["testutils"] }
 
 [profile.release]
 opt-level = "z"
