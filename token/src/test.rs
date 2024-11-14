@@ -5,13 +5,20 @@ use crate::{contract::Token, TokenClient};
 use soroban_sdk::{
     symbol_short,
     testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation},
-    Address, Env, IntoVal, Symbol,
+    Address, Env, FromVal, IntoVal, String, Symbol,
 };
 
 fn create_token<'a>(e: &Env, admin: &Address) -> TokenClient<'a> {
-    let token = TokenClient::new(e, &e.register_contract(None, Token {}));
-    token.initialize(admin, &7, &"name".into_val(e), &"symbol".into_val(e));
-    token
+    let token_contract = e.register(
+        Token,
+        (
+            admin,
+            7_u32,
+            String::from_val(e, &"name"),
+            String::from_val(e, &"symbol"),
+        ),
+    );
+    TokenClient::new(e, &token_contract)
 }
 
 #[test]
@@ -232,22 +239,22 @@ fn transfer_from_insufficient_allowance() {
 }
 
 #[test]
-#[should_panic(expected = "already initialized")]
-fn initialize_already_initialized() {
-    let e = Env::default();
-    let admin = Address::generate(&e);
-    let token = create_token(&e, &admin);
-
-    token.initialize(&admin, &10, &"name".into_val(&e), &"symbol".into_val(&e));
-}
-
-#[test]
 #[should_panic(expected = "Decimal must not be greater than 18")]
 fn decimal_is_over_eighteen() {
     let e = Env::default();
     let admin = Address::generate(&e);
-    let token = TokenClient::new(&e, &e.register_contract(None, Token {}));
-    token.initialize(&admin, &19, &"name".into_val(&e), &"symbol".into_val(&e));
+    let _ = TokenClient::new(
+        &e,
+        &e.register(
+            Token,
+            (
+                admin,
+                19_u32,
+                String::from_val(&e, &"name"),
+                String::from_val(&e, &"symbol"),
+            ),
+        ),
+    );
 }
 
 #[test]
