@@ -2,7 +2,7 @@
 //! `FastAggregateVerify` function in [BLS
 //! Signatures](https://www.ietf.org/archive/id/draft-irtf-cfrg-bls-signature-05.html#name-fastaggregateverify)
 //!
-//! Warning: it is indended for demonstration purpose only. It is not
+//! ⚠️ WARNING: it is indended for demonstration purpose only. It is not
 //! security-audited and not safe to use in production (e.g. there is no proof
 //! of possesion for the public key described in section 3.3).
 #![no_std]
