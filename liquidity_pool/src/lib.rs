@@ -5,10 +5,9 @@ mod token;
 
 use num_integer::Roots;
 use soroban_sdk::{
-    contract, contractimpl, contractmeta, Address, BytesN, ConversionError, Env, IntoVal,
-    TryFromVal, Val,
+    contract, contractimpl, contractmeta, Address, BytesN, ConversionError, Env, TryFromVal, Val,
 };
-use token::create_contract;
+use token::create_share_token;
 
 #[derive(Clone, Copy)]
 #[repr(u32)]
@@ -155,48 +154,17 @@ contractmeta!(
     val = "Constant product AMM with a .3% swap fee"
 );
 
-pub trait LiquidityPoolTrait {
-    // Sets the token contract addresses for this pool
-    fn initialize(e: Env, token_wasm_hash: BytesN<32>, token_a: Address, token_b: Address);
-
-    // Returns the token contract address for the pool share token
-    fn share_id(e: Env) -> Address;
-
-    // Deposits token_a and token_b. Also mints pool shares for the "to" Identifier. The amount minted
-    // is determined based on the difference between the reserves stored by this contract, and
-    // the actual balance of token_a and token_b for this contract.
-    fn deposit(e: Env, to: Address, desired_a: i128, min_a: i128, desired_b: i128, min_b: i128);
-
-    // If "buy_a" is true, the swap will buy token_a and sell token_b. This is flipped if "buy_a" is false.
-    // "out" is the amount being bought, with in_max being a safety to make sure you receive at least that amount.
-    // swap will transfer the selling token "to" to this contract, and then the contract will transfer the buying token to "to".
-    fn swap(e: Env, to: Address, buy_a: bool, out: i128, in_max: i128);
-
-    // transfers share_amount of pool share tokens to this contract, burns all pools share tokens in this contracts, and sends the
-    // corresponding amount of token_a and token_b to "to".
-    // Returns amount of both tokens withdrawn
-    fn withdraw(e: Env, to: Address, share_amount: i128, min_a: i128, min_b: i128) -> (i128, i128);
-
-    fn get_rsrvs(e: Env) -> (i128, i128);
-}
-
 #[contract]
 struct LiquidityPool;
 
 #[contractimpl]
-impl LiquidityPoolTrait for LiquidityPool {
-    fn initialize(e: Env, token_wasm_hash: BytesN<32>, token_a: Address, token_b: Address) {
+impl LiquidityPool {
+    pub fn __constructor(e: Env, token_wasm_hash: BytesN<32>, token_a: Address, token_b: Address) {
         if token_a >= token_b {
             panic!("token_a must be less than token_b");
         }
 
-        let share_contract = create_contract(&e, token_wasm_hash, &token_a, &token_b);
-        token::Client::new(&e, &share_contract).initialize(
-            &e.current_contract_address(),
-            &7u32,
-            &"Pool Share Token".into_val(&e),
-            &"POOL".into_val(&e),
-        );
+        let share_contract = create_share_token(&e, token_wasm_hash, &token_a, &token_b);
 
         put_token_a(&e, token_a);
         put_token_b(&e, token_b);
@@ -206,11 +174,22 @@ impl LiquidityPoolTrait for LiquidityPool {
         put_reserve_b(&e, 0);
     }
 
-    fn share_id(e: Env) -> Address {
+    // Returns the token contract address for the pool share token
+    pub fn share_id(e: Env) -> Address {
         get_token_share(&e)
     }
 
-    fn deposit(e: Env, to: Address, desired_a: i128, min_a: i128, desired_b: i128, min_b: i128) {
+    // Deposits token_a and token_b. Also mints pool shares for the "to" Identifier. The amount minted
+    // is determined based on the difference between the reserves stored by this contract, and
+    // the actual balance of token_a and token_b for this contract.
+    pub fn deposit(
+        e: Env,
+        to: Address,
+        desired_a: i128,
+        min_a: i128,
+        desired_b: i128,
+        min_b: i128,
+    ) {
         // Depositor needs to authorize the deposit
         to.require_auth();
 
@@ -250,7 +229,10 @@ impl LiquidityPoolTrait for LiquidityPool {
         put_reserve_b(&e, balance_b);
     }
 
-    fn swap(e: Env, to: Address, buy_a: bool, out: i128, in_max: i128) {
+    // If "buy_a" is true, the swap will buy token_a and sell token_b. This is flipped if "buy_a" is false.
+    // "out" is the amount being bought, with in_max being a safety to make sure you receive at least that amount.
+    // swap will transfer the selling token "to" to this contract, and then the contract will transfer the buying token to "to".
+    pub fn swap(e: Env, to: Address, buy_a: bool, out: i128, in_max: i128) {
         to.require_auth();
 
         let (reserve_a, reserve_b) = (get_reserve_a(&e), get_reserve_b(&e));
@@ -259,6 +241,10 @@ impl LiquidityPoolTrait for LiquidityPool {
         } else {
             (reserve_a, reserve_b)
         };
+
+        if reserve_buy < out {
+            panic!("not enough token to buy");
+        }
 
         // First calculate how much needs to be sold to buy amount out from the pool
         let n = reserve_sell * out * 1000;
@@ -323,7 +309,16 @@ impl LiquidityPoolTrait for LiquidityPool {
         put_reserve_b(&e, new_reserve_b);
     }
 
-    fn withdraw(e: Env, to: Address, share_amount: i128, min_a: i128, min_b: i128) -> (i128, i128) {
+    // transfers share_amount of pool share tokens to this contract, burns all pools share tokens in this contracts, and sends the
+    // corresponding amount of token_a and token_b to "to".
+    // Returns amount of both tokens withdrawn
+    pub fn withdraw(
+        e: Env,
+        to: Address,
+        share_amount: i128,
+        min_a: i128,
+        min_b: i128,
+    ) -> (i128, i128) {
         to.require_auth();
 
         // First transfer the pool shares that need to be redeemed
@@ -352,7 +347,7 @@ impl LiquidityPoolTrait for LiquidityPool {
         (out_a, out_b)
     }
 
-    fn get_rsrvs(e: Env) -> (i128, i128) {
+    pub fn get_rsrvs(e: Env) -> (i128, i128) {
         (get_reserve_a(&e), get_reserve_b(&e))
     }
 }
