@@ -1,0 +1,11 @@
+# BLS Signature Custom Account
+
+This repository contains a basic custom account contract implementing the `FastAggregateVerify` function, following the specifications outlined in the [BLS Signatures](https://www.ietf.org/archive/id/draft-irtf-cfrg-bls-signature-05.html#name-fastaggregateverify) draft.
+
+## ⚠️ WARNING: Demonstration Use Only
+
+**This project is for demonstration purposes only.**  
+- It has **not** undergone security auditing.  
+- It is **not** safe for use in production environments.  
+
+**Use at your own risk.**
