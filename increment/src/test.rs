@@ -1,9 +1,6 @@
 #![cfg(test)]
-
-use super::{IncrementContract, IncrementContractClient};
-use soroban_sdk::{testutils::Logs, Env};
-
-extern crate std;
+use crate::{IncrementContract, IncrementContractClient};
+use soroban_sdk::Env;
 
 #[test]
 fn test() {
@@ -14,6 +11,4 @@ fn test() {
     assert_eq!(client.increment(), 1);
     assert_eq!(client.increment(), 2);
     assert_eq!(client.increment(), 3);
-
-    std::println!("{}", env.logs().all().join("\n"));
 }
