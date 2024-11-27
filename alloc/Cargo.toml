@@ -9,21 +9,7 @@ crate-type = ["cdylib"]
 doctest = false
 
 [dependencies]
-soroban-sdk = { version = "22.0.0-rc.2", features = ["alloc"] }
+soroban-sdk = { workspace = true, features = ["alloc"] }
 
 [dev-dependencies]
-soroban-sdk = { version = "22.0.0-rc.2", features = ["testutils", "alloc"] }
-
-[profile.release]
-opt-level = "z"
-overflow-checks = true
-debug = 0
-strip = "symbols"
-debug-assertions = false
-panic = "abort"
-codegen-units = 1
-lto = true
-
-[profile.release-with-logs]
-inherits = "release"
-debug-assertions = true
+soroban-sdk = { workspace = true, features = ["testutils", "alloc"] }

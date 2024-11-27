@@ -10,6 +10,7 @@ doctest = false
 
 [dependencies]
 soroban-sdk = { version = "22.0.0-rc.2" }
+soroban-atomic-swap-contract = { path = "../atomic_swap" }
 
 [dev-dependencies]
 soroban-sdk = { version = "22.0.0-rc.2", features = ["testutils"] }

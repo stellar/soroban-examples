@@ -34,7 +34,7 @@ fn create_liqpool_contract<'a>(
 
 fn install_token_wasm(e: &Env) -> BytesN<32> {
     soroban_sdk::contractimport!(
-        file = "../token/target/wasm32-unknown-unknown/release/soroban_token_contract.wasm"
+        file = "../../target/wasm32-unknown-unknown/release/soroban_token_contract.wasm"
     );
     e.deployer().upload_contract_wasm(WASM)
 }

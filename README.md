@@ -13,3 +13,8 @@ to have significant errors and security vulnerabilities. They should not be
 relied on for any purpose.
 
 Join us In the [Stellar Developers Discord server](https://discord.gg/stellardev)
+
+# Build & Run Tests
+
+- `soroban contract build` to generate all `.wasm` files, which are needed for cross-contract dependencies
+- `cargo test`

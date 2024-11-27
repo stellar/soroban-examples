@@ -2,7 +2,7 @@
 use soroban_sdk::{symbol_short, xdr::ToXdr, Address, Bytes, BytesN, Env, FromVal, String, Symbol};
 
 soroban_sdk::contractimport!(
-    file = "../token/target/wasm32-unknown-unknown/release/soroban_token_contract.wasm"
+    file = "target/wasm32-unknown-unknown/release/soroban_token_contract.wasm"
 );
 
 pub fn create_share_token(
