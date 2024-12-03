@@ -2,18 +2,6 @@
 use crate::{Error, IncrementContract, IncrementContractArgs, IncrementContractClient, Pause};
 use soroban_sdk::{contract, contractimpl, Env};
 
-mod paused {
-    use super::*;
-    #[contract]
-    pub struct Mock;
-    #[contractimpl]
-    impl Pause for Mock {
-        fn paused(_env: Env) -> bool {
-            true
-        }
-    }
-}
-
 mod notpaused {
     use super::*;
     #[contract]
@@ -39,6 +27,18 @@ fn test_notpaused() {
     assert_eq!(client.increment(), 1);
     assert_eq!(client.increment(), 2);
     assert_eq!(client.increment(), 3);
+}
+
+mod paused {
+    use super::*;
+    #[contract]
+    pub struct Mock;
+    #[contractimpl]
+    impl Pause for Mock {
+        fn paused(_env: Env) -> bool {
+            true
+        }
+    }
 }
 
 #[test]
