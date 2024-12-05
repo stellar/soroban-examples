@@ -3,6 +3,7 @@ use soroban_sdk::{
     contract, contractclient, contracterror, contractimpl, contracttype, Address, Env, IntoVal,
 };
 
+#[allow(dead_code)]
 #[contractclient(name = "MintClient")]
 pub trait MintInterface {
     fn mint(env: Env, to: Address, amount: i128);

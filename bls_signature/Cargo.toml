@@ -1,0 +1,38 @@
+[package]
+name = "soroban-bls-signature"
+version = "0.0.0"
+edition = "2021"
+publish = false
+description = """
+WARNING: DO NOT USE THIS LIBRARY IN PRODUCTION OR FOR SECURE APPLICATIONS!
+
+This Rust library is a prototype for demonstrating BLS signature verification capabilities in Soroban.
+It is NOT designed to be secure and should NOT be used in real-world cryptographic or security-sensitive applications.
+
+USE THIS CODE AT YOUR OWN RISK.
+"""
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+soroban-sdk = { version = "22.0.0-rc.3"}
+
+[dev-dependencies]
+soroban-sdk = { version = "22.0.0-rc.3", features = ["testutils"] }
+hex-literal = { version = "0.4.1"}
+rand = { version = "0.7.3" }
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
+lto = true
+
+[profile.release-with-logs]
+inherits = "release"
+debug-assertions = true
