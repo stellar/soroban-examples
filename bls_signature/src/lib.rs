@@ -75,7 +75,7 @@ impl CustomAccountInterface for IncrementContract {
     fn __check_auth(
         env: Env,
         signature_payload: Hash<32>,
-        agg_sig: Self::Signature,
+        agg_sig: BytesN<192>,
         _auth_contexts: Vec<Context>,
     ) -> Result<(), AccError> {
         // The sdk module containing access to the bls12_381 functions
