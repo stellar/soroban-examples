@@ -11,7 +11,7 @@ members = [
 version = "0.0.0"
 
 [workspace.dependencies]
-soroban-sdk = { version = "22.0.0-rc.2" }
+soroban-sdk = { version = "22.0.0" }
 soroban-workspace-contract-a-interface = { path = "contract_a_interface" }
 soroban-workspace-contract-a = { path = "contract_a" }
 
