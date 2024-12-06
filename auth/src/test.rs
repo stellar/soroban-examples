@@ -14,7 +14,7 @@ fn test() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let contract_id = env.register_contract(None, IncrementContract);
+    let contract_id = env.register(IncrementContract, {});
     let client = IncrementContractClient::new(&env, &contract_id);
 
     let user_1 = Address::generate(&env);

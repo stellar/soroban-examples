@@ -3,15 +3,15 @@ name = "soroban-fuzzing-contract-fuzzer"
 version = "0.0.0"
 publish = false
 edition = "2021"
-rust-version = "1.74.0"
+rust-version = "1.79.0"
 
 [package.metadata]
 cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "0.4"
-soroban-sdk = { version = "21.7.4", features = ["testutils"] }
-soroban-ledger-snapshot = { version = "21.7.4" }
+soroban-sdk = { version = "22.0.0", features = ["testutils"] }
+soroban-ledger-snapshot = { version = "22.0.0" }
 
 [dependencies.soroban-fuzzing-contract]
 path = ".."

@@ -8,7 +8,7 @@ extern crate std;
 #[test]
 fn test() {
     let env = Env::default();
-    let contract_id = env.register_contract(None, AllocContract);
+    let contract_id = env.register(AllocContract {}, ());
     let client = AllocContractClient::new(&env, &contract_id);
     assert_eq!(client.sum(&1), 0);
     assert_eq!(client.sum(&2), 1);

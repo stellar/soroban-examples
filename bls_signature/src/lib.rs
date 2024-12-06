@@ -75,13 +75,13 @@ impl CustomAccountInterface for IncrementContract {
     fn __check_auth(
         env: Env,
         signature_payload: Hash<32>,
-        agg_sig: Self::Signature,
+        agg_sig: BytesN<192>,
         _auth_contexts: Vec<Context>,
     ) -> Result<(), AccError> {
         // The sdk module containing access to the bls12_381 functions
         let bls = env.crypto().bls12_381();
 
-        // Retrive the aggregated pubkey and the DST from storage
+        // Retrieve the aggregated pubkey and the DST from storage
         let agg_pk: BytesN<96> = env.storage().persistent().get(&DataKey::Owners).unwrap();
         let dst: Bytes = env.storage().instance().get(&DataKey::Dst).unwrap();
 

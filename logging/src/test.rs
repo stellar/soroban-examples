@@ -15,7 +15,7 @@ fn test() {
 
     let addr: Address =
         Address::try_from_val(&env, &ScAddress::Contract(Hash(id_bytes.to_array()))).unwrap();
-    let contract_id = env.register_contract(&addr, Contract);
+    let contract_id = env.register_at(&addr, Contract, ());
     let client = ContractClient::new(&env, &contract_id);
 
     client.hello(&symbol_short!("Dev"));
