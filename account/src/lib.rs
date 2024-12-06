@@ -109,7 +109,7 @@ impl CustomAccountInterface for AccountContract {
     fn __check_auth(
         env: Env,
         signature_payload: Hash<32>,
-        signatures: Vec<AccSignature>,
+        signatures: Self::Signature,
         auth_context: Vec<Context>,
     ) -> Result<(), AccError> {
         // Perform authentication.
