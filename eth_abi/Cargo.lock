@@ -1053,9 +1053,9 @@ checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 
 [[package]]
 name = "libc"
-version = "0.2.159"
+version = "0.2.167"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "561d97a539a36e26a9a5fad1ea11a3039a67714694aaa379433e580854bc3dc5"
+checksum = "09d6582e104315a817dff97f75133544b2e094ee22447d2acf4a74e189ba06fc"
 
 [[package]]
 name = "libm"
@@ -1447,9 +1447,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.38.37"
+version = "0.38.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8acb788b847c24f28525660c4d7758620a7210875711f79e7f663cc152726811"
+checksum = "d7f649912bc1495e167a6edee79151c84b1bad49748cb4f1f1167f459f6224f6"
 dependencies = [
  "bitflags",
  "errno",
