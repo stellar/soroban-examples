@@ -56,3 +56,4 @@ impl IncrementContract {
 }
 
 mod test_mock;
+mod test_real;

@@ -1,7 +1,5 @@
 #![no_std]
-use soroban_sdk::{
-    contract, contractclient, contracterror, contractimpl, symbol_short, Address, Env, Symbol,
-};
+use soroban_sdk::{contract, contractimpl, symbol_short, Env, Symbol};
 
 const PAUSED: Symbol = symbol_short!("PAUSED");
 
@@ -15,7 +13,7 @@ impl Pause {
     }
 
     pub fn set(env: Env, paused: bool) {
-        env.storage().instance().set(&PAUSED, paused);
+        env.storage().instance().set(&PAUSED, &paused);
     }
 }
 

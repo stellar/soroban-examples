@@ -1171,13 +1171,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "soroban-increment-with-pause-contract"
-version = "0.0.0"
-dependencies = [
- "soroban-sdk",
-]
-
-[[package]]
 name = "soroban-ledger-snapshot"
 version = "22.0.0-rc.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1189,6 +1182,13 @@ dependencies = [
  "soroban-env-common",
  "soroban-env-host",
  "thiserror",
+]
+
+[[package]]
+name = "soroban-pause-contract"
+version = "0.0.0"
+dependencies = [
+ "soroban-sdk",
 ]
 
 [[package]]
