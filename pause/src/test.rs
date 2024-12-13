@@ -8,7 +8,7 @@ fn test() {
     let contract_id = env.register(Pause, ());
     let client = PauseClient::new(&env, &contract_id);
 
-    assert_eq!(client.paused(), false);
+    assert!(!client.paused());
     client.set(&true);
-    assert_eq!(client.paused(), true);
+    assert!(client.paused());
 }
