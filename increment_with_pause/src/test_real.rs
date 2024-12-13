@@ -14,7 +14,6 @@ fn test_notpaused() {
 
     let pause_id = env.register(pause::WASM, ());
     let pause_client = pause::Client::new(&env, &pause_id);
-    pause_client.set(&false);
 
     let contract_id = env.register(
         IncrementContract,
@@ -22,6 +21,7 @@ fn test_notpaused() {
     );
     let client = IncrementContractClient::new(&env, &contract_id);
 
+    pause_client.set(&false);
     assert_eq!(client.increment(), 1);
     assert_eq!(client.increment(), 2);
     assert_eq!(client.increment(), 3);
