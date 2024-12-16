@@ -125,6 +125,8 @@ From the root of the contract (e.g. `increment`) run this command:
 cargo test
 ```
 
+Some examples may contain multiple contracts and require contracts to be built before the test can be run. See the individual example contracts for details.
+
 ## Licence
 The example smart contracts are licensed under the Apache 2.0 license. See the LICENSE file for details.
 
