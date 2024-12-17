@@ -19,7 +19,7 @@ fn create_token_contract<'a>(e: &Env, admin: &Address) -> (TokenClient<'a>, Toke
 }
 
 fn create_atomic_swap_contract(e: &Env) -> AtomicSwapContractClient {
-    AtomicSwapContractClient::new(e, &e.register_contract(None, AtomicSwapContract {}))
+    AtomicSwapContractClient::new(e, &e.register(AtomicSwapContract {}, ()))
 }
 
 #[test]

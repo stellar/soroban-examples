@@ -2,20 +2,26 @@
 
 use super::*;
 use soroban_sdk::{
-    testutils::{Address as _, MockAuth, MockAuthInvoke},
+    testutils::{storage::Temporary as _, Address as _, Ledger, MockAuth, MockAuthInvoke},
     token::TokenClient,
     Address, Env, IntoVal,
 };
 
 #[test]
 fn test() {
+    const EPOCH_LENGTH: u32 = 10000;
+    const LEDGER_EPOCH: u32 = 150;
+
     let env = Env::default();
-    let mint_lock = env.register_contract(None, Contract);
-    let mint_lock_client = ContractClient::new(&env, &mint_lock);
+
+    env.ledger().with_mut(|ledger_info| {
+        ledger_info.sequence_number = EPOCH_LENGTH * LEDGER_EPOCH + EPOCH_LENGTH / 2;
+    });
 
     let admin = Address::generate(&env);
 
-    mint_lock_client.set_admin(&admin);
+    let mint_lock = env.register(Contract, (&admin,));
+    let mint_lock_client = ContractClient::new(&env, &mint_lock);
 
     let token = env
         .register_stellar_asset_contract_v2(mint_lock.clone())
@@ -50,7 +56,7 @@ fn test() {
                     &minter,
                     MinterConfig {
                         limit: 100,
-                        epoch_length: 17820,
+                        epoch_length: EPOCH_LENGTH,
                     },
                 )
                     .into_val(&env),
@@ -62,7 +68,7 @@ fn test() {
             &minter,
             &MinterConfig {
                 limit: 100,
-                epoch_length: 17820,
+                epoch_length: EPOCH_LENGTH,
             },
         );
     let user = Address::generate(&env);
@@ -83,12 +89,23 @@ fn test() {
         (
             MinterConfig {
                 limit: 100,
-                epoch_length: 17820
+                epoch_length: EPOCH_LENGTH
             },
-            0,
+            LEDGER_EPOCH,
             MinterStats { consumed_limit: 97 }
         )
     );
+    env.as_contract(&mint_lock, || {
+        assert_eq!(
+            env.storage().temporary().get_ttl(&StorageKey::MinterStats(
+                token.clone(),
+                minter.clone(),
+                EPOCH_LENGTH,
+                LEDGER_EPOCH,
+            )),
+            EPOCH_LENGTH * (LEDGER_EPOCH + 1) - 1
+        );
+    });
 }
 
 #[contract]
@@ -102,14 +119,11 @@ impl MintInterface for NoopMintContract {
 #[test]
 fn test_disallow_negative() {
     let env = Env::default();
-    let mint_lock = env.register_contract(None, Contract);
+    let admin = Address::generate(&env);
+    let mint_lock = env.register(Contract, (&admin,));
     let mint_lock_client = ContractClient::new(&env, &mint_lock);
 
-    let admin = Address::generate(&env);
-
-    mint_lock_client.set_admin(&admin);
-
-    let token = env.register_contract(None, NoopMintContract);
+    let token = env.register(NoopMintContract, ());
 
     // Admin can always mint.
     let user = Address::generate(&env);

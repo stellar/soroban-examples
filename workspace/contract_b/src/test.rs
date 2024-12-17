@@ -11,10 +11,10 @@ fn test() {
     let env = Env::default();
 
     // Register contract A using the native contract imported.
-    let contract_a_id = env.register_contract(None, ContractA);
+    let contract_a_id = env.register(ContractA, ());
 
     // Register contract B defined in this crate.
-    let contract_b_id = env.register_contract(None, ContractB);
+    let contract_b_id = env.register(ContractB, ());
 
     // Create a client for calling contract B.
     let client = ContractBClient::new(&env, &contract_b_id);

@@ -38,15 +38,16 @@ pub enum AccError {
     NegativeAmount = 2,
     BadSignatureOrder = 3,
     UnknownSigner = 4,
-    InvalidContext = 5,
 }
 
 const TRANSFER_FN: Symbol = symbol_short!("transfer");
+const APPROVE_FN: Symbol = symbol_short!("approve");
+const BURN_FN: Symbol = symbol_short!("burn");
 
 #[contractimpl]
 impl AccountContract {
     // Initialize the contract with a list of ed25519 public key ('signers').
-    pub fn init(env: Env, signers: Vec<BytesN<32>>) {
+    pub fn __constructor(env: Env, signers: Vec<BytesN<32>>) {
         // In reality this would need some additional validation on signers
         // (deduplication etc.).
         for signer in signers.iter() {
@@ -58,6 +59,9 @@ impl AccountContract {
     }
 
     // Adds a limit on any token transfers that aren't signed by every signer.
+    // For the sake of simplicity of the example the limit is only applied on
+    // a per-authorization basis; the 'real' limits should likely be time-based
+    // instead.
     pub fn add_limit(env: Env, token: Address, limit: i128) {
         // The current contract address is the account contract address and has
         // the same semantics for `require_auth` call as any other account
@@ -105,7 +109,7 @@ impl CustomAccountInterface for AccountContract {
     fn __check_auth(
         env: Env,
         signature_payload: Hash<32>,
-        signatures: Vec<AccSignature>,
+        signatures: Self::Signature,
         auth_context: Vec<Context>,
     ) -> Result<(), AccError> {
         // Perform authentication.
@@ -175,22 +179,28 @@ fn verify_authorization_policy(
     all_signed: bool,
     spend_left_per_token: &mut Map<Address, i128>,
 ) -> Result<(), AccError> {
+    // There are no limitations when every signers signs the transaction.
+    if all_signed {
+        return Ok(());
+    }
     let contract_context = match context {
         Context::Contract(c) => {
+            // Allow modifying this contract only if every signer has signed for it.
             if &c.contract == curr_contract {
-                if !all_signed {
-                    return Err(AccError::NotEnoughSigners);
-                }
+                return Err(AccError::NotEnoughSigners);
             }
             c
         }
-        Context::CreateContractHostFn(_) => return Err(AccError::InvalidContext),
+        // Allow creating new contracts only if every signer has signed for it.
+        Context::CreateContractHostFn(_) | Context::CreateContractWithCtorHostFn(_) => {
+            return Err(AccError::NotEnoughSigners);
+        }
     };
-    // For the account control every signer must sign the invocation.
 
-    // Otherwise, we're only interested in functions that spend tokens.
+    // Besides the checks above we're only interested in functions that spend tokens.
     if contract_context.fn_name != TRANSFER_FN
-        && contract_context.fn_name != Symbol::new(env, "approve")
+        && contract_context.fn_name != APPROVE_FN
+        && contract_context.fn_name != BURN_FN
     {
         return Ok(());
     }

@@ -81,7 +81,7 @@ impl CustomAccountInterface for IncrementContract {
         // The sdk module containing access to the bls12_381 functions
         let bls = env.crypto().bls12_381();
 
-        // Retrive the aggregated pubkey and the DST from storage
+        // Retrieve the aggregated pubkey and the DST from storage
         let agg_pk: BytesN<96> = env.storage().persistent().get(&DataKey::Owners).unwrap();
         let dst: Bytes = env.storage().instance().get(&DataKey::Dst).unwrap();
 

@@ -16,7 +16,7 @@ fn generate_keypair() -> Keypair {
 }
 
 fn create_account_contract(e: &Env) -> SimpleAccountClient {
-    SimpleAccountClient::new(e, &e.register_contract(None, SimpleAccount {}))
+    SimpleAccountClient::new(e, &e.register(SimpleAccount, ()))
 }
 
 fn sign(e: &Env, signer: &Keypair, payload: &BytesN<32>) -> Val {

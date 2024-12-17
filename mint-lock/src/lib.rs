@@ -5,7 +5,7 @@ use soroban_sdk::{
 
 #[allow(dead_code)]
 #[contractclient(name = "MintClient")]
-trait MintInterface {
+pub trait MintInterface {
     fn mint(env: Env, to: Address, amount: i128);
 }
 
@@ -49,15 +49,13 @@ pub struct Contract;
 
 #[contractimpl]
 impl Contract {
+    pub fn __constructor(env: Env, admin: Address) {
+        env.storage().instance().set(&StorageKey::Admin, &admin);
+    }
+
     /// Set the admin.
     pub fn set_admin(env: Env, new_admin: Address) {
-        if let Some(admin) = env
-            .storage()
-            .instance()
-            .get::<_, Address>(&StorageKey::Admin)
-        {
-            admin.require_auth();
-        };
+        Self::admin(env.clone()).require_auth();
         env.storage().instance().set(&StorageKey::Admin, &new_admin);
     }
 
@@ -155,9 +153,14 @@ impl Contract {
             env.storage()
                 .temporary()
                 .set::<_, MinterStats>(&minter_stats_key, &new_minter_stats);
-            env.storage()
-                .temporary()
-                .extend_ttl(&minter_stats_key, 0, epoch * config.epoch_length);
+            // Extend the minter stats entry to live at least until the end
+            // of the epoch.
+            let end_of_the_epoch_ledger = config.epoch_length * (epoch + 1) - 1;
+            env.storage().temporary().extend_ttl(
+                &minter_stats_key,
+                end_of_the_epoch_ledger,
+                end_of_the_epoch_ledger,
+            );
         }
 
         // Perform the mint.
