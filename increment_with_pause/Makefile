@@ -3,6 +3,7 @@ default: build
 all: test
 
 test: build
+	$(MAKE) -C ../pause build
 	cargo test
 
 build:
