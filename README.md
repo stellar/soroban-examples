@@ -95,19 +95,20 @@ The WASM file can now be deployed to the testnet by running this command:
 stellar contract deploy \
   --wasm target/wasm32-unknown-unknown/release/soroban_increment_contract.wasm \
   --source alice \
-  --network testnet
+  --network testnet \
+  --alias increment_contract
 ```
 
-When the smart contract has been successfully deployed, the command will return the contract’s ID (e.g. CACDYF3CYMJEJTIVFESQYZTN67GO2R5D5IUABTCUG3HXQSRXCSOROBAN). This ID is needed when the contract is invoked, so make sure to save it.
+When the smart contract has been successfully deployed, the command will return the contract’s ID (e.g. CACDYF3CYMJEJTIVFESQYZTN67GO2R5D5IUABTCUG3HXQSRXCSOROBAN). This ID can be used to invoke the contract, but since an alias is added, the alias can be used for invoking the contract as well.
 
 #### Invoke
 Now the contract is on testnet, it can be invoked. For the increment contract there’s only one function to invoke, and that’s the increment() function. Look at the code for the other contracts to see which function to invoke as every example contract is different.
 
-Run this command to invoke the increment contract (replace the id with the id returned in the previous step):
+Run this command to invoke the increment contract (the added alias is used as the contract ID):
 
 ```
 stellar contract invoke \
-  --id CACDYF3CYMJEJTIVFESQYZTN67GO2R5D5IUABTCUG3HXQSRXCSOROBAN \
+  --id increment_contract \
   --source alice \
   --network testnet \
   -- \
