@@ -1,9 +1,11 @@
 # Soroban Examples <!-- omit in toc -->
 
-This repository contains example smart contracts for key Soroban features and concepts. The examples illustrate how to use the features, in their simplest form. The examples in this repository:
+This repository contains example smart contracts for key Soroban features and concepts. The examples illustrate how to use the features, in their simplest form. 
 
 > [!WARNING]  
 > These implementations are educational examples, and have not been tested or audited. They are likely to have significant errors and security vulnerabilities. They should not be relied on for any purpose. Please refer to the license for more information.
+
+The examples in this repository:
 
 - **account**: This a basic multi-sig account contract that with a customizable per-token authorization policy
 - **alloc**: Allocates a temporary vector holding values (0..count), then computes and returns their sum
