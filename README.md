@@ -2,6 +2,9 @@
 
 This repository contains example smart contracts for key Soroban features and concepts. The examples illustrate how to use the features, in their simplest form. The examples in this repository:
 
+> [!WARNING]  
+> These implementations are educational examples, and have not been tested or audited. They are likely to have significant errors and security vulnerabilities. They should not be relied on for any purpose. Please refer to the license for more information.
+
 - **account**: This a basic multi-sig account contract that with a customizable per-token authorization policy
 - **alloc**: Allocates a temporary vector holding values (0..count), then computes and returns their sum
 atomic_multiswap**: This contract performs a batch of atomic token swaps between multiple parties and does a simple price matching
@@ -138,9 +141,6 @@ Contributions are welcome, please create a pull request with the following infor
 - Why are these changes/additions needed or relevant?
 - How did you solve the problem, or created the suggested feature?
 - Have your changes/additions been thoroughly tested?
-
-## Disclaimer
-These implementations have not been tested or audited. They are likely to have significant errors and security vulnerabilities. They should not be relied on for any purpose. Please refer to the license for more information.
 
 ## Relevant Links:
 - [Smart Contract Documentation](https://developers.stellar.org/docs/build)
