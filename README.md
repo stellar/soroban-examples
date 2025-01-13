@@ -30,7 +30,7 @@ atomic_multiswap**: This contract performs a batch of atomic token swaps between
 - **upgradeable_contract**: This contract demonstrates how to upgrade the Wasm bytecode using example contracts
 - **workspace**: This contract demonstrates how multiple smart contracts can be developed, tested, and built side-by-side in the same Rust workspace
 
-## Quick Start
+## Get Started
 The easiest way to get started experimenting with the example smart contracts, is to use GitPod. Run the smart contracts directly from the browser, without having to install tools, cloning the repo, building the code and deploying it to testnet.
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/stellar/soroban-examples)
