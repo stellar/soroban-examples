@@ -2,7 +2,7 @@
 use libfuzzer_sys::fuzz_target;
 use soroban_increment_with_fuzz_contract::{IncrementContract, IncrementContractClient};
 use soroban_sdk::{
-    testutils::arbitrary::{self, Arbitrary},
+    testutils::arbitrary::{arbitrary, Arbitrary},
     Env,
 };
 
