@@ -39,7 +39,7 @@ fuzz_target!(|input: Input| {
     });
 
     // Turn off the CPU/memory budget for testing.
-    env.cost_estimate().detailed_metering().reset_unlimited();
+    env.cost_estimate().budget().reset_unlimited();
 
     let depositor_address = Address::generate(&env);
     let claimant_address = Address::generate(&env);
