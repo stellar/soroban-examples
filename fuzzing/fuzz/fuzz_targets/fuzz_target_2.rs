@@ -76,7 +76,7 @@ fuzz_target!(|input: Input| {
             snapshot.ledger.sequence_number += 1;
             snapshot.ledger.timestamp = snapshot.ledger.timestamp.saturating_add(step.advance_time);
             let env = Env::from_snapshot(snapshot);
-            env.budget().reset_unlimited();
+            env.cost_estimate().detailed_metering().reset_unlimited();
             env
         };
 
