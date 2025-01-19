@@ -2,7 +2,7 @@
 use libfuzzer_sys::fuzz_target;
 use soroban_increment_with_fuzz_contract::{IncrementContract, IncrementContractClient};
 use soroban_sdk::{
-    testutils::arbitrary::{self, Arbitrary},
+    testutils::arbitrary::{arbitrary, Arbitrary},
     Env,
 };
 
@@ -19,7 +19,10 @@ fuzz_target!(|input: Input| {
     let mut last: Option<u32> = None;
     for _ in input.by.. {
         match client.try_increment() {
-            Ok(Ok(current)) => assert!(Some(current) > last),
+            Ok(Ok(current)) => {
+                assert!(Some(current) > last);
+                last = Some(current);
+            }
             Err(Ok(_)) => {} // Expected error
             Ok(Err(_)) => panic!("success with wrong type returned"),
             Err(Err(_)) => panic!("unrecognised error"),
