@@ -160,10 +160,6 @@ struct LiquidityPool;
 #[contractimpl]
 impl LiquidityPool {
     pub fn __constructor(e: Env, token_wasm_hash: BytesN<32>, token_a: Address, token_b: Address) {
-        if token_a >= token_b {
-            panic!("token_a must be less than token_b");
-        }
-
         let share_contract = create_share_token(&e, token_wasm_hash, &token_a, &token_b);
 
         put_token_a(&e, token_a);

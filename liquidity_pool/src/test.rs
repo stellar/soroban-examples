@@ -44,15 +44,12 @@ fn test() {
     let e = Env::default();
     e.mock_all_auths();
 
-    let mut admin1 = Address::generate(&e);
-    let mut admin2 = Address::generate(&e);
+    let admin1 = Address::generate(&e);
+    let admin2 = Address::generate(&e);
 
-    let mut token1 = create_token_contract(&e, &admin1);
-    let mut token2 = create_token_contract(&e, &admin2);
-    if &token2.address < &token1.address {
-        std::mem::swap(&mut token1, &mut token2);
-        std::mem::swap(&mut admin1, &mut admin2);
-    }
+    let token1 = create_token_contract(&e, &admin1);
+    let token2 = create_token_contract(&e, &admin2);
+
     let user1 = Address::generate(&e);
     let liqpool = create_liqpool_contract(
         &e,
