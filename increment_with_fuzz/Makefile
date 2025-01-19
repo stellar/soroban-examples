@@ -4,6 +4,7 @@ all: test
 
 test: build
 	cargo test
+	cargo check --manifest-path=fuzz/Cargo.toml
 
 build:
 	stellar contract build
