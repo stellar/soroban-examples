@@ -3,9 +3,7 @@
 mod test;
 
 use num_integer::Roots;
-use soroban_sdk::{
-    contract, contractimpl, contracttype,contractmeta, Address, Env, token
-};
+use soroban_sdk::{contract, contractimpl, contractmeta, contracttype, token, Address, Env};
 
 #[derive(Clone)]
 #[contracttype]
@@ -51,11 +49,16 @@ fn get_balance_b(e: &Env) -> i128 {
 }
 
 fn get_shares(e: &Env, user: &Address) -> i128 {
-    e.storage().persistent().get(&DataKey::Shares(user.clone())).unwrap_or(0)
+    e.storage()
+        .persistent()
+        .get(&DataKey::Shares(user.clone()))
+        .unwrap_or(0)
 }
 
 fn put_shares(e: &Env, user: &Address, amount: i128) {
-    e.storage().persistent().set(&DataKey::Shares(user.clone()), &amount);
+    e.storage()
+        .persistent()
+        .set(&DataKey::Shares(user.clone()), &amount);
 }
 
 fn put_token_a(e: &Env, contract: Address) {
@@ -149,7 +152,7 @@ impl LiquidityPool {
         if token_a >= token_b {
             panic!("token_a must be less than token_b");
         }
-        
+
         put_token_a(&e, token_a);
         put_token_b(&e, token_b);
         put_total_shares(&e, 0);

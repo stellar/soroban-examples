@@ -6,8 +6,7 @@ use crate::LiquidityPoolClient;
 use soroban_sdk::{
     symbol_short,
     testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation},
-    token,
-    Address, Env, IntoVal
+    token, Address, Env, IntoVal,
 };
 
 fn create_token_contract<'a>(
@@ -26,13 +25,7 @@ fn create_liqpool_contract<'a>(
     token_a: &Address,
     token_b: &Address,
 ) -> LiquidityPoolClient<'a> {
-    LiquidityPoolClient::new(
-        e,
-        &e.register(
-            crate::LiquidityPool {},
-            (token_a, token_b),
-        ),
-    )
+    LiquidityPoolClient::new(e, &e.register(crate::LiquidityPool {}, (token_a, token_b)))
 }
 
 #[test]
@@ -47,11 +40,7 @@ fn test() {
     let (token2, token2_admin) = create_token_contract(&e, &admin2);
     let user1 = Address::generate(&e);
 
-    let liqpool = create_liqpool_contract(
-        &e,
-        &token1.address,
-        &token2.address,
-    );
+    let liqpool = create_liqpool_contract(&e, &token1.address, &token2.address);
 
     token1_admin.mint(&user1, &1000);
     assert_eq!(token1.balance(&user1), 1000);
@@ -163,11 +152,7 @@ fn deposit_amount_zero_should_panic() {
 
     let (token1, token1_admin) = create_token_contract(&e, &admin1);
     let (token2, token2_admin) = create_token_contract(&e, &admin2);
-    let liqpool = create_liqpool_contract(
-        &e,
-        &token1.address,
-        &token2.address,
-    );
+    let liqpool = create_liqpool_contract(&e, &token1.address, &token2.address);
 
     // Create a user
     let user1 = Address::generate(&e);
@@ -194,11 +179,7 @@ fn swap_reserve_one_nonzero_other_zero() {
     let (token1, token1_admin) = create_token_contract(&e, &admin1);
     let (token2, token2_admin) = create_token_contract(&e, &admin2);
 
-    let liqpool = create_liqpool_contract(
-        &e,
-        &token1.address,
-        &token2.address,
-    );
+    let liqpool = create_liqpool_contract(&e, &token1.address, &token2.address);
 
     // Create a user
     let user1 = Address::generate(&e);
