@@ -9,7 +9,7 @@ The examples in this repository:
 
 - **account**: This a basic multi-sig account contract that with a customizable per-token authorization policy
 - **alloc**: Allocates a temporary vector holding values (0..count), then computes and returns their sum
-atomic_multiswap**: This contract performs a batch of atomic token swaps between multiple parties and does a simple price matching
+- **atomic_multiswap**: This contract performs a batch of atomic token swaps between multiple parties and does a simple price matching
 - **atomic_swap**: This contract performs an atomic token swap between two parties that don't need to know each other 
 - **auth**: This contract demonstrates how to implement authorization using Soroban-managed auth framework for a simple case
 - **bls_signature**: This is a basic custom account contract that implements the FastAggregateVerify function in BLS Signatures
@@ -23,10 +23,13 @@ atomic_multiswap**: This contract performs a batch of atomic token swaps between
 - **fuzzing**: This is the 'timelock' example modified slightly to demonstrate Soroban's fuzzing capabilities.
 - **hello_world**: The simplest smart contract, it takes a parameter value and add it to a vector and returns it
 - **increment**: Demonstrates how to increment a stored value and returning the updated value
+- **increment_with_fuzz**: Demonstrates how to fuzz test the increment contract
+- **increment_with_pause**: Demonstrates how the increment contract can be paused by a dependency
 - **liquidity_pool**: A minimalistic implementation of a liquidity pool and token swap
 - **logging**: A basic example of how to use the standard Soroban terminal logging
 - **mint-lock**: Demonstrates token minting, including minting authorization
 - **other_custom_types**: The smart contract implements types, including custom types
+- **pause**: The pausing dependency used in the increment_with_pause contract
 - **simple_account**: A minimal example of an account contract, owned by a single ed25519 public key
 - **single_offer**: This contract implements trading of one token pair between one seller and multiple buyers
 - **time_lock**: This contract demonstrates how to write a timelock and implements a greatly simplified claimable balance
