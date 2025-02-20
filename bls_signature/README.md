@@ -21,7 +21,7 @@ test test::test ... ok
 See the main [README](../README.md) file for information about how to build and invoke the code using the CLI.
 
 ## Relevant Links
-- [Open example in GitPod](https://gitpod.io/#https://github.com/stellar/soroban-examples/tree/v21.6.0)
+- [Open example in GitPod](https://gitpod.io/#https://github.com/stellar/soroban-examples)
 - [BLS Signatures](https://www.ietf.org/archive/id/draft-irtf-cfrg-bls-signature-05.html#name-fastaggregateverify)
 - [Hashing to Elliptic Curves](https://datatracker.ietf.org/doc/html/rfc9380)
 - [Getting Started documentation](https://developers.stellar.org/docs/build/smart-contracts/getting-started)

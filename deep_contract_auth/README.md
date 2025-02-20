@@ -24,6 +24,6 @@ test test::test ... ok
 See the main [README](../README.md) file for information about how to build and invoke the code using the CLI.
 
 ## Relevant Links
-- [Open example in GitPod](https://gitpod.io/#https://github.com/stellar/soroban-examples/tree/v21.6.0)
+- [Open example in GitPod](https://gitpod.io/#https://github.com/stellar/soroban-examples)
 - [Authorization documentation](https://developers.stellar.org/docs/learn/encyclopedia/security/authorization)
 - [Getting Started documentation](https://developers.stellar.org/docs/build/smart-contracts/getting-started)

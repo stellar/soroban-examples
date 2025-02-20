@@ -5,7 +5,7 @@ This [guide](https://developers.stellar.org/docs/build/guides/conventions/upgrad
 
 
 ## Relevant Links
-- [Open example in GitPod](https://gitpod.io/#https://github.com/stellar/soroban-examples/tree/v21.6.0)
+- [Open example in GitPod](https://gitpod.io/#https://github.com/stellar/soroban-examples)
 - [Detailed description of this example](https://developers.stellar.org/docs/build/guides/conventions/upgrading-contracts)
 - [Getting Started documentation](https://developers.stellar.org/docs/build/smart-contracts/getting-started)
 
