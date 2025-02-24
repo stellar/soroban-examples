@@ -7,8 +7,8 @@ use crate::metadata::{read_decimal, read_name, read_symbol, write_metadata};
 #[cfg(test)]
 use crate::storage_types::{AllowanceDataKey, AllowanceValue, DataKey};
 use crate::storage_types::{INSTANCE_BUMP_AMOUNT, INSTANCE_LIFETIME_THRESHOLD};
-use soroban_sdk::token::{self, Interface as _};
-use soroban_sdk::{contract, contractimpl, Address, Env, String};
+use soroban_sdk::mux_token::MuxTokenInterface;
+use soroban_sdk::{contract, contractimpl, Address, Env, MuxedAddress, String};
 use soroban_token_sdk::metadata::TokenMetadata;
 use soroban_token_sdk::TokenUtils;
 
@@ -72,7 +72,7 @@ impl Token {
 }
 
 #[contractimpl]
-impl token::Interface for Token {
+impl MuxTokenInterface for Token {
     fn allowance(e: Env, from: Address, spender: Address) -> i128 {
         e.storage()
             .instance()
@@ -102,7 +102,9 @@ impl token::Interface for Token {
         read_balance(&e, id)
     }
 
-    fn transfer(e: Env, from: Address, to: Address, amount: i128) {
+    fn transfer(e: Env, from_mux: MuxedAddress, to_mux: MuxedAddress, amount: i128) {
+        let from = from_mux.to_address();
+        let to = to_mux.to_address();
         from.require_auth();
 
         check_nonnegative_amount(amount);
@@ -113,7 +115,9 @@ impl token::Interface for Token {
 
         spend_balance(&e, from.clone(), amount);
         receive_balance(&e, to.clone(), amount);
-        TokenUtils::new(&e).events().transfer(from, to, amount);
+        TokenUtils::new(&e)
+            .events()
+            .transfer(from_mux, to_mux, amount);
     }
 
     fn transfer_from(e: Env, spender: Address, from: Address, to: Address, amount: i128) {
