@@ -8,11 +8,22 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-soroban-sdk = { version = "22.0.1" }
-soroban-token-sdk = { version = "22.0.1" }
+soroban-sdk = { version = "22.0.7" }
+soroban-token-sdk = { version = "22.0.7" }
 
 [dev-dependencies]
-soroban-sdk = { version = "22.0.1", features = ["testutils"] }
+soroban-sdk = { version = "22.0.7", features = ["testutils"] }
+
+[patch.crates-io]
+soroban-env-common = { path = "../../rs-soroban-env2/soroban-env-common" }
+soroban-env-guest = { path = "../../rs-soroban-env2/soroban-env-guest" }
+soroban-env-host = { path = "../../rs-soroban-env2/soroban-env-host" }
+soroban-sdk = { path = "../../rs-soroban-sdk/soroban-sdk" }
+soroban-token-sdk = { path = "../../rs-soroban-sdk/soroban-token-sdk" }
+stellar-xdr = { path = "../../rs-stellar-xdr/" }
+
+[patch."https://github.com/stellar/rs-stellar-xdr"]
+stellar-xdr = { path = "../../rs-stellar-xdr/" }
 
 [profile.release]
 opt-level = "z"
