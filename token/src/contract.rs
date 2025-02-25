@@ -7,7 +7,11 @@ use crate::metadata::{read_decimal, read_name, read_symbol, write_metadata};
 #[cfg(test)]
 use crate::storage_types::{AllowanceDataKey, AllowanceValue, DataKey};
 use crate::storage_types::{INSTANCE_BUMP_AMOUNT, INSTANCE_LIFETIME_THRESHOLD};
-use soroban_sdk::token::{self, Interface as _};
+use soroban_sdk::token::{
+    self,
+    muxed_ext::{Mux, TokenMuxedExtInterface as _},
+    Interface as _,
+};
 use soroban_sdk::{contract, contractimpl, Address, Env, String};
 use soroban_token_sdk::metadata::TokenMetadata;
 use soroban_token_sdk::TokenUtils;
@@ -168,5 +172,22 @@ impl token::Interface for Token {
 
     fn symbol(e: Env) -> String {
         read_symbol(&e)
+    }
+}
+
+#[contractimpl]
+impl token::muxed_ext::TokenMuxedExtInterface for Token {
+    fn transfer_muxed(
+        e: Env,
+        from: Address,
+        from_mux: Mux,
+        to: Address,
+        to_mux: Mux,
+        amount: i128,
+    ) {
+        Self::transfer(e.clone(), from.clone(), to.clone(), amount);
+        TokenUtils::new(&e)
+            .events()
+            .transfer_muxed(from, from_mux, to, to_mux, amount);
     }
 }

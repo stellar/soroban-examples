@@ -8,11 +8,15 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-soroban-sdk = { version = "22.0.1" }
-soroban-token-sdk = { version = "22.0.1" }
+soroban-sdk = { version = "22.0.7" }
+soroban-token-sdk = { version = "22.0.7" }
 
 [dev-dependencies]
 soroban-sdk = { version = "22.0.1", features = ["testutils"] }
+
+[patch.crates-io]
+soroban-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", branch = "token-muxed-extension" }
+soroban-token-sdk = { git = "https://github.com/stellar/rs-soroban-sdk", branch = "token-muxed-extension" }
 
 [profile.release]
 opt-level = "z"
