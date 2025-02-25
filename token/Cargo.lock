@@ -1152,7 +1152,7 @@ dependencies = [
 [[package]]
 name = "soroban-ledger-snapshot"
 version = "22.0.7"
-source = "git+https://github.com/stellar/rs-soroban-sdk?branch=token-muxed-extension#8bd5b78608f7149246d5e5f0b3ef005e9b776968"
+source = "git+https://github.com/stellar/rs-soroban-sdk?branch=token-muxed-extension#a4aae373abd49f6addd0352278a3c558974efa22"
 dependencies = [
  "serde",
  "serde_json",
@@ -1165,7 +1165,7 @@ dependencies = [
 [[package]]
 name = "soroban-sdk"
 version = "22.0.7"
-source = "git+https://github.com/stellar/rs-soroban-sdk?branch=token-muxed-extension#8bd5b78608f7149246d5e5f0b3ef005e9b776968"
+source = "git+https://github.com/stellar/rs-soroban-sdk?branch=token-muxed-extension#a4aae373abd49f6addd0352278a3c558974efa22"
 dependencies = [
  "arbitrary",
  "bytes-lit",
@@ -1186,7 +1186,7 @@ dependencies = [
 [[package]]
 name = "soroban-sdk-macros"
 version = "22.0.7"
-source = "git+https://github.com/stellar/rs-soroban-sdk?branch=token-muxed-extension#8bd5b78608f7149246d5e5f0b3ef005e9b776968"
+source = "git+https://github.com/stellar/rs-soroban-sdk?branch=token-muxed-extension#a4aae373abd49f6addd0352278a3c558974efa22"
 dependencies = [
  "crate-git-revision",
  "darling",
@@ -1205,7 +1205,7 @@ dependencies = [
 [[package]]
 name = "soroban-spec"
 version = "22.0.7"
-source = "git+https://github.com/stellar/rs-soroban-sdk?branch=token-muxed-extension#8bd5b78608f7149246d5e5f0b3ef005e9b776968"
+source = "git+https://github.com/stellar/rs-soroban-sdk?branch=token-muxed-extension#a4aae373abd49f6addd0352278a3c558974efa22"
 dependencies = [
  "base64 0.13.1",
  "stellar-xdr",
@@ -1216,7 +1216,7 @@ dependencies = [
 [[package]]
 name = "soroban-spec-rust"
 version = "22.0.7"
-source = "git+https://github.com/stellar/rs-soroban-sdk?branch=token-muxed-extension#8bd5b78608f7149246d5e5f0b3ef005e9b776968"
+source = "git+https://github.com/stellar/rs-soroban-sdk?branch=token-muxed-extension#a4aae373abd49f6addd0352278a3c558974efa22"
 dependencies = [
  "prettyplease",
  "proc-macro2",
@@ -1239,7 +1239,7 @@ dependencies = [
 [[package]]
 name = "soroban-token-sdk"
 version = "22.0.7"
-source = "git+https://github.com/stellar/rs-soroban-sdk?branch=token-muxed-extension#8bd5b78608f7149246d5e5f0b3ef005e9b776968"
+source = "git+https://github.com/stellar/rs-soroban-sdk?branch=token-muxed-extension#a4aae373abd49f6addd0352278a3c558974efa22"
 dependencies = [
  "soroban-sdk",
 ]
