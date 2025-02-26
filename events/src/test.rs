@@ -10,9 +10,6 @@ fn test() {
     let client = IncrementContractClient::new(&env, &contract_id);
 
     assert_eq!(client.increment(), 1);
-    assert_eq!(client.increment(), 2);
-    assert_eq!(client.increment(), 3);
-
     assert_eq!(
         env.events().all(),
         vec![
@@ -22,11 +19,25 @@ fn test() {
                 (symbol_short!("COUNTER"), symbol_short!("increment")).into_val(&env),
                 1u32.into_val(&env)
             ),
+        ]
+    );
+    assert_eq!(client.increment(), 2);
+    assert_eq!(
+        env.events().all(),
+        vec![
+            &env,
             (
                 contract_id.clone(),
                 (symbol_short!("COUNTER"), symbol_short!("increment")).into_val(&env),
                 2u32.into_val(&env)
             ),
+        ]
+    );
+    assert_eq!(client.increment(), 3);
+    assert_eq!(
+        env.events().all(),
+        vec![
+            &env,
             (
                 contract_id,
                 (symbol_short!("COUNTER"), symbol_short!("increment")).into_val(&env),
