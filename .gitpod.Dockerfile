@@ -2,7 +2,7 @@ FROM gitpod/workspace-full:latest
 
 # Remove the existing rustup installation before updating due to:
 # https://github.com/gitpod-io/workspace-images/issues/933#issuecomment-1272616892
-RUN rustup self uninstall -y
+RUN rustup self uninstall -y || true
 RUN rm -rf .rustup
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain none -y
 

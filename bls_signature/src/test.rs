@@ -103,7 +103,7 @@ fn create_client(e: &Env) -> IncrementContractClient {
 #[test]
 fn test() {
     let env = Env::default();
-    env.budget().reset_unlimited();
+    env.cost_estimate().budget().reset_unlimited();
     let pk = aggregate_pk_bytes(&env);
     env.mock_all_auths();
 
@@ -112,8 +112,8 @@ fn test() {
     let payload = BytesN::random(&env);
     let sig_val = sign_and_aggregate(&env, &payload.clone().into()).to_val();
 
-    env.budget().reset_default();
+    env.cost_estimate().budget().reset_default();
     env.try_invoke_contract_check_auth::<AccError>(&client.address, &payload, sig_val, &vec![&env])
         .unwrap();
-    env.budget().print();
+    env.cost_estimate().budget().print();
 }
