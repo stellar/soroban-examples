@@ -79,7 +79,7 @@ jobs:
     - run: cargo version
     - run: rustup target add ${{ matrix.sys.target }}
     - run: rustup target add wasm32-unknown-unknown
-    - uses: stellar/stellar-cli@22.5.0
+    - uses: stellar/stellar-cli@v22.5.0
     - run: make test
       env:
         CARGO_BUILD_TARGET: ${{ matrix.sys.target }}
