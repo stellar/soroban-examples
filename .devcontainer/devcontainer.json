@@ -1,0 +1,70 @@
+{
+  "name": "Soroban Examples Dev Container(Debian Linux)",
+  "dockerFile": "Dockerfile",
+  "context": "..",
+  "remoteUser": "vscode",
+  "build": {
+    cacheFrom: ["chrisstellar/vsc-soroban-examples-95cce9-prebuild"],
+    "options": [
+      "--platform=linux/amd64"
+    ],
+    "args": {
+      "DEBIAN_VERSION": "bullseye"
+    }
+  },
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "16",
+    "storage": "32"
+  },
+  "mounts": [
+    "type=bind,source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/${remoteEnv:HOME}/.ssh,readonly"
+  ],
+  "forwardPorts": [
+    2222
+  ],
+  "portsAttributes": {
+    "2222": {
+      "onAutoForward": "notify",
+      "label": "ssh",
+      "requireLocalPort": true
+    }
+  },
+  "remoteEnv": {
+    "SOROBAN_RPC_URL": "https://soroban-testnet.stellar.org",
+    "SOROBAN_NETWORK_PASSPHRASE": "Test SDF Network ; September 2015",
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {},
+    "ghcr.io/devcontainers/features/rust:1": {
+      "targets": "wasm32-unknown-unknown",
+      "profile": "default",
+    },
+    "ghcr.io/lee-orr/rusty-dev-containers/sccache:0": {},
+  },
+  "customizations": {
+    "codespaces": {
+      "openFiles": [
+        "README.md"
+      ]
+    },
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+      ],
+      "settings": {
+        "workbench.settings.editor": "json",
+        "npm.autoDetect": false,
+        "telemetry.enableTelemetry": false,
+      }
+    },
+  },
+  "initializeCommand": "",
+  "onCreateCommand": "",
+  "updateContentCommand": {
+    "stellar-cli": ".devcontainer/updateContentStellarCli.sh",
+  },
+  "postCreateCommand": "",
+  "postStartCommand": "",
+  "postAttachCommand": ""
+}

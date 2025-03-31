@@ -38,7 +38,20 @@ atomic_multiswap**: This contract performs a batch of atomic token swaps between
 ## Get Started
 The easiest way to get started experimenting with the example smart contracts, is to use GitPod. Run the smart contracts directly from the browser, without having to install tools, cloning the repo, building the code and deploying it to testnet.
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/stellar/soroban-examples)
+<div style="text-align: center;" align="center">
+<strong>Devcontainers</strong>
+</div><br/>
+
+<div align="center">
+<a href="https://github.com/codespaces/new?repo=stellar/soroban-examples">
+  <img src="https://github.com/codespaces/badge.svg" alt="Open in Codespaces">
+</a>
+</div>
+<div align="center">
+<a href="https://app.codeanywhere.com/#https://github.com/stellar/soroban-examples">
+  <img src="https://codeanywhere.com/img/open-in-codeanywhere-btn.svg" alt="Open in Codeanywhere">
+</a>
+</div>
 
 ## Installation
 Stellar smart contracts are written in the [Rust](https://www.rust-lang.org/) programming language and can be deployed to the testnet or mainnet. 
