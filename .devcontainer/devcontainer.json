@@ -35,20 +35,16 @@
   "remoteEnv": {
     "STELLAR_RPC_URL": "https://soroban-testnet.stellar.org",
     "STELLAR_NETWORK_PASSPHRASE": "Test SDF Network ; September 2015",
-    "WORKSPACE": "${containerWorkspaceFolder}"
+    "WORKSPACE": "${containerWorkspaceFolder}",
+    "VSCODE_HOME": "/home/vscode"
   },
   "features": {
-    "ghcr.io/devcontainers/features/common-utils:2": {},
-    "ghcr.io/devcontainers/features/rust:1": {
-      "targets": "wasm32-unknown-unknown,x86_64-unknown-linux-gnu",
+    "ghcr.io/devcontainers/features/common-utils:2.5.3": {},
+    "ghcr.io/devcontainers/features/rust:1.3.1": {
+      "targets": "wasm32-unknown-unknown",
       "profile": "default",
-      "version": "1.85.0"
+      "version": "1.82"
     },
-    "ghcr.io/lee-orr/rusty-dev-containers/cargo-binstall:0": {
-      "packages": "stellar-cli@22.6.0"
-    },
-    "ghcr.io/lee-orr/rusty-dev-containers/cargo-watch:0": {},
-    "ghcr.io/lee-orr/rusty-dev-containers/sccache:0": {}
   },
   "customizations": {
     "codespaces": {

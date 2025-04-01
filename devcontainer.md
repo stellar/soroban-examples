@@ -91,9 +91,14 @@ _All of these features are officially listed on https://containers.dev/features_
   - Adds `seccomp=unconfined` during the build process to allow full range of system calls
 
 - [ghcr.io/lee-orr/rusty-dev-containers/cargo-binstall:0](https://github.com/lee-orr/rusty-dev-containers/tree/main/src/cargo-binstall)
-  - Used to install the Stellar CLI and sccache
+  - Used to install the Stellar CLI, sccache and cargo-watch
   - More lightweight then Linux Homebrew
-  - Linux Homebrew is no longer supported in Devcontainers(See below)
+  - sccache:  Used as a compiler wrapper and avoids compilation when possible, storing cached results
+  - More info on [sccache](https://github.com/mozilla/sccache)
+  - Watch over your project's source for changes, and runs Cargo commands when they occur.
+  - ⚠️ Cargo Watch is on life support: [it will not receive further updates](https://crates.io/crates/cargo-watch)
+  - Maintainer of Cargo Watch recommends we migrate to [bacon](https://github.com/lee-orr/rusty-dev-containers/tree/main/src/bacon)
+
   - Why not use Linux Homebrew?
     - Issue opened on [Homebrew Devcontainers Feature](https://github.com/meaningful-ooo/devcontainer-features/issues/68)
 
@@ -102,16 +107,7 @@ _All of these features are officially listed on https://containers.dev/features_
 [2025-03-29T21:31:43.114Z] Running Homebrew as root is extremely dangerous and no longer supported.
 #27 4100.8 As Homebrew does not drop privileges on installation you would be giving all
 #27 4100.8 build scripts full access to your system.
-#27 4100.9 Done!
 ```
-- [ghcr.io/lee-orr/rusty-dev-containers/sccache:0](https://github.com/lee-orr/rusty-dev-containers/tree/main/src/sccache)
-  - Used as a compiler wrapper and avoids compilation when possible, storing cached results
-  - More info on [sccache](https://github.com/mozilla/sccache)
-
-- [ghcr.io/lee-orr/rusty-dev-containers/cargo-watch:0](https://github.com/lee-orr/rusty-dev-containers/tree/main/src/cargo-watch)
-  - Watch over your project's source for changes, and runs Cargo commands when they occur.
-  - ⚠️ Cargo Watch is on life support: [it will not receive further updates](https://crates.io/crates/cargo-watch)
-  - Maintainer of Cargo Watch recommends we migrate to [bacon](https://github.com/lee-orr/rusty-dev-containers/tree/main/src/bacon)
 
 **ENV Vars:**
 - `ENV CARGO_INCREMENTAL=0`
