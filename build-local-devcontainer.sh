@@ -9,6 +9,7 @@ CONFIG_FILE="devcontainer.json"
 # Prebuild image on dockerhub
 # https://hub.docker.com/repository/docker/chrisstellar/vsc-soroban-examples-95cce9-prebuild/general
 PRE_BUILD_IMAGE="chrisstellar/vsc-soroban-examples-95cce9-prebuild"
+OCI_PRE_BUILD_IMAGE="chrisstellar/vsc-soroban-examples-oci-prebuild"
 
 BUILD_DETAILS_DIR="z-dc-build-info/"
 BUILD_DETAILS_FILE="build-details.json"
@@ -41,6 +42,7 @@ if [ $? -eq 0 ]; then
   # Push new pre-build
   docker tag "${image_name}":latest "${PRE_BUILD_IMAGE}":latest
   docker push "${PRE_BUILD_IMAGE}":latest
+
   echo " 🛠️ New prebuild pushed ${PRE_BUILD_IMAGE}:latest"
   echo " ⚙️ Build info available at ${BUILD_DETAILS_DIR}${BUILD_DETAILS_FILE}"
 
@@ -50,3 +52,19 @@ else
   echo " ❌ Error building devcontainer. Please check logs above."
   exit 1
 fi
+
+# Build the devcontainer
+oci_output=$(devcontainer build \
+  --workspace-folder . \
+  --config $DEVCONTAINER_DIR/$CONFIG_FILE \
+  --cache-from $PRE_BUILD_IMAGE:latest \
+  --output type=image,name="${OCI_PRE_BUILD_IMAGE}",mode=max,oci-mediatypes=true,compression=zstd)
+
+# Extract imageName from JSON output using jq
+oci_image_name=$(echo "$oci_output" | jq -r '.imageName[0]')
+
+# Push new pre-build
+docker tag "${oci_image_name}":latest "${OCI_PRE_BUILD_IMAGE}":latest
+docker push "${OCI_PRE_BUILD_IMAGE}":latest
+
+echo 'Y' | docker image prune

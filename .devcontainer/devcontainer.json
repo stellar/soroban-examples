@@ -5,6 +5,7 @@
   "remoteUser": "vscode",
   "build": {
     "cacheFrom": [
+      "chrisstellar/vsc-soroban-examples-oci-prebuild",
       "chrisstellar/vsc-soroban-examples-95cce9-prebuild"
     ],
     "options": [
