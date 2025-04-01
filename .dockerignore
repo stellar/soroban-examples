@@ -38,6 +38,7 @@ dist
 # Editor directories and files
 .vscode/
 *.code-workspace
+.idea/
 
 # OS-specific files
 .DS_Store

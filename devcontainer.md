@@ -80,7 +80,6 @@ Run in your local VS Code IDE with Codespaces backend with all of your local set
   - Update containerEnv for: `CARGO_HOME`, `RUSTUP_HOME` and adds Cargo to `PATH`
   - Adds `SYS_PTRACE` Capability which enables `LLDB` debugging in Linux
   - Adds `seccomp=unconfined` during the build process to allow full range of system calls
-- 
 
 **ENV Vars:**
 - `ENV CARGO_INCREMENTAL=0`
