@@ -2,7 +2,7 @@
 set -e
 
 # Stellar CLI from source
-cargo install --locked stellar-cli --features opt
+#cargo install --locked stellar-cli --features opt
 
 echo "Installed Stellar CLI"
 

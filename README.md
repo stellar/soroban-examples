@@ -36,7 +36,9 @@ atomic_multiswap**: This contract performs a batch of atomic token swaps between
 - **workspace**: This contract demonstrates how multiple smart contracts can be developed, tested, and built side-by-side in the same Rust workspace
 
 ## Get Started
-The easiest way to get started experimenting with the example smart contracts, is to use GitPod. Run the smart contracts directly from the browser, without having to install tools, cloning the repo, building the code and deploying it to testnet.
+The easiest way to get started experimenting with the example smart contracts, is to use Devcontainers. Run the smart 
+contracts directly in a browser-based IDE or using a Devcontainer as your local VSCode backend, without any config
+or DevOps overhead.
 
 <div style="text-align: center;" align="center">
 <strong>Devcontainers</strong>
@@ -52,6 +54,10 @@ The easiest way to get started experimenting with the example smart contracts, i
   <img src="https://codeanywhere.com/img/open-in-codeanywhere-btn.svg" alt="Open in Codeanywhere">
 </a>
 </div>
+
+**Learn more about how Devcontainers are used in this repo:**
+- Running [Devcontainers Locally](./devcontainer.md)
+- Check out the [Devcontainer config](./.devcontainer/devcontainer.json)
 
 ## Installation
 Stellar smart contracts are written in the [Rust](https://www.rust-lang.org/) programming language and can be deployed to the testnet or mainnet. 

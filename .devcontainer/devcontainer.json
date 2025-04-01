@@ -4,7 +4,9 @@
   "context": "..",
   "remoteUser": "vscode",
   "build": {
-    cacheFrom: ["chrisstellar/vsc-soroban-examples-95cce9-prebuild"],
+    cacheFrom: [
+      "chrisstellar/vsc-soroban-examples-95cce9-prebuild"
+    ],
     "options": [
       "--platform=linux/amd64"
     ],
@@ -37,8 +39,12 @@
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {},
     "ghcr.io/devcontainers/features/rust:1": {
-      "targets": "wasm32-unknown-unknown",
+      "targets": "wasm32-unknown-unknown,x86_64-unknown-linux-gnu",
       "profile": "default",
+      "version": "1.82"
+    },
+    "ghcr.io/lee-orr/rusty-dev-containers/cargo-binstall:0": {
+      "packages": "stellar-cli@22.6.0"
     },
     "ghcr.io/lee-orr/rusty-dev-containers/sccache:0": {},
   },
@@ -51,6 +57,8 @@
     "vscode": {
       "extensions": [
         "rust-lang.rust-analyzer",
+        "vadimcn.vscode-lldb",
+        "tamasfe.even-better-toml"
       ],
       "settings": {
         "workbench.settings.editor": "json",
@@ -60,10 +68,8 @@
     },
   },
   "initializeCommand": "",
-  "onCreateCommand": "",
-  "updateContentCommand": {
-    "stellar-cli": ".devcontainer/updateContentStellarCli.sh",
-  },
+  "onCreateCommand": ".devcontainer/updateContentStellarCli.sh",
+  "updateContentCommand": "",
   "postCreateCommand": "",
   "postStartCommand": "",
   "postAttachCommand": ""
