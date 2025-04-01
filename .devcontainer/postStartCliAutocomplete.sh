@@ -2,11 +2,11 @@
 set -e
 
 # Stellar CLI Auto-Complete
-echo "source <(stellar completion --shell bash)" >>"${remoteEnv:HOME}"/.bashrc
-echo "source <(stellar completion --shell bash)" >>"${remoteEnv:HOME}"/.zshrc
-echo "Enabled Stellar CLI auto-completion"
-
-echo "Installed Stellar CLI"
+chmod +w "${remoteEnv:HOME}/.bashrc" && \
+  echo "source <(stellar completion --shell bash)" >>"${remoteEnv:HOME}/.bashrc" && \
+  chmod +w "${remoteEnv:HOME}/.zshrc" && \
+  echo "source <(stellar completion --shell bash)" >>"${remoteEnv:HOME}/.zshrc" && \
+  echo "Enabled Stellar CLI auto-completion"
 
 # Check the exit status and provide informative output
 if [ $? -eq 0 ]; then

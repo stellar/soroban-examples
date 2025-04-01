@@ -7,6 +7,11 @@ Building the Devcontainer locally.
 Requires:
 - [Devcontainer CLI](https://github.com/devcontainers/cli)
 
+Install Devcontainer CLI:
+```
+npm install -g @devcontainers/cli
+```
+
 **Local build script:**
 ```
 ./build-local-devcontainer.sh
@@ -27,7 +32,7 @@ Requires:
 
 Install Github CLI:
 ```
-npm install -g @devcontainers/cli
+brew install gh
 ```
 
 Create new Codespace:
@@ -69,6 +74,9 @@ Run in your local VS Code IDE with Codespaces backend with all of your local set
   - Container OS:  Debian
 
 **Features:**
+
+_All of these features are officially listed on https://containers.dev/features_
+
 - [ghcr.io/devcontainers/features/common-utils:2](https://github.com/devcontainers/features/tree/main/src/common-utils)
   - Installs CLI utils for zsh
   - Sets non-root user and UID
@@ -120,6 +128,8 @@ Run in your local VS Code IDE with Codespaces backend with all of your local set
     - Should NOT be used when packaging for distribution or cross-compiling
 - `ENV DEBIAN_FRONTEND=noninteractive`
   - Accepts the default answer for all questions for apt-get installs
+- `PKG_CONFIG_PATH='/usr/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/share/pkgconfig'`
+  - Specifies additional paths in which pkg-config will search for its .pc files
 
 ## Learn about Devcontainers
 
