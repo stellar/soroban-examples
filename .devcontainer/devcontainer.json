@@ -47,12 +47,15 @@
       "packages": "stellar-cli@22.6.0"
     },
     "ghcr.io/lee-orr/rusty-dev-containers/sccache:0": {},
+    "ghcr.io/lee-orr/rusty-dev-containers/cargo-watch:0": {}
   },
   "customizations": {
     "codespaces": {
       "openFiles": [
         "README.md",
-        "FULL_HELP_DOCS.md"
+        "FULL_HELP_DOCS.md",
+        "increment/src/lib.rs",
+        "increment/src/test.rs"
       ]
     },
     "vscode": {
@@ -90,5 +93,5 @@
   "updateContentCommand": "",
   "postCreateCommand": "",
   "postStartCommand": ".devcontainer/postStartCliAutocomplete.sh",
-  "postAttachCommand": ".devcontainer/postAttachWelcomeText.sh"
+  "postAttachCommand": ".devcontainer/postAttachWelcomeText.sh",
 }

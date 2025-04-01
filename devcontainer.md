@@ -100,6 +100,11 @@ Run in your local VS Code IDE with Codespaces backend with all of your local set
   - Used as a compiler wrapper and avoids compilation when possible, storing cached results
   - More info on [sccache](https://github.com/mozilla/sccache)
 
+- [ghcr.io/lee-orr/rusty-dev-containers/cargo-watch:0](https://github.com/lee-orr/rusty-dev-containers/tree/main/src/cargo-watch)
+  - Watch over your project's source for changes, and runs Cargo commands when they occur.
+  - ⚠️ Cargo Watch is on life support: [it will not receive further updates](https://crates.io/crates/cargo-watch)
+  - Maintainer of Cargo Watch recommends we migrate to [bacon](https://github.com/lee-orr/rusty-dev-containers/tree/main/src/bacon)
+
 **ENV Vars:**
 - `ENV CARGO_INCREMENTAL=0`
   - Force disabling of incremental compilation

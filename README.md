@@ -167,6 +167,5 @@ Contributions are welcome, please create a pull request with the following infor
 - [Smart Contract Documentation](https://developers.stellar.org/docs/build)
 - [Getting Started Guide](https://developers.stellar.org/docs/build/smart-contracts/getting-started)
 - [Example descriptions in the documentation](https://developers.stellar.org/docs/build/smart-contracts/example-contracts)
-- [Link to examples in GitPod](https://gitpod.io/#https://github.com/stellar/soroban-examples/tree/v21.6.0)
 - [Stellar Developers Discord server](https://discord.gg/stellardev)
 

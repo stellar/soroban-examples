@@ -4,7 +4,8 @@ FROM mcr.microsoft.com/devcontainers/rust:bullseye
 ENV CARGO_INCREMENTAL=0 \
     RUSTFLAGS='-C target-cpu=native' \
     DEBIAN_FRONTEND=noninteractive \
-    PKG_CONFIG_PATH='/usr/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/share/pkgconfig'
+    PKG_CONFIG_PATH='/usr/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/share/pkgconfig' \
+    CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
 
 WORKDIR "/workspace/soroban-examples"
 
@@ -13,8 +14,10 @@ RUN apt-get update && apt-get install -y \
   libdbus-1-dev \
   libudev-dev \
   pkg-config \
-  dbus
+  dbus \
+  binaryen
 
+CMD ["/bin/bash", "-c", "make", "all", "&"]
 
 
 
