@@ -8,7 +8,7 @@ ENV CARGO_INCREMENTAL=0 \
 
 WORKDIR "/workspace/soroban-examples"
 
-# Enable Rust Bindings for Linux D-Bus inter-process communication(Required for Stellar CLI dependencies)
+# Enable Rust Bindings for Linux D-Bus interprocess communication(Required for Stellar CLI dependencies)
 RUN apt-get update && apt-get install -y \
   libdbus-1-dev \
   libudev-dev \

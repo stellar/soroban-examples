@@ -73,6 +73,7 @@ Run in your local VS Code IDE with Codespaces backend with all of your local set
   - Installs CLI utils for zsh
   - Sets non-root user and UID
   - Upgrades packages
+
 - [ghcr.io/devcontainers/features/rust:1](https://github.com/devcontainers/features/tree/main/src/rust)
   - Sets rustup install profile
   - Sets rust targets
@@ -80,6 +81,24 @@ Run in your local VS Code IDE with Codespaces backend with all of your local set
   - Update containerEnv for: `CARGO_HOME`, `RUSTUP_HOME` and adds Cargo to `PATH`
   - Adds `SYS_PTRACE` Capability which enables `LLDB` debugging in Linux
   - Adds `seccomp=unconfined` during the build process to allow full range of system calls
+
+- [ghcr.io/lee-orr/rusty-dev-containers/cargo-binstall:0](https://github.com/lee-orr/rusty-dev-containers/tree/main/src/cargo-binstall)
+  - Used to install the Stellar CLI and sccache
+  - More lightweight then Linux Homebrew
+  - Linux Homebrew is no longer supported in Devcontainers(See below)
+  - Why not use Linux Homebrew?
+    - Issue opened on [Homebrew Devcontainers Feature](https://github.com/meaningful-ooo/devcontainer-features/issues/68)
+
+```
+[2025-03-29T21:31:42.982Z] #27 4100.8 Error: 
+[2025-03-29T21:31:43.114Z] Running Homebrew as root is extremely dangerous and no longer supported.
+#27 4100.8 As Homebrew does not drop privileges on installation you would be giving all
+#27 4100.8 build scripts full access to your system.
+#27 4100.9 Done!
+```
+- [ghcr.io/lee-orr/rusty-dev-containers/sccache:0](https://github.com/lee-orr/rusty-dev-containers/tree/main/src/sccache)
+  - Used as a compiler wrapper and avoids compilation when possible, storing cached results
+  - More info on [sccache](https://github.com/mozilla/sccache)
 
 **ENV Vars:**
 - `ENV CARGO_INCREMENTAL=0`
