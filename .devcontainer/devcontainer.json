@@ -24,13 +24,17 @@
     "type=bind,source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/${remoteEnv:HOME}/.ssh,readonly"
   ],
   "forwardPorts": [
-    2222
+    2222,
+    4226
   ],
   "portsAttributes": {
     "2222": {
       "onAutoForward": "notify",
       "label": "ssh",
       "requireLocalPort": true
+    },
+    "4226": {
+      "label": "sccache"
     }
   },
   "remoteEnv": {
@@ -57,14 +61,6 @@
       ]
     },
     "vscode": {
-      "json.schemas": [
-        {
-          "fileMatch": [
-            "*/devcontainer-feature.json"
-          ],
-          "url": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainerFeature.schema.json"
-        }
-      ],
       "extensions": [
         "rust-lang.rust-analyzer",
         "vadimcn.vscode-lldb",

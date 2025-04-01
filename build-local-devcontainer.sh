@@ -53,17 +53,18 @@ else
   exit 1
 fi
 
-# Build the devcontainer
+# Build the devcontainer again with OCI Output
 oci_output=$(devcontainer build \
   --workspace-folder . \
   --config $DEVCONTAINER_DIR/$CONFIG_FILE \
   --cache-from $PRE_BUILD_IMAGE:latest \
+  --cache-to type=registry,ref="${OCI_PRE_BUILD_IMAGE}":latest,mode=max,oci-artifact=true \
   --output type=image,name="${OCI_PRE_BUILD_IMAGE}",mode=max,oci-mediatypes=true,compression=zstd)
 
-# Extract imageName from JSON output using jq
+# Extract ociImageName from JSON output using jq
 oci_image_name=$(echo "$oci_output" | jq -r '.imageName[0]')
 
-# Push new pre-build
+# Push new OCI pre-build
 docker tag "${oci_image_name}":latest "${OCI_PRE_BUILD_IMAGE}":latest
 docker push "${OCI_PRE_BUILD_IMAGE}":latest
 

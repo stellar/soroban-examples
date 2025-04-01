@@ -1,11 +1,16 @@
 #!/bin/bash
 set -e
 
+test -d ~/.linuxbrew && eval "$(~/.linuxbrew/bin/brew shellenv)" && \
+test -d /home/linuxbrew/.linuxbrew && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && \
+echo "eval \"\$($(brew --prefix)/bin/brew shellenv)\"" >> ~/.bashrc
+echo "eval \"\$($(brew --prefix)/bin/brew shellenv)\"" >> ~/.zshrc
+
 # Stellar CLI Auto-Complete
-chmod +w "${remoteEnv:VSCODE_HOME}.bashrc" && \
-  echo "source <(stellar completion --shell bash)" >>"${remoteEnv:VSCODE_HOME}.bashrc" && \
-  chmod +w "${remoteEnv:VSCODE_HOME}.zshrc" && \
-  echo "source <(stellar completion --shell zsh)" >>"${remoteEnv:VSCODE_HOME}.zshrc" && \
+chmod +w "~/.bashrc" && \
+  echo "source <(stellar completion --shell bash)" >>"~/.bashrc" && \
+  chmod +w "~/.zshrc" && \
+  echo "source <(stellar completion --shell zsh)" >>"~/.zshrc" && \
   echo "Enabled Stellar CLI auto-completion"
 
 # Check the exit status and provide informative output
