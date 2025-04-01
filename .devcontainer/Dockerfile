@@ -20,10 +20,10 @@ RUN mkdir -p /home/linuxbrew/ && \
 USER vscode
 
 RUN HOMEBREW_BUNDLE_NO_UPGRADE=1 HOMEBREW_BUNDLE_INSTALL_CLEANUP=1 HOMEBREW_NO_INSTALL_UPGRADE=1 && \
-    HOMEBREW_NO_ANALYTICS=1 HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_ENV_SYNC_STRICT=1 HOMEBREW_ON_LINUX=1 && \
+    HOMEBREW_NO_ANALYTICS=1 HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_ENV_SYNC_STRICT=1 && \
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
     /home/linuxbrew/.linuxbrew/bin/brew install sccache cargo-watch stellar-cli && \
-    /home/linuxbrew/.linuxbrew/bin/brew cleanup --scrub
+    /home/linuxbrew/.linuxbrew/bin/brew cleanup
 
 ENV SCCACHE_DIR=/home/vscode/.cache/sccache \
     SCCACHE_CONF=/home/vscode/.config/sccache/config \
