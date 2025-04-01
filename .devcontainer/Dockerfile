@@ -1,13 +1,8 @@
 # Use the official Rust image as a base
 FROM mcr.microsoft.com/devcontainers/rust:bullseye
 
-ENV CARGO_INCREMENTAL=0 \
-    RUSTFLAGS='-C target-cpu=native' \
-    DEBIAN_FRONTEND=noninteractive \
-    PKG_CONFIG_PATH='/usr/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/share/pkgconfig' \
-    CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
-
-WORKDIR "/workspace/soroban-examples"
+ENV DEBIAN_FRONTEND=noninteractive \
+    PKG_CONFIG_PATH='/usr/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/share/pkgconfig'
 
 # Enable Rust Bindings for Linux D-Bus interprocess communication(Required for Stellar CLI dependencies)
 RUN apt-get update && apt-get install -y \
@@ -16,6 +11,9 @@ RUN apt-get update && apt-get install -y \
   pkg-config \
   dbus \
   binaryen
+
+ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse \
+    CARGO_INCREMENTAL=0
 
 CMD ["/bin/bash", "-c", "make", "all", "&"]
 

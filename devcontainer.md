@@ -121,11 +121,6 @@ _All of these features are officially listed on https://containers.dev/features_
     - Dependencies changed: Layer cache miss and complete rebuild (No use for incremental compilation)
     - Incremental compilation in Devcontainers generates extra artifacts that make caching layers bigger 
       with no benefit
-- `ENV RUSTFLAGS='-C target-cpu=native'`
-  - Rust will generate and optimize code for the CPU running the compiler
-  - Rationale:
-    - Best practice when building programs which you plan to ONLY use locally
-    - Should NOT be used when packaging for distribution or cross-compiling
 - `ENV DEBIAN_FRONTEND=noninteractive`
   - Accepts the default answer for all questions for apt-get installs
 - `PKG_CONFIG_PATH='/usr/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/share/pkgconfig'`

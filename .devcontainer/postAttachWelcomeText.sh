@@ -25,9 +25,3 @@ echo "  👩‍🔬 Stellar Lab "
 echo "  🔗 https://lab.stellar.org/"
 echo "========================================="
 
-# Check the exit status and provide informative output
-if [ $? -eq 0 ]; then
-  echo " ✅ postAttachWelcomeText.sh executed successfully"
-else
-  echo " ❌ Error executing postAttachWelcomeText.sh"
-fi

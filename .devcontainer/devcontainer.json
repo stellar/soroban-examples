@@ -35,19 +35,20 @@
   "remoteEnv": {
     "STELLAR_RPC_URL": "https://soroban-testnet.stellar.org",
     "STELLAR_NETWORK_PASSPHRASE": "Test SDF Network ; September 2015",
+    "WORKSPACE": "${containerWorkspaceFolder}"
   },
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {},
     "ghcr.io/devcontainers/features/rust:1": {
       "targets": "wasm32-unknown-unknown,x86_64-unknown-linux-gnu",
       "profile": "default",
-      "version": "1.82"
+      "version": "1.85.0"
     },
     "ghcr.io/lee-orr/rusty-dev-containers/cargo-binstall:0": {
       "packages": "stellar-cli@22.6.0"
     },
-    "ghcr.io/lee-orr/rusty-dev-containers/sccache:0": {},
-    "ghcr.io/lee-orr/rusty-dev-containers/cargo-watch:0": {}
+    "ghcr.io/lee-orr/rusty-dev-containers/cargo-watch:0": {},
+    "ghcr.io/lee-orr/rusty-dev-containers/sccache:0": {}
   },
   "customizations": {
     "codespaces": {
@@ -91,7 +92,7 @@
   "initializeCommand": "",
   "onCreateCommand": "",
   "updateContentCommand": "",
-  "postCreateCommand": ".devcontainer/postCreateEnv.sh",
+  "postCreateCommand": "",
   "postStartCommand": ".devcontainer/postStartCliAutocomplete.sh",
   "postAttachCommand": ".devcontainer/postAttachWelcomeText.sh",
 }
