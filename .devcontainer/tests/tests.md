@@ -53,8 +53,6 @@ Our tests are designed to:
 - Be idempotent (can be run multiple times safely)
 - Clean up after themselves
 
-## Common Testing Patterns
-
 ### Testing File Operations
 
 ```bash
