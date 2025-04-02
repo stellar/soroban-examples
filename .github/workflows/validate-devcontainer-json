@@ -1,0 +1,31 @@
+name: Validate DevContainer JSON
+
+on:
+  push:
+    paths:
+      - '.devcontainer/devcontainer.json'
+  pull_request:
+    paths:
+      - '.devcontainer/devcontainer.json'
+
+jobs:
+  validate-devcontainer:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+
+    - name: Install ajv-cli
+      run: npm install -g ajv-cli
+
+    - name: Download DevContainer JSON Schema
+      run: curl -o devContainer.schema.json https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json
+
+    - name: Validate devcontainer.json
+      run: ajv validate -s devContainer.schema.json -d .devcontainer/devcontainer.json
