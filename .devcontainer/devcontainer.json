@@ -12,7 +12,8 @@
       "--platform=linux/amd64"
     ],
     "args": {
-      "DEBIAN_VERSION": "bullseye"
+      "DEBIAN_VERSION": "bullseye",
+      "BUILDKIT_INLINE_CACHE": "1"
     }
   },
   "hostRequirements": {

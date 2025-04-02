@@ -113,6 +113,71 @@ _All of these features are officially listed on https://containers.dev/features_
 - `CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse`
   - Protocol which uses HTTPS to download only necessary crates
 
+## Multi-Layer Caching Strategy
+
+These caching layers are powered by the Docker technology [BuildKit](https://docs.docker.com/build/buildkit/).
+
+**Cache Layer 1**
+
+Build Kit inline cache.  Enabled by a simple env var:  `BUILDKIT_INLINE_CACHE=1`
+
+Inline cache embeds cache metadata into the image config. The layers in the image will be left untouched 
+compared to the image with no cache information.  
+
+[Inline Embedded Cache](https://github.com/moby/buildkit?tab=readme-ov-file#inline-push-image-and-cache-together)
+
+**Cache Layer 2**
+
+[Local file caching](https://docs.docker.com/build/cache/backends/local/).  The local cache store is simple and 
+relatively effectively and can be used with other caching layers. It stores your cache as local files on disk or in 
+a Docker volume using an OCI image layout for the underlying directory structure.
+
+Example of the data being cached:
+```json
+{
+  "mediaType": "application/vnd.oci.image.manifest.v1+json",
+  "config": {
+    "mediaType": "application/vnd.buildkit.cacheconfig.v0",
+    "digest": "sha256:0c14d3e9278b63f9d4ce9ac93a01037db185bba8ab7765bb1921c70a92b0cdea",
+    "size": 5007
+  },
+  "layers": [
+    {
+      "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+      "digest": "sha256:0289a1845fafa2e548c7bfc34e2dfcc10ac9b80d7f31620de9b37125572c7c08",
+      "size": 233
+    }
+  ]
+}
+```
+
+**Cache Layer 3**
+
+Now we are pushing images with embedded caching and metadata to registries such as OCI
+artifacts and manifests.
+
+[Registry Cache](https://docs.docker.com/build/exporters/image-registry/)
+
+**Cache Layer 3**
+
+Github Prebuilds.  Github prebuild are definitely the most effective caching layer and greatly
+speed up Github Codespaces.
+
+```text
+# Generate manifest
+/.codespaces/agent/bin/codespaces prebuild manifest --config-id $CONFIGURATION_ID --image-version Raw
+# Upload templates
+/.codespaces/agent/bin/codespaces prebuild upload --storage-type v2 --target-locations WestUs2 --target-locations WestUs3 --repo-name anataliocs/soroban-examples 
+--devcontainer-path $DEVCONTAINER_PATH --config-id $CONFIGURATION_ID --flush-only --image-version Raw --features-env FEATURE_FLAGS_JSON
+```
+
+There are still more caching options:
+- AWS S3 buckets
+- Github Action caches
+
+Ultimately though, we just want the end-user developer to have a good experience and for the coding environment to 
+load up quickly and be responsive.
+
 ## Learn about Devcontainers
 
 - [Devcontainers Briefing](https://github.com/anataliocs/comprehensive-devcontainer/blob/main/briefing.md)

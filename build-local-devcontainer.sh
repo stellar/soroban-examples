@@ -6,10 +6,25 @@ DEVCONTAINER_DIR=".devcontainer"
 # Define configuration file path
 CONFIG_FILE="devcontainer.json"
 
-# Prebuild image on dockerhub
-# https://hub.docker.com/repository/docker/chrisstellar/vsc-soroban-examples-95cce9-prebuild/general
-PRE_BUILD_IMAGE="chrisstellar/vsc-soroban-examples-95cce9-prebuild"
-OCI_PRE_BUILD_IMAGE="chrisstellar/vsc-soroban-examples-oci-prebuild"
+# Injected these values with the 1 passworld CLI.  Not really secret but it helps manage injecting values into a page
+# well.  https://developer.1password.com/docs/cli/reference/commands/inject/
+# Use `op inject -i build-local-devcontainer.sh` with the 1password CLI or just just env vars.
+###
+
+# Example
+# - buildpack-deps:bookworm
+# - buildpack-deps:bookworm2
+# - /User/cache
+
+pre_build_image="op://Employee/soroban-examples/Local build script/Prebuild Repo 1" | op inject
+oci_pre_build_image="op://Employee/soroban-examples/Local build script/OCI Prebuild" | op inject
+local_file_directory="op://Employee/soroban-examples/Local build script/Local directory" | op inject
+
+###
+
+PRE_BUILD_IMAGE="$pre_build_image"
+OCI_PRE_BUILD_IMAGE="$oci_pre_build_image"
+LOCAL_BUILD_CACHE="$local_file_directory"
 
 BUILD_DETAILS_DIR="z-dc-build-info/"
 BUILD_DETAILS_FILE="build-details.json"
@@ -26,7 +41,10 @@ fi
 output=$(devcontainer build \
   --workspace-folder . \
   --config $DEVCONTAINER_DIR/$CONFIG_FILE \
-  --cache-from $PRE_BUILD_IMAGE:latest)
+  --cache-from $PRE_BUILD_IMAGE:latest \
+  --cache-from type=local,src=${LOCAL_BUILD_CACHE},mode=max \
+  --cache-to type=local,dest=${LOCAL_BUILD_CACHE},mode=max,oci-mediatypes=true,image-manifest=true \
+  --output type=image,name="${PRE_BUILD_IMAGE}:latest",mode=max,name-canonical=true,store=true)
 
 #--dotfiles-repository
 
@@ -58,8 +76,9 @@ oci_output=$(devcontainer build \
   --workspace-folder . \
   --config $DEVCONTAINER_DIR/$CONFIG_FILE \
   --cache-from $PRE_BUILD_IMAGE:latest \
-  --cache-to type=registry,ref="${OCI_PRE_BUILD_IMAGE}":latest,mode=max,oci-artifact=true \
-  --output type=image,name="${OCI_PRE_BUILD_IMAGE}",mode=max,oci-mediatypes=true,compression=zstd)
+  --cache-from "${OCI_PRE_BUILD_IMAGE}:latest" \
+  --cache-to type=registry,ref="${OCI_PRE_BUILD_IMAGE}:latest",mode=max,oci-artifact=true \
+  --output type=image,name="${OCI_PRE_BUILD_IMAGE}:latest",mode=max,oci-mediatypes=true,store=true,compression=zstd)
 
 # Extract ociImageName from JSON output using jq
 oci_image_name=$(echo "$oci_output" | jq -r '.imageName[0]')
