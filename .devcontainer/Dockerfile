@@ -1,5 +1,5 @@
 # Use the official Rust image as a base
-FROM mcr.microsoft.com/devcontainers/rust:bullseye
+FROM mcr.microsoft.com/devcontainers/rust:1.0.9-bullseye
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PKG_CONFIG_PATH='/usr/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/share/pkgconfig' \
@@ -31,7 +31,7 @@ RUN HOMEBREW_BUNDLE_NO_UPGRADE=1 HOMEBREW_BUNDLE_INSTALL_CLEANUP=1 HOMEBREW_NO_I
     /home/linuxbrew/.linuxbrew/bin/brew install sccache cargo-watch stellar-cli && \
     /home/linuxbrew/.linuxbrew/bin/brew cleanup --scrub && rm -rf "$(brew --cache)"
 
-ENTRYPOINT exec "nohup /bin/bash -c make all&"
+
 
 
 
