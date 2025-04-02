@@ -87,6 +87,6 @@
   "onCreateCommand": "",
   "updateContentCommand": "",
   "postCreateCommand": "",
-  "postStartCommand": ".devcontainer/postStartCliAutocomplete.sh",
-  "postAttachCommand": ".devcontainer/postAttachWelcomeText.sh",
+  "postStartCommand": ".devcontainer/post_start_cli_autocomplete.sh",
+  "postAttachCommand": ".devcontainer/post_attach_welcome_text.sh",
 }

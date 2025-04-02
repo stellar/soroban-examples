@@ -38,7 +38,6 @@ dist
 # Editor directories and files
 .vscode/
 *.code-workspace
-.idea/
 
 # OS-specific files
 .DS_Store
@@ -46,6 +45,8 @@ Thumbs.db
 
 .env
 .devpod-internal
-build-local-devcontainer.sh.sh
+build-devcontainer.sh.sh
 z-dc-build-info/*
 devcontainer.md
+.run
+.devcontainer/tests

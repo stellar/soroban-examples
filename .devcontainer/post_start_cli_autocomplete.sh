@@ -15,7 +15,10 @@ export PATH="/home/linuxbrew/.linuxbrew/bin/brew":$PATH
 echo "export PATH='/home/linuxbrew/.linuxbrew/bin:$PATH'" >> ~/.zshrc
 export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
 echo "export PATH='/home/linuxbrew/.linuxbrew/bin:$PATH'" >> ~/.bashrc
-
+# shellcheck source=/Users/chris.anatalio/.bashrc
+source ~/.bashrc
+# shellcheck source=/Users/chris.anatalio/.zshrc
+source ~/.zshrc
 
 # Stellar CLI Auto-Complete
 chmod 644 ~/.bashrc && \
@@ -25,10 +28,10 @@ chmod 644 ~/.bashrc && \
   echo "Enabled Stellar CLI auto-completion"
 
 # Store exit status of the previous command
-RESULT=$?
+result=$?
 
 # Check the exit status and provide informative output
-if [ $RESULT -eq 0 ]; then
+if [ $result -eq 0 ]; then
   echo " ✅ postStartCliAutocomplete.sh executed successfully"
 else
   echo " ❌ Error executing postStartCliAutocomplete.sh"

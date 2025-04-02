@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="build-local-devcontainer.sh" type="BashProRunConfiguration">
+    <option name="defaultInterpreter" value="none" />
+    <envs>
+      <env name="local_file_directory" value="$USER_HOME$/build-cache-soroban-examples/" />
+      <env name="oci_pre_build_image" value="chrisstellar/vsc-soroban-examples-oci-prebuild" />
+      <env name="pre_build_image" value="chrisstellar/vsc-soroban-examples-95cce9-prebuild" />
+    </envs>
+    <option name="interpreterPath" value="/opt/homebrew/Cellar/bash/5.2.37/bin/bash" />
+    <option name="passParentEnvs" value="false" />
+    <option name="scriptParameters" value="chrisstellar/vsc-soroban-examples-95cce9-prebuild chrisstellar/vsc-soroban-examples-oci-prebuild $USER_HOME$/build-cache-soroban-examples/" />
+    <option name="scriptPath" value="$PROJECT_DIR$/build_devcontainer.sh" />
+    <RunnerSettings bashdbVersion="Automatic" bashPathMapper="Automatic" RunnerId="pro.bashsupport.shDebugRunner" />
+    <method v="2" />
+  </configuration>
+</component>

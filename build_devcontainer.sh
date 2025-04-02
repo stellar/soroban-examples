@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Define devcontainer configuration directory
-DEVCONTAINER_DIR=".devcontainer"
+devcontainer_dir=".devcontainer"
 
 # Define configuration file path
-CONFIG_FILE="devcontainer.json"
+config_file="devcontainer.json"
 
 # Use env vars or enter in your own values here.
 ###
@@ -14,48 +14,47 @@ CONFIG_FILE="devcontainer.json"
 # - buildpack-deps:bookworm2
 # - /User/cache
 
+pre_build_image=$1
+oci_pre_build_image=$2
+local_build_cache=$3
 
-PRE_BUILD_IMAGE=$1
-OCI_PRE_BUILD_IMAGE=$2
-LOCAL_BUILD_CACHE=$3
+build_details_dir="z-dc-build-info/"
+build_details_file="build-details.json"
 
-BUILD_DETAILS_DIR="z-dc-build-info/"
-BUILD_DETAILS_FILE="build-details.json"
-
-if [ ! -e "${BUILD_DETAILS_DIR}" ]; then
-  mkdir -p "${BUILD_DETAILS_DIR}"
+if [ ! -e "${build_details_dir}" ]; then
+  mkdir -p "${build_details_dir}"
 fi
 
-if [ ! -e "${BUILD_DETAILS_DIR}${BUILD_DETAILS_FILE}" ]; then
-  touch "${BUILD_DETAILS_DIR}${BUILD_DETAILS_FILE}"
+if [ ! -e "${build_details_dir}${build_details_file}" ]; then
+  touch "${build_details_dir}${build_details_file}"
 fi
 
 # Build the devcontainer
 output=$(devcontainer build \
   --workspace-folder . \
-  --config $DEVCONTAINER_DIR/$CONFIG_FILE \
-  --cache-from $PRE_BUILD_IMAGE:latest \
-  --cache-from type=local,src=${LOCAL_BUILD_CACHE},mode=max \
-  --cache-to type=local,dest=${LOCAL_BUILD_CACHE},mode=max,oci-mediatypes=true,image-manifest=true \
-  --output type=image,name="${PRE_BUILD_IMAGE}:later");
+  --config $devcontainer_dir/$config_file \
+  --cache-from "$pre_build_image":latest \
+  --cache-from type=local,src="${local_build_cache}",mode=max \
+  --cache-to type=local,dest="${local_build_cache}",mode=max,oci-mediatypes=true,image-manifest=true \
+  --output type=image,name="${pre_build_image}:later")
 
 #--dotfiles-repository
 
 # Check the exit status and push pre-build
-if [ $? -eq 0 ]; then
+if mycmd; then
   echo " ✅ Devcontainer built successfully"
 
   # Extract imageName from JSON output using jq
   image_name=$(echo "$output" | jq -r '.imageName[0]')
   echo " 🔹 Image name: ${image_name}"
-  docker inspect "${image_name}" >>"${BUILD_DETAILS_DIR}${BUILD_DETAILS_FILE}"
+  docker inspect "${image_name}" >> "${build_details_dir}${build_details_file}"
 
   # Push new pre-build
-  docker tag "${image_name}":latest "${PRE_BUILD_IMAGE}":latest
-  docker push "${PRE_BUILD_IMAGE}":latest
+  docker tag "${image_name}":latest "${pre_build_image}":latest
+  docker push "${pre_build_image}":latest
 
-  echo " 🛠️ New prebuild pushed ${PRE_BUILD_IMAGE}:latest"
-  echo " ⚙️ Build info available at ${BUILD_DETAILS_DIR}${BUILD_DETAILS_FILE}"
+  echo " 🛠️ New prebuild pushed ${pre_build_image}:latest"
+  echo " ⚙️ Build info available at ${build_details_dir}${build_details_file}"
 
   echo 'Y' | docker image prune
 
@@ -67,17 +66,17 @@ fi
 # Build the devcontainer again with OCI Output
 oci_output=$(devcontainer build \
   --workspace-folder . \
-  --config $DEVCONTAINER_DIR/$CONFIG_FILE \
-  --cache-from $PRE_BUILD_IMAGE:latest \
-  --cache-from "${OCI_PRE_BUILD_IMAGE}:latest" \
-  --cache-to type=registry,ref="${OCI_PRE_BUILD_IMAGE}:latest",mode=max,oci-artifact=true \
-  --output type=image,name="${OCI_PRE_BUILD_IMAGE}:latest",mode=max,oci-mediatypes=true,compression=zstd)
+  --config $devcontainer_dir/$config_file \
+  --cache-from "$pre_build_image":latest \
+  --cache-from "${oci_pre_build_image}:latest" \
+  --cache-to type=registry,ref="${oci_pre_build_image}:latest",mode=max,oci-artifact=true \
+  --output type=image,name="${oci_pre_build_image}:latest",mode=max,oci-mediatypes=true,compression=zstd)
 
 # Extract ociImageName from JSON output using jq
 oci_image_name=$(echo "$oci_output" | jq -r '.imageName[0]')
 
 # Push new OCI pre-build
-docker tag "${oci_image_name}":latest "${OCI_PRE_BUILD_IMAGE}":latest
-docker push "${OCI_PRE_BUILD_IMAGE}":latest
+docker tag "${oci_image_name}":latest "${oci_pre_build_image}":latest
+docker push "${oci_pre_build_image}":latest
 
 echo 'Y' | docker image prune

@@ -158,7 +158,7 @@ artifacts and manifests.
 
 [Registry Cache](https://docs.docker.com/build/exporters/image-registry/)
 
-**Cache Layer 3**
+**Cache Layer 4**
 
 Github Prebuilds.  Github prebuild are definitely the most effective caching layer and greatly
 speed up Github Codespaces.
