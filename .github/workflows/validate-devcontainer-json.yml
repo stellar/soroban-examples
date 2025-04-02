@@ -22,7 +22,7 @@ jobs:
   validate-devcontainer:
     runs-on: ubuntu-latest
     env:
-      CACHING_IMG: chrisstellar/vsc-soroban-examples-95cce9-prebuild #parameterrize this
+      CACHING_IMG: chrisstellar/vsc-soroban-examples-95cce9-prebuild
       OCI_CACHING_IMG: chrisstellar/vsc-soroban-examples-oci-prebuild
       LOCAL_CACHE: ${{github.workspace}}/prebuild-cache
       DOCKER_BUILDKIT: 1
