@@ -14,15 +14,10 @@ CONFIG_FILE="devcontainer.json"
 # - buildpack-deps:bookworm2
 # - /User/cache
 
-pre_build_image=$1
-oci_pre_build_image=$2
-local_file_directory=$3
 
-###
-
-PRE_BUILD_IMAGE="$pre_build_image"
-OCI_PRE_BUILD_IMAGE="$oci_pre_build_image"
-LOCAL_BUILD_CACHE="$local_file_directory"
+PRE_BUILD_IMAGE=$1
+OCI_PRE_BUILD_IMAGE=$2
+LOCAL_BUILD_CACHE=$3
 
 BUILD_DETAILS_DIR="z-dc-build-info/"
 BUILD_DETAILS_FILE="build-details.json"
@@ -42,7 +37,7 @@ output=$(devcontainer build \
   --cache-from $PRE_BUILD_IMAGE:latest \
   --cache-from type=local,src=${LOCAL_BUILD_CACHE},mode=max \
   --cache-to type=local,dest=${LOCAL_BUILD_CACHE},mode=max,oci-mediatypes=true,image-manifest=true \
-  --output type=image,name="${PRE_BUILD_IMAGE}:latest",mode=max,name-canonical=true)
+  --output type=image,name="${PRE_BUILD_IMAGE}:later");
 
 #--dotfiles-repository
 
