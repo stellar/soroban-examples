@@ -7,6 +7,16 @@ on:
   pull_request:
     paths:
       - '.devcontainer/'
+  workflow_dispatch:
+    inputs:
+      CACHING_IMG:
+        description: 'Overide Default Caching image'
+        required: false
+        default: 'chrisstellar/vsc-soroban-examples-95cce9-prebuild'
+      OCI_CACHING_IMG:
+        description: 'Override OCI caching image'
+        required: false
+        default: 'chrisstellar/vsc-soroban-examples-oci-prebuild'
 
 jobs:
   validate-devcontainer:
