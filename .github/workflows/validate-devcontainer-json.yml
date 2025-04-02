@@ -1,31 +1,67 @@
-name: Validate DevContainer JSON
+name: Validate DevContainer Config and Push Prebuild Cache
 
 on:
   push:
     paths:
-      - '.devcontainer/devcontainer.json'
+      - '.devcontainer/'
   pull_request:
     paths:
-      - '.devcontainer/devcontainer.json'
+      - '.devcontainer/'
 
 jobs:
   validate-devcontainer:
     runs-on: ubuntu-latest
+    env:
+      CACHING_IMG: chrisstellar/vsc-soroban-examples-95cce9-prebuild #parameterrize this
+      OCI_CACHING_IMG: chrisstellar/vsc-soroban-examples-oci-prebuild
+      LOCAL_CACHE: {{github.workspace}}/prebuild-cache
+      DOCKER_BUILDKIT: 1
+      DOCKER_BUILDKIT_CACHE: 1
+      DOCKER_BUILDKIT_CACHE_REPO: type=local,src=${{ env.LOCAL_CACHE}}
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '16'
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
 
-    - name: Install ajv-cli
-      run: npm install -g ajv-cli
+      - name: Install ajv-cli
+        run: npm install -g ajv-cli
 
-    - name: Download DevContainer JSON Schema
-      run: curl -o devContainer.schema.json https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json
+      - name: Download DevContainer JSON Schema
+        run: curl -o devContainer.schema.json https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json
 
-    - name: Validate devcontainer.json
-      run: ajv validate -s devContainer.schema.json -d .devcontainer/devcontainer.json
+      - name: Validate devcontainer.json
+        run: ajv validate -s devContainer.schema.json -d .devcontainer/devcontainer.json
+
+      - name: Set up shellcheck
+        uses: ludeeus/action-shellcheck@v1
+
+      - # Add support for more platforms with QEMU (optional)
+        # https://github.com/docker/setup-qemu-action
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/amd64/v2,linux/amd64/v3,linux/arm64,linux/arm64/v8
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Run shellcheck on .devcontainer scripts
+        # shellcheck disable=SC2046
+        # shellcheck disable=SC2086
+        # shellcheck disable=SC2006
+        # shellcheck disable=SC2002
+        # shellcheck disable=SC2001
+        # shellcheck disable=SC2005
+        run: |
+          shellcheck .devcontainer/**/*.sh
+          shellcheck .devcontainer/tests/run_tests.sh
+
+      - name: Test build and push manual prebuild cache
+        run: |
+          chmod +x ./build_devcontainer.sh
+          ./build_devcontainer.sh ${{ env.CACHING_IMG}} ${{ env.OCI_CACHING_IMG}} ${{ env.LOCAL_CACHE}}
