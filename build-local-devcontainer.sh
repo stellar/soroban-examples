@@ -14,9 +14,9 @@ CONFIG_FILE="devcontainer.json"
 # - buildpack-deps:bookworm2
 # - /User/cache
 
-pre_build_image=""
-oci_pre_build_image=""
-local_file_directory=""
+pre_build_image=$1
+oci_pre_build_image=$2
+local_file_directory=$3
 
 ###
 
@@ -42,7 +42,7 @@ output=$(devcontainer build \
   --cache-from $PRE_BUILD_IMAGE:latest \
   --cache-from type=local,src=${LOCAL_BUILD_CACHE},mode=max \
   --cache-to type=local,dest=${LOCAL_BUILD_CACHE},mode=max,oci-mediatypes=true,image-manifest=true \
-  --output type=image,name="${PRE_BUILD_IMAGE}:latest",mode=max,name-canonical=true,store=true)
+  --output type=image,name="${PRE_BUILD_IMAGE}:latest",mode=max,name-canonical=true)
 
 #--dotfiles-repository
 
@@ -76,7 +76,7 @@ oci_output=$(devcontainer build \
   --cache-from $PRE_BUILD_IMAGE:latest \
   --cache-from "${OCI_PRE_BUILD_IMAGE}:latest" \
   --cache-to type=registry,ref="${OCI_PRE_BUILD_IMAGE}:latest",mode=max,oci-artifact=true \
-  --output type=image,name="${OCI_PRE_BUILD_IMAGE}:latest",mode=max,oci-mediatypes=true,store=true,compression=zstd)
+  --output type=image,name="${OCI_PRE_BUILD_IMAGE}:latest",mode=max,oci-mediatypes=true,compression=zstd)
 
 # Extract ociImageName from JSON output using jq
 oci_image_name=$(echo "$oci_output" | jq -r '.imageName[0]')

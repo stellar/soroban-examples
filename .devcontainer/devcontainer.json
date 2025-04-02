@@ -83,7 +83,7 @@
       }
     },
   },
-  "initializeCommand": "",
+  "initializeCommand": "chmod +w ~/.bashrc && chmod +w ~/.zshrc",
   "onCreateCommand": "",
   "updateContentCommand": "",
   "postCreateCommand": "",

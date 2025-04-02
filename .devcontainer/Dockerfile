@@ -29,7 +29,8 @@ RUN HOMEBREW_BUNDLE_NO_UPGRADE=1 HOMEBREW_BUNDLE_INSTALL_CLEANUP=1 HOMEBREW_NO_I
     HOMEBREW_NO_ANALYTICS=1 HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_ENV_SYNC_STRICT=1 && \
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
     /home/linuxbrew/.linuxbrew/bin/brew install sccache cargo-watch stellar-cli && \
-    /home/linuxbrew/.linuxbrew/bin/brew cleanup --scrub && rm -rf "$(brew --cache)"
+    /home/linuxbrew/.linuxbrew/bin/brew cleanup --scrub
+
 
 
 
