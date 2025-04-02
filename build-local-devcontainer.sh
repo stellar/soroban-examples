@@ -6,9 +6,7 @@ DEVCONTAINER_DIR=".devcontainer"
 # Define configuration file path
 CONFIG_FILE="devcontainer.json"
 
-# Injected these values with the 1 passworld CLI.  Not really secret but it helps manage injecting values into a page
-# well.  https://developer.1password.com/docs/cli/reference/commands/inject/
-# Use `op inject -i build-local-devcontainer.sh` with the 1password CLI or just just env vars.
+# Use env vars or enter in your own values here.
 ###
 
 # Example
@@ -16,9 +14,9 @@ CONFIG_FILE="devcontainer.json"
 # - buildpack-deps:bookworm2
 # - /User/cache
 
-pre_build_image="op://Employee/soroban-examples/Local build script/Prebuild Repo 1" | op inject
-oci_pre_build_image="op://Employee/soroban-examples/Local build script/OCI Prebuild" | op inject
-local_file_directory="op://Employee/soroban-examples/Local build script/Local directory" | op inject
+pre_build_image=""
+oci_pre_build_image=""
+local_file_directory=""
 
 ###
 

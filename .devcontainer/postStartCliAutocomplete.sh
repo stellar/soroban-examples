@@ -1,12 +1,18 @@
 #!/bin/bash
 set -e
 
-# Add Homebrew to path
+
+# Add Brew and Stellar CLI to $PATH and terminals
+chmod +w ~/.bashrc && chmod +w ~/.zshrc && \
 test -d ~/.linuxbrew && eval "$(~/.linuxbrew/bin/brew shellenv)" && \
 test -d /home/linuxbrew/.linuxbrew && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && \
-echo "eval \"\$($(brew --prefix)/bin/brew shellenv)\"" >> ~/.bashrc && \
-echo "eval \"\$($(brew --prefix)/bin/brew shellenv)\"" >> ~/.zshrc
-
+echo "eval $($(brew --prefix)/bin/brew shellenv)" >> ~/.bashrc && \
+echo "eval $($(brew --prefix)/bin/brew shellenv)" >> ~/.zshrc && \
+export PATH="$(brew --prefix)/bin:$PATH" && \
+export PATH="$(brew --prefix)/bin:$PATH" && \
+echo 'eval "$(brew shellenv)"' >> ~/.bashrc && \
+echo 'eval "$(brew shellenv)"' >> ~/.zshrc && \
+source ~/.bashrc && source ~/.zshrc
 
 # Stellar CLI Auto-Complete
 chmod +w ~/.bashrc && \
