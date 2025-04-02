@@ -14,7 +14,7 @@ jobs:
     env:
       CACHING_IMG: chrisstellar/vsc-soroban-examples-95cce9-prebuild #parameterrize this
       OCI_CACHING_IMG: chrisstellar/vsc-soroban-examples-oci-prebuild
-      LOCAL_CACHE: {{github.workspace}}/prebuild-cache
+      LOCAL_CACHE: ${{github.workspace}}/prebuild-cache
       DOCKER_BUILDKIT: 1
       DOCKER_BUILDKIT_CACHE: 1
       DOCKER_BUILDKIT_CACHE_REPO: type=local,src=${{ env.LOCAL_CACHE}}
