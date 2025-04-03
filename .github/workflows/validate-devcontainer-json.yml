@@ -21,13 +21,6 @@ on:
 jobs:
   validate-devcontainer:
     runs-on: ubuntu-latest
-    env:
-      CACHING_IMG: chrisstellar/vsc-soroban-examples-95cce9-prebuild
-      OCI_CACHING_IMG: chrisstellar/vsc-soroban-examples-oci-prebuild
-      LOCAL_CACHE: ${{github.workspace}}/prebuild-cache
-      DOCKER_BUILDKIT: 1
-      DOCKER_BUILDKIT_CACHE: 1
-      DOCKER_BUILDKIT_CACHE_REPO: type=local,src=${{ env.LOCAL_CACHE}}
 
     steps:
       - name: Checkout repository
@@ -79,9 +72,10 @@ jobs:
 
       - name: Set up Ajv
         uses: actions/github-script@v6
+
         with:
-          debug: '${{ runner.debug == '1' }}'
           script: |
+            script: |
             const fs = require('fs');
             var Ajv = require('ajv');
             var ajv = new Ajv();
@@ -94,7 +88,7 @@ jobs:
             ajv.addSchema(require('./devContainer.codespaces.schema.json'), 'devContainer.codespaces.schema.json');
             ajv.addSchema(require('./devContainer.vscode.schema.json'), 'devContainer.vscode.schema.json');
             fs.writeFileSync('devContainer.complete.schema.json', JSON.stringify(ajv.getSchema('devContainer.complete.schema.json').schema, null, 2));
-            ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-19.json'));      
+            ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-19.json'));    
 
       - name: Compile Schemas
         run: |
