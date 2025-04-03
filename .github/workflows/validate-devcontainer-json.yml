@@ -31,24 +31,88 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          clean: 'true'
+
+      - name: Stage Schema Testing Area
+        run: |
+          mkdir -p schemas/
+          cp .devcontainer/devcontainer.json schemas/
+
+      - name: Download DevContainer JSON Schemas
+        env:
+          BASE_SCHEMA: https://json-schema.org/draft/2019-09/schema
+          DEVCONTAINER_BASE_SCHEMA: https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.base.schema.json
+          DEVCONTAINER_SCHEMA: https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json
+          DEVCONTAINER_FEATURE_SCHEMA: https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainerFeature.schema.json
+          DEVCONTAINER_CODESPACES_SCHEMA: https://raw.githubusercontent.com/microsoft/vscode/main/extensions/configuration-editing/schemas/devContainer.codespaces.schema.json
+          DEVCONTAINER_VSCODE_SCHEMA: https://raw.githubusercontent.com/microsoft/vscode/main/extensions/configuration-editing/schemas/devContainer.vscode.schema.json
+        run: |
+          curl ${{env.DEVCONTAINER_BASE_SCHEMA}} | jq ". + {\"\$id\": \"${{env.DEVCONTAINER_BASE_SCHEMA}}\"}" > devContainer.base.schema.json
+          curl ${{env.DEVCONTAINER_SCHEMA}} | jq ". + {\"\$id\": \"${{env.DEVCONTAINER_SCHEMA}}\"}" > devContainer.schema.json
+          curl ${{env.DEVCONTAINER_FEATURE_SCHEMA}} | jq ". + {\"\$id\": \"${{env.DEVCONTAINER_FEATURE_SCHEMA}}\"}" > devContainerFeature.schema.json
+          curl ${{env.DEVCONTAINER_CODESPACES_SCHEMA}} | jq ". + {\"\$id\": \"${{env.DEVCONTAINER_CODESPACES_SCHEMA}}\"}" > devContainer.codespaces.schema.json
+          curl ${{env.DEVCONTAINER_VSCODE_SCHEMA}} | jq ". + {\"\$id\": \"${{env.DEVCONTAINER_VSCODE_SCHEMA}}\"}" > devContainer.vscode.schema.json
+          curl -o base.schema.json ${{env.BASE_SCHEMA}}
+          
+          jq '.allOf[0] = {"$ref" : "${{env.DEVCONTAINER_SCHEMA}}"}' devContainer.schema.json > devContainer.complete.schema.json
+        working-directory: schemas/
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'schemas/package-lock.json'
 
       - name: Install ajv-cli
-        run: npm install -g ajv-cli
+        run: |
+          npm install ajv
+          npm install json-merge-patch --save
+          npm install ajv-keywords
+          npm install ajv-merge-patch
+          npm install ajv-formats
+          npm install ajv-cli
+          npm install -g ajv-cli
+        working-directory: schemas/
 
-      - name: Download DevContainer JSON Schema
-        run: curl -o devContainer.schema.json https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json
+      - name: Set up Ajv
+        uses: actions/github-script@v6
+        with:
+          debug: '${{ runner.debug == '1' }}'
+          script: |
+            const fs = require('fs');
+            var Ajv = require('ajv');
+            var ajv = new Ajv();
+            require("ajv-keywords")(ajv)
+            require('ajv-merge-patch')(ajv);
+            const content = fs.readFileSync('devContainer.complete.schema.json', 'utf8');
+            fs.writeFileSync('devContainer.complete.schema.json', content.replace(/\$id/g, '"$id"'));
+            ajv.addSchema(require('./devContainer.base.schema.json'), 'devContainer.base.schema.json');
+            ajv.addSchema(require('./devContainerFeature.schema.json'), 'devContainerFeature.schema.json');
+            ajv.addSchema(require('./devContainer.codespaces.schema.json'), 'devContainer.codespaces.schema.json');
+            ajv.addSchema(require('./devContainer.vscode.schema.json'), 'devContainer.vscode.schema.json');
+            fs.writeFileSync('devContainer.complete.schema.json', JSON.stringify(ajv.getSchema('devContainer.complete.schema.json').schema, null, 2));
+            ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-19.json'));      
 
-      - name: Validate devcontainer.json
-        run: ajv validate -s devContainer.schema.json -d .devcontainer/devcontainer.json
+      - name: Compile Schemas
+        run: |
+          ls
+          
+          ajv validate --allow-matching-properties --data --allow-union-types --coerce-types \
+          --loop-required=10 --own-properties  \
+          --inline-refs=true --all-errors=true --strict=false --verbose --use-defaults --remove-additional=failing \
+          -d "devcontainer.json" \
+          -s "devContainer.complete.schema.json" \
+          -r "devContainer.base.schema.json" \
+          -r "devContainerFeature.schema.json" \
+          -r "devContainer.codespaces.schema.json" \
+          -r "devContainer.vscode.schema.json" -c ajv-keywords
+        working-directory: schemas/
 
       - name: Set up shellcheck
-        uses: ludeeus/action-shellcheck@v1
+        uses: ludeeus/action-shellcheck@master
 
       - # Add support for more platforms with QEMU (optional)
         # https://github.com/docker/setup-qemu-action
@@ -74,4 +138,10 @@ jobs:
       - name: Test build and push manual prebuild cache
         run: |
           chmod +x ./build_devcontainer.sh
-          ./build_devcontainer.sh ${{ env.CACHING_IMG}} ${{ env.OCI_CACHING_IMG}} ${{ env.LOCAL_CACHE}}
+          ./build_devcontainer.sh $CACHING_IMG $OCI_CACHING_IMG $env.LOCAL_CACHE
+        env:
+          CACHING_IMG: ${{ github.event.inputs.CACHING_IMG }}
+          OCI_CACHING_IMG: ${{ github.event.inputs.OCI_CACHING_IMG }}
+          LOCAL_CACHE: ${{ github.workspace }}/local-cache
+          DOCKER_BUILDKIT: 1
+          BUILDKIT_INLINE_CACHE: 1
