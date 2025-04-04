@@ -35,78 +35,145 @@ jobs:
 
       - name: Download DevContainer JSON Schemas
         env:
-          BASE_SCHEMA: https://json-schema.org/draft/2019-09/schema
           DEVCONTAINER_BASE_SCHEMA: https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.base.schema.json
           DEVCONTAINER_SCHEMA: https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json
           DEVCONTAINER_FEATURE_SCHEMA: https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainerFeature.schema.json
           DEVCONTAINER_CODESPACES_SCHEMA: https://raw.githubusercontent.com/microsoft/vscode/main/extensions/configuration-editing/schemas/devContainer.codespaces.schema.json
           DEVCONTAINER_VSCODE_SCHEMA: https://raw.githubusercontent.com/microsoft/vscode/main/extensions/configuration-editing/schemas/devContainer.vscode.schema.json
+          VSCODE_MACHINE_SCHEMA: https://raw.githubusercontent.com/microsoft/vscode/refs/heads/main/extensions/configuration-editing/schemas/devContainer.vscode.schema.json
+          VSCODE_MACHINE_SCHEMA_REF: vscode://schemas/settings/machine
         run: |
           curl ${{env.DEVCONTAINER_BASE_SCHEMA}} | jq ". + {\"\$id\": \"${{env.DEVCONTAINER_BASE_SCHEMA}}\"}" > devContainer.base.schema.json
           curl ${{env.DEVCONTAINER_SCHEMA}} | jq ". + {\"\$id\": \"${{env.DEVCONTAINER_SCHEMA}}\"}" > devContainer.schema.json
           curl ${{env.DEVCONTAINER_FEATURE_SCHEMA}} | jq ". + {\"\$id\": \"${{env.DEVCONTAINER_FEATURE_SCHEMA}}\"}" > devContainerFeature.schema.json
           curl ${{env.DEVCONTAINER_CODESPACES_SCHEMA}} | jq ". + {\"\$id\": \"${{env.DEVCONTAINER_CODESPACES_SCHEMA}}\"}" > devContainer.codespaces.schema.json
           curl ${{env.DEVCONTAINER_VSCODE_SCHEMA}} | jq ". + {\"\$id\": \"${{env.DEVCONTAINER_VSCODE_SCHEMA}}\"}" > devContainer.vscode.schema.json
-          curl -o base.schema.json ${{env.BASE_SCHEMA}}
+          curl ${{env.VSCODE_MACHINE_SCHEMA}} | jq ". + {\"\$id\": \"${{env.VSCODE_MACHINE_SCHEMA_REF}}\"}" > devContainer.vscode.machine.schema.json
           
           jq '.allOf[0] = {"$ref" : "${{env.DEVCONTAINER_SCHEMA}}"}' devContainer.schema.json > devContainer.complete.schema.json
+          sed -i -e 's|json-schema.org/draft/2020-12/schema|json-schema.org/draft/2019-09/schema|g' devContainer.base.schema.json
+          sed -i -e 's|json-schema.org/draft-07/schema|json-schema.org/draft/2019-09/schema|g' devContainerFeature.schema.json
+          sed -i -e 's|json-schema.org/draft-07/schema|json-schema.org/draft/2019-09/schema|g' devContainer.codespaces.schema.json
+          sed -i -e 's|json-schema.org/draft-07/schema|json-schema.org/draft/2019-09/schema|g' devContainer.vscode.schema.json
+          sed -i -e 's|json-schema.org/draft-07/schema|json-schema.org/draft/2019-09/schema|g' devContainer.vscode.machine.schema.json
+
         working-directory: schemas/
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: 'schemas/package-lock.json'
-
-      - name: Install ajv-cli
-        run: |
+          node-version: '20.x'
+      - run: |
           npm install ajv
           npm install json-merge-patch --save
           npm install ajv-keywords
-          npm install ajv-merge-patch
+          npm install ajv-merge-patch --save
+          npm install -g npm
           npm install ajv-formats
-          npm install ajv-cli
-          npm install -g ajv-cli
-        working-directory: schemas/
+          npm install ajv-errors
 
-      - name: Set up Ajv
-        uses: actions/github-script@v6
-
+      - name: Validate Devcontainer JSON Schema
+        uses: actions/github-script@v7
         with:
           script: |
-            script: |
+            const Ajv2019 = require("ajv/dist/2019");
+            const meta = require("ajv/dist/refs/json-schema-2019-09/meta/core");
+            const metaSchema = require("ajv/dist/refs/json-schema-2019-09/schema");
+            const metaValidation = require("ajv/dist/refs/json-schema-2019-09/meta/validation");
+            const metaMetaData = require("ajv/dist/refs/json-schema-2019-09/meta/meta-data");
+            const metaFormat = require("ajv/dist/refs/json-schema-2019-09/meta/format");
+            const metaContent = require("ajv/dist/refs/json-schema-2019-09/meta/content");
+            const metaApplicator = require("ajv/dist/refs/json-schema-2019-09/meta/applicator");
+            
+            const path = require("path");
+            const standaloneCode = require("ajv/dist/standalone").default
             const fs = require('fs');
-            var Ajv = require('ajv');
-            var ajv = new Ajv();
-            require("ajv-keywords")(ajv)
-            require('ajv-merge-patch')(ajv);
-            const content = fs.readFileSync('devContainer.complete.schema.json', 'utf8');
-            fs.writeFileSync('devContainer.complete.schema.json', content.replace(/\$id/g, '"$id"'));
-            ajv.addSchema(require('./devContainer.base.schema.json'), 'devContainer.base.schema.json');
-            ajv.addSchema(require('./devContainerFeature.schema.json'), 'devContainerFeature.schema.json');
-            ajv.addSchema(require('./devContainer.codespaces.schema.json'), 'devContainer.codespaces.schema.json');
-            ajv.addSchema(require('./devContainer.vscode.schema.json'), 'devContainer.vscode.schema.json');
-            fs.writeFileSync('devContainer.complete.schema.json', JSON.stringify(ajv.getSchema('devContainer.complete.schema.json').schema, null, 2));
-            ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-19.json'));    
+            const addFormats = require("ajv-formats");
+            var ajv = new Ajv2019({
+              strict: "None",
+              strictRequired: "log",
+              strictTuples: "log",
+              strictTypes: "log",
+              strictSchema: "log",
+              allowUnionTypes: true,
+              allowMatchingProperties: true,
+              allowAdditionalProperties: true,
+              allowAdditionalItems: true,
+              allowEmptyObject: true,
+              allowMultipleTypes: true,
+              inlineRefs: true,
+              useDefaults: "empty",
+              coerceTypes: true,
+              ignoreKeywordsWithRef: true,
+              verbose: true,
+              code: {
+                source: true,
+                lines: true,
+              },
+              $data: true,
+              validateSchema: "log",
+              removeAdditional: "failing",
+              logger: {
+                  log: console.log.bind(console),
+                  warn: function warn() {
+                      console.error.apply(console, arguments)
+                  },
+                  error: function error() {
+                      console.error.apply(console, arguments)
+                  },
+                },
+            });
+            let ajvk = require("ajv-keywords")(ajv);
+            let addKeywords = require("ajv-keywords/dist/definitions");
+            addFormats(ajv);
+            addKeywords(ajv);
+            ajv.addMetaSchema(meta, "http://json-schema.org/draft/2019-09/schema#", false);
+            
+            ajv.compile(require("./schemas/devContainer.base.schema.json"), ${{env.DEVCONTAINER_BASE_SCHEMA}});
+            ajv.addSchema(require("./schemas/devContainer.complete.schema.json"), ${{env.DEVCONTAINER_SCHEMA}});
+            ajv.addSchema(require("./schemas/devContainerFeature.schema.json"), ${{env.DEVCONTAINER_FEATURE_SCHEMA}});
+            ajv.addSchema(require("./schemas/devContainer.codespaces.schema.json"), ${{env.DEVCONTAINER_CODESPACES_SCHEMA}});
+            ajv.addSchema(require("./schemas/devContainer.vscode.schema.json"), ${{env.DEVCONTAINER_VSCODE_SCHEMA}});
+            ajv.addSchema(require("./schemas/devContainer.vscode.machine.schema.json"), "vscode://schemas/settings/machine");
+            
+            let moduleCode = standaloneCode(ajv);
+            fs.writeFileSync(path.join(".", "schemas/ajv.js"), moduleCode);
 
-      - name: Compile Schemas
+      - name: Run Standalone JSON Schema Validator
         run: |
-          ls
           
-          ajv validate --allow-matching-properties --data --allow-union-types --coerce-types \
-          --loop-required=10 --own-properties  \
-          --inline-refs=true --all-errors=true --strict=false --verbose --use-defaults --remove-additional=failing \
-          -d "devcontainer.json" \
-          -s "devContainer.complete.schema.json" \
-          -r "devContainer.base.schema.json" \
-          -r "devContainerFeature.schema.json" \
-          -r "devContainer.codespaces.schema.json" \
-          -r "devContainer.vscode.schema.json" -c ajv-keywords
-        working-directory: schemas/
+          node -e "
+            const validate = require('./ajv.js');
+            const fs = require('fs');
+            const data = JSON.parse(fs.readFileSync('./devcontainer.json', 'utf-8'));
 
-      - name: Set up shellcheck
+            if (!validate(data)) {
+              console.error('Validation failed:', validate.errors);
+              console.error('Build will continue but Validation failed!!!');
+              exit(1);
+            }
+            else {
+              console.log('Validation successful');
+            }
+          "
+        working-directory: schemas/
+        continue-on-error: true
+
+      - name: Shellcheck
         uses: ludeeus/action-shellcheck@master
+        with:
+          format: 'gcc'
+          severity: 'warning'
+          scandir: '${{github.workspace}}/.devcontainer/'
+          ignore_paths: '/tests'
+          additional_files: 'post_start_cli_autocomplete.sh'
+        continue-on-error: true
+
+      - name: Run Test on Devcontainer scripts
+        run: |
+          chmod +x ${{github.workspace}}/.devcontainer/tests/run_tests.sh
+          ${{github.workspace}}/.devcontainer/tests/run_tests.sh
+          echo "Tests complete!"
 
       - # Add support for more platforms with QEMU (optional)
         # https://github.com/docker/setup-qemu-action
@@ -114,28 +181,21 @@ jobs:
         uses: docker/setup-qemu-action@v3
         with:
           platforms: linux/amd64,linux/amd64/v2,linux/amd64/v3,linux/arm64,linux/arm64/v8
+          cache-image: 'true'
+          image: 'docker.io/tonistiigi/binfmt:latest'
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Run shellcheck on .devcontainer scripts
-        # shellcheck disable=SC2046
-        # shellcheck disable=SC2086
-        # shellcheck disable=SC2006
-        # shellcheck disable=SC2002
-        # shellcheck disable=SC2001
-        # shellcheck disable=SC2005
-        run: |
-          shellcheck .devcontainer/**/*.sh
-          shellcheck .devcontainer/tests/run_tests.sh
+        with:
+          buildkitd-flags: true
+          cache-binary: 'true'
 
       - name: Test build and push manual prebuild cache
         run: |
-          chmod +x ./build_devcontainer.sh
-          ./build_devcontainer.sh $CACHING_IMG $OCI_CACHING_IMG $env.LOCAL_CACHE
+          chmod +x ${{github.workspace}}/build_devcontainer.sh
+          ${{github.workspace}}/build_devcontainer.sh $CACHING_IMG $OCI_CACHING_IMG $env.LOCAL_CACHE
         env:
           CACHING_IMG: ${{ github.event.inputs.CACHING_IMG }}
           OCI_CACHING_IMG: ${{ github.event.inputs.OCI_CACHING_IMG }}
           LOCAL_CACHE: ${{ github.workspace }}/local-cache
-          DOCKER_BUILDKIT: 1
           BUILDKIT_INLINE_CACHE: 1

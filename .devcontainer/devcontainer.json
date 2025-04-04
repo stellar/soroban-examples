@@ -4,7 +4,7 @@
   "context": "..",
   "remoteUser": "vscode",
   "build": {
-    "cacheFrom": [ //Need to update these with Stellar registry prebuilds
+    "cacheFrom": [
       "chrisstellar/vsc-soroban-examples-oci-prebuild",
       "chrisstellar/vsc-soroban-examples-95cce9-prebuild"
     ],
@@ -41,8 +41,6 @@
   "remoteEnv": {
     "STELLAR_RPC_URL": "https://soroban-testnet.stellar.org",
     "STELLAR_NETWORK_PASSPHRASE": "Test SDF Network ; September 2015",
-    "WORKSPACE": "${containerWorkspaceFolder}",
-    "VSCODE_HOME": "/home/vscode"
   },
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2.5.3": {},
@@ -75,7 +73,6 @@
         "terminal.integrated.allowChords": true,
         "terminal.integrated.copyOnSelection": true,
         "terminal.integrated.commandsToSkipShell": [
-          // Make copy+paste work without warning
           "-workbench.action.terminal.copySelection",
           "-workbench.action.terminal.paste",
           "-workbench.action.terminal.pasteSelection"
