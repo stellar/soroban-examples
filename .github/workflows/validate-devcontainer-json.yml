@@ -11,11 +11,9 @@ on:
     inputs:
       STRICT_SCHEMA_VALIDATION:
         description: 'Fail on JSON Schema validation?'
+        type: boolean
         required: true
         default: false
-        options:
-          - true
-          - false
 
 jobs:
   validate-devcontainer-json:
@@ -159,4 +157,4 @@ jobs:
             }
           "
         working-directory: schemas/
-        continue-on-error: ${{github.event.input.STRICT_SCHEMA_VALIDATION}}
+        continue-on-error: ${{github.event.input.STRICT_SCHEMA_VALIDATION}} || false
