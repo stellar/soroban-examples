@@ -194,8 +194,8 @@ jobs:
       - name: Test build and push manual prebuild cache
         run: |
           npm install npm install -g @devcontainers/cli
-          chmod +x ${{github.workspace}}/.devcontainer/build_devcontainer.sh
-          ${{github.workspace}}/.devcontainer/build_devcontainer.sh $CACHING_IMG $OCI_CACHING_IMG
+          chmod +x ${{github.workspace}}/.devcontainer/tests/build_devcontainer.sh
+          ${{github.workspace}}/.devcontainer/tests/build_devcontainer.sh $CACHING_IMG $OCI_CACHING_IMG
         env:
           CACHING_IMG: ${{ github.event.inputs.CACHING_IMG }}
           OCI_CACHING_IMG: ${{ github.event.inputs.OCI_CACHING_IMG }}
