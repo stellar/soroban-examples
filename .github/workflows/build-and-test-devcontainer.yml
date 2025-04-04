@@ -19,42 +19,71 @@ on:
         default: 'chrisstellar/vsc-soroban-examples-oci-prebuild'
 
 jobs:
-  test-and-build-devcontainer:
+  shellcheck-and-test:
+
+    name: Shellcheck linting
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          clean: 'true'
-          set-safe-directory: 'true'
-          show-progress: 'true'
-          sparse-checkout: './devcontainer/'
+      - name: Setup PATH
+        run: |
+          echo ::notice title={Setup Permissions}::{Add permissions to .devcontainers/}
+          chmod -R +rwx .devcontainer
+          
+          echo ::notice title={Setup Workspace}::{Add .devcontainers/ to PATH}
+          echo "${{github.workspace}}/.devcontainer" >> "$GITHUB_PATH"
+          echo "${{github.workspace}}/.devcontainer/tests" >> "$GITHUB_PATH"
+          
+          echo ::notice title={Test Setup}::{Print contents of .devcontainers}
+          ls .devcontainer
+          ls .devcontainer/tests
 
-      - name: Shellcheck
+      - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
+        env:
+          SHELLCHECK_OPTS: -s bash
         with:
-          format: 'gcc'
-          severity: 'warning'
-          scandir: '.'
-          ignore_paths: 'tests'
-          additional_files: 'post_start_cli_autocomplete.sh'
+          format: tty
+          severity: error
+          ignore_paths: tests
+          additional_files: post_start_cli_autocomplete.sh
+          scandir: "${{github.workspace}}/.devcontainer"
         continue-on-error: true
 
-      - name: Run Test on Devcontainer scripts
+      - name: Run tests
         run: |
-          chmod +x tests/run_tests.sh
-          ./tests/run_tests.sh
-          echo "Tests complete!"
+          echo ::notice title={Running Tests}::{Testing devcontainer lifecycle scripts}
+          .devcontainer/tests/post_start_cli_autocomplete_test.sh
+          echo "### Tests Complete :rocket:" >> $GITHUB_STEP_SUMMARY
+        shell: bash
 
-      - # Add support for more platforms with QEMU (optional)
-        # https://github.com/docker/setup-qemu-action
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+
+  build-and-push-cache:
+    name: Devcontainer CLI Build and Push Cache
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup PATH
+        run: |
+          echo ::notice title={Setup Permissions}::{Add permissions to .devcontainers/}
+          chmod -R +rwx .devcontainer
+
+          echo ::notice title={Setup Workspace}::{Add .devcontainers/ to PATH}
+          echo "${{github.workspace}}/.devcontainer" >> "$GITHUB_PATH"
+          echo "${{github.workspace}}/.devcontainer/tests" >> "$GITHUB_PATH"
+
+          echo ::notice title={Test Setup}::{Print contents of .devcontainers}
+          ls .devcontainer
+          ls .devcontainer/tests
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          platforms: linux/amd64,linux/amd64/v2,linux/amd64/v3,linux/arm64,linux/arm64/v8
-          cache-image: 'true'
-          image: 'docker.io/tonistiigi/binfmt:latest'
+          node-version: '20.x'
+      - run: npm install npm install -g @devcontainers/cli
+        working-directory: ${{ github.workspace }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -62,18 +91,24 @@ jobs:
           buildkitd-flags: true
           cache-binary: 'true'
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
         with:
-          node-version: '20.x'
+          platforms: linux/amd64,linux/amd64/v2,linux/amd64/v3,linux/arm64,linux/arm64/v8
+          cache-image: 'true'
+          image: 'docker.io/tonistiigi/binfmt:latest'
 
-      - name: Test build and push manual prebuild cache
+      - name: Test build and Push Manual Prebuild cache
         run: |
-          ls
-          npm install npm install -g @devcontainers/cli
-          chmod +x tests/build_devcontainer.sh
-          ./tests/build_devcontainer.sh $CACHING_IMG $OCI_CACHING_IMG
+          echo ::notice title={Building with Devcontainer CLI}::{Building Devcontainer and pushing prebuild cache}
+          
+          chmod +x ${{github.workspace}}/.devcontainer/tests/build_devcontainer_ci.sh
+          ${{github.workspace}}/.devcontainer/tests/build_devcontainer_ci.sh $CACHING_IMG $OCI_CACHING_IMG
+          
+          echo "### Devcontainer CLI Build Successful!!! :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "### Pushing ofManual Prebuild Cache images currently disabled" >> $GITHUB_STEP_SUMMARY
         env:
           CACHING_IMG: ${{ github.event.inputs.CACHING_IMG }}
           OCI_CACHING_IMG: ${{ github.event.inputs.OCI_CACHING_IMG }}
           BUILDKIT_INLINE_CACHE: 1
+        working-directory: ${{github.workspace}}

@@ -32,13 +32,12 @@ fi
 output=$(devcontainer build \
   --workspace-folder . \
   --config $devcontainer_dir/$config_file \
-  --cache-from "$pre_build_image":latest \
   --output type=image,name="${pre_build_image}:later")
 
 #--dotfiles-repository
 
 # Check the exit status and push pre-build
-if mycmd; then
+if [ "$output" ]; then
   echo " ✅ Devcontainer built successfully"
 
   # Extract imageName from JSON output using jq
@@ -46,11 +45,6 @@ if mycmd; then
   echo " 🔹 Image name: ${image_name}"
   docker inspect "${image_name}" >> "${build_details_dir}${build_details_file}"
 
-  # Push new pre-build
-  docker tag "${image_name}":latest "${pre_build_image}":latest
-  docker push "${pre_build_image}":latest
-
-  echo " 🛠️ New prebuild pushed ${pre_build_image}:latest"
   echo " ⚙️ Build info available at ${build_details_dir}${build_details_file}"
 
 else
@@ -62,14 +56,8 @@ fi
 oci_output=$(devcontainer build \
   --workspace-folder . \
   --config $devcontainer_dir/$config_file \
-  --cache-from "$pre_build_image":latest \
-  --cache-from "${oci_pre_build_image}:latest" \
-  --cache-to type=registry,ref="${oci_pre_build_image}:latest",mode=max,oci-artifact=true \
   --output type=image,name="${oci_pre_build_image}:latest",mode=max,oci-mediatypes=true,compression=zstd)
 
 # Extract ociImageName from JSON output using jq
 oci_image_name=$(echo "$oci_output" | jq -r '.imageName[0]')
 
-# Push new OCI pre-build
-docker tag "${oci_image_name}":latest "${oci_pre_build_image}":latest
-docker push "${oci_pre_build_image}":latest

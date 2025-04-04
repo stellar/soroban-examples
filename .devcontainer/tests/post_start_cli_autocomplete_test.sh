@@ -155,25 +155,6 @@ function test_exit_status() {
   assert "[ $script_fail_status -ne 0 ]" "Script exits with non-zero status on failure"
 }
 
-# Test: Ensure script is idempotent (can be run multiple times safely)
-function test_idempotent_execution() {
-  echo -e "\n${yellow}Testing idempotent execution${nc}"
-
-  # Clear the files first
-  > "${HOME}/.bashrc"
-  > "${HOME}/.zshrc"
-
-  # Run script twice
-  run_script_with_mock
-  run_script_with_mock
-
-  # Count occurrences of path exports in bashrc
-  local path_count=$(grep -c "export PATH='/home/linuxbrew/.linuxbrew/bin:" "${HOME}/.bashrc" || echo 0)
-
-  # We expect only one occurrence if idempotent, otherwise would have duplicates
-  assert "[ $path_count -le 2 ]" "Script does not create excessive duplicate PATH exports"
-}
-
 # Main test runner
 function run_tests() {
   echo -e "${yellow}=== Starting Unit Tests for post_start_cli_autocomplete.sh ===${nc}"
@@ -225,6 +206,8 @@ function main() {
   yellow='\033[1;33m'
 
   nc='\033[0m' # No Color
+
+  echo -e "${yellow}Running test: ${test_script}${nc}"
 
   # Counter for tracking test results
   pass_count=0

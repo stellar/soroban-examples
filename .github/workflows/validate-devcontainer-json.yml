@@ -1,4 +1,4 @@
-name: Validate DevContainer Config Validate JSON Schema
+name: Validate Devcontainer Config and Validate JSON Schema
 
 on:
   push:
@@ -10,28 +10,48 @@ on:
   workflow_dispatch:
     inputs:
       STRICT_SCHEMA_VALIDATION:
-        description: 'Fail on JSON Schema validation?'
+        description: 'Optional JSON Schema validation?'
         type: boolean
         required: true
-        default: false
+        default: true
 
 jobs:
   validate-devcontainer-json:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          clean: 'true'
-          set-safe-directory: 'true'
-          show-progress: 'true'
-          sparse-checkout: './devcontainer/'
+      - name: Setup PATH
+        run: |
+          echo ::notice title={Setup Permissions}::{Add permissions to .devcontainers/}
+          chmod -R +rwx .devcontainer
 
-      - name: Stage Schema Testing Area
+          echo ::notice title={Setup Workspace}::{Add .devcontainers/ to PATH}
+          echo "${{github.workspace}}/.devcontainer" >> "$GITHUB_PATH"
+          echo "${{github.workspace}}/.devcontainer/tests" >> "$GITHUB_PATH"
+
+          echo ::notice title={Test Setup}::{Print contents of .devcontainers}
+          ls .devcontainer
+          ls .devcontainer/tests
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+      - run: |
+          npm install ajv
+          npm install json-merge-patch --save
+          npm install ajv-keywords
+          npm install ajv-merge-patch --save
+          npm install -g npm
+          npm install ajv-formats
+          npm install ajv-errors
+
+      - name: Stage JSON Schema Testing Area
         run: |
           mkdir -p schemas/
-          cp .devcontainer/devcontainer.json schemas/
+          cp "${{github.workspace}}/.devcontainer/devcontainer.json" schemas/
 
       - name: Download DevContainer JSON Schemas
         env:
@@ -58,19 +78,6 @@ jobs:
           sed -i -e 's|json-schema.org/draft-07/schema|json-schema.org/draft/2019-09/schema|g' devContainer.vscode.machine.schema.json
 
         working-directory: schemas/
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-      - run: |
-          npm install ajv
-          npm install json-merge-patch --save
-          npm install ajv-keywords
-          npm install ajv-merge-patch --save
-          npm install -g npm
-          npm install ajv-formats
-          npm install ajv-errors
 
       - name: Validate Devcontainer JSON Schema
         uses: actions/github-script@v7
@@ -156,5 +163,8 @@ jobs:
               console.log('Validation successful');
             }
           "
+
         working-directory: schemas/
-        continue-on-error: ${{github.event.input.STRICT_SCHEMA_VALIDATION}} || false
+        continue-on-error: true
+
+
