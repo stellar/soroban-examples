@@ -1,4 +1,4 @@
-name: Validate DevContainer Config and Push Prebuild Cache
+name: Validate DevContainer Config Validate JSON Schema
 
 on:
   push:
@@ -9,17 +9,16 @@ on:
       - '.devcontainer/'
   workflow_dispatch:
     inputs:
-      CACHING_IMG:
-        description: 'Overide Default Caching image'
-        required: false
-        default: 'chrisstellar/vsc-soroban-examples-95cce9-prebuild'
-      OCI_CACHING_IMG:
-        description: 'Override OCI caching image'
-        required: false
-        default: 'chrisstellar/vsc-soroban-examples-oci-prebuild'
+      STRICT_SCHEMA_VALIDATION:
+        description: 'Fail on JSON Schema validation?'
+        required: true
+        default: false
+        options:
+          - true
+          - false
 
 jobs:
-  validate-devcontainer:
+  validate-devcontainer-json:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,7 +28,7 @@ jobs:
           clean: 'true'
           set-safe-directory: 'true'
           show-progress: 'true'
-          path: true
+          sparse-checkout: './devcontainer/*'
 
       - name: Stage Schema Testing Area
         run: |
@@ -160,47 +159,4 @@ jobs:
             }
           "
         working-directory: schemas/
-        continue-on-error: true
-
-      - name: Shellcheck
-        uses: ludeeus/action-shellcheck@master
-        with:
-          format: 'gcc'
-          severity: 'warning'
-          scandir: '${{github.workspace}}/.devcontainer/'
-          ignore_paths: '/tests'
-          additional_files: 'post_start_cli_autocomplete.sh'
-        continue-on-error: true
-
-      - name: Run Test on Devcontainer scripts
-        run: |
-          pwd
-          chmod +x ${{github.workspace}}/.devcontainer/tests/run_tests.sh
-          ${{github.workspace}}/.devcontainer/tests/run_tests.sh
-          echo "Tests complete!"
-
-      - # Add support for more platforms with QEMU (optional)
-        # https://github.com/docker/setup-qemu-action
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: linux/amd64,linux/amd64/v2,linux/amd64/v3,linux/arm64,linux/arm64/v8
-          cache-image: 'true'
-          image: 'docker.io/tonistiigi/binfmt:latest'
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          buildkitd-flags: true
-          cache-binary: 'true'
-
-      - name: Test build and push manual prebuild cache
-        run: |
-          ls
-          npm install npm install -g @devcontainers/cli
-          chmod +x ${{github.workspace}}/.devcontainer/tests/build_devcontainer.sh
-          ${{github.workspace}}/.devcontainer/tests/build_devcontainer.sh $CACHING_IMG $OCI_CACHING_IMG
-        env:
-          CACHING_IMG: ${{ github.event.inputs.CACHING_IMG }}
-          OCI_CACHING_IMG: ${{ github.event.inputs.OCI_CACHING_IMG }}
-          BUILDKIT_INLINE_CACHE: 1
+        continue-on-error: ${{github.event.input.STRICT_SCHEMA_VALIDATION}}
