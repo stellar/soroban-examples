@@ -26,7 +26,7 @@ jobs:
           clean: 'true'
           set-safe-directory: 'true'
           show-progress: 'true'
-          sparse-checkout: './devcontainer/*'
+          sparse-checkout: './devcontainer/'
 
       - name: Stage Schema Testing Area
         run: |

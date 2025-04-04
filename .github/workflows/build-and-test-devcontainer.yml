@@ -29,7 +29,7 @@ jobs:
           clean: 'true'
           set-safe-directory: 'true'
           show-progress: 'true'
-          sparse-checkout: './devcontainer/*'
+          sparse-checkout: './devcontainer/'
 
       - name: Shellcheck
         uses: ludeeus/action-shellcheck@master
