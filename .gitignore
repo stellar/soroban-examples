@@ -3,3 +3,7 @@ target/
 .DS_Store
 .soroban
 test_snapshots
+z-dc-build-info/*
+**1pass.tmp**
+.idea
+.run

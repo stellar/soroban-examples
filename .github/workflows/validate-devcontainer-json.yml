@@ -171,6 +171,7 @@ jobs:
 
       - name: Run Test on Devcontainer scripts
         run: |
+          pwd
           chmod +x ${{github.workspace}}/.devcontainer/tests/run_tests.sh
           ${{github.workspace}}/.devcontainer/tests/run_tests.sh
           echo "Tests complete!"
@@ -193,10 +194,9 @@ jobs:
       - name: Test build and push manual prebuild cache
         run: |
           npm install npm install -g @devcontainers/cli
-          chmod +x ${{github.workspace}}/build_devcontainer.sh
-          ${{github.workspace}}/build_devcontainer.sh $CACHING_IMG $OCI_CACHING_IMG $env.LOCAL_CACHE
+          chmod +x ${{github.workspace}}/.devcontainer/build_devcontainer.sh
+          ${{github.workspace}}/.devcontainer/build_devcontainer.sh $CACHING_IMG $OCI_CACHING_IMG
         env:
           CACHING_IMG: ${{ github.event.inputs.CACHING_IMG }}
           OCI_CACHING_IMG: ${{ github.event.inputs.OCI_CACHING_IMG }}
-          LOCAL_CACHE: ${{ github.workspace }}/local-cache
           BUILDKIT_INLINE_CACHE: 1

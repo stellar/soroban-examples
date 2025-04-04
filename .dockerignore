@@ -49,4 +49,3 @@ build-devcontainer.sh.sh
 z-dc-build-info/*
 devcontainer.md
 .run
-.devcontainer/tests
