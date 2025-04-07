@@ -23,8 +23,7 @@
   },
   "forwardPorts": [
     2222,
-    4226,
-    8000
+    4226
   ],
   "portsAttributes": {
     "2222": {
@@ -34,9 +33,6 @@
     },
     "4226": {
       "label": "sccache"
-    },
-    "8000": {
-      "label": "stellar"
     }
   },
   "remoteEnv": {
@@ -64,7 +60,9 @@
       "extensions": [
         "rust-lang.rust-analyzer",
         "vadimcn.vscode-lldb",
-        "tamasfe.even-better-toml"
+        "tamasfe.even-better-toml",
+        "fill-labs.dependi",
+        "ms-vscode.makefile-tools"
       ],
       "settings": {
         "workbench.settings.editor": "json",
