@@ -20,16 +20,7 @@ RUN apt-get update && apt-get install -y \
   binaryen && apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /home/linuxbrew/ && \
-    chown -R vscode:vscode /home/linuxbrew/
-
 USER vscode
-
-RUN HOMEBREW_BUNDLE_NO_UPGRADE=1 HOMEBREW_BUNDLE_INSTALL_CLEANUP=1 HOMEBREW_NO_INSTALL_UPGRADE=1 && \
-    HOMEBREW_NO_ANALYTICS=1 HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_ENV_SYNC_STRICT=1 && \
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
-    /home/linuxbrew/.linuxbrew/bin/brew install sccache cargo-watch stellar-cli && \
-    /home/linuxbrew/.linuxbrew/bin/brew cleanup --scrub
 
 
 

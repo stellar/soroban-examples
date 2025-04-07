@@ -45,6 +45,17 @@
       "targets": "wasm32-unknown-unknown",
       "profile": "default",
       "version": "1.81"
+    },
+    "ghcr.io/devcontainers-extra/features/gh-release:1.0.25": {
+      "repo": "stellar/stellar-cli",
+      "binaryNames": "stellar-cli",
+      "version": "22.6.0",
+    },
+    "ghcr.io/devcontainers-extra/features/gh-release:1.0.25": {
+      "repo": "mozilla/sccache",
+      "binaryNames": "sccache-dist",
+      "version": "v0.10.0",
+      "libName": "sccache"
     }
   },
   "customizations": {
@@ -66,7 +77,7 @@
       ],
       "settings": {
         "workbench.settings.editor": "json",
-        "npm.autoDetect": false,
+        "npm.autoDetect": "off",
         "telemetry.enableTelemetry": false,
         "rust-analyzer.check.command": "clippy",
         "terminal.integrated.allowChords": true,

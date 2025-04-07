@@ -45,7 +45,7 @@ or DevOps overhead.
 </div><br/>
 
 <div align="center">
-<a href="https://github.com/codespaces/new?repo=stellar/soroban-examples&editor=code">
+<a href="https://github.com/codespaces/new?repo=stellar/soroban-examples&editor=web">
   <img src="https://github.com/codespaces/badge.svg" alt="Open in Codespaces">
 </a>
 </div>
