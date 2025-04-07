@@ -132,6 +132,8 @@ compared to the image with no cache information.
 relatively effectively and can be used with other caching layers. It stores your cache as local files on disk or in 
 a Docker volume using an OCI image layout for the underlying directory structure.
 
+Info on [OCI image layout](https://docs.docker.com/build/exporters/oci-docker/).
+
 Example of the data being cached:
 ```json
 {

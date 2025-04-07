@@ -23,7 +23,8 @@
   },
   "forwardPorts": [
     2222,
-    4226
+    4226,
+    8000
   ],
   "portsAttributes": {
     "2222": {
@@ -33,11 +34,14 @@
     },
     "4226": {
       "label": "sccache"
+    },
+    "8000": {
+      "label": "stellar"
     }
   },
   "remoteEnv": {
     "STELLAR_RPC_URL": "https://soroban-testnet.stellar.org",
-    "STELLAR_NETWORK_PASSPHRASE": "Test SDF Network ; September 2015",
+    "STELLAR_NETWORK_PASSPHRASE": "Test SDF Network ; September 2015"
   },
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2.5.3": {},
@@ -45,7 +49,7 @@
       "targets": "wasm32-unknown-unknown",
       "profile": "default",
       "version": "1.81"
-    },
+    }
   },
   "customizations": {
     "codespaces": {
@@ -75,12 +79,12 @@
           "-workbench.action.terminal.pasteSelection"
         ]
       }
-    },
+    }
   },
   "initializeCommand": "",
   "onCreateCommand": "",
   "updateContentCommand": "",
   "postCreateCommand": "",
   "postStartCommand": ".devcontainer/post_start_cli_autocomplete.sh",
-  "postAttachCommand": ".devcontainer/post_attach_welcome_text.sh",
+  "postAttachCommand": ".devcontainer/post_attach_welcome_text.sh"
 }

@@ -48,4 +48,5 @@ Thumbs.db
 build-devcontainer.sh.sh
 z-dc-build-info/*
 devcontainer.md
-.run
+.run/
+.zshrc
