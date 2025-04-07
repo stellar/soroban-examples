@@ -178,6 +178,40 @@ There are still more caching options:
 Ultimately though, we just want the end-user developer to have a good experience and for the coding environment to 
 load up quickly and be responsive.
 
+## Devcontainer GH Actions
+
+`validate-devcontainer-json.yml`: Validates Devcontainer JSON Schema
+
+`build-and-test-devcontainer.yml` Validates bash scripts and builds devcontainer with CLI
+
+**Run GH Actions Locally to test build**
+
+Requires:
+
+- [act - Locall GH Action runner](https://github.com/nektos/act)
+- [Github CLI](https://cli.github.com/)
+
+Install act:
+
+```
+brew install act
+```
+
+Setup act:
+
+```
+gh act -W '.github/workflows/'
+```
+
+List and run GH Workflows
+
+```
+gh act --list
+gh act --job shellcheck-and-test
+gh act --job build-and-push-cache
+gh act --job validate-devcontainer-json
+```
+
 ## Learn about Devcontainers
 
 - [Devcontainers Briefing](https://github.com/anataliocs/comprehensive-devcontainer/blob/main/briefing.md)

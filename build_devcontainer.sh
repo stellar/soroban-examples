@@ -6,8 +6,10 @@ devcontainer_dir=".devcontainer"
 # Define configuration file path
 config_file="devcontainer.json"
 
-# Use env vars or enter in your own values here.
-###
+# Use env vars or enter in your own values here.  Or pass in values on the CLI
+# Example CLI call
+# ./build_devcontainer.sh stellar/vsc-soroban-examples-prebuild \
+# stellar/vsc-soroban-examples-oci-prebuild /Users/Your.User/build-cache-soroban-examples/
 
 # Example
 # - buildpack-deps:bookworm
@@ -41,7 +43,7 @@ output=$(devcontainer build \
 #--dotfiles-repository
 
 # Check the exit status and push pre-build
-if mycmd; then
+if [ "$output" ]; then
   echo " ✅ Devcontainer built successfully"
 
   # Extract imageName from JSON output using jq

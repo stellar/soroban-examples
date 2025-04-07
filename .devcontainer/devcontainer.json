@@ -21,9 +21,6 @@
     "memory": "16",
     "storage": "32"
   },
-  "mounts": [
-    "type=bind,source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/${remoteEnv:HOME}/.ssh,readonly"
-  ],
   "forwardPorts": [
     2222,
     4226
@@ -47,7 +44,7 @@
     "ghcr.io/devcontainers/features/rust:1.3.1": {
       "targets": "wasm32-unknown-unknown",
       "profile": "default",
-      "version": "1.82"
+      "version": "1.81"
     },
   },
   "customizations": {
