@@ -9,9 +9,6 @@
 **/dist
 **/pnpm-lock.yaml
 
-# Rust specific ignores
-Cargo.lock
-
 # Editor specific
 .idea/
 
@@ -45,7 +42,7 @@ Thumbs.db
 
 .env
 .devpod-internal
-build-devcontainer.sh.sh
+build-devcontainer.sh
 z-dc-build-info/*
 devcontainer.md
 .run/

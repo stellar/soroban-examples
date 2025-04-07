@@ -44,7 +44,6 @@ jobs:
           npm install json-merge-patch --save
           npm install ajv-keywords
           npm install ajv-merge-patch --save
-          npm install -g npm
           npm install ajv-formats
           npm install ajv-errors
 
@@ -117,6 +116,7 @@ jobs:
                 source: true,
                 lines: true,
               },
+              allErrors: true,
               $data: true,
               validateSchema: "log",
               removeAdditional: "failing",
@@ -136,35 +136,26 @@ jobs:
             addKeywords(ajv);
             ajv.addMetaSchema(meta, "http://json-schema.org/draft/2019-09/schema#", false);
             
-            ajv.compile(require("./schemas/devContainer.base.schema.json"), ${{env.DEVCONTAINER_BASE_SCHEMA}});
             ajv.addSchema(require("./schemas/devContainer.complete.schema.json"), ${{env.DEVCONTAINER_SCHEMA}});
             ajv.addSchema(require("./schemas/devContainerFeature.schema.json"), ${{env.DEVCONTAINER_FEATURE_SCHEMA}});
             ajv.addSchema(require("./schemas/devContainer.codespaces.schema.json"), ${{env.DEVCONTAINER_CODESPACES_SCHEMA}});
             ajv.addSchema(require("./schemas/devContainer.vscode.schema.json"), ${{env.DEVCONTAINER_VSCODE_SCHEMA}});
             ajv.addSchema(require("./schemas/devContainer.vscode.machine.schema.json"), "vscode://schemas/settings/machine");
+            let validator = ajv.compile(require("./schemas/devContainer.base.schema.json"), ${{env.DEVCONTAINER_BASE_SCHEMA}});
             
-            let moduleCode = standaloneCode(ajv);
-            fs.writeFileSync(path.join(".", "schemas/ajv.js"), moduleCode);
-
-      - name: Run Standalone JSON Schema Validator
-        run: |
-          
-          node -e "
-            const validate = require('./ajv.js');
-            const fs = require('fs');
-            const data = JSON.parse(fs.readFileSync('./devcontainer.json', 'utf-8'));
-
-            if (!validate(data)) {
-              console.error('Validation failed:', validate.errors);
-              console.error('Build will continue but Validation failed!!!');
-              exit(1);
+            const data = JSON.parse(fs.readFileSync(path.join(".", "schemas/devcontainer.json")));
+            
+            if (validator(data)) {
+              console.log("devcontainer.json is fully validated");
+            } else {
+              console.log("devcontainer.json may have schema errors");
+              let error = validator.errors[0];
+              console.error("Msg: " + error.message);
+              console.error("Keyword: " + error.keyword);
+              console.error("Error Schema");
+              console.error(error.schema);
+              console.error("Violated Schema name: " + error.parentSchema.$id);
+              console.log("Params: " + JSON.stringify(error.params, null, 2));
             }
-            else {
-              console.log('Validation successful');
-            }
-          "
 
-        working-directory: schemas/
         continue-on-error: true
-
-

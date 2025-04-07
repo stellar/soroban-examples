@@ -90,14 +90,6 @@ _All of these features are officially listed on https://containers.dev/features_
   - Adds `SYS_PTRACE` Capability which enables `LLDB` debugging in Linux
   - Adds `seccomp=unconfined` during the build process to allow full range of system calls
 
-**Packages Installed via LinuxBrew:**
-  - Stellar CLI, sccache and cargo-watch
-  - sccache:  Used as a compiler wrapper and avoids compilation when possible, storing cached results
-  - More info on [sccache](https://github.com/mozilla/sccache)
-  - Cargo Watch: watch for source changes, and runs Cargo commands when they occur
-  - ⚠️ Cargo Watch is on life support: [it will not receive further updates](https://crates.io/crates/cargo-watch)
-  - Maintainer of Cargo Watch recommends we migrate to [bacon](https://github.com/lee-orr/rusty-dev-containers/tree/main/src/bacon)
-
 **ENV Vars:**
 - `ENV CARGO_INCREMENTAL=0`
   - Force disabling of incremental compilation

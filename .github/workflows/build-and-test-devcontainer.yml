@@ -8,15 +8,6 @@ on:
     paths:
       - '.devcontainer/'
   workflow_dispatch:
-    inputs:
-      CACHING_IMG:
-        description: 'Overide Default Caching image'
-        required: false
-        default: 'chrisstellar/vsc-soroban-examples-95cce9-prebuild'
-      OCI_CACHING_IMG:
-        description: 'Override OCI caching image'
-        required: false
-        default: 'chrisstellar/vsc-soroban-examples-oci-prebuild'
 
 jobs:
   shellcheck-and-test:
@@ -51,12 +42,17 @@ jobs:
           scandir: "${{github.workspace}}/.devcontainer"
         continue-on-error: true
 
-      - name: Run tests
-        run: |
-          echo ::notice title={Running Tests}::{Testing devcontainer lifecycle scripts}
-          .devcontainer/tests/post_start_cli_autocomplete_test.sh
-          echo "### Tests Complete :rocket:" >> $GITHUB_STEP_SUMMARY
+      - name: Setup Bats and bats libs
+        id: setup-bats
+        uses: bats-core/bats-action@3.0.0
+        with:
+          assert-install: 'true'
+
+      - name: Test Devcontainer scripts
         shell: bash
+        env:
+          BATS_LIB_PATH: ${{ steps.setup-bats.outputs.lib-path }}
+        run: bats .devcontainer/post_start_cli_autocomplete_test.bats
 
 
   build-and-push-cache:
@@ -98,17 +94,14 @@ jobs:
           cache-image: 'true'
           image: 'docker.io/tonistiigi/binfmt:latest'
 
-      - name: Test build and Push Manual Prebuild cache
+      - name: Test Devcontainer CLI Build
         run: |
-          echo ::notice title={Building with Devcontainer CLI}::{Building Devcontainer and pushing prebuild cache}
+          echo ::notice title={Building with Devcontainer CLI}::{Building Devcontainer}
           
           chmod +x ${{github.workspace}}/.devcontainer/tests/build_devcontainer_ci.sh
-          ${{github.workspace}}/.devcontainer/tests/build_devcontainer_ci.sh $CACHING_IMG $OCI_CACHING_IMG
+          ${{github.workspace}}/.devcontainer/tests/build_devcontainer_ci.sh
           
           echo "### Devcontainer CLI Build Successful!!! :rocket:" >> $GITHUB_STEP_SUMMARY
-          echo "### Pushing ofManual Prebuild Cache images currently disabled" >> $GITHUB_STEP_SUMMARY
         env:
-          CACHING_IMG: ${{ github.event.inputs.CACHING_IMG }}
-          OCI_CACHING_IMG: ${{ github.event.inputs.OCI_CACHING_IMG }}
           BUILDKIT_INLINE_CACHE: 1
         working-directory: ${{github.workspace}}
