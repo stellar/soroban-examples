@@ -1,6 +1,6 @@
 ## Running Devcontainers
 
-Building the Devcontainer locally.
+Building Devcontainers locally.
 
 ### Build image locally
 
@@ -25,7 +25,7 @@ Run in browser.
 
 **Launch via Link:**
 - <a href="https://github.com/codespaces/new?repo=stellar/soroban-examples">Run on Codespaces</a>
-- Or click "Open in Codespaces" button in [ ** README ️** ](./README.md)
+- Click "Open in Codespaces" button in [ ** README️** ](./README.md)
 
 **Launch via Github CLI:**
 
@@ -109,26 +109,24 @@ _All of these features are officially listed on https://containers.dev/features_
 
 ## Multi-Layer Caching Strategy
 
-These caching layers are powered by the Docker technology [BuildKit](https://docs.docker.com/build/buildkit/).
+These caching layers are powered by Docker [BuildKit](https://docs.docker.com/build/buildkit/).
 
 **Cache Layer 1**
 
 Build Kit inline cache.  Enabled by a simple env var:  `BUILDKIT_INLINE_CACHE=1`
 
-Inline cache embeds cache metadata into the image config. The layers in the image will be left untouched 
-compared to the image with no cache information.  
+Inline cache embeds cache metadata into the image config.
 
 [Inline Embedded Cache](https://github.com/moby/buildkit?tab=readme-ov-file#inline-push-image-and-cache-together)
 
 **Cache Layer 2**
 
-[Local file caching](https://docs.docker.com/build/cache/backends/local/).  The local cache store is simple and 
-relatively effectively and can be used with other caching layers. It stores your cache as local files on disk or in 
-a Docker volume using an OCI image layout for the underlying directory structure.
+[Local file caching](https://docs.docker.com/build/cache/backends/local/).  The local cache store is simple and
+relatively effectively and can be used with other caching layers.
 
 Info on [OCI image layout](https://docs.docker.com/build/exporters/oci-docker/).
 
-Example of the data being cached:
+Example data cache:
 ```json
 {
   "mediaType": "application/vnd.oci.image.manifest.v1+json",
@@ -149,8 +147,7 @@ Example of the data being cached:
 
 **Cache Layer 3**
 
-Now we are pushing images with embedded caching and metadata to registries such as OCI
-artifacts and manifests.
+Images with embedded caching and metadata to registries such as OCI artifacts and manifests.
 
 [Registry Cache](https://docs.docker.com/build/exporters/image-registry/)
 
@@ -162,12 +159,9 @@ speed up Github Codespaces.
 ```text
 # Generate manifest
 /.codespaces/agent/bin/codespaces prebuild manifest --config-id $CONFIGURATION_ID --image-version Raw
-# Upload templates
-/.codespaces/agent/bin/codespaces prebuild upload --storage-type v2 --target-locations WestUs2 --target-locations WestUs3 --repo-name anataliocs/soroban-examples 
---devcontainer-path $DEVCONTAINER_PATH --config-id $CONFIGURATION_ID --flush-only --image-version Raw --features-env FEATURE_FLAGS_JSON
 ```
 
-There are still more caching options:
+Other caching options:
 - AWS S3 buckets
 - Github Action caches
 
@@ -204,8 +198,6 @@ List and run GH Workflows
 ```
 gh act --list
 gh act --job shellcheck-and-test
-gh act --job build-and-push-cache
-gh act --job validate-devcontainer-json
 ```
 
 ## Learn about Devcontainers

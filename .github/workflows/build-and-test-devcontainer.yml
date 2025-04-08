@@ -1,4 +1,4 @@
-name: Build and Test DevContainer then Push Prebuild Cache
+name: Build and Test DevContainer
 
 on:
   push:
@@ -25,10 +25,6 @@ jobs:
           echo ::notice title={Setup Workspace}::{Add .devcontainers/ to PATH}
           echo "${{github.workspace}}/.devcontainer" >> "$GITHUB_PATH"
           echo "${{github.workspace}}/.devcontainer/tests" >> "$GITHUB_PATH"
-          
-          echo ::notice title={Test Setup}::{Print contents of .devcontainers}
-          ls .devcontainer
-          ls .devcontainer/tests
 
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
@@ -44,7 +40,6 @@ jobs:
       - name: Setup Bats and bats libs
         id: setup-bats
         uses: bats-core/bats-action@3.0.0
-        with:
 
       - name: Test Devcontainer scripts
         shell: bash
@@ -52,7 +47,7 @@ jobs:
           BATS_LIB_PATH: ${{ steps.setup-bats.outputs.lib-path }}
         run: bats .devcontainer/post_start_cli_autocomplete_test.bats
 
-  build-and-push-cache:
+  build-with-devcontainer-cli:
     name: Devcontainer CLI Build and Push Cache
     runs-on: ubuntu-latest
     steps:
@@ -79,12 +74,6 @@ jobs:
         with:
           buildkitd-flags: true
           cache-binary: 'true'
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: linux/amd64,linux/amd64/v2,linux/amd64/v3,linux/arm64,linux/arm64/v8
-          cache-image: 'true'
 
       - name: Test Devcontainer CLI Build
         run: |

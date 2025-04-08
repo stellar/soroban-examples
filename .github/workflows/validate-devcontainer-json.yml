@@ -101,18 +101,8 @@ jobs:
               verbose: true,
               $data: true,
               validateSchema: "log",
-              removeAdditional: "failing",
-              logger: {
-                  log: console.log.bind(console),
-                  warn: function warn() {
-                      console.error.apply(console, arguments)
-                  },
-                  error: function error() {
-                      console.error.apply(console, arguments)
-                  },
-                },
+              removeAdditional: "failing"
             });
-            let ajvk = require("ajv-keywords")(ajv);
             let addKeywords = require("ajv-keywords/dist/definitions");
             addFormats(ajv);
             addKeywords(ajv);
@@ -130,14 +120,11 @@ jobs:
             if (validator(data)) {
               console.log("devcontainer.json is fully validated");
             } else {
-              console.log("devcontainer.json may have schema errors");
               let error = validator.errors[0];
               console.error("Msg: " + error.message);
               console.error("Keyword: " + error.keyword);
-              console.error("Error Schema");
-              console.error(error.schema);
-              console.error("Violated Schema name: " + error.parentSchema.$id);
-              console.log("Params: " + JSON.stringify(error.params, null, 2));
+              console.error("Error Schema: " + error.schema);
+              console.error("Schema name: " + error.parentSchema.$id);
             }
 
         continue-on-error: true

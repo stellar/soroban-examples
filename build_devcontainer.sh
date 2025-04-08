@@ -6,15 +6,10 @@ devcontainer_dir=".devcontainer"
 # Define configuration file path
 config_file="devcontainer.json"
 
-# Use env vars or enter in your own values here.  Or pass in values on the CLI
-# Example CLI call
+# Pass in values as parameters
+# Example:
 # ./build_devcontainer.sh stellar/vsc-soroban-examples-prebuild \
-# stellar/vsc-soroban-examples-oci-prebuild /Users/Your.User/build-cache-soroban-examples/
-
-# Example
-# - buildpack-deps:bookworm
-# - buildpack-deps:bookworm2
-# - /User/cache
+# stellar/vsc-soroban-examples-oci-prebuild ~/cache
 
 pre_build_image=$1
 oci_pre_build_image=$2
@@ -40,30 +35,18 @@ output=$(devcontainer build \
   --cache-to type=local,dest="${local_build_cache}",mode=max,oci-mediatypes=true,image-manifest=true \
   --output type=image,name="${pre_build_image}")
 
-#--dotfiles-repository
+echo " ✅ Devcontainer built"
+# Extract imageName from JSON output using jq
+image_name=$(echo "$output" | jq -r '.imageName[0]')
+echo " 🔹 Image name: ${image_name}"
+docker inspect "${image_name}" >> "${build_details_dir}${build_details_file}"
 
-# Check the exit status and push pre-build
-if [ "$output" ]; then
-  echo " ✅ Devcontainer built successfully"
-
-  # Extract imageName from JSON output using jq
-  image_name=$(echo "$output" | jq -r '.imageName[0]')
-  echo " 🔹 Image name: ${image_name}"
-  docker inspect "${image_name}" >> "${build_details_dir}${build_details_file}"
-
-  # Push new pre-build
-  docker tag "${image_name}":latest "${pre_build_image}":latest
-  docker push "${pre_build_image}":latest
-
-  echo " 🛠️ New prebuild pushed ${pre_build_image}:latest"
-  echo " ⚙️ Build info available at ${build_details_dir}${build_details_file}"
-
-  echo 'Y' | docker image prune
-
-else
-  echo " ❌ Error building devcontainer. Please check logs above."
-  exit 1
-fi
+# Push new pre-build
+docker tag "${image_name}":latest "${pre_build_image}":latest
+docker push "${pre_build_image}":latest
+echo " 🛠️ New prebuild pushed ${pre_build_image}:latest"
+echo " ⚙️ Build info available at ${build_details_dir}${build_details_file}"
+echo 'Y' | docker image prune
 
 # Build the devcontainer again with OCI Output
 oci_output=$(devcontainer build \
