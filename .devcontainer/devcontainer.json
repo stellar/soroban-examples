@@ -56,6 +56,7 @@
 	  ],
 	  "settings": {
 		"workbench.settings.editor": "json",
+		"workbench.settings.useSplitJSON": true,
 		"npm.autoDetect": "off",
 		"telemetry.feedback.enabled": false,
 		"workbench.tips.enabled": false,
@@ -63,7 +64,16 @@
 		"editor.minimap.enabled": false,
 		"terminal.integrated.useWslProfiles": false,
 		"terminal.integrated.sendKeybindingsToShell": true,
-		"terminal.integrated.allowChords": true
+		"terminal.integrated.allowChords": true,
+		"rust-analyzer.check.allTargets": false,
+		"rust-analyzer.cargo.allTargets": false,
+		"rust-analyzer.procMacro.attributes.enable": false,
+		"rust-analyzer.lens.enable": false,
+		"files.readonlyInclude": {
+		  "**/.cargo/registry/src/**/*.rs": true,
+		  "**/.cargo/git/checkouts/**/*.rs": true,
+		  "**/lib/rustlib/src/rust/library/**/*.rs": true
+		}
 	  }
 	}
   },

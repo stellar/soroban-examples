@@ -8,7 +8,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     SCCACHE_CONF=/home/vscode/.config/sccache/config \
     SCCACHE_DIRECT=true \
     RUSTC_WRAPPER=sccache \
-    SCCACHE_CACHE_SIZE=5G
+    SCCACHE_CACHE_SIZE=5G \
+    RUST_VERSION=1.81
 
 RUN apt-get update && apt-get install -y \
   libdbus-1-dev \
