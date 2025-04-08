@@ -8,12 +8,6 @@ on:
     paths:
       - '.devcontainer/'
   workflow_dispatch:
-    inputs:
-      STRICT_SCHEMA_VALIDATION:
-        description: 'Optional JSON Schema validation?'
-        type: boolean
-        required: true
-        default: true
 
 jobs:
   validate-devcontainer-json:
@@ -30,10 +24,6 @@ jobs:
           echo ::notice title={Setup Workspace}::{Add .devcontainers/ to PATH}
           echo "${{github.workspace}}/.devcontainer" >> "$GITHUB_PATH"
           echo "${{github.workspace}}/.devcontainer/tests" >> "$GITHUB_PATH"
-
-          echo ::notice title={Test Setup}::{Print contents of .devcontainers}
-          ls .devcontainer
-          ls .devcontainer/tests
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -75,7 +65,6 @@ jobs:
           sed -i -e 's|json-schema.org/draft-07/schema|json-schema.org/draft/2019-09/schema|g' devContainer.codespaces.schema.json
           sed -i -e 's|json-schema.org/draft-07/schema|json-schema.org/draft/2019-09/schema|g' devContainer.vscode.schema.json
           sed -i -e 's|json-schema.org/draft-07/schema|json-schema.org/draft/2019-09/schema|g' devContainer.vscode.machine.schema.json
-
         working-directory: schemas/
 
       - name: Validate Devcontainer JSON Schema
@@ -92,7 +81,6 @@ jobs:
             const metaApplicator = require("ajv/dist/refs/json-schema-2019-09/meta/applicator");
             
             const path = require("path");
-            const standaloneCode = require("ajv/dist/standalone").default
             const fs = require('fs');
             const addFormats = require("ajv-formats");
             var ajv = new Ajv2019({
@@ -110,13 +98,7 @@ jobs:
               inlineRefs: true,
               useDefaults: "empty",
               coerceTypes: true,
-              ignoreKeywordsWithRef: true,
               verbose: true,
-              code: {
-                source: true,
-                lines: true,
-              },
-              allErrors: true,
               $data: true,
               validateSchema: "log",
               removeAdditional: "failing",

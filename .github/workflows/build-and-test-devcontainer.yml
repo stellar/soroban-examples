@@ -37,7 +37,6 @@ jobs:
         with:
           format: tty
           severity: error
-          ignore_paths: tests
           additional_files: post_start_cli_autocomplete.sh
           scandir: "${{github.workspace}}/.devcontainer"
         continue-on-error: true
@@ -46,14 +45,12 @@ jobs:
         id: setup-bats
         uses: bats-core/bats-action@3.0.0
         with:
-          assert-install: 'true'
 
       - name: Test Devcontainer scripts
         shell: bash
         env:
           BATS_LIB_PATH: ${{ steps.setup-bats.outputs.lib-path }}
         run: bats .devcontainer/post_start_cli_autocomplete_test.bats
-
 
   build-and-push-cache:
     name: Devcontainer CLI Build and Push Cache
@@ -70,15 +67,11 @@ jobs:
           echo "${{github.workspace}}/.devcontainer" >> "$GITHUB_PATH"
           echo "${{github.workspace}}/.devcontainer/tests" >> "$GITHUB_PATH"
 
-          echo ::notice title={Test Setup}::{Print contents of .devcontainers}
-          ls .devcontainer
-          ls .devcontainer/tests
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-      - run: npm install npm install -g @devcontainers/cli
+      - run: npm install -g @devcontainers/cli
         working-directory: ${{ github.workspace }}
 
       - name: Set up Docker Buildx
@@ -92,7 +85,6 @@ jobs:
         with:
           platforms: linux/amd64,linux/amd64/v2,linux/amd64/v3,linux/arm64,linux/arm64/v8
           cache-image: 'true'
-          image: 'docker.io/tonistiigi/binfmt:latest'
 
       - name: Test Devcontainer CLI Build
         run: |

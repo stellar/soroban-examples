@@ -14,7 +14,9 @@ npm install -g @devcontainers/cli
 
 **Local build script:**
 ```
-./build-local-devcontainer.sh
+devcontainer build \
+  --workspace-folder . \
+  --config .devcontainer/devcontainer.json
 ```
 
 ### Build and Run Remote Devcontainer on Github Codespaces
@@ -69,8 +71,8 @@ Run in your local VS Code IDE with Codespaces backend with all of your local set
 ## Devcontainer Build Details
 
 **Base Image:**
-- [mcr.microsoft.com/devcontainers/rust:bullseye](https://hub.docker.com/r/microsoft/devcontainers-rust)
-  - Architecture:  `arm64/aarch64`
+
+- [mcr.microsoft.com/devcontainers/rust](https://hub.docker.com/r/microsoft/devcontainers-rust)
   - Container OS:  Debian
 
 **Features:**

@@ -1,4 +1,3 @@
-# Use the official Rust image as a base
 FROM mcr.microsoft.com/devcontainers/rust:1.0.9-1
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -11,15 +10,12 @@ ENV DEBIAN_FRONTEND=noninteractive \
     RUSTC_WRAPPER=sccache \
     SCCACHE_CACHE_SIZE=5G
 
-# Enable Rust Bindings for Linux D-Bus interprocess communication(Required for Stellar CLI dependencies)
 RUN apt-get update && apt-get install -y \
   libdbus-1-dev \
   libudev-dev \
   pkg-config \
   openssl && apt-get clean && \
   rm -rf /var/lib/apt/lists/*
-
-USER vscode
 
 
 

@@ -13,13 +13,9 @@
 	"storage": "32"
   },
   "forwardPorts": [
-	2222,
 	4226
   ],
   "portsAttributes": {
-	"2222": {
-	  "label": "ssh"
-	},
 	"4226": {
 	  "label": "sccache"
 	}
