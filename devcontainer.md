@@ -33,9 +33,7 @@ Requires:
 - [Github CLI](https://cli.github.com/)
 
 Install Github CLI:
-```
-brew install gh
-```
+https://github.com/cli/cli#installation
 
 Create new Codespace:
 ``` 
