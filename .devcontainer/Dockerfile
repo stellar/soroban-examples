@@ -17,10 +17,3 @@ RUN apt-get update && apt-get install -y \
   pkg-config \
   openssl && apt-get clean && \
   rm -rf /var/lib/apt/lists/*
-
-
-
-
-
-
-
