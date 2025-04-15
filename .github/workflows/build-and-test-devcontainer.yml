@@ -39,7 +39,7 @@ jobs:
 
       - name: Setup Bats and bats libs
         id: setup-bats
-        uses: bats-core/bats-action@3.0.0
+        uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507
 
       - name: Test Devcontainer scripts
         shell: bash
