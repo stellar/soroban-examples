@@ -1,0 +1,50 @@
+# Basic ignores
+**/target/*
+**/build/*
+**/.git
+**/.github
+**/.vscode
+**/.DS_Store
+**/node_modules
+**/dist
+**/pnpm-lock.yaml
+
+# Editor specific
+.idea/
+
+Dockerfile
+.dockerignore
+node_modules
+npm-debug.log
+dist
+.git
+.gitignore
+.github
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+*.old
+
+# Editor directories and files
+.vscode/
+*.code-workspace
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+.env
+.devpod-internal
+build-devcontainer.sh
+z-dc-build-info/*
+devcontainer.md
+assets/
+.run/
+.zshrc

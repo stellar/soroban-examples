@@ -36,9 +36,28 @@ atomic_multiswap**: This contract performs a batch of atomic token swaps between
 - **workspace**: This contract demonstrates how multiple smart contracts can be developed, tested, and built side-by-side in the same Rust workspace
 
 ## Get Started
-The easiest way to get started experimenting with the example smart contracts, is to use GitPod. Run the smart contracts directly from the browser, without having to install tools, cloning the repo, building the code and deploying it to testnet.
+The easiest way to get started experimenting with the example smart contracts, is to use Devcontainers. Run the smart 
+contracts directly in a browser-based IDE or using a Devcontainer as your local VSCode backend, without any config
+or DevOps overhead.
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/stellar/soroban-examples)
+<div style="text-align: center;" align="center">
+<strong>Devcontainers</strong>
+</div><br/>
+
+<div align="center">
+<a href="https://github.com/codespaces/new?repo=stellar/soroban-examples&editor=web">
+  <img src="https://github.com/codespaces/badge.svg" alt="Open in Codespaces">
+</a>
+</div>
+<div align="center">
+<a href="https://app.codeanywhere.com/#https://github.com/stellar/soroban-examples">
+  <img src="https://codeanywhere.com/img/open-in-codeanywhere-btn.svg" alt="Open in Codeanywhere">
+</a>
+</div>
+
+**Learn more about how Devcontainers are used in this repo:**
+- Running [Devcontainers Locally](./devcontainer.md)
+- Check out the [Devcontainer config](./.devcontainer/devcontainer.json)
 
 ## Installation
 Stellar smart contracts are written in the [Rust](https://www.rust-lang.org/) programming language and can be deployed to the testnet or mainnet. 
@@ -148,6 +167,5 @@ Contributions are welcome, please create a pull request with the following infor
 - [Smart Contract Documentation](https://developers.stellar.org/docs/build)
 - [Getting Started Guide](https://developers.stellar.org/docs/build/smart-contracts/getting-started)
 - [Example descriptions in the documentation](https://developers.stellar.org/docs/build/smart-contracts/example-contracts)
-- [Link to examples in GitPod](https://gitpod.io/#https://github.com/stellar/soroban-examples/tree/v21.6.0)
 - [Stellar Developers Discord server](https://discord.gg/stellardev)
 

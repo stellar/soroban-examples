@@ -1,0 +1,130 @@
+name: Validate Devcontainer Config and Validate JSON Schema
+
+on:
+  push:
+    paths:
+      - '.devcontainer/'
+  pull_request:
+    paths:
+      - '.devcontainer/'
+  workflow_dispatch:
+
+jobs:
+  validate-devcontainer-json:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup PATH
+        run: |
+          echo ::notice title={Setup Permissions}::{Add permissions to .devcontainers/}
+          chmod -R +rwx .devcontainer
+
+          echo ::notice title={Setup Workspace}::{Add .devcontainers/ to PATH}
+          echo "${{github.workspace}}/.devcontainer" >> "$GITHUB_PATH"
+          echo "${{github.workspace}}/.devcontainer/tests" >> "$GITHUB_PATH"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+      - run: |
+          npm install ajv
+          npm install json-merge-patch --save
+          npm install ajv-keywords
+          npm install ajv-merge-patch --save
+          npm install ajv-formats
+          npm install ajv-errors
+
+      - name: Stage JSON Schema Testing Area
+        run: |
+          mkdir -p schemas/
+          cp "${{github.workspace}}/.devcontainer/devcontainer.json" schemas/
+
+      - name: Download DevContainer JSON Schemas
+        env:
+          DEVCONTAINER_BASE_SCHEMA: https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.base.schema.json
+          DEVCONTAINER_SCHEMA: https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json
+          DEVCONTAINER_FEATURE_SCHEMA: https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainerFeature.schema.json
+          DEVCONTAINER_CODESPACES_SCHEMA: https://raw.githubusercontent.com/microsoft/vscode/main/extensions/configuration-editing/schemas/devContainer.codespaces.schema.json
+          DEVCONTAINER_VSCODE_SCHEMA: https://raw.githubusercontent.com/microsoft/vscode/main/extensions/configuration-editing/schemas/devContainer.vscode.schema.json
+          VSCODE_MACHINE_SCHEMA: https://raw.githubusercontent.com/microsoft/vscode/refs/heads/main/extensions/configuration-editing/schemas/devContainer.vscode.schema.json
+          VSCODE_MACHINE_SCHEMA_REF: vscode://schemas/settings/machine
+        run: |
+          curl ${{env.DEVCONTAINER_BASE_SCHEMA}} | jq ". + {\"\$id\": \"${{env.DEVCONTAINER_BASE_SCHEMA}}\"}" > devContainer.base.schema.json
+          curl ${{env.DEVCONTAINER_SCHEMA}} | jq ". + {\"\$id\": \"${{env.DEVCONTAINER_SCHEMA}}\"}" > devContainer.schema.json
+          curl ${{env.DEVCONTAINER_FEATURE_SCHEMA}} | jq ". + {\"\$id\": \"${{env.DEVCONTAINER_FEATURE_SCHEMA}}\"}" > devContainerFeature.schema.json
+          curl ${{env.DEVCONTAINER_CODESPACES_SCHEMA}} | jq ". + {\"\$id\": \"${{env.DEVCONTAINER_CODESPACES_SCHEMA}}\"}" > devContainer.codespaces.schema.json
+          curl ${{env.DEVCONTAINER_VSCODE_SCHEMA}} | jq ". + {\"\$id\": \"${{env.DEVCONTAINER_VSCODE_SCHEMA}}\"}" > devContainer.vscode.schema.json
+          curl ${{env.VSCODE_MACHINE_SCHEMA}} | jq ". + {\"\$id\": \"${{env.VSCODE_MACHINE_SCHEMA_REF}}\"}" > devContainer.vscode.machine.schema.json
+          
+          jq '.allOf[0] = {"$ref" : "${{env.DEVCONTAINER_SCHEMA}}"}' devContainer.schema.json > devContainer.complete.schema.json
+          sed -i -e 's|json-schema.org/draft/2020-12/schema|json-schema.org/draft/2019-09/schema|g' devContainer.base.schema.json
+          sed -i -e 's|json-schema.org/draft-07/schema|json-schema.org/draft/2019-09/schema|g' devContainerFeature.schema.json
+          sed -i -e 's|json-schema.org/draft-07/schema|json-schema.org/draft/2019-09/schema|g' devContainer.codespaces.schema.json
+          sed -i -e 's|json-schema.org/draft-07/schema|json-schema.org/draft/2019-09/schema|g' devContainer.vscode.schema.json
+          sed -i -e 's|json-schema.org/draft-07/schema|json-schema.org/draft/2019-09/schema|g' devContainer.vscode.machine.schema.json
+        working-directory: schemas/
+
+      - name: Validate Devcontainer JSON Schema
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const Ajv2019 = require("ajv/dist/2019");
+            const meta = require("ajv/dist/refs/json-schema-2019-09/meta/core");
+            const metaSchema = require("ajv/dist/refs/json-schema-2019-09/schema");
+            const metaValidation = require("ajv/dist/refs/json-schema-2019-09/meta/validation");
+            const metaMetaData = require("ajv/dist/refs/json-schema-2019-09/meta/meta-data");
+            const metaFormat = require("ajv/dist/refs/json-schema-2019-09/meta/format");
+            const metaContent = require("ajv/dist/refs/json-schema-2019-09/meta/content");
+            const metaApplicator = require("ajv/dist/refs/json-schema-2019-09/meta/applicator");
+            
+            const path = require("path");
+            const fs = require('fs');
+            const addFormats = require("ajv-formats");
+            var ajv = new Ajv2019({
+              strict: "None",
+              strictRequired: "log",
+              strictTuples: "log",
+              strictTypes: "log",
+              strictSchema: "log",
+              allowUnionTypes: true,
+              allowMatchingProperties: true,
+              allowAdditionalProperties: true,
+              allowAdditionalItems: true,
+              allowEmptyObject: true,
+              allowMultipleTypes: true,
+              inlineRefs: true,
+              useDefaults: "empty",
+              coerceTypes: true,
+              verbose: true,
+              $data: true,
+              validateSchema: "log",
+              removeAdditional: "failing"
+            });
+            let addKeywords = require("ajv-keywords/dist/definitions");
+            addFormats(ajv);
+            addKeywords(ajv);
+            ajv.addMetaSchema(meta, "http://json-schema.org/draft/2019-09/schema#", false);
+            
+            ajv.addSchema(require("./schemas/devContainer.complete.schema.json"), ${{env.DEVCONTAINER_SCHEMA}});
+            ajv.addSchema(require("./schemas/devContainerFeature.schema.json"), ${{env.DEVCONTAINER_FEATURE_SCHEMA}});
+            ajv.addSchema(require("./schemas/devContainer.codespaces.schema.json"), ${{env.DEVCONTAINER_CODESPACES_SCHEMA}});
+            ajv.addSchema(require("./schemas/devContainer.vscode.schema.json"), ${{env.DEVCONTAINER_VSCODE_SCHEMA}});
+            ajv.addSchema(require("./schemas/devContainer.vscode.machine.schema.json"), "vscode://schemas/settings/machine");
+            let validator = ajv.compile(require("./schemas/devContainer.base.schema.json"), ${{env.DEVCONTAINER_BASE_SCHEMA}});
+            
+            const data = JSON.parse(fs.readFileSync(path.join(".", "schemas/devcontainer.json")));
+            
+            if (validator(data)) {
+              console.log("devcontainer.json is fully validated");
+            } else {
+              let error = validator.errors[0];
+              console.error("Msg: " + error.message);
+              console.error("Keyword: " + error.keyword);
+              console.error("Error Schema: " + error.schema);
+              console.error("Schema name: " + error.parentSchema.$id);
+            }
+
+        continue-on-error: true
