@@ -9,7 +9,6 @@ test -d /usr/local/bin/ && echo "/usr/local/bin/" >> ~/.bashrc
 
 export PATH="/usr/local/bin/":$PATH
 echo "export PATH='/usr/local/bin/:$PATH'" >> ~/.zshrc
-export PATH="/usr/local/bin/:$PATH"
 echo "export PATH='/usr/local/bin/:$PATH'" >> ~/.bashrc
 
 # Stellar CLI Auto-Complete
