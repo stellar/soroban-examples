@@ -12,11 +12,11 @@ on:
       DEFAULT_PREBUILD_IMG:
         description: 'Overide Default Caching image'
         required: false
-        default: 'stellar/vsc-soroban-examples-prebuild'
+        default: 'vsc-soroban-examples-prebuild'
       DEFAULT_OCI_IMG:
         description: 'Override OCI caching image'
         required: false
-        default: 'stellar/vsc-soroban-examples-oci'
+        default: 'vsc-soroban-examples-oci'
 
 jobs:
   shellcheck-and-test:
@@ -59,6 +59,9 @@ jobs:
   build-with-devcontainer-cli:
     name: Devcontainer CLI Build and Push Cache
     runs-on: ubuntu-latest
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -89,9 +92,7 @@ jobs:
         with:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_TOKEN
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
 
       - name: Test Devcontainer CLI Build
         run: |
@@ -103,6 +104,6 @@ jobs:
           echo "### Devcontainer CLI Build Successful!!! :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           BUILDKIT_INLINE_CACHE: 1
-          DEFAULT_PREBUILD_IMG: ${{ github.event.inputs.DEFAULT_PREBUILD_IMG }}
-          DEFAULT_OCI_IMG: ${{ github.event.inputs.DEFAULT_OCI_IMG }}
+          DEFAULT_PREBUILD_IMG: ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.DEFAULT_PREBUILD_IMG }}
+          DEFAULT_OCI_IMG: ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.DEFAULT_OCI_IMG }}
         working-directory: ${{github.workspace}}
