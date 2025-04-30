@@ -1,5 +1,11 @@
-// CLI.
 import { program } from "commander";
+import { stdin, stderr, stdout } from "./io.ts";
+import { decodeHex, encodeHex } from "jsr:@std/encoding/hex";
+import { hash, Keypair, xdr } from "@stellar/stellar-sdk";
+import init, { decode } from "@stellar/stellar-xdr-json";
+await init();
+
+// CLI.
 program
   .option("--secret-key [SECRET_KEY]", "", decodeHex)
   .option(
@@ -15,40 +21,12 @@ program
 program.parse();
 const opts = program.opts();
 
-// Collect stdin.
-let stdin = "";
-const decoder = new TextDecoder();
-for await (const chunk of Deno.stdin.readable) {
-  stdin += decoder.decode(chunk);
-}
-
-// Write to stderr, for human logs.
-function stderr(...args: string[]) {
-  const s = args.join(" ") + "\n";
-  const encoder = new TextEncoder();
-  const data = encoder.encode(s);
-  Deno.stderr.writeSync(data);
-}
-
-// Write to stdout, for outputting the transaction envelope.
-function stdout(...args: string[]) {
-  const s = args.join(" ");
-  const encoder = new TextEncoder();
-  const data = encoder.encode(s);
-  Deno.stdout.writeSync(data);
-}
-
-import { decodeHex, encodeHex } from "jsr:@std/encoding/hex";
-import { hash, Keypair, xdr } from "@stellar/stellar-sdk";
-import init, { decode } from "@stellar/stellar-xdr-json";
-await init();
-
 // Derive public key from secret key, and prepare keypair for signing.
 const keypair = Keypair.fromRawEd25519Seed(opts.secretKey);
 stderr("PublicKey:", encodeHex(keypair.rawPublicKey()));
 
 // Read in transaction envelope from stdin.
-const txe = xdr.TransactionEnvelope.fromXDR(stdin, "base64");
+const txe = xdr.TransactionEnvelope.fromXDR(await stdin(), "base64");
 
 // Iterate over the auths that are needed for signing and sign each.
 if (txe.switch() != xdr.EnvelopeType.envelopeTypeTx()) {
