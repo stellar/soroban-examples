@@ -1,5 +1,5 @@
 // Collect stdin.
-export async function stdin() : Promise<string> {
+export async function stdin(): Promise<string> {
   let stdin = "";
   const decoder = new TextDecoder();
   for await (const chunk of Deno.stdin.readable) {
