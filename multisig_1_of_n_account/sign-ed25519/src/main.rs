@@ -13,7 +13,7 @@
 //!
 //! The plugin outputs the modified transaction envelope base64 encoded.
 
-use std::{env, error::Error, io};
+use std::{env, error::Error, io::{self, Read}};
 
 use ed25519_dalek::{Keypair, Signer};
 use sha2::{Digest, Sha256};
@@ -38,7 +38,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     eprintln!("Public Key: {}", hex::encode(public_key.as_bytes()));
 
     let limits = Limits::none();
-    let mut limited_read = Limited::new(io::stdin(), limits);
+    let mut limited_read = Limited::new(SkipWhitespace::new(io::stdin()), limits);
     let mut txe = TransactionEnvelope::read_xdr_base64_to_end(&mut limited_read)?;
 
     match &mut txe {
@@ -98,4 +98,30 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("{}", txe.to_xdr_base64(Limits::none())?);
 
     Ok(())
+}
+
+pub struct SkipWhitespace<R: Read> {
+    pub inner: R,
+}
+
+impl<R: Read> SkipWhitespace<R> {
+    pub fn new(inner: R) -> Self {
+        SkipWhitespace { inner }
+    }
+}
+
+impl<R: Read> Read for SkipWhitespace<R> {
+    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+        let n = self.inner.read(buf)?;
+
+        let mut written = 0;
+        for read in 0..n {
+            if !buf[read].is_ascii_whitespace() {
+                buf[written] = buf[read];
+                written += 1;
+            }
+        }
+
+        Ok(written)
+    }
 }
