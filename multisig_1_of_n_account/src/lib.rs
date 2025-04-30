@@ -1,4 +1,5 @@
-//! This a basic multi-sig account contract where any signature may sign.
+//! This a basic 1-of-n multisig account contract where any of the
+//! configured signatures may sign.
 #![no_std]
 
 use soroban_sdk::{
@@ -49,18 +50,6 @@ impl CustomAccountInterface for Contract {
     // contract has to implement it. `require_auth` calls for the Address of
     // this contract will result in calling this `__check_auth` function with
     // the appropriate arguments.
-    //
-    // This should return `()` if authentication and authorization checks have
-    // been passed and return an error (or panic) otherwise.
-    //
-    // `__check_auth` takes the payload that needed to be signed, arbitrarily
-    // typed signatures (`Vec<Signature>` contract type here) and authorization
-    // context that contains all the invocations that this call tries to verify.
-    // The authorization contexts are unused in this case.
-    //
-    // `__check_auth` has to authenticate the signatures. It also may use
-    // `auth_context` to implement additional authorization policies (like token
-    // spend limits here).
     #[allow(non_snake_case)]
     fn __check_auth(
         env: Env,
