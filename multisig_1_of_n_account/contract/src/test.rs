@@ -25,7 +25,7 @@ fn test_1of2_success() {
         ],),
     );
 
-    // Generate a random payload to use for the test. When the account contract is being 
+    // Generate a random payload to use for the test. When the account contract is being
     // called as part of a require_auth, the payload will be a hash of the network passphrase,
     // contract ID, function name, and all the parameters that the contract calling require_auth
     // has specified as should be part of the signature.
