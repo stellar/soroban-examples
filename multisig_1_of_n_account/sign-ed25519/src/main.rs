@@ -1,6 +1,17 @@
-//! This tool receives via stdin a base64 encoded transaction envelope and returns the envelope
+//! This stellar-cli plugin receives via stdin a base64 encoded transaction envelope and returns the envelope
 //! to stdout with any contract authorizations modified to contain a signature with the key
 //! hardcoded in the tool transaction.
+//!
+//! The plugin requires two environment variables to be set:
+//!
+//! - `SECRET_KEY` - Set to a 32-byte ed25519 secret key hex-encoded, that will sign any
+//! authorization.
+//! - `NETWORK_PASSPHRASE` - The network passphrase of the network the invocation is intended to be
+//! sent to.
+//! - `SIGNATURE_EXPIRATION_LEDGER` - The ledger that the signature will become invalid. Must not
+//! be too far in the future.
+//!
+//! The plugin outputs the modified transaction envelope base64 encoded.
 
 use std::{env, error::Error, io};
 
@@ -15,6 +26,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let secret_key_hex_str = env::var("SECRET_KEY")?;
     let network_passphrase = env::var("NETWORK_PASSPHRASE")?;
     let network_id = Sha256::digest(network_passphrase);
+    let signature_expiration_ledger: u32 = env::var("SIGNATURE_EXPIRATION_LEDGER")?.parse()?;
 
     let secret_key_bytes = hex::decode(secret_key_hex_str)?;
     let secret_key = ed25519_dalek::SecretKey::from_bytes(&secret_key_bytes)?;
@@ -44,15 +56,17 @@ fn main() -> Result<(), Box<dyn Error>> {
                                         HashIdPreimageSorobanAuthorization {
                                             network_id: Hash(network_id.try_into()?),
                                             nonce: creds.nonce,
-                                            signature_expiration_ledger: creds
-                                                .signature_expiration_ledger,
+                                            signature_expiration_ledger,
                                             invocation: auth.root_invocation.clone(),
                                         },
                                     );
                                     let payload_xdr = payload.to_xdr(Limits::none())?;
                                     let payload_hash = Sha256::digest(payload_xdr);
                                     eprintln!("Payload Hash:\n{}", hex::encode(payload_hash));
+
                                     let signature = keypair.sign(&payload_hash);
+
+                                    creds.signature_expiration_ledger = signature_expiration_ledger;
                                     creds.signature = ScVal::Map(Some(ScMap::sorted_from([
                                         (
                                             ScVal::Symbol(ScSymbol("public_key".try_into()?)),
@@ -65,6 +79,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                                             ScVal::Bytes(ScBytes(signature.to_bytes().try_into()?)),
                                         ),
                                     ])?));
+
                                     eprintln!(
                                         "Authorized:\n{}",
                                         serde_json::to_string_pretty(&auth)?

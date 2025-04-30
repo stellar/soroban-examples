@@ -26,7 +26,7 @@ cd contract
 stellar contract build --out-dir out/
 stellar contract deploy \
     --alias admin \
-    --wasm out/soroban_multisig_1_of_n_account_contract.wasm
+    --wasm out/soroban_multisig_1_of_n_account_contract.wasm \
     -- \
     --signers '[
       "3b6a27bcceb6a42d62a3a8d02a6f0d73653215771de243a63ac048a18b59da29",
@@ -62,13 +62,15 @@ stellar contract invoke --id asset -- \
 Call mint, sending to an address. The invocation will be signed by the admin using one of the ed25519 keys set in the constructor. Choose which key signs by setting the `SECRET_KEY` environment variable.
 
 ```
-stellar contract invoke --id asset -- \
+stellar contract invoke --id asset --build-only -- \
     mint \
     --to CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4 \
     --amount 123 \
   | stellar tx simulate \
   | tr -d '\n' \
-  | SECRET_KEY=0000000000000000000000000000000000000000000000000000000000000001 \
+| | SECRET_KEY=0000000000000000000000000000000000000000000000000000000000000001 \
+      NETWORK_PASSPHRASE='Test SDF Network ; September 2015' \
+      SIGNATURE_EXPIRATION_LEDGER=4294967295 \
       stellar sign-ed25519 \
   | stellar tx simulate \
   | stellar tx send
