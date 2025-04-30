@@ -19,9 +19,20 @@ These keys are publicly viewable and not random. Do not use these keys for any p
 
 ### Install the `stellar sign-auth-ed25519` plugin
 
+Install one of the stellar sign-auth-ed25519 plugin implementations.
+
+#### Rust
+
 ```
 cd stellar-cli-sign-auth-ed25519
 cargo install --locked --path .
+```
+
+#### JavaScript (Deno)
+
+```
+cd stellar-cli-sign-auth-ed25519-js
+deno install --global --name stellar-sign-auth-ed25519 --config deno.json -A -f main.ts
 ```
 
 ### Deploy the contract account
