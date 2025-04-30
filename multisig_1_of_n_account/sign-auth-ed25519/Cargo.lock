@@ -592,7 +592,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "74233d3b3b2f6d4b006dc19dee745e73e2a6bfb6f93607cd3b02bd5b00797d7c"
 
 [[package]]
-name = "stellar-sign-ed25519"
+name = "stellar-sign-auth-ed25519"
 version = "0.1.0"
 dependencies = [
  "ed25519-dalek",

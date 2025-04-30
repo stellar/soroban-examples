@@ -15,7 +15,7 @@ These keys are publicly viewable and not random. Do not use these keys for any p
 ### Install the sign-ed25519 cli plugin
 
 ```
-cd sign-ed25519
+cd sign-auth-ed25519
 cargo install --locked --path .
 ```
 
@@ -71,7 +71,7 @@ stellar contract invoke --id asset --build-only -- \
 | | SECRET_KEY=0000000000000000000000000000000000000000000000000000000000000001 \
       NETWORK_PASSPHRASE='Test SDF Network ; September 2015' \
       SIGNATURE_EXPIRATION_LEDGER=4294967295 \
-      stellar sign-ed25519 \
+      stellar sign-auth-ed25519 \
   | stellar tx simulate \
   | stellar tx sign --sign-with-key issuer \
   | stellar tx send
