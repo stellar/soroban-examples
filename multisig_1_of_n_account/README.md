@@ -73,8 +73,11 @@ stellar contract invoke --id asset --build-only -- \
       SIGNATURE_EXPIRATION_LEDGER=4294967295 \
       stellar sign-ed25519 \
   | stellar tx simulate \
+  | stellar tx sign --sign-with-key issuer \
   | stellar tx send
 ```
+
+Note: The issuer is signing the transaction to pay the fee, but the admin signature produce by the `sign-ed25519` plugin is what is authorizing the mint.
 
 ### View Balance
 
