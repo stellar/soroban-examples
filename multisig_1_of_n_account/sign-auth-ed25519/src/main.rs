@@ -13,8 +13,13 @@
 //!
 //! The plugin outputs the modified transaction envelope base64 encoded.
 
-use std::{env, error::Error, io::{self, Read}};
+use std::{
+    error::Error,
+    fmt::Debug,
+    io::{self, Read},
+};
 
+use clap::Parser;
 use ed25519_dalek::{Keypair, Signer};
 use sha2::{Digest, Sha256};
 use stellar_xdr::curr::{
@@ -22,13 +27,23 @@ use stellar_xdr::curr::{
     ReadXdr, ScBytes, ScMap, ScSymbol, ScVal, SorobanCredentials, TransactionEnvelope, WriteXdr,
 };
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let secret_key_hex_str = env::var("SECRET_KEY")?;
-    let network_passphrase = env::var("NETWORK_PASSPHRASE")?;
-    let network_id = Sha256::digest(network_passphrase);
-    let signature_expiration_ledger: u32 = env::var("SIGNATURE_EXPIRATION_LEDGER")?.parse()?;
+#[derive(Parser, Debug, Clone)]
+#[command()]
+pub struct Cli {
+    #[arg(long)]
+    secret_key: String,
+    #[arg(long, default_value = "Test SDF Network ; September 2015")]
+    network_passphrase: String,
+    #[arg(long)]
+    signature_expiration_ledger: u32,
+}
 
-    let secret_key_bytes = hex::decode(secret_key_hex_str)?;
+fn main() -> Result<(), Box<dyn Error>> {
+    let cli = Cli::parse();
+
+    let network_id = Sha256::digest(cli.network_passphrase);
+
+    let secret_key_bytes = hex::decode(cli.secret_key)?;
     let secret_key = ed25519_dalek::SecretKey::from_bytes(&secret_key_bytes)?;
     let public_key = ed25519_dalek::PublicKey::from(&secret_key);
     let keypair = Keypair {
@@ -56,7 +71,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                                         HashIdPreimageSorobanAuthorization {
                                             network_id: Hash(network_id.try_into()?),
                                             nonce: creds.nonce,
-                                            signature_expiration_ledger,
+                                            signature_expiration_ledger: cli
+                                                .signature_expiration_ledger,
                                             invocation: auth.root_invocation.clone(),
                                         },
                                     );
@@ -66,7 +82,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                                     let signature = keypair.sign(&payload_hash);
 
-                                    creds.signature_expiration_ledger = signature_expiration_ledger;
+                                    creds.signature_expiration_ledger =
+                                        cli.signature_expiration_ledger;
                                     creds.signature = ScVal::Map(Some(ScMap::sorted_from([
                                         (
                                             ScVal::Symbol(ScSymbol("public_key".try_into()?)),
