@@ -1,5 +1,5 @@
 [package]
-name = "stellar-sign-cli-plugin"
+name = "stellar-sign-ed25519"
 version = "0.1.0"
 edition = "2021"
 publish = false
@@ -7,3 +7,9 @@ publish = false
 [dependencies]
 stellar-xdr = { version = "22.1.0", features = ["base64", "serde"] }
 serde_json = "1.0.140"
+ed25519-dalek = { version = "1.0.1" }
+hex = "0.4.3"
+sha2 = "0.10.8"
+
+[patch.crates-io.stellar-xdr]
+path = "../../../../rs-stellar-xdr"
