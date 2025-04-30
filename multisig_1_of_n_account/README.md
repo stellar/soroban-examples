@@ -20,7 +20,7 @@ These keys are publicly viewable and not random. Do not use these keys for any p
 ### Install the `stellar sign-auth-ed25519` plugin
 
 ```
-cd sign-auth-ed25519
+cd stellar-cli-sign-auth-ed25519
 cargo install --locked --path .
 ```
 
