@@ -67,7 +67,7 @@ stellar contract invoke --id asset -- \
 Call mint, sending to an address. The invocation will be signed by the admin using one of the ed25519 keys set in the constructor. Choose which key signs by setting the `--secret-key` option to one of the two keys above.
 
 ```
-$ stellar contract invoke --id asset --build-only -- \
+stellar contract invoke --id asset --build-only -- \
     mint \
     --to CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4 \
     --amount 123 \
