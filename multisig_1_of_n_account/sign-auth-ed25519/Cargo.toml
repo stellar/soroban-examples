@@ -13,5 +13,8 @@ sha2 = "0.10.8"
 clap = { version = "4.5.37", features = ["derive"] }
 colored = "3.0.0"
 
+# Remove when the following PR is merged and released:
+# https://github.com/stellar/rs-stellar-xdr/pull/434
 [patch.crates-io.stellar-xdr]
-path = "../../../../rs-stellar-xdr"
+git = "https://github.com/stellar/rs-stellar-xdr"
+branch = "issue-xdrgen-209"

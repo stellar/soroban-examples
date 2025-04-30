@@ -734,6 +734,7 @@ dependencies = [
 [[package]]
 name = "stellar-xdr"
 version = "22.1.0"
+source = "git+https://github.com/stellar/rs-stellar-xdr?branch=issue-xdrgen-209#8e95830558572f2e90ce0c852d4dbbda6ab88fd9"
 dependencies = [
  "base64 0.13.1",
  "crate-git-revision",
