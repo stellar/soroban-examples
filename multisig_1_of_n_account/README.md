@@ -1,7 +1,12 @@
+# Multisig 1-of-n Contract Account
 
-## How to use this contract
+This example contains a custom contract account that authorizes when one ed25519 signature is provided, where the signature was produced by a ed25519 key configured in the contract. The contract may hold any number of keys, and any key may authorize for it.
 
-The example below sets up an asset with an admin, where that admin can sign for any authorization with ed25519 keys.
+The example also contains a stellar-cli plugin that signs authorizations using an ed25519.
+
+## Usage
+
+The example below sets up an asset with the contract account as the admin. The admin authorizes with ed25519 keys.
 
 The ed25519 keys used in the example below are:
 
@@ -10,16 +15,16 @@ The ed25519 keys used in the example below are:
 - Secret Key: `0000000000000000000000000000000000000000000000000000000000000001`  
   Public Key: `4cb5abf6ad79fbf5abbccafcc269d85cd2651ed4b885b5869f241aedf0a5ba29`
 
-These keys are publicly viewable and not random. Do not use these keys for any purpose. Select your own keys.
+These keys are publicly viewable and not random. Do not use these keys for any purpose. Select your own keys and update them in the commands below when executing.
 
-### Install the sign-ed25519 cli plugin
+### Install the `stellar sign-auth-ed25519` plugin
 
 ```
 cd sign-auth-ed25519
 cargo install --locked --path .
 ```
 
-### Deploy admin
+### Deploy the contract account
 
 ```
 cd contract
@@ -37,7 +42,7 @@ stellar contract deploy \
 ### Deploy asset
 
 ```
-stellar keys generate issuer
+stellar keys generate issuer --fund
 stellar contract asset deploy \
     --alias asset \
     --asset ABC:issuer
@@ -75,7 +80,7 @@ $ stellar contract invoke --id asset --build-only -- \
   | stellar tx send
 ```
 
-Note: The issuer is signing the transaction to pay the fee, but the admin signature produce by the `sign-auth-ed25519` plugin is what is authorizing the mint.
+Note: The issuer is signing the transaction to pay the fee, but the admin signature produced by the `sign-auth-ed25519` plugin is what is authorizing the mint. Any account could pay for the fee.
 
 ### View Balance
 
