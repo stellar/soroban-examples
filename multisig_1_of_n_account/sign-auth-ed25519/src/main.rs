@@ -35,8 +35,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     colored::control::set_override(true);
     let cli = Cli::parse();
 
+    // Derive the network id from the network passphrase.
     let network_id = Sha256::digest(cli.network_passphrase);
 
+    // Derive the public key from the secret key, and prepare the keypair for signing.
     let secret_key_bytes = hex::decode(cli.secret_key)?;
     let secret_key = ed25519_dalek::SecretKey::from_bytes(&secret_key_bytes)?;
     let public_key = ed25519_dalek::PublicKey::from(&secret_key);
@@ -50,11 +52,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         hex::encode(public_key.as_bytes())
     );
 
+    // Read in the transaction envelope from stdin, ignoring any whitespace.
     let mut txe = TransactionEnvelope::read_xdr_base64_to_end(&mut Limited::new(
         SkipWhitespace::new(io::stdin()),
         Limits::none(),
     ))?;
 
+    // Extract mutable references to the parts of the auths that are needed for signing.
     let auths = match &mut txe {
         TransactionEnvelope::Tx(e) => {
             e.tx.operations
@@ -75,6 +79,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         _ => unimplemented!(),
     };
 
+    // Sign each auth.
+    // TODO:It would be wise to only sign auths matching the contract address that are intended to
+    // sign for, or to ask the user to confirm each auth.
     for (invocation, creds) in auths {
         eprintln!(
             "{}\n{}\n{}",
@@ -82,6 +89,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             serde_json::to_string_pretty(invocation)?,
             serde_json::to_string_pretty(creds)?,
         );
+
+        // Build the payload that the network will expect to be signed for the authorization.
         let payload = HashIdPreimage::SorobanAuthorization(HashIdPreimageSorobanAuthorization {
             network_id: Hash(network_id.try_into()?),
             nonce: creds.nonce,
@@ -96,8 +105,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             hex::encode(payload_hash),
         );
 
+        // Sign the payload hash.
         let signature = keypair.sign(&payload_hash);
 
+        // Modify the credentials on the auth to contain the signature.
         creds.signature_expiration_ledger = cli.signature_expiration_ledger;
         creds.signature = ScVal::Map(Some(ScMap::sorted_from([
             (
@@ -117,6 +128,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         );
     }
 
+    // Output the modified transaction to stdout so that it can be piped to simulation and sending.
     println!("{}", txe.to_xdr_base64(Limits::none())?);
 
     Ok(())
