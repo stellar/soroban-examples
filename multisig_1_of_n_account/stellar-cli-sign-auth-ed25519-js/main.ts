@@ -67,7 +67,7 @@ for (const [invocation, creds] of auths) {
     }),
   ).toXDR();
   const payload_hash = hash(payload);
-  stderr(`Payload: ${encodeHex(payload_hash)}`);
+  stderr('Payload:', encodeHex(payload_hash));
 
   // Sign the payload hash.
   const signature = keypair.sign(payload_hash);
