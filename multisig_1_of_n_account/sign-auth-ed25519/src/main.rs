@@ -2,16 +2,8 @@
 //! to stdout with any contract authorizations modified to contain a signature with the key
 //! hardcoded in the tool transaction.
 //!
-//! The plugin requires two environment variables to be set:
-//!
-//! - `SECRET_KEY` - Set to a 32-byte ed25519 secret key hex-encoded, that will sign any
-//! authorization.
-//! - `NETWORK_PASSPHRASE` - The network passphrase of the network the invocation is intended to be
-//! sent to.
-//! - `SIGNATURE_EXPIRATION_LEDGER` - The ledger that the signature will become invalid. Must not
-//! be too far in the future.
-//!
-//! The plugin outputs the modified transaction envelope base64 encoded.
+//! The plugin outputs the modified transaction envelope base64 encoded, ready to be re-simulated
+//! and submitted.
 
 use std::{
     error::Error,

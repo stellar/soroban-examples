@@ -59,25 +59,23 @@ stellar contract invoke --id asset -- \
 
 ### Mint
 
-Call mint, sending to an address. The invocation will be signed by the admin using one of the ed25519 keys set in the constructor. Choose which key signs by setting the `SECRET_KEY` environment variable.
+Call mint, sending to an address. The invocation will be signed by the admin using one of the ed25519 keys set in the constructor. Choose which key signs by setting the `--secret-key` option to one of the two keys above.
 
 ```
-stellar contract invoke --id asset --build-only -- \
+$ stellar contract invoke --id asset --build-only -- \
     mint \
     --to CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4 \
     --amount 123 \
   | stellar tx simulate \
-  | tr -d '\n' \
-| | SECRET_KEY=0000000000000000000000000000000000000000000000000000000000000001 \
-      NETWORK_PASSPHRASE='Test SDF Network ; September 2015' \
-      SIGNATURE_EXPIRATION_LEDGER=4294967295 \
-      stellar sign-auth-ed25519 \
+  | stellar sign-auth-ed25519 \
+      --secret-key 0000000000000000000000000000000000000000000000000000000000000001 \
+      --signature-expiration-ledger 2296800 \
   | stellar tx simulate \
   | stellar tx sign --sign-with-key issuer \
   | stellar tx send
 ```
 
-Note: The issuer is signing the transaction to pay the fee, but the admin signature produce by the `sign-ed25519` plugin is what is authorizing the mint.
+Note: The issuer is signing the transaction to pay the fee, but the admin signature produce by the `sign-auth-ed25519` plugin is what is authorizing the mint.
 
 ### View Balance
 
