@@ -45,7 +45,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+
+    # Setup Rust
     - run: rustup update
+
+    # Setup Deno
+    - if: ${{ hashFiles('deno.json', 'deno.jsonc') != '' }}
+      uses: denoland/setup-deno@909cc5acb0fdd60627fb858598759246509fa755 # v2.0.2
+      with:
+        deno-version: v2.x
+
+    # Fmt
     - run: make fmt
     - name: Check no diffs exist
       run: git add -N . && git diff HEAD --exit-code
