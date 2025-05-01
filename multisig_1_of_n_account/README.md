@@ -12,21 +12,21 @@ The following diagram illustrates the flow of how a 1-of-n multisig account work
 sequenceDiagram
     participant User/Operator
     participant SigningTool as "Signing Tool (Rust/JS)"
-    participant SorobanRPC as "Soroban RPC/Network"
+    participant RPC as "RPC/Network"
     participant MultiSigContract as "MultiSig Account Contract"
     participant AssetContract as "Asset Contract"
-    participant FeeSource as "Fee Source Account (Key Held by User)"
+    participant SourceAccount as "SourceAccount (pays fee)"
 
     Note over User/Operator, AssetContract: Setup: MultiSigContract deployed (with signers),<br/>AssetContract deployed, MultiSigContract is Asset admin.
 
-    User/Operator->>User/Operator: 1. Build Unsigned Transaction Envelope<br/> - Source: MultiSigContract Address<br/> - Fee Source: FeeSource Address<br/> - Operation: Invoke AssetContract.mint(...)
+    User/Operator->>User/Operator: 1. Build Unsigned Transaction Envelope<br/> - Fee Source: SourceAccount Address<br/> - Operation: Invoke AssetContract.mint(...)
     Note right of User/Operator: Tx Envelope (Unsigned, No Auth)
 
-    User/Operator->>SorobanRPC: 2. Simulate Transaction (1)
-    activate SorobanRPC
-    Note over SorobanRPC: Simulates execution,<br/>likely fails __check_auth here.
-    SorobanRPC-->>User/Operator: Simulation Result (May indicate auth failure)
-    deactivate SorobanRPC
+    User/Operator->>RPC: 2. Simulate Transaction (1)
+    activate RPC
+    Note over RPC: Simulates execution,<br/>likely fails __check_auth here.
+    RPC-->>User/Operator: Simulation Result (May indicate auth failure)
+    deactivate RPC
 
     User/Operator->>SigningTool: 3. Provide Unsigned Tx Envelope & Signer's Secret Key
     activate SigningTool
@@ -35,43 +35,43 @@ sequenceDiagram
     deactivate SigningTool
     Note right of User/Operator: Tx Envelope (Has Multisig Auth, Still needs Fee Signature)
 
-    User/Operator->>SorobanRPC: 5. Simulate Transaction Again (2)
-    activate SorobanRPC
-    Note over SorobanRPC: Simulates execution with Auth entry.<br/>Should pass __check_auth simulation now.
-    SorobanRPC-->>User/Operator: Simulation Result (Should show success or other errors)
-    deactivate SorobanRPC
+    User/Operator->>RPC: 5. Simulate Transaction Again (2)
+    activate RPC
+    Note over RPC: Simulates execution with Auth entry.<br/>Should pass __check_auth simulation now.
+    RPC-->>User/Operator: Simulation Result (Should show success or other errors)
+    deactivate RPC
 
-    User/Operator->>FeeSource: 6. Sign Transaction Envelope with Fee Source Key
-    Note right of User/Operator: User uses Fee Source Account's private key<br/>to sign the *entire* transaction envelope.
-    FeeSource-->>User/Operator: Fully Signed Transaction Envelope
+    User/Operator->>SourceAccount: 6. Sign Transaction Envelope with Fee Source Key
+    Note right of User/Operator: User uses SourceAccount's private key<br/>to sign the *entire* transaction envelope.
+    SourceAccount-->>User/Operator: Fully Signed Transaction Envelope
     Note right of User/Operator: Tx Envelope (Has Multisig Auth + Fee Signature)
 
-    User/Operator->>SorobanRPC: 7. Submit Fully Signed Transaction
-    activate SorobanRPC
+    User/Operator->>RPC: 7. Submit Fully Signed Transaction
+    activate RPC
 
-    Note over SorobanRPC: Network validates Fee Source Signature first.
-    SorobanRPC->>MultiSigContract: 8. Invoke __check_auth (as part of auth framework)
+    Note over RPC: Network validates SourceAccount Signature first.
+    RPC->>MultiSigContract: 8. Invoke __check_auth (as part of auth framework)
     activate MultiSigContract
     Note right of MultiSigContract: Contract Logic:<br/>1. Verifies provided Ed25519 signature<br/>   against expected payload.<br/>2. Recovers public key.<br/>3. Checks if public key is in its authorized list.
 
     alt Auth Valid
-        MultiSigContract-->>SorobanRPC: 9a. Auth check passes
+        MultiSigContract-->>RPC: 9a. Auth check passes
         
-        SorobanRPC->>AssetContract: 10a. Invoke mint(..., to, amount)<br/>(Invocation authorized by MultiSigContract)
+        RPC->>AssetContract: 10a. Invoke mint(..., to, amount)<br/>(Invocation authorized by MultiSigContract)
         activate AssetContract
         AssetContract->>AssetContract: Execute mint logic
-        AssetContract-->>SorobanRPC: Mint Result (Success)
+        AssetContract-->>RPC: Mint Result (Success)
         deactivate AssetContract
         
-        SorobanRPC-->>User/Operator: 11a. Final Transaction Result (Success)
+        RPC-->>User/Operator: 11a. Final Transaction Result (Success)
     else Auth Invalid
-        MultiSigContract-->>SorobanRPC: 9b. Auth check fails
+        MultiSigContract-->>RPC: 9b. Auth check fails
         
-        SorobanRPC-->>User/Operator: 10b. Transaction Failed (Auth Error)
+        RPC-->>User/Operator: 10b. Transaction Failed (Auth Error)
     end
     
     deactivate MultiSigContract
-    deactivate SorobanRPC
+    deactivate RPC
 ```
 
 ## Usage
