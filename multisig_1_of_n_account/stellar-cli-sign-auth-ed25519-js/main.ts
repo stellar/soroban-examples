@@ -7,6 +7,10 @@ await init();
 
 // CLI.
 program
+  .configureOutput({
+    getOutHasColors: () => false,
+    getErrHasColors: () => false,
+  })
   .option("--secret-key [SECRET_KEY]", "", decodeHex)
   .option(
     "--network-passphrase <network-passphrase>",
