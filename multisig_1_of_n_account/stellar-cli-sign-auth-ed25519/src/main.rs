@@ -12,7 +12,6 @@ use std::{
 };
 
 use clap::Parser;
-use colored::Colorize as _;
 use ed25519_dalek::{Keypair, Signer};
 use sha2::{Digest, Sha256};
 use stellar_xdr::curr::{
@@ -32,7 +31,6 @@ pub struct Cli {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    colored::control::set_override(true);
     let cli = Cli::parse();
 
     // Derive the network id from the network passphrase.
@@ -46,11 +44,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         secret: secret_key,
         public: public_key,
     };
-    eprintln!(
-        "{} {}",
-        "Public Key:".cyan().bold(),
-        hex::encode(public_key.as_bytes())
-    );
+    eprintln!("Public Key: {}", hex::encode(public_key.as_bytes()));
 
     // Read in the transaction envelope from stdin, ignoring any whitespace.
     let mut txe = TransactionEnvelope::read_xdr_base64_to_end(&mut Limited::new(
@@ -84,8 +78,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // sign for, or to ask the user to confirm each auth.
     for (invocation, creds) in auths {
         eprintln!(
-            "{}\n{}\n{}",
-            "Authorizing:".cyan().bold(),
+            "Authorizing:\n{}\n{}",
             serde_json::to_string_pretty(invocation)?,
             serde_json::to_string_pretty(creds)?,
         );
@@ -99,11 +92,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         });
         let payload_xdr = payload.to_xdr(Limits::none())?;
         let payload_hash = Sha256::digest(payload_xdr);
-        eprintln!(
-            "{}\n{}",
-            "Payload Hash:".cyan().bold(),
-            hex::encode(payload_hash),
-        );
+        eprintln!("Payload Hash: {}", hex::encode(payload_hash),);
 
         // Sign the payload hash.
         let signature = keypair.sign(&payload_hash);
@@ -121,11 +110,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             ),
         ])?));
 
-        eprintln!(
-            "{}\n{}",
-            "Authorized:".green().bold(),
-            serde_json::to_string_pretty(creds)?,
-        );
+        eprintln!("Authorized:\n{}", serde_json::to_string_pretty(creds)?,);
     }
 
     // Output the modified transaction to stdout so that it can be piped to simulation and sending.
