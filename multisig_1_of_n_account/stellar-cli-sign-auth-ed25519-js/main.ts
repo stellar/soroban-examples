@@ -45,7 +45,12 @@ const auths = txe.v1().tx().operations()
         auth.credentials().switch() ==
           xdr.SorobanCredentialsType.sorobanCredentialsAddress()
       )
-      .map((auth) => [auth.rootInvocation(), auth.credentials().address()])
+      .map((auth) =>
+        <[xdr.SorobanAuthorizedInvocation, xdr.SorobanAddressCredentials]> [
+          auth.rootInvocation(),
+          auth.credentials().address(),
+        ]
+      )
   )
   .flat();
 
