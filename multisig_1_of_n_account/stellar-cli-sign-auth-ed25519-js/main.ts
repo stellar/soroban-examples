@@ -90,6 +90,7 @@ for (const [invocation, creds] of auths) {
       ),
     ]),
   );
+
   stderr("Authorized:");
   stderr(decode("SorobanAddressCredentials", creds.toXDR("base64")));
 }
