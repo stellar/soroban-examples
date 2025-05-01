@@ -4,6 +4,76 @@ This example contains a custom contract account that authorizes when one ed25519
 
 The example also contains a stellar-cli plugin that signs authorizations using an ed25519.
 
+## Sequence Diagram
+
+The following diagram illustrates the flow of how a 1-of-n multisig account works in this example:
+
+```mermaid
+sequenceDiagram
+    participant User/Operator
+    participant SigningTool as "Signing Tool (Rust/JS)"
+    participant SorobanRPC as "Soroban RPC/Network"
+    participant MultiSigContract as "MultiSig Account Contract"
+    participant AssetContract as "Asset Contract"
+    participant FeeSource as "Fee Source Account (Key Held by User)"
+
+    Note over User/Operator, AssetContract: Setup: MultiSigContract deployed (with signers),<br/>AssetContract deployed, MultiSigContract is Asset admin.
+
+    User/Operator->>User/Operator: 1. Build Unsigned Transaction Envelope<br/> - Source: MultiSigContract Address<br/> - Fee Source: FeeSource Address<br/> - Operation: Invoke AssetContract.mint(...)
+    Note right of User/Operator: Tx Envelope (Unsigned, No Auth)
+
+    User/Operator->>SorobanRPC: 2. Simulate Transaction (1)
+    activate SorobanRPC
+    Note over SorobanRPC: Simulates execution,<br/>likely fails __check_auth here.
+    SorobanRPC-->>User/Operator: Simulation Result (May indicate auth failure)
+    deactivate SorobanRPC
+
+    User/Operator->>SigningTool: 3. Provide Unsigned Tx Envelope & Signer's Secret Key
+    activate SigningTool
+    Note over SigningTool: Reads Tx Envelope,<br/>extracts required auth payload,<br/>signs payload with Ed25519 key,<br/>adds Soroban Auth entry to Tx.
+    SigningTool-->>User/Operator: 4. Return Modified Tx Envelope (with Ed25519 Auth)
+    deactivate SigningTool
+    Note right of User/Operator: Tx Envelope (Has Multisig Auth, Still needs Fee Signature)
+
+    User/Operator->>SorobanRPC: 5. Simulate Transaction Again (2)
+    activate SorobanRPC
+    Note over SorobanRPC: Simulates execution with Auth entry.<br/>Should pass __check_auth simulation now.
+    SorobanRPC-->>User/Operator: Simulation Result (Should show success or other errors)
+    deactivate SorobanRPC
+
+    User/Operator->>FeeSource: 6. Sign Transaction Envelope with Fee Source Key
+    Note right of User/Operator: User uses Fee Source Account's private key<br/>to sign the *entire* transaction envelope.
+    FeeSource-->>User/Operator: Fully Signed Transaction Envelope
+    Note right of User/Operator: Tx Envelope (Has Multisig Auth + Fee Signature)
+
+    User/Operator->>SorobanRPC: 7. Submit Fully Signed Transaction
+    activate SorobanRPC
+
+    Note over SorobanRPC: Network validates Fee Source Signature first.
+    SorobanRPC->>MultiSigContract: 8. Invoke __check_auth (as part of auth framework)
+    activate MultiSigContract
+    Note right of MultiSigContract: Contract Logic:<br/>1. Verifies provided Ed25519 signature<br/>   against expected payload.<br/>2. Recovers public key.<br/>3. Checks if public key is in its authorized list.
+
+    alt Auth Valid
+        MultiSigContract-->>SorobanRPC: 9a. Auth check passes
+        
+        SorobanRPC->>AssetContract: 10a. Invoke mint(..., to, amount)<br/>(Invocation authorized by MultiSigContract)
+        activate AssetContract
+        AssetContract->>AssetContract: Execute mint logic
+        AssetContract-->>SorobanRPC: Mint Result (Success)
+        deactivate AssetContract
+        
+        SorobanRPC-->>User/Operator: 11a. Final Transaction Result (Success)
+    else Auth Invalid
+        MultiSigContract-->>SorobanRPC: 9b. Auth check fails
+        
+        SorobanRPC-->>User/Operator: 10b. Transaction Failed (Auth Error)
+    end
+    
+    deactivate MultiSigContract
+    deactivate SorobanRPC
+```
+
 ## Usage
 
 The example below sets up an asset with the contract account as the admin. The admin authorizes with ed25519 keys.
