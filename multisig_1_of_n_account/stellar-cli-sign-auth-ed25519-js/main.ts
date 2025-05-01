@@ -1,6 +1,6 @@
 import { program } from "commander";
 import { stderr, stdin, stdout } from "./io.ts";
-import { decodeHex, encodeHex } from "jsr:@std/encoding/hex";
+import { decodeHex, encodeHex } from "@std/encoding/hex";
 import { hash, Keypair, xdr } from "@stellar/stellar-sdk";
 import init, { decode } from "@stellar/stellar-xdr-json";
 await init();

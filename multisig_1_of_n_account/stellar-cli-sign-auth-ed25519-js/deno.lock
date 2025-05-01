@@ -1,8 +1,9 @@
 {
-  "version": "4",
+  "version": "5",
   "specifiers": {
     "jsr:@std/cli@^1.0.17": "1.0.17",
     "jsr:@std/encoding@*": "1.0.5",
+    "jsr:@std/encoding@^1.0.10": "1.0.10",
     "npm:@napi-rs/cli@^2.18.4": "2.18.4",
     "npm:@stellar/stellar-sdk@^13.3.0": "13.3.0",
     "npm:@stellar/stellar-xdr-json@^22.0.0-rc.1.1": "22.0.0-rc.1.1",
@@ -14,11 +15,15 @@
     },
     "@std/encoding@1.0.5": {
       "integrity": "ecf363d4fc25bd85bd915ff6733a7e79b67e0e7806334af15f4645c569fefc04"
+    },
+    "@std/encoding@1.0.10": {
+      "integrity": "8783c6384a2d13abd5e9e87a7ae0520a30e9f56aeeaa3bdf910a3eaaf5c811a1"
     }
   },
   "npm": {
     "@napi-rs/cli@2.18.4": {
-      "integrity": "sha512-SgJeA4df9DE2iAEpr3M2H0OKl/yjtg1BnRI5/JyowS71tUWhrfSu2LT0V3vlHET+g1hBVlrO60PmEXwUEKp8Mg=="
+      "integrity": "sha512-SgJeA4df9DE2iAEpr3M2H0OKl/yjtg1BnRI5/JyowS71tUWhrfSu2LT0V3vlHET+g1hBVlrO60PmEXwUEKp8Mg==",
+      "bin": true
     },
     "@stellar/js-xdr@3.1.2": {
       "integrity": "sha512-VVolPL5goVEIsvuGqDc5uiKxV03lzfWdvYg1KikvwheDmTBO68CKDji3bAZ/kppZrx5iTA8z3Ld5yuytcvhvOQ=="
@@ -31,8 +36,10 @@
         "bignumber.js",
         "buffer",
         "sha.js",
-        "sodium-native",
         "tweetnacl"
+      ],
+      "optionalDependencies": [
+        "sodium-native"
       ]
     },
     "@stellar/stellar-sdk@13.3.0": {
@@ -68,12 +75,18 @@
         "bare-module-resolve",
         "bare-semver",
         "bare-url"
+      ],
+      "optionalPeers": [
+        "bare-url"
       ]
     },
     "bare-module-resolve@1.10.2_bare-url@2.1.6": {
       "integrity": "sha512-C9COe/GhWfVXKytW3DElTkiBU+Gb2OXeaVkdGdRB/lp26TVLESHkTGS876iceAGdvtPgohfp9nX8vXHGvN3++Q==",
       "dependencies": [
         "bare-semver",
+        "bare-url"
+      ],
+      "optionalPeers": [
         "bare-url"
       ]
     },
@@ -268,7 +281,8 @@
       "dependencies": [
         "inherits",
         "safe-buffer"
-      ]
+      ],
+      "bin": true
     },
     "sodium-native@4.3.3": {
       "integrity": "sha512-OnxSlN3uyY8D0EsLHpmm2HOFmKddQVvEMmsakCrXUzSd8kjjbzL413t4ZNF3n0UxSwNgwTyUvkmZHTfuCeiYSw==",
@@ -289,6 +303,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@std/cli@^1.0.17",
+      "jsr:@std/encoding@^1.0.10",
       "npm:@napi-rs/cli@^2.18.4",
       "npm:@stellar/stellar-sdk@^13.3.0",
       "npm:@stellar/stellar-xdr-json@^22.0.0-rc.1.1",
