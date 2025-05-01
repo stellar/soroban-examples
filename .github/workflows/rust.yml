@@ -83,7 +83,7 @@ jobs:
     - run: rustup target add wasm32-unknown-unknown
 
     # Setup Deno
-    - if: ${{ hashFiles('deno.*') != '' }}
+    - if: ${{ hashFiles('deno.json', 'deno.jsonc') != '' }}
       uses: denoland/setup-deno@909cc5acb0fdd60627fb858598759246509fa755 # v2.0.2
       with:
         deno-version: v2.x
