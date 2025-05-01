@@ -11,11 +11,11 @@ The following diagram illustrates the flow of how a 1-of-n multisig account work
 ```mermaid
 sequenceDiagram
     participant User/Operator
-    participant SigningCliPlugin as "SigningCliPlugin"
+    participant SigningCliPlugin as "Signing CLI Plugin (Rust/JS)"
     participant RPC as "RPC/Network"
     participant MultiSigContract as "MultiSig Account Contract"
     participant AssetContract as "Asset Contract"
-    participant SourceAccount as "SourceAccount (pays fee)"
+    participant SourceAccount as "SourceAccount (Pays Fee)"
 
     Note over User/Operator, AssetContract: Setup: MultiSigContract deployed (with signers),<br/>AssetContract deployed, MultiSigContract is Asset admin.
 
@@ -24,35 +24,35 @@ sequenceDiagram
 
     User/Operator->>RPC: 2. Simulate Transaction (1)
     activate RPC
-    Note over RPC: Simulates execution,<br/>likely fails __check_auth here.
-    RPC-->>User/Operator: Simulation Result (May indicate auth failure)
+    Note over RPC: Simulates Transaction
+    RPC-->>User/Operator: Simulation Result
     deactivate RPC
 
     User/Operator->>SigningCliPlugin: 3. Provide Unsigned Tx Envelope & Signer's Secret Key
     activate SigningCliPlugin
-    Note over SigningCliPlugin: Reads Tx Envelope,<br/>extracts required auth payload,<br/>signs payload with Ed25519 key,<br/>adds Soroban Auth entry to Tx.
+    Note over SigningCliPlugin: Reads Tx Envelope,<br/>extracts required auth payload,<br/>signs payload with Ed25519 key,<br/>adds Soroban Auth entry to Unsigned Tx.
     SigningCliPlugin-->>User/Operator: 4. Return Modified Tx Envelope (with Ed25519 Auth)
     deactivate SigningCliPlugin
-    Note right of User/Operator: Tx Envelope (Has Multisig Auth, Still needs Fee Signature)
+    Note right of User/Operator: Tx Envelope (Has Multisig Auth, Still needs Tx Signature)
 
     User/Operator->>RPC: 5. Simulate Transaction Again (2)
     activate RPC
-    Note over RPC: Simulates execution with Auth entry.<br/>Should pass __check_auth simulation now.
-    RPC-->>User/Operator: Simulation Result (Should show success or other errors)
+    Note over RPC: Simulates with Auth entry.<br/>Gets more accurate fee estimate because it includes auth.
+    RPC-->>User/Operator: Simulation Result
     deactivate RPC
 
-    User/Operator->>SourceAccount: 6. Sign Transaction Envelope with Fee Source Key
+    User/Operator->>SourceAccount: 6. Sign Transaction Envelope with Source Account (Pays Fee)
     Note right of User/Operator: User uses SourceAccount's private key<br/>to sign the *entire* transaction envelope.
     SourceAccount-->>User/Operator: Fully Signed Transaction Envelope
-    Note right of User/Operator: Tx Envelope (Has Multisig Auth + Fee Signature)
+    Note right of User/Operator: Tx Envelope (Has Contract Auth + Tx Signature)
 
-    User/Operator->>RPC: 7. Submit Fully Signed Transaction
+    User/Operator->>RPC: 7. Send Fully Signed Transaction
     activate RPC
 
-    Note over RPC: Network validates SourceAccount Signature first.
-    RPC->>MultiSigContract: 8. Invoke __check_auth (as part of auth framework)
+    Note over RPC: Network validates SourceAccount Tx Signature first.
+    RPC->>MultiSigContract: 8. Invoke __check_auth
     activate MultiSigContract
-    Note right of MultiSigContract: Contract Logic:<br/>1. Verifies provided Ed25519 signature<br/>   against expected payload.<br/>2. Recovers public key.<br/>3. Checks if public key is in its authorized list.
+    Note right of MultiSigContract: Contract Logic:<br/>1. Verifies provided Ed25519 signature<br/>   against expected payload.<br/>2. Checks if public key is in its authorized list.
 
     alt Auth Valid
         MultiSigContract-->>RPC: 9a. Auth check passes
