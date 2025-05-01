@@ -1,12 +1,17 @@
 # Multisig 1-of-n Contract Account
 
-This example contains a custom contract account that authorizes when one ed25519 signature is provided, where the signature was produced by a ed25519 key configured in the contract. The contract may hold any number of keys, and any key may authorize for it.
+This example contains a custom contract account that authorizes when one ed25519
+signature is provided, where the signature was produced by a ed25519 key
+configured in the contract. The contract may hold any number of keys, and any
+key may authorize for it.
 
-The example also contains a stellar-cli plugin that signs authorizations using an ed25519.
+The example also contains a stellar-cli plugin that signs authorizations using
+an ed25519.
 
 ## Sequence Diagram
 
-The following diagram illustrates the flow of how a 1-of-n multisig account works in this example:
+The following diagram illustrates the flow of how a 1-of-n multisig account
+works in this example:
 
 ```mermaid
 sequenceDiagram
@@ -76,16 +81,21 @@ sequenceDiagram
 
 ## Usage
 
-The example below sets up an asset with the contract account as the admin. The admin authorizes with ed25519 keys.
+The example below sets up an asset with the contract account as the admin. The
+admin authorizes with ed25519 keys.
 
 The ed25519 keys used in the example below are:
 
-- Secret Key: `0000000000000000000000000000000000000000000000000000000000000000`  
+- Secret Key:
+  `0000000000000000000000000000000000000000000000000000000000000000`\
   Public Key: `3b6a27bcceb6a42d62a3a8d02a6f0d73653215771de243a63ac048a18b59da29`
-- Secret Key: `0000000000000000000000000000000000000000000000000000000000000001`  
+- Secret Key:
+  `0000000000000000000000000000000000000000000000000000000000000001`\
   Public Key: `4cb5abf6ad79fbf5abbccafcc269d85cd2651ed4b885b5869f241aedf0a5ba29`
 
-These keys are publicly viewable and not random. Do not use these keys for any purpose. Select your own keys and update them in the commands below when executing.
+These keys are publicly viewable and not random. Do not use these keys for any
+purpose. Select your own keys and update them in the commands below when
+executing.
 
 ### Install the `stellar sign-auth-ed25519` plugin
 
@@ -111,7 +121,11 @@ deno install \
     main.ts
 ```
 
-Note: By default Deno scripts when installed have no permissions and cannot read or files, read environment variables, access the network, cannot execute commands. The `--allow-read` flag is specified to give the script permission to read files so that it can read .wasm dependencies in the `@stellar/stellar-xdr-json` package which is a Rust-built-to-wasm npm package.
+Note: By default Deno scripts when installed have no permissions and cannot read
+or files, read environment variables, access the network, cannot execute
+commands. The `--allow-read` flag is specified to give the script permission to
+read files so that it can read .wasm dependencies in the
+`@stellar/stellar-xdr-json` package which is a Rust-built-to-wasm npm package.
 
 ### Deploy the contract account
 
@@ -153,7 +167,9 @@ stellar contract invoke --id asset -- \
 
 ### Mint
 
-Call mint, sending to an address. The invocation will be signed by the admin using one of the ed25519 keys set in the constructor. Choose which key signs by setting the `--secret-key` option to one of the two keys above.
+Call mint, sending to an address. The invocation will be signed by the admin
+using one of the ed25519 keys set in the constructor. Choose which key signs by
+setting the `--secret-key` option to one of the two keys above.
 
 ```
 stellar contract invoke --id asset --build-only -- \
@@ -169,7 +185,9 @@ stellar contract invoke --id asset --build-only -- \
   | stellar tx send
 ```
 
-Note: The issuer is signing the transaction to pay the fee, but the admin signature produced by the `sign-auth-ed25519` plugin is what is authorizing the mint. Any account could pay for the fee.
+Note: The issuer is signing the transaction to pay the fee, but the admin
+signature produced by the `sign-auth-ed25519` plugin is what is authorizing the
+mint. Any account could pay for the fee.
 
 ### View Balance
 
