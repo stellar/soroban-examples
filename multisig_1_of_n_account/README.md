@@ -11,7 +11,7 @@ The following diagram illustrates the flow of how a 1-of-n multisig account work
 ```mermaid
 sequenceDiagram
     participant User/Operator
-    participant SigningTool as "Signing Tool (Rust/JS)"
+    participant SigningCliPlugin as "SigningCliPlugin"
     participant RPC as "RPC/Network"
     participant MultiSigContract as "MultiSig Account Contract"
     participant AssetContract as "Asset Contract"
@@ -28,11 +28,11 @@ sequenceDiagram
     RPC-->>User/Operator: Simulation Result (May indicate auth failure)
     deactivate RPC
 
-    User/Operator->>SigningTool: 3. Provide Unsigned Tx Envelope & Signer's Secret Key
-    activate SigningTool
-    Note over SigningTool: Reads Tx Envelope,<br/>extracts required auth payload,<br/>signs payload with Ed25519 key,<br/>adds Soroban Auth entry to Tx.
-    SigningTool-->>User/Operator: 4. Return Modified Tx Envelope (with Ed25519 Auth)
-    deactivate SigningTool
+    User/Operator->>SigningCliPlugin: 3. Provide Unsigned Tx Envelope & Signer's Secret Key
+    activate SigningCliPlugin
+    Note over SigningCliPlugin: Reads Tx Envelope,<br/>extracts required auth payload,<br/>signs payload with Ed25519 key,<br/>adds Soroban Auth entry to Tx.
+    SigningCliPlugin-->>User/Operator: 4. Return Modified Tx Envelope (with Ed25519 Auth)
+    deactivate SigningCliPlugin
     Note right of User/Operator: Tx Envelope (Has Multisig Auth, Still needs Fee Signature)
 
     User/Operator->>RPC: 5. Simulate Transaction Again (2)
