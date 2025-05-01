@@ -76,7 +76,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 })
                 .flatten()
         }
-        _ => unimplemented!(),
+        _ => Err("Unsupported transaction envelope")?,
     };
 
     // Sign each auth.
