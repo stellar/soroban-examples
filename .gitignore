@@ -2,6 +2,8 @@ target/
 /.sccache/
 .DS_Store
 .soroban
+.stellar/
+out/
 test_snapshots
 z-dc-build-info/*
 **1pass.tmp**
