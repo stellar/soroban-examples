@@ -116,7 +116,7 @@ deno install \
     --global \
     --name stellar-sign-auth-ed25519 \
     --config deno.json \
-    --allow-read \
+    --allow-read --no-prompt \
     --force \
     main.ts
 ```
