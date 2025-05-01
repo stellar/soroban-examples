@@ -1,30 +1,21 @@
 {
   "version": "5",
   "specifiers": {
-    "jsr:@std/cli@^1.0.17": "1.0.17",
     "jsr:@std/encoding@*": "1.0.5",
-    "jsr:@std/encoding@^1.0.10": "1.0.10",
-    "npm:@napi-rs/cli@^2.18.4": "2.18.4",
+    "jsr:@std/encoding@1.0.7": "1.0.7",
     "npm:@stellar/stellar-sdk@^13.3.0": "13.3.0",
     "npm:@stellar/stellar-xdr-json@^22.0.0-rc.1.1": "22.0.0-rc.1.1",
     "npm:commander@^13.1.0": "13.1.0"
   },
   "jsr": {
-    "@std/cli@1.0.17": {
-      "integrity": "e15b9abe629e17be90cc6216327f03a29eae613365f1353837fa749aad29ce7b"
-    },
     "@std/encoding@1.0.5": {
       "integrity": "ecf363d4fc25bd85bd915ff6733a7e79b67e0e7806334af15f4645c569fefc04"
     },
-    "@std/encoding@1.0.10": {
-      "integrity": "8783c6384a2d13abd5e9e87a7ae0520a30e9f56aeeaa3bdf910a3eaaf5c811a1"
+    "@std/encoding@1.0.7": {
+      "integrity": "f631247c1698fef289f2de9e2a33d571e46133b38d042905e3eac3715030a82d"
     }
   },
   "npm": {
-    "@napi-rs/cli@2.18.4": {
-      "integrity": "sha512-SgJeA4df9DE2iAEpr3M2H0OKl/yjtg1BnRI5/JyowS71tUWhrfSu2LT0V3vlHET+g1hBVlrO60PmEXwUEKp8Mg==",
-      "bin": true
-    },
     "@stellar/js-xdr@3.1.2": {
       "integrity": "sha512-VVolPL5goVEIsvuGqDc5uiKxV03lzfWdvYg1KikvwheDmTBO68CKDji3bAZ/kppZrx5iTA8z3Ld5yuytcvhvOQ=="
     },
@@ -302,9 +293,7 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@std/cli@^1.0.17",
-      "jsr:@std/encoding@^1.0.10",
-      "npm:@napi-rs/cli@^2.18.4",
+      "jsr:@std/encoding@1.0.7",
       "npm:@stellar/stellar-sdk@^13.3.0",
       "npm:@stellar/stellar-xdr-json@^22.0.0-rc.1.1",
       "npm:commander@^13.1.0"
