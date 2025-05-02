@@ -34,7 +34,7 @@ example:
 $ deno repl
 Deno 2.3.1
 exit using ctrl+d, ctrl+c, or close()
-> import { Keypair } from "npm:@stellar/stellar-sdk";
+> import { Keypair } from "npm:@stellar/stellar-sdk"
 > import { encodeHex } from "jsr:@std/encoding"
 > const kp = Keypair.random()
 > encodeHex(kp.rawPublicKey())
@@ -79,17 +79,22 @@ read files so that it can read .wasm dependencies in the
 stellar network use testnet
 ```
 
+### Change to the Contract directory
+
+```
+cd contract
+```
+
 ### Create a Testnet Account to Deploy with
 
 ```
-stellar keys generate --global --fund me
+stellar keys generate --fund me
 stellar keys use me
 ```
 
 ### Deploy the contract account
 
 ```
-cd contract
 stellar contract build --out-dir out/
 stellar contract deploy \
     --alias admin \
@@ -104,7 +109,7 @@ stellar contract deploy \
 ### Deploy asset
 
 ```
-stellar keys generate --global --fund issuer
+stellar keys generate --fund issuer
 stellar contract asset deploy \
     --alias asset \
     --asset ABC:issuer
