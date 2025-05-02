@@ -26,6 +26,21 @@ These keys are publicly viewable and not random. Do not use these keys for any
 purpose. Select your own keys and update them in the commands below when
 executing.
 
+To generate your own keys use any secure random generator to generate a 32-byte seed, then any ed25519 library to derive the public key from the seed. For example:
+
+```
+$ deno repl
+Deno 2.3.1
+exit using ctrl+d, ctrl+c, or close()
+> import { Keypair } from "npm:@stellar/stellar-sdk";
+> import { encodeHex } from "jsr:@std/encoding"
+> const kp = Keypair.random()
+> encodeHex(kp.rawPublicKey())
+"5745..."
+> encodeHex(kp.rawSecretKey())
+"acc8..."
+```
+
 ### Install the `stellar sign-auth-ed25519` plugin
 
 Install one of the stellar sign-auth-ed25519 plugin implementations.
@@ -55,6 +70,19 @@ or files, read environment variables, access the network, cannot execute
 commands. The `--allow-read` flag is specified to give the script permission to
 read files so that it can read .wasm dependencies in the
 `@stellar/stellar-xdr-json` package which is a Rust-built-to-wasm npm package.
+
+### Configure Network
+
+```
+stellar network use testnet
+```
+
+### Create a Testnet Account to Deploy with
+
+```
+stellar keys generate me --fund
+stellar keys use me
+```
 
 ### Deploy the contract account
 
@@ -89,7 +117,7 @@ stellar contract alias ls
 ### Set admin
 
 ```
-stellar contract invoke --id asset -- \
+stellar contract invoke --source issuer --id asset -- \
     set_admin \
     --new_admin admin
 ```
@@ -110,13 +138,13 @@ stellar contract invoke --id asset --build-only -- \
       --secret-key 0000000000000000000000000000000000000000000000000000000000000001 \
       --signature-expiration-ledger 2296800 \
   | stellar tx simulate \
-  | stellar tx sign --sign-with-key issuer \
+  | stellar tx sign --sign-with-key me \
   | stellar tx send
 ```
 
-Note: The issuer is signing the transaction to pay the fee, but the admin
+Note: The 'me' key is signing the transaction to pay the fee, and the admin
 signature produced by the `sign-auth-ed25519` plugin is what is authorizing the
-mint. Any account could pay for the fee.
+mint. The issuer key is not involved in the mint at all.
 
 ### View Balance
 
