@@ -26,7 +26,9 @@ These keys are publicly viewable and not random. Do not use these keys for any
 purpose. Select your own keys and update them in the commands below when
 executing.
 
-To generate your own keys use any secure random generator to generate a 32-byte seed, then any ed25519 library to derive the public key from the seed. For example:
+To generate your own keys use any secure random generator to generate a 32-byte
+seed, then any ed25519 library to derive the public key from the seed. For
+example:
 
 ```
 $ deno repl
@@ -58,7 +60,7 @@ cargo install --locked --path .
 cd stellar-cli-sign-auth-ed25519-js
 deno install \
     --global \
-    --name stellar-sign-auth-ed25519 \
+    --name stellar-sign-auth-ed25519-js \
     --config deno.json \
     --allow-read --no-prompt \
     --force \
@@ -127,6 +129,9 @@ stellar contract invoke --source issuer --id asset -- \
 Call mint, sending to an address. The invocation will be signed by the admin
 using one of the ed25519 keys set in the constructor. Choose which key signs by
 setting the `--secret-key` option to one of the two keys above.
+
+In the command below replace `sign-auth-ed25519` with `sign-auth-ed25519-js` if
+using the JS stellar-cli plugin.
 
 ```
 stellar contract invoke --id asset --build-only -- \
