@@ -1,0 +1,11 @@
+{
+  "tasks": {
+    "dev": "deno run --watch main.ts"
+  },
+  "imports": {
+    "@std/encoding": "jsr:@std/encoding@1.0.7",
+    "@stellar/stellar-sdk": "npm:@stellar/stellar-sdk@^13.3.0",
+    "@stellar/stellar-xdr-json": "npm:@stellar/stellar-xdr-json@^22.0.0-rc.1.1",
+    "commander": "npm:commander@^13.1.0"
+  }
+}
