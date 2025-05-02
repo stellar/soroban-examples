@@ -2,15 +2,8 @@
 export async function stdin(): Promise<string> {
   let stdin = "";
   const decoder = new TextDecoder();
-  const reader = Deno.stdin.readable.getReader();
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      stdin += decoder.decode(value);
-    }
-  } finally {
-    reader.releaseLock();
+  for await (const chunk of Deno.stdin.readable) {
+    stdin += decoder.decode(chunk);
   }
   return stdin;
 }
