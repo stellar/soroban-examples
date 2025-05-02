@@ -57,11 +57,6 @@ impl CustomAccountInterface for Contract {
         signature: Self::Signature,
         _auth_context: Vec<Context>,
     ) -> Result<(), Error> {
-        env.crypto().ed25519_verify(
-            &signature.public_key,
-            &signature_payload.clone().into(),
-            &signature.signature,
-        );
         if !env
             .storage()
             .instance()
@@ -69,6 +64,11 @@ impl CustomAccountInterface for Contract {
         {
             return Err(Error::UnknownSigner);
         }
+        env.crypto().ed25519_verify(
+            &signature.public_key,
+            &signature_payload.clone().into(),
+            &signature.signature,
+        );
         Ok(())
     }
 }
