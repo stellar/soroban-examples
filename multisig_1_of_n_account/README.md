@@ -82,7 +82,7 @@ stellar network use testnet
 ### Create a Testnet Account to Deploy with
 
 ```
-stellar keys generate me --fund
+stellar keys generate --global --fund me
 stellar keys use me
 ```
 
@@ -104,7 +104,7 @@ stellar contract deploy \
 ### Deploy asset
 
 ```
-stellar keys generate issuer --fund
+stellar keys generate --global --fund issuer
 stellar contract asset deploy \
     --alias asset \
     --asset ABC:issuer
