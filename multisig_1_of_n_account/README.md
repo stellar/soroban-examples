@@ -105,17 +105,26 @@ cd contract
 stellar network use testnet
 ```
 
-### Create a Testnet Account to Deploy with
+### Create a Testnet Account to Deploy with and pay Tx fees
 
 ```
-stellar keys generate --fund me
-stellar keys use me
+stellar keys generate --fund feepayer
+stellar keys use feepayer
+```
+
+### Build the contract
+
+```
+stellar contract build --out-dir out/
 ```
 
 ### Deploy the contract account
 
+Deploy the contract, including a list of signers that will be permitted to
+authorize / sign for the contract account. The signers should be the hex encoded
+32-byte ed25519 public keys discussed at the top of this document.
+
 ```
-stellar contract build --out-dir out/
 stellar contract deploy \
     --alias admin \
     --wasm out/soroban_multisig_1_of_n_account_contract.wasm \
@@ -127,6 +136,8 @@ stellar contract deploy \
 ```
 
 ### Deploy asset
+
+Create an account that'll be the issuer of the asset. Deploy the asset contract.
 
 ```
 stellar keys generate --fund issuer
@@ -142,6 +153,11 @@ stellar contract alias ls
 ```
 
 ### Set admin
+
+Set the admin of the asset contract to the contract account deployed in a
+previous step. The default admin for the asset contract is the issuer, and
+setting the admin will change which address can authorize operations like
+minting.
 
 ```
 stellar contract invoke --source issuer --id asset -- \
@@ -168,15 +184,17 @@ stellar contract invoke --id asset --build-only -- \
       --secret-key 0000000000000000000000000000000000000000000000000000000000000001 \
       --signature-expiration-ledger 2296800 \
   | stellar tx simulate \
-  | stellar tx sign --sign-with-key me \
+  | stellar tx sign --sign-with-key feepayer \
   | stellar tx send
 ```
 
-Note: The 'me' key is signing the transaction to pay the fee, and the admin
-signature produced by the `sign-auth-ed25519` plugin is what is authorizing the
-mint. The issuer key is not involved in the mint at all.
+Note: The 'feepayer' key is signing the transaction to pay the fee, and the
+admin signature produced by the `sign-auth-ed25519` plugin is what is
+authorizing the mint. The issuer key is not involved in the mint at all.
 
 ### View Balance
+
+Verify that the mint did take place by viewing the balance of the recipient.
 
 ```
 stellar contract invoke --id asset -- \
