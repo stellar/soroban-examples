@@ -73,16 +73,16 @@ commands. The `--allow-read` flag is specified to give the script permission to
 read files so that it can read .wasm dependencies in the
 `@stellar/stellar-xdr-json` package which is a Rust-built-to-wasm npm package.
 
-### Configure Network
-
-```
-stellar network use testnet
-```
-
 ### Change to the Contract directory
 
 ```
 cd contract
+```
+
+### Configure Network
+
+```
+stellar network use testnet
 ```
 
 ### Create a Testnet Account to Deploy with
