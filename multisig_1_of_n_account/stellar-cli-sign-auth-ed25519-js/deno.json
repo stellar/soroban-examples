@@ -9,6 +9,6 @@
     "commander": "npm:commander@^13.1.0"
   },
   "compilerOptions": {
-    "lib": ["deno.ns", "dom"]
+    "lib": ["deno.ns"]
   }
 }
