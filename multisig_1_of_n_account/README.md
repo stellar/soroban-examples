@@ -49,12 +49,30 @@ Install one of the stellar sign-auth-ed25519 plugin implementations.
 
 #### Rust
 
+Install the `stellar sign-auth-ed25519` plugin:
+
 ```
 cd stellar-cli-sign-auth-ed25519
 cargo install --locked --path .
 ```
 
-#### JavaScript (Deno)
+#### JavaScript ([Deno])
+
+Install [Deno] with:
+
+macOS/Linux:
+
+```
+curl -fsSL https://deno.land/install.sh | sh
+```
+
+Windows:
+
+```
+irm https://deno.land/install.ps1 | iex
+```
+
+Install the `stellar sign-auth-ed25519-js` plugin:
 
 ```
 cd stellar-cli-sign-auth-ed25519-js
@@ -68,10 +86,12 @@ deno install \
 ```
 
 Note: By default Deno scripts when installed have no permissions and cannot read
-or write files, read environment variables, access the network and cannot execute
-commands. The `--allow-read` flag is specified to give the script permission to
-read files so that it can read .wasm dependencies in the
+or write files, read environment variables, access the network and cannot
+execute commands. The `--allow-read` flag is specified to give the script
+permission to read files so that it can read .wasm dependencies in the
 `@stellar/stellar-xdr-json` package which is a Rust-built-to-wasm npm package.
+
+[Deno]: https://deno.com
 
 ### Change to the Contract directory
 
