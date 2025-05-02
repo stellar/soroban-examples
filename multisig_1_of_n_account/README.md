@@ -68,7 +68,7 @@ deno install \
 ```
 
 Note: By default Deno scripts when installed have no permissions and cannot read
-or files, read environment variables, access the network, cannot execute
+or write files, read environment variables, access the network and cannot execute
 commands. The `--allow-read` flag is specified to give the script permission to
 read files so that it can read .wasm dependencies in the
 `@stellar/stellar-xdr-json` package which is a Rust-built-to-wasm npm package.
