@@ -36,7 +36,7 @@ fn test() {
     // Initialize the test environment
     let env = Env::default();
 
-    // Load verification key components from the multiplier2 circuit
+    // Load verification key components (copied from `data/verification_key.json`)
     // These values are pre-computed for the circuit that verifies a*b = c
     // where a=3, b=11, c=33 and only c is public.
     let alphax = "851850525556173310373115880154698084608631105506432893865500290442025919078535925294035153152030470398262539759609";
@@ -78,7 +78,7 @@ fn test() {
         ),
     };
 
-    // Load proof components from the multiplier2 circuit
+    // Load proof components (copied from `data/proof.json`)
     let pi_ax = "314442236668110257304682488877371582255161413673331360366570443799415414639292047869143313601702131653514009114222";
     let pi_ay = "2384632327855835824635705027009217874826122107057894594162233214798350178691568018290025994699762298534539543934607";
     let pi_bx1 = "428844167033934720609657613212495751617651348480870890908850335525890280786532876634895457032623422366474694342656";
@@ -98,7 +98,7 @@ fn test() {
     // Create the contract client
     let client = create_client(&env);
 
-    // Test Case 1: Verify the proof with the correct public output (33)
+    // Test Case 1: Verify the proof with the correct public output (33, copied from `data/public.json`)
     let output = Vec::from_array(&env, [Fr::from_u256(U256::from_u32(&env, 33))]);
     let res = client.verify_proof(&vk, &proof, &output);
     assert_eq!(res, true);
