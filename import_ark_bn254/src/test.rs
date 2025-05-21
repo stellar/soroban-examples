@@ -53,7 +53,7 @@ fn test_running_contract_as_native() {
 }
 
 mod contract_data {
-    soroban_sdk::contractimport!(file = "opt/import_bn254_contract.wasm");
+    soroban_sdk::contractimport!(file = "opt/soroban_ark_bn254_contract.wasm");
 }
 
 #[test]

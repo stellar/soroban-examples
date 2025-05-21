@@ -1,5 +1,5 @@
 [package]
-name = "import-bn254-contract"
+name = "soroban-ark-bn254-contract"
 version = "0.0.0"
 edition = "2021"
 publish = false

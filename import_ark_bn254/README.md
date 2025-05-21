@@ -1,4 +1,4 @@
-# Soroban BN254 Contract Example
+# Soroban ark-bn254 Contract Example
 
 This example demonstrates how to import and use external cryptographic libraries in a Soroban smart contract. Specifically, it imports the [ark-bn254](https://crates.io/crates/ark-bn254) library and performs the pairing operation.
 
