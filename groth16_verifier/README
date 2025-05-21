@@ -2,7 +2,7 @@
 
 A demonstration of a Groth16 zero-knowledge proof verifier implemented as a Soroban smart contract.
 
-The proof and verification key are generated following the Circom2 [getting-started guide](https://docs.circom.io/getting-started/installation/).
+The proof and verification key are generated following the Circom2 (circom compiler 2.2.1) [getting-started guide](https://docs.circom.io/getting-started/installation/).
 
 The computation demonstrates a simple multiplication circuit: `a * b = c`, where:
 - `a` and `b` are private inputs
