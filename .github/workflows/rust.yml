@@ -92,6 +92,7 @@ jobs:
     - run: cargo version
     - run: rustup target add ${{ matrix.sys.target }}
     - run: rustup target add wasm32-unknown-unknown
+    - run: rustup target add wasm32v1-none
 
     # Setup Deno
     - uses: denoland/setup-deno@909cc5acb0fdd60627fb858598759246509fa755 # v2.0.2
@@ -99,7 +100,7 @@ jobs:
         deno-version: v2.x
 
     # Setup Stellar CLI
-    - uses: stellar/stellar-cli@v22.5.0
+    - uses: stellar/stellar-cli@v22.8.0
 
     # Build and Test
     - run: make test
