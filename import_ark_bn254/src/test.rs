@@ -5,7 +5,7 @@ use crate::{Bn254Contract, Bn254ContractClient, MockProof};
 use ark_bn254::{G1Affine, G2Affine};
 use ark_ff::UniformRand;
 use ark_serialize::CanonicalSerialize;
-use soroban_sdk::{contract, contractimpl, Address, BytesN, Env};
+use soroban_sdk::{BytesN, Env};
 
 #[test]
 fn test_running_contract_as_native() {
@@ -58,19 +58,6 @@ mod bn254_contract {
     soroban_sdk::contractimport!(file = "opt/soroban_ark_bn254_contract.wasm");
 }
 
-// A test wrapper contract which serves as a bridge to test BN254 contract's
-// WASM execution path (with the pre-built `soroban_ark_bn254_contract.wasm`).
-#[contract]
-pub struct Contract;
-
-#[contractimpl]
-impl Contract {
-    pub fn verify_with(env: Env, contract: Address, proof: bn254_contract::MockProof) -> bool {
-        let client = bn254_contract::Client::new(&env, &contract);
-        client.mock_verify(&proof)
-    }
-}
-
 #[test]
 fn test_running_contract_as_wasm() {
     let env = Env::default();
@@ -78,9 +65,8 @@ fn test_running_contract_as_wasm() {
     // reset the budget to unlimited
     env.cost_estimate().budget().reset_unlimited();
 
-    let bn254_contract_id = env.register(bn254_contract::WASM, ());
-    let contract_id = env.register(Contract, ());
-    let client = ContractClient::new(&env, &contract_id);
+    let contract_id = env.register(bn254_contract::WASM, ());
+    let client = bn254_contract::Client::new(&env, &contract_id);
 
     // Generate random points
     let mut rng = ark_std::test_rng();
@@ -98,7 +84,7 @@ fn test_running_contract_as_wasm() {
         g2: BytesN::from_array(&env, &g2_bytes),
     };
 
-    let res = client.verify_with(&bn254_contract_id, &proof);
+    let res = client.mock_verify(&proof);
     std::println!("`mock_verify` returned '{}'", res);
 
     env.cost_estimate().budget().print();
