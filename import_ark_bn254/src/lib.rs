@@ -7,9 +7,10 @@ use soroban_sdk::{contract, contractimpl, contracttype, BytesN, Env};
 
 extern crate alloc;
 
+// A mock proof that contains two points
 #[derive(Clone)]
 #[contracttype]
-pub struct DummyProof {
+pub struct MockProof {
     pub g1: BytesN<64>,
     pub g2: BytesN<128>,
 }
@@ -19,8 +20,10 @@ pub struct Bn254Contract;
 
 #[contractimpl]
 impl Bn254Contract {
-    // A dummy proof that just performs pairing on the two input points
-    pub fn dummy_verify(_env: Env, proof: DummyProof) -> bool {
+    // A mock verify method that performs pairing on the two input points.
+    // This isn't a realistic cryptographic protocol - it's a minimal example to
+    // demonstrate the use of the BN254 curve operation in a Soroban contract.
+    pub fn mock_verify(_env: Env, proof: MockProof) -> bool {
         let mut g1_slice = [0; 64];
         proof.g1.copy_into_slice(&mut g1_slice);
         let g1 = G1Affine::deserialize_uncompressed(&g1_slice[..]).unwrap();

@@ -8,10 +8,10 @@ test: build
 build:
 	stellar contract build
 	mkdir -p opt/
-	for i in target/wasm32v1-none/release/*.wasm ; do \
-		stellar contract optimize --wasm "$$i" --wasm-out "opt/$$(basename $$i)"; \
-		ls -l "opt/$$(basename $$i)"; \
-	done
+	stellar contract optimize \
+		--wasm target/wasm32v1-none/release/soroban_ark_bn254_contract.wasm \
+		--wasm-out opt/soroban_ark_bn254_contract.wasm
+	@ls -l opt/*.wasm
 fmt:
 	cargo fmt --all
 

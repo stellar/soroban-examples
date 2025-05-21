@@ -1,7 +1,7 @@
 #[cfg(test)]
 extern crate std;
 
-use crate::{Bn254Contract, Bn254ContractClient, DummyProof};
+use crate::{Bn254Contract, Bn254ContractClient, MockProof};
 use ark_bn254::{G1Affine, G2Affine};
 use ark_ff::UniformRand;
 use ark_serialize::CanonicalSerialize;
@@ -23,13 +23,13 @@ fn test_running_contract_as_native() {
     g1.serialize_uncompressed(&mut g1_bytes[..]).unwrap();
     g2.serialize_uncompressed(&mut g2_bytes[..]).unwrap();
     // Create proof
-    let proof = DummyProof {
+    let proof = MockProof {
         g1: BytesN::from_array(&env, &g1_bytes),
         g2: BytesN::from_array(&env, &g2_bytes),
     };
     // Verify the proof
-    let result = client.dummy_verify(&proof);
-    std::println!("`dummy_verify` returned '{}'", result);
+    let result = client.mock_verify(&proof);
+    std::println!("`mock_verify` returned '{}'", result);
 
     env.cost_estimate().budget().print();
 
@@ -77,13 +77,13 @@ fn test_running_contract_as_wasm() {
     g2.serialize_uncompressed(&mut g2_bytes[..]).unwrap();
 
     // Create proof
-    let proof = contract_data::DummyProof {
+    let proof = contract_data::MockProof {
         g1: BytesN::from_array(&env, &g1_bytes),
         g2: BytesN::from_array(&env, &g2_bytes),
     };
 
-    let res = client.dummy_verify(&proof);
-    std::println!("`dummy_verify` returned '{}'", res);
+    let res = client.mock_verify(&proof);
+    std::println!("`mock_verify` returned '{}'", res);
 
     env.cost_estimate().budget().print();
     // Below is the printout of the budget.
