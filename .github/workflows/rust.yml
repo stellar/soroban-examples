@@ -80,7 +80,6 @@ jobs:
       run: |
         if [ -f "Cargo.toml" ]; then
           msrv="$(cargo metadata --format-version 1 --no-deps | jq -r '.packages | map(.rust_version) | map(values) | min')"
-          echo $msrv
           rustup override set $msrv
           rustup component add clippy --toolchain $msrv
         fi
