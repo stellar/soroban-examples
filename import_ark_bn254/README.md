@@ -17,5 +17,5 @@ The main goal is to enable contract developers to experiment with computationall
 make build
 
 # Run the tests
-cargo test
+make test
 ```
