@@ -1,4 +1,4 @@
-#[cfg(test)]
+#![cfg(test)]
 extern crate std;
 
 use crate::{Bn254Contract, Bn254ContractClient, MockProof};
