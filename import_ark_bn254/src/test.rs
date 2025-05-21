@@ -88,7 +88,8 @@ fn test_running_contract_as_wasm() {
     std::println!("`mock_verify` returned '{}'", res);
 
     env.cost_estimate().budget().print();
-    // Below is the printout of the budget.
+    // Below is the printout of the budget (the actual numbers may vary
+    // depending on your Rust version and the Soroban version).
     //
     // Note most of the costs (555/560M cpu) come from wasm execution
     // (`WasmInsnExec`).
