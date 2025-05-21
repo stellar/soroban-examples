@@ -1,4 +1,0 @@
-[toolchain]
-channel = "1.84.0"
-targets = ["wasm32v1-none"]
-components = ["rustc", "cargo", "rustfmt", "clippy", "rust-src"]
