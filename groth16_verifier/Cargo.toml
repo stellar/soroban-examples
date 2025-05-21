@@ -3,6 +3,7 @@ name = "soroban-groth16-verifier-contract"
 version = "0.0.0"
 edition = "2021"
 publish = false
+rust-version = "1.84.0"
 
 [lib]
 crate-type = ["cdylib"]
