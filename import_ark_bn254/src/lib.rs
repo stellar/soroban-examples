@@ -5,15 +5,6 @@ use ark_ff::Field;
 use ark_serialize::CanonicalDeserialize;
 use soroban_sdk::{contract, contractimpl, contracttype, BytesN, Env};
 
-// Soroban contracts do not supports `std` features. To use dynamic memory
-// allocation (which is required for ark libraries), import the `alloc` crate
-// (the `GlobalAlloc` impl is provided by the `soroban_sdk`).
-//
-// For more context refer to the [Contract Rust
-// Dialect](https://developers.stellar.org/docs/learn/encyclopedia/contract-development/rust-dialect)
-// doc.
-extern crate alloc;
-
 // A mock proof that contains two points, represented in raw bytes
 #[derive(Clone)]
 #[contracttype]
