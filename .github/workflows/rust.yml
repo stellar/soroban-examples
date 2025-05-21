@@ -74,8 +74,8 @@ jobs:
     - uses: actions/checkout@v3
 
     # Setup Rust
-    - if: hashFiles('Cargo.toml') != ''
-      uses: stellar/actions/rust-cache@main
+    - uses: stellar/actions/rust-cache@main
+    - run: echo ${{ hashFiles('Cargo.toml') }}
     - name: Use the minimum supported Rust version
       if: hashFiles('Cargo.toml') != '' && matrix.rust == 'msrv'
       run: |
@@ -85,7 +85,7 @@ jobs:
     - name: Error on warnings and clippy checks
       # Only error on warnings and checks for the msrv, because new versions of
       # Rust will frequently add new warnings and checks.
-      if: hashFiles('Cargo.toml') != '' && matrix.rust == 'msrv'
+      if: matrix.rust == 'msrv'
       run: echo RUSTFLAGS='-Dwarnings' >> $GITHUB_ENV
     - run: rustup update
     - run: cargo version
@@ -93,8 +93,7 @@ jobs:
     - run: rustup target add wasm32-unknown-unknown
 
     # Setup Deno
-    - if: hashFiles('deno.json') != ''
-      uses: denoland/setup-deno@909cc5acb0fdd60627fb858598759246509fa755 # v2.0.2
+    - uses: denoland/setup-deno@909cc5acb0fdd60627fb858598759246509fa755 # v2.0.2
       with:
         deno-version: v2.x
 
