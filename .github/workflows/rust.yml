@@ -75,7 +75,6 @@ jobs:
 
     # Setup Rust
     - uses: stellar/actions/rust-cache@main
-    - run: echo ${{ hashFiles('Cargo.toml') }}
     - name: Use the minimum supported Rust version
       if: matrix.rust == 'msrv'
       run: |
