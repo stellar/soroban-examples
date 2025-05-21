@@ -5,7 +5,7 @@ use crate::{Bn254Contract, Bn254ContractClient, MockProof};
 use ark_bn254::{G1Affine, G2Affine};
 use ark_ff::UniformRand;
 use ark_serialize::CanonicalSerialize;
-use soroban_sdk::{BytesN, Env};
+use soroban_sdk::{contract, contractimpl, Address, BytesN, Env};
 
 #[test]
 fn test_running_contract_as_native() {
@@ -34,8 +34,10 @@ fn test_running_contract_as_native() {
     env.cost_estimate().budget().print();
 
     // Below is the printout of the budget.
-    // Note it uses very little resources (~12k/100M cpu insns), because most of
-    // the computation are running natively (like in the host but not budgeted)
+    //
+    // Note it reports using very little resources (~12k/100M cpu insns),
+    // because most of the computation is running natively (like in the host
+    // but not budgeted)
     /*
     =================================================================
     Cpu limit: 100000000; used: 12150
@@ -52,8 +54,21 @@ fn test_running_contract_as_native() {
     */
 }
 
-mod contract_data {
+mod bn254_contract {
     soroban_sdk::contractimport!(file = "opt/soroban_ark_bn254_contract.wasm");
+}
+
+// A test wrapper contract which serves as a bridge to test BN254 contract's
+// WASM execution path (with the pre-built `soroban_ark_bn254_contract.wasm`).
+#[contract]
+pub struct Contract;
+
+#[contractimpl]
+impl Contract {
+    pub fn verify_with(env: Env, contract: Address, proof: bn254_contract::MockProof) -> bool {
+        let client = bn254_contract::Client::new(&env, &contract);
+        client.mock_verify(&proof)
+    }
 }
 
 #[test]
@@ -63,8 +78,9 @@ fn test_running_contract_as_wasm() {
     // reset the budget to unlimited
     env.cost_estimate().budget().reset_unlimited();
 
-    let contract_id = env.register(contract_data::WASM, ());
-    let client = contract_data::Client::new(&env, &contract_id);
+    let bn254_contract_id = env.register(bn254_contract::WASM, ());
+    let contract_id = env.register(Contract, ());
+    let client = ContractClient::new(&env, &contract_id);
 
     // Generate random points
     let mut rng = ark_std::test_rng();
@@ -77,17 +93,19 @@ fn test_running_contract_as_wasm() {
     g2.serialize_uncompressed(&mut g2_bytes[..]).unwrap();
 
     // Create proof
-    let proof = contract_data::MockProof {
+    let proof = bn254_contract::MockProof {
         g1: BytesN::from_array(&env, &g1_bytes),
         g2: BytesN::from_array(&env, &g2_bytes),
     };
 
-    let res = client.mock_verify(&proof);
+    let res = client.verify_with(&bn254_contract_id, &proof);
     std::println!("`mock_verify` returned '{}'", res);
 
     env.cost_estimate().budget().print();
     // Below is the printout of the budget.
-    // Note almost all costs come from wasm execution (`WasmInsnExec`).
+    //
+    // Note most of the costs (555/560M cpu) come from wasm execution
+    // (`WasmInsnExec`).
     /*
     =================================================================
     Cpu limit: 18446744073709551615; used: 560718778
