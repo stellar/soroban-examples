@@ -77,11 +77,13 @@ jobs:
     - uses: stellar/actions/rust-cache@main
     - run: echo ${{ hashFiles('Cargo.toml') }}
     - name: Use the minimum supported Rust version
-      if: hashFiles('Cargo.toml') != '' && matrix.rust == 'msrv'
+      if: matrix.rust == 'msrv'
       run: |
-        msrv="$(cargo metadata --format-version 1 --no-deps | jq -r '.packages | map(.rust_version) | map(values) | min')"
-        rustup override set $msrv
-        rustup component add clippy --toolchain $msrv
+        if [ -f "Cargo.toml"]; then
+          msrv="$(cargo metadata --format-version 1 --no-deps | jq -r '.packages | map(.rust_version) | map(values) | min')"
+          rustup override set $msrv
+          rustup component add clippy --toolchain $msrv
+        fi
     - name: Error on warnings and clippy checks
       # Only error on warnings and checks for the msrv, because new versions of
       # Rust will frequently add new warnings and checks.
