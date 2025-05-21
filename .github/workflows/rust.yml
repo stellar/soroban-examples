@@ -79,7 +79,7 @@ jobs:
     - name: Use the minimum supported Rust version
       if: matrix.rust == 'msrv'
       run: |
-        if [ -f "Cargo.toml"]; then
+        if [ -f "Cargo.toml" ]; then
           msrv="$(cargo metadata --format-version 1 --no-deps | jq -r '.packages | map(.rust_version) | map(values) | min')"
           rustup override set $msrv
           rustup component add clippy --toolchain $msrv
