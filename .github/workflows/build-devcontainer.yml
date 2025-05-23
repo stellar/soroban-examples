@@ -31,7 +31,7 @@ jobs:
           SHELLCHECK_OPTS: -s bash
         shell: bash
         run: |
-          shellcheck "${{github.workspace}}/.devcontainer/post_start_cli_autocomplete.sh"
+          shellcheck ".devcontainer/post_start_cli_autocomplete.sh"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
