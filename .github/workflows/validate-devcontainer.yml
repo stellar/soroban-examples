@@ -16,14 +16,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup PATH
-        run: |
-          echo ::notice title={Setup Permissions}::{Add permissions to .devcontainers/}
-          chmod -R +rwx .devcontainer
-
-          echo ::notice title={Setup Workspace}::{Add .devcontainers/ to PATH}
-          echo "${{github.workspace}}/.devcontainer" >> "$GITHUB_PATH"
-          echo "${{github.workspace}}/.devcontainer/tests" >> "$GITHUB_PATH"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

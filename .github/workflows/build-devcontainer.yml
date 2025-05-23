@@ -19,9 +19,8 @@ on:
         default: 'vsc-soroban-examples-oci'
 
 jobs:
-  verify-build-scripts:
-
-    name: Shellcheck linting
+  verify-scripts:
+    name: Shellcheck
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -38,8 +37,8 @@ jobs:
         with:
           node-version: '22.x'
       - run: |
-          npm i bats
-          bin/bats .devcontainer/post_start_cli_autocomplete_test.bats
+          npm -g bats
+          bats .devcontainer/post_start_cli_autocomplete_test.bats
         working-directory: ${{ github.workspace }}
 
   build-docker:
