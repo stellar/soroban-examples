@@ -19,68 +19,44 @@ on:
         default: 'vsc-soroban-examples-oci'
 
 jobs:
-  shellcheck-and-test:
+  verify-build-scripts:
 
     name: Shellcheck linting
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup PATH
+      - name: Run Shellcheck
         run: |
-          echo ::notice title={Setup Permissions}::{Add permissions to .devcontainers/}
-          chmod -R +rwx .devcontainer
-          
-          echo ::notice title={Setup Workspace}::{Add .devcontainers/ to PATH}
-          echo "${{github.workspace}}/.devcontainer" >> "$GITHUB_PATH"
-          echo "${{github.workspace}}/.devcontainer/tests" >> "$GITHUB_PATH"
-
-      - name: Run ShellCheck
-        uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38
-        env:
-          SHELLCHECK_OPTS: -s bash
-        with:
-          format: tty
-          severity: error
-          additional_files: post_start_cli_autocomplete.sh
-          scandir: "${{github.workspace}}/.devcontainer"
-        continue-on-error: true
-
-      - name: Setup Bats and bats libs
-        id: setup-bats
-        uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507
-
-      - name: Test Devcontainer scripts
-        shell: bash
-        env:
-          BATS_LIB_PATH: ${{ steps.setup-bats.outputs.lib-path }}
-        run: bats .devcontainer/post_start_cli_autocomplete_test.bats
-
-  build-with-devcontainer-cli:
-    permissions:
-      contents: read
-      packages: write
-    name: Devcontainer CLI Build and Push Cache
-    runs-on: ubuntu-latest
-    env:
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Setup PATH
-        run: |
-          echo ::notice title={Setup Permissions}::{Add permissions to .devcontainers/}
-          chmod -R +rwx .devcontainer
-
-          echo ::notice title={Setup Workspace}::{Add .devcontainers/ to PATH}
-          echo "${{github.workspace}}/.devcontainer" >> "$GITHUB_PATH"
-          echo "${{github.workspace}}/.devcontainer/tests" >> "$GITHUB_PATH"
+          shellcheck "${{github.workspace}}/.devcontainer/post_start_cli_autocomplete.sh
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '22.x'
+      - run: |
+          npm i bats
+          bats .devcontainer/post_start_cli_autocomplete_test.bats
+        working-directory: ${{ github.workspace }}
+
+  build-docker:
+    permissions:
+      contents: read
+      packages: write
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    name: Devcontainer CLI Build and Push Cache
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
       - run: npm install -g @devcontainers/cli
         working-directory: ${{ github.workspace }}
 
@@ -89,6 +65,7 @@ jobs:
         with:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_TOKEN
+
 
       - name: Test Devcontainer CLI Build
         run: |
