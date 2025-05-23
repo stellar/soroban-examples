@@ -10,11 +10,11 @@ on:
   workflow_dispatch:
     inputs:
       DEFAULT_PREBUILD_IMG:
-        description: 'Overide Default Caching image'
+        description: 'Docker image'
         required: false
         default: 'vsc-soroban-examples-prebuild'
       DEFAULT_OCI_IMG:
-        description: 'Override OCI caching image'
+        description: 'OCI image'
         required: false
         default: 'vsc-soroban-examples-oci'
 
@@ -27,6 +27,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Run Shellcheck
+        env:
+          SHELLCHECK_OPTS: -s bash
         run: |
           shellcheck "${{github.workspace}}/.devcontainer/post_start_cli_autocomplete.sh
 
@@ -43,9 +45,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-    env:
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
     name: Devcontainer CLI Build and Push Cache
     runs-on: ubuntu-latest
 
@@ -60,17 +59,23 @@ jobs:
       - run: npm install -g @devcontainers/cli
         working-directory: ${{ github.workspace }}
 
+      - name: Validate Docker Hub credentials
+        run: |
+          if [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_TOKEN" ]; then
+            echo "Error: Docker Hub credentials are not set!" >&2
+            exit 1
+          fi
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_TOKEN
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          ecr: 'false'
+          registry: true
 
 
-      - name: Test Devcontainer CLI Build
+      - name: Devcontainer Build
         run: |
-          echo ::notice title={Building with Devcontainer CLI}::{Building Devcontainer}
-          
           chmod +x ${{github.workspace}}/.devcontainer/tests/build_devcontainer_ci.sh
           ${{github.workspace}}/.devcontainer/tests/build_devcontainer_ci.sh $DEFAULT_PREBUILD_IMG $DEFAULT_OCI_IMG
           
