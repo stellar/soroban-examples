@@ -1,0 +1,28 @@
+# Groth16 Verifier Contract
+
+A demonstration of a Groth16 zero-knowledge proof verifier implemented as a Soroban smart contract.
+
+The proof and verification key are generated following the Circom2 (circom compiler 2.2.1) [getting-started guide](https://docs.circom.io/getting-started/installation/).
+
+The computation demonstrates a simple multiplication circuit: `a * b = c`, where:
+- `a` and `b` are private inputs
+- `c` is the public output
+
+The `./data` directory contains all input files (circuit definition, inputs) and generated outputs. For proof verification, three key files are required:
+- [proof.json](./data/proof.json) - Contains the zero-knowledge proof
+- [verification_key.json](./data/verification_key.json) - Contains the verification key
+- [public.json](./data/public.json) - Contains the public inputs/outputs
+
+Other intermediate artifacts, including witness generation code and outputs from the "Powers of Tau" ceremony, are included in `./data/auxiliary` for reproducibility.
+
+The [contract implementation](./src/lib.rs) is translated from the auto-generated [Solidity contract](./data/multiplier2_js/verifier.sol). The [test suite](./src/test.rs) demonstrates off-chain parsing of the proof and verification key, along with successful contract execution.
+
+This example was presented at the [Stellar Developer Meeting - 12/19/2024](https://www.youtube.com/watch?v=51SitOUZySk&list=PLmr3tp_7-7Gg5IAsJ0VlgfMoh-aTmbQmh&index=4) to demonstrate the BLS12-381 features.
+
+## ⚠️ WARNING: Demonstration Use Only
+
+**This project is for demonstration purposes only.**
+- It has **not** undergone security auditing
+- It is **not** safe for use in production environments
+
+**Use at your own risk.**
