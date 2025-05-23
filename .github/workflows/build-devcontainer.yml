@@ -29,8 +29,9 @@ jobs:
       - name: Run Shellcheck
         env:
           SHELLCHECK_OPTS: -s bash
+        shell: bash
         run: |
-          shellcheck "${{github.workspace}}/.devcontainer/post_start_cli_autocomplete.sh
+          shellcheck "${{github.workspace}}/.devcontainer/post_start_cli_autocomplete.sh"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -43,8 +44,9 @@ jobs:
 
   build-docker:
     permissions:
-      contents: read
+      contents: write
       packages: write
+      actions: write
     name: Devcontainer CLI Build
     runs-on: ubuntu-latest
 
@@ -59,20 +61,16 @@ jobs:
       - run: npm install -g @devcontainers/cli
         working-directory: ${{ github.workspace }}
 
-      - name: Validate Docker Hub credentials
-        run: |
-          if [ -z ${{ secrets.DOCKERHUB_USERNAME }} ] || [ -z ${{ secrets.DOCKERHUB_TOKEN }} ]; then
-            echo "Error: Docker Hub credentials are not set!" >&2
-            exit 1
-          fi
       - name: Login to Docker Hub
         uses: docker/login-action@v3
+        env:
+          USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: $USERNAME
+          password: $TOKEN
           ecr: 'false'
           registry: true
-
 
       - name: Devcontainer Build
         run: |

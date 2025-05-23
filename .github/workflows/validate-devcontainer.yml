@@ -1,4 +1,4 @@
-name: Validate Devcontainer Config
+name: Validate Devcontainer
 
 on:
   push:
@@ -37,12 +37,12 @@ jobs:
           npm install ajv-formats
           npm install ajv-errors
 
-      - name: Stage JSON Schema Testing Area
+      - name: Stage Testing Area
         run: |
           mkdir -p schemas/
           cp "${{github.workspace}}/.devcontainer/devcontainer.json" schemas/
 
-      - name: Download DevContainer JSON Schemas
+      - name: DevContainer Schemas
         env:
           DEVCONTAINER_BASE_SCHEMA: https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.base.schema.json
           DEVCONTAINER_SCHEMA: https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json
