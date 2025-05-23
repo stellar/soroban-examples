@@ -31,8 +31,7 @@ output=$(devcontainer build \
   --workspace-folder . \
   --config $devcontainer_dir/$config_file \
   --cache-from type=registry,ref="${pre_build_image}" \
-  --cache-from type=local,src="${local_build_cache}",mode=max \
-  --cache-to type=local,dest="${local_build_cache}",mode=max,oci-mediatypes=true,image-manifest=true \
+  --cache-to type=registry,ref="${pre_build_image}",mode=max,oci-mediatypes=true,image-manifest=true \
   --output type=image,name="${pre_build_image}")
 
 echo " ✅ Devcontainer built"
