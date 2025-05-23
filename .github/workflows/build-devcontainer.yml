@@ -39,7 +39,7 @@ jobs:
           node-version: '22.x'
       - run: |
           npm i bats
-          bats .devcontainer/post_start_cli_autocomplete_test.bats
+          bin/bats .devcontainer/post_start_cli_autocomplete_test.bats
         working-directory: ${{ github.workspace }}
 
   build-docker:
@@ -47,6 +47,7 @@ jobs:
       contents: write
       packages: write
       actions: write
+      id-token: write
     name: Devcontainer CLI Build
     runs-on: ubuntu-latest
 
@@ -70,7 +71,6 @@ jobs:
           username: $USERNAME
           password: $TOKEN
           ecr: 'false'
-          registry: true
 
       - name: Devcontainer Build
         run: |
