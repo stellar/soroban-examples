@@ -1,4 +1,4 @@
-name: Build and Test DevContainer
+name: Build Devcontainer
 
 on:
   push:
@@ -45,7 +45,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    name: Devcontainer CLI Build and Push Cache
+    name: Devcontainer CLI Build
     runs-on: ubuntu-latest
 
     steps:
@@ -61,7 +61,7 @@ jobs:
 
       - name: Validate Docker Hub credentials
         run: |
-          if [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_TOKEN" ]; then
+          if [ -z ${{ secrets.DOCKERHUB_USERNAME }} ] || [ -z ${{ secrets.DOCKERHUB_TOKEN }} ]; then
             echo "Error: Docker Hub credentials are not set!" >&2
             exit 1
           fi

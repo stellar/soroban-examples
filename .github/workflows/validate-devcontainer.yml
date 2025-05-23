@@ -1,4 +1,4 @@
-name: Validate Devcontainer Config and Validate JSON Schema
+name: Validate Devcontainer Config
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  validate-devcontainer-json:
+  validate-json:
     runs-on: ubuntu-latest
 
     steps:
