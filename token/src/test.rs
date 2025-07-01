@@ -67,7 +67,7 @@ fn test() {
     );
     assert_eq!(token.allowance(&user2, &user3), 500);
 
-    token.transfer(&user1, &user2, &600);
+    token.transfer(&user1, &user2.clone().into(), &600);
     assert_eq!(
         e.auths(),
         std::vec![(
@@ -103,7 +103,7 @@ fn test() {
     assert_eq!(token.balance(&user1), 800);
     assert_eq!(token.balance(&user2), 200);
 
-    token.transfer(&user1, &user3, &300);
+    token.transfer(&user1, &user3.clone().into(), &300);
     assert_eq!(token.balance(&user1), 500);
     assert_eq!(token.balance(&user3), 300);
 
@@ -214,7 +214,7 @@ fn transfer_insufficient_balance() {
     token.mint(&user1, &1000);
     assert_eq!(token.balance(&user1), 1000);
 
-    token.transfer(&user1, &user2, &1001);
+    token.transfer(&user1, &user2.into(), &1001);
 }
 
 #[test]
