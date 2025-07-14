@@ -1,5 +1,7 @@
 # Soroban Examples <!-- omit in toc -->
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/stellar/soroban-examples)
+
 This repository contains example smart contracts for key Soroban features and concepts. The examples illustrate how to use the features, in their simplest form. 
 
 > [!WARNING]  
