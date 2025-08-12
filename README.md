@@ -112,14 +112,14 @@ cd increment
 stellar contract build
 ```
 
-A `.wasm` file will be outputted in the target directory, at `target/wasm32-unknown-unknown/release/soroban_increment_contract.wasm`. The `.wasm` file is the built contract.
+A `.wasm` file will be outputted in the target directory, at `target/wasm32v1-none/release/soroban_increment_contract.wasm`. The `.wasm` file is the built contract.
 
 #### Deploy
 The WASM file can now be deployed to the testnet by running this command:
 
 ```
 stellar contract deploy \
-  --wasm target/wasm32-unknown-unknown/release/soroban_increment_contract.wasm \
+  --wasm target/wasm32v1-none/release/soroban_increment_contract.wasm \
   --source alice \
   --network testnet \
   --alias increment_contract
