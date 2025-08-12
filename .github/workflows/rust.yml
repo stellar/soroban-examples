@@ -99,7 +99,7 @@ jobs:
         deno-version: v2.x
 
     # Setup Stellar CLI
-    - uses: stellar/stellar-cli@v22.8.0
+    - uses: stellar/stellar-cli@v23.0.0
 
     # Build and Test
     - run: make test
