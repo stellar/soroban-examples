@@ -3,17 +3,17 @@ name = "soroban-alloc-contract"
 version = "0.0.0"
 edition = "2021"
 publish = false
-rust-version = "1.80.0"
+rust-version = "1.85.0"
 
 [lib]
 crate-type = ["cdylib"]
 doctest = false
 
 [dependencies]
-soroban-sdk = { version = "22.0.7", features = ["alloc"] }
+soroban-sdk = { version = "22.0.8", features = ["alloc"] }
 
 [dev-dependencies]
-soroban-sdk = { version = "22.0.7", features = ["testutils", "alloc"] }
+soroban-sdk = { version = "22.0.8", features = ["testutils", "alloc"] }
 
 [profile.release]
 opt-level = "z"
