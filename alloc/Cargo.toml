@@ -10,10 +10,10 @@ crate-type = ["cdylib"]
 doctest = false
 
 [dependencies]
-soroban-sdk = { version = "22.0.7", features = ["alloc"] }
+soroban-sdk = { version = "22.0.8", features = ["alloc"] }
 
 [dev-dependencies]
-soroban-sdk = { version = "22.0.7", features = ["testutils", "alloc"] }
+soroban-sdk = { version = "22.0.8", features = ["testutils", "alloc"] }
 
 [profile.release]
 opt-level = "z"
