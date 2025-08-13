@@ -10,7 +10,7 @@ crate-type = ["cdylib"]
 doctest = false
 
 [dependencies]
-soroban-sdk = { version = "22.0.7", features = ["alloc"] }
+soroban-sdk = { version = "22.0.8", features = ["alloc"] }
 alloy-sol-types = { version="0.6.3", default-features = false }
 
 [dev-dependencies]
