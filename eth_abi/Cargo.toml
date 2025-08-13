@@ -11,7 +11,7 @@ doctest = false
 
 [dependencies]
 soroban-sdk = { version = "22.0.7", features = ["alloc"] }
-alloy-sol-types = {version="0.6.3" }
+alloy-sol-types = { version="0.6.3", default-features = false }
 
 [dev-dependencies]
 soroban-sdk = { version = "22.0.7", features = ["testutils"] }
