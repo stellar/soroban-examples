@@ -91,10 +91,7 @@ jobs:
     - run: rustup update
     - run: cargo version
     - run: rustup target add ${{ matrix.sys.target }}
-    - if: matrix.rust != 'msrv'
-      run: rustup target add wasm32v1-none
-    - if: matrix.rust == 'msrv'
-      run: rustup target add wasm32-unknown-unknown
+    - run: rustup target add wasm32v1-none
 
 
     # Setup Deno
