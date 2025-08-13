@@ -3,7 +3,7 @@ name = "soroban-ark-bn254-contract"
 version = "0.0.0"
 edition = "2021"
 publish = false
-rust-version = "1.84.0"
+rust-version = "1.85.0"
 
 [lib]
 crate-type = ["cdylib"]
