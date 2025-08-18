@@ -15,8 +15,8 @@ use clap::Parser;
 use ed25519_dalek::{Keypair, Signer};
 use sha2::{Digest, Sha256};
 use stellar_xdr::curr::{
-    Hash, HashIdPreimage, HashIdPreimageSorobanAuthorization, Limited, Limits, OperationBody,
-    ReadXdr, ScBytes, ScMap, ScSymbol, ScVal, SorobanCredentials, TransactionEnvelope, WriteXdr,
+    Hash, HashIdPreimage, HashIdPreimageSorobanAuthorization, Limited, Limits, ReadXdr, ScBytes,
+    ScMap, ScSymbol, ScVal, SorobanCredentials, TransactionEnvelope, WriteXdr,
 };
 
 #[derive(Parser, Debug, Clone)]
@@ -52,31 +52,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         Limits::none(),
     ))?;
 
-    // Extract mutable references to the parts of the auths that are needed for signing.
-    let auths = match &mut txe {
-        TransactionEnvelope::Tx(e) => {
-            e.tx.operations
-                .iter_mut()
-                .filter_map(|op| match &mut op.body {
-                    OperationBody::InvokeHostFunction(op) => Some(op.auth.iter_mut().filter_map(
-                        |auth| match &mut auth.credentials {
-                            SorobanCredentials::Address(creds) => {
-                                Some((&mut auth.root_invocation, creds))
-                            }
-                            _ => None,
-                        },
-                    )),
-                    _ => None,
-                })
-                .flatten()
-        }
-        _ => Err("Unsupported transaction envelope")?,
-    };
-
     // Sign each auth.
     // TODO:It would be wise to only sign auths matching the contract address that are intended to
     // sign for, or to ask the user to confirm each auth.
-    for (invocation, creds) in auths {
+    for auth in txe.auths_mut() {
+        let (invocation, creds) = match &mut auth.credentials {
+            SorobanCredentials::Address(creds) => (&mut auth.root_invocation, creds),
+            _ => continue,
+        };
         eprintln!(
             "Authorizing:\n{}\n{}",
             serde_json::to_string_pretty(invocation)?,

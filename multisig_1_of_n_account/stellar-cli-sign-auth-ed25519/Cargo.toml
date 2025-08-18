@@ -6,7 +6,7 @@ publish = false
 rust-version = "1.85.0"
 
 [dependencies]
-stellar-xdr = { version = "22.2.0", features = ["base64", "serde"] }
+stellar-xdr = { version = "23.0.0", features = ["base64", "serde"] }
 serde_json = "1.0.140"
 ed25519-dalek = { version = "1.0.1" }
 hex = "0.4.3"
