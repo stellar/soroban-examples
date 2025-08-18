@@ -3,6 +3,7 @@ name = "stellar-sign-auth-ed25519"
 version = "0.1.0"
 edition = "2021"
 publish = false
+rust-version = "1.85.0"
 
 [dependencies]
 stellar-xdr = { version = "*", features = ["base64", "serde"], git = "https://github.com/stellar/rs-stellar-xdr", branch = "authsiter" }

@@ -3,6 +3,7 @@ name = "soroban-workspace-contract-a"
 version.workspace = true
 edition = "2021"
 publish = false
+rust-version = "1.85.0"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

@@ -9,7 +9,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     SCCACHE_DIRECT=true \
     RUSTC_WRAPPER=sccache \
     SCCACHE_CACHE_SIZE=5G \
-    RUST_VERSION=1.81
+    RUST_VERSION=1.85
 
 RUN apt-get update && apt-get install -y \
   libdbus-1-dev \

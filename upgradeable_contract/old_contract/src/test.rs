@@ -12,7 +12,7 @@ use crate::{UpgradeableContract, UpgradeableContractClient};
 
 mod new_contract {
     soroban_sdk::contractimport!(
-        file = "../new_contract/target/wasm32-unknown-unknown/release/soroban_upgradeable_contract_new_contract.wasm"
+        file = "../new_contract/target/wasm32v1-none/release/soroban_upgradeable_contract_new_contract.wasm"
     );
 }
 

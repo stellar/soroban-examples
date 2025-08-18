@@ -1,5 +1,7 @@
 # Soroban Examples <!-- omit in toc -->
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/stellar/soroban-examples)
+
 This repository contains example smart contracts for key Soroban features and concepts. The examples illustrate how to use the features, in their simplest form. 
 
 > [!WARNING]  
@@ -110,14 +112,14 @@ cd increment
 stellar contract build
 ```
 
-A `.wasm` file will be outputted in the target directory, at `target/wasm32-unknown-unknown/release/soroban_increment_contract.wasm`. The `.wasm` file is the built contract.
+A `.wasm` file will be outputted in the target directory, at `target/wasm32v1-none/release/soroban_increment_contract.wasm`. The `.wasm` file is the built contract.
 
 #### Deploy
 The WASM file can now be deployed to the testnet by running this command:
 
 ```
 stellar contract deploy \
-  --wasm target/wasm32-unknown-unknown/release/soroban_increment_contract.wasm \
+  --wasm target/wasm32v1-none/release/soroban_increment_contract.wasm \
   --source alice \
   --network testnet \
   --alias increment_contract

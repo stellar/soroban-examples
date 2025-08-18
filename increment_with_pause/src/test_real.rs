@@ -4,7 +4,7 @@ use soroban_sdk::Env;
 
 mod pause {
     soroban_sdk::contractimport!(
-        file = "../pause/target/wasm32-unknown-unknown/release/soroban_pause_contract.wasm"
+        file = "../pause/target/wasm32v1-none/release/soroban_pause_contract.wasm"
     );
 }
 
