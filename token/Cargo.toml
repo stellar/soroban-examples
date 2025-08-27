@@ -9,11 +9,11 @@ rust-version = "1.85.0"
 crate-type = ["cdylib"]
 
 [dependencies]
-soroban-sdk = { version = "22.0.7" }
-soroban-token-sdk = { version = "22.0.1" }
+soroban-sdk = { version = "23.0.0-rc.2.4" }
+soroban-token-sdk = { version = "23.0.0-rc.2.4" }
 
 [dev-dependencies]
-soroban-sdk = { version = "22.0.7", features = ["testutils"] }
+soroban-sdk = { version = "23.0.0-rc.2.4", features = ["testutils"] }
 
 [profile.release]
 opt-level = "z"
