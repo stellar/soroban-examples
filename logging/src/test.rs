@@ -1,9 +1,7 @@
 #![cfg(test)]
 
 use super::*;
-use soroban_sdk::{
-    symbol_short, testutils::Logs, xdr::Hash, xdr::ScAddress, Address, BytesN, Env, TryFromVal,
-};
+use soroban_sdk::{symbol_short, testutils::Logs, Address, Env};
 
 extern crate std;
 
@@ -11,10 +9,10 @@ extern crate std;
 fn test() {
     let env = Env::default();
 
-    let id_bytes = BytesN::from_array(&env, &[8; 32]);
-
-    let addr: Address =
-        Address::try_from_val(&env, &ScAddress::Contract(Hash(id_bytes.to_array()))).unwrap();
+    let addr = Address::from_str(
+        &env,
+        "CAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQMCJ",
+    );
     let contract_id = env.register_at(&addr, Contract, ());
     let client = ContractClient::new(&env, &contract_id);
 

@@ -26,7 +26,7 @@ fn signer_public_key(e: &Env, signer: &Keypair) -> BytesN<32> {
     signer.public.to_bytes().into_val(e)
 }
 
-fn create_account_contract(e: &Env, signers: Vec<BytesN<32>>) -> AccountContractClient {
+fn create_account_contract(e: &Env, signers: Vec<BytesN<32>>) -> AccountContractClient<'_> {
     AccountContractClient::new(e, &e.register(AccountContract {}, (signers,)))
 }
 

@@ -1,7 +1,8 @@
 {
   "generators": {
     "address": 6,
-    "nonce": 3
+    "nonce": 3,
+    "mux_id": 0
   },
   "auth": [
     [],
@@ -41,10 +42,7 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
                 },
                 {
-                  "i128": {
-                    "hi": 0,
-                    "lo": 123
-                  }
+                  "i128": "123"
                 }
               ]
             }
@@ -85,10 +83,7 @@
                         "symbol": "limit"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 100
-                        }
+                        "i128": "100"
                       }
                     }
                   ]
@@ -117,10 +112,7 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDR4"
                 },
                 {
-                  "i128": {
-                    "hi": 0,
-                    "lo": 97
-                  }
+                  "i128": "97"
                 }
               ]
             }
@@ -134,7 +126,7 @@
     []
   ],
   "ledger": {
-    "protocol_version": 22,
+    "protocol_version": 23,
     "sequence_number": 1505000,
     "timestamp": 0,
     "network_id": "0000000000000000000000000000000000000000000000000000000000000000",
@@ -155,8 +147,8 @@
             "data": {
               "account": {
                 "account_id": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGO6V",
-                "balance": 0,
-                "seq_num": 0,
+                "balance": "0",
+                "seq_num": "0",
                 "num_sub_entries": 0,
                 "inflation_dest": null,
                 "flags": 0,
@@ -177,7 +169,7 @@
             "contract": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGO6V",
             "key": {
               "ledger_key_nonce": {
-                "nonce": 801925984706572462
+                "nonce": "801925984706572462"
               }
             },
             "durability": "temporary"
@@ -192,7 +184,7 @@
                 "contract": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGO6V",
                 "key": {
                   "ledger_key_nonce": {
-                    "nonce": 801925984706572462
+                    "nonce": "801925984706572462"
                   }
                 },
                 "durability": "temporary",
@@ -242,7 +234,7 @@
             "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
             "key": {
               "ledger_key_nonce": {
-                "nonce": 1
+                "nonce": "1"
               }
             },
             "durability": "temporary"
@@ -257,7 +249,7 @@
                 "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
                 "key": {
                   "ledger_key_nonce": {
-                    "nonce": 1
+                    "nonce": "1"
                   }
                 },
                 "durability": "temporary",
@@ -275,7 +267,7 @@
             "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
             "key": {
               "ledger_key_nonce": {
-                "nonce": 2
+                "nonce": "2"
               }
             },
             "durability": "temporary"
@@ -290,7 +282,7 @@
                 "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
                 "key": {
                   "ledger_key_nonce": {
-                    "nonce": 2
+                    "nonce": "2"
                   }
                 },
                 "durability": "temporary",
@@ -358,10 +350,7 @@
                         "symbol": "limit"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 100
-                        }
+                        "i128": "100"
                       }
                     }
                   ]
@@ -433,10 +422,7 @@
                         "symbol": "consumed_limit"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 97
-                        }
+                        "i128": "97"
                       }
                     }
                   ]
@@ -531,7 +517,7 @@
             "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM",
             "key": {
               "ledger_key_nonce": {
-                "nonce": 3
+                "nonce": "3"
               }
             },
             "durability": "temporary"
@@ -546,7 +532,7 @@
                 "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM",
                 "key": {
                   "ledger_key_nonce": {
-                    "nonce": 3
+                    "nonce": "3"
                   }
                 },
                 "durability": "temporary",
@@ -600,10 +586,7 @@
                         "symbol": "amount"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 123
-                        }
+                        "i128": "123"
                       }
                     },
                     {
@@ -673,10 +656,7 @@
                         "symbol": "amount"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 97
-                        }
+                        "i128": "97"
                       }
                     },
                     {

@@ -120,7 +120,7 @@ fn test_temp_entry_removal() {
     client.extend_temporary();
     // Bump the ledger sequence by 7001 ledgers (one ledger past TTL).
     env.ledger().with_mut(|li| {
-        li.sequence_number = 100_000 + 7001;
+        li.sequence_number += 7001;
     });
     // Now the entry is no longer present in the environment.
     env.as_contract(&contract_id, || {
@@ -129,24 +129,61 @@ fn test_temp_entry_removal() {
 }
 
 // This test demonstrates that persistent entries are considered to be 'archived'
-// after their TTL expires and thus the execution immediately halts with a panic.
-// It is not the recommended way to test `extend_ttl` (use `get_ttl` instead).
-// This behavior is mostly useful to catch bugs (such as missing/invalid TTL
-// extensions).
+// after their TTL expires and then automatically restored when accessed. This
+// emulates the default simulation behavior that will be encountered by most
+// of the contract users.
 #[test]
-#[should_panic(expected = "[testing-only] Accessed contract instance key that has been archived.")]
-fn test_persistent_entry_archival() {
+fn test_persistent_entry_auto_restored() {
     let env = create_env();
     let contract_id = env.register(TtlContract, ());
     let client = TtlContractClient::new(&env, &contract_id);
     client.setup();
-    // Extend the instance TTL to 10000 ledgers.
+    // Extend the contract instance to outlive the persistent entry.
     client.extend_instance();
+    // Extend the persistent entry TTL to 5000 ledgers.
+    client.extend_persistent();
+
+    env.as_contract(&contract_id, || {
+        assert_eq!(env.storage().persistent().get_ttl(&DataKey::MyKey), 5000);
+    });
     // Bump the ledger sequence by 10001 ledgers (one ledger past TTL).
     env.ledger().with_mut(|li| {
-        li.sequence_number = 100_000 + 10_001;
+        li.sequence_number += 5001;
     });
-    // Now any call involving the expired contract (such as `extend_instance`
-    // call here) will panic as soon as that contract is accessed.
-    client.extend_instance();
+    // Now any call involving the expired persistent data will cause automatic
+    // restoration.
+    client.extend_persistent();
+    // Automatic restoration is mostly transparent (in the same way as it is
+    // going to be transparent to the contract users), the main side effect is
+    // the increased fees. This can be observed via examining the resources
+    // in `env.cost_estimate`:
+    let resources = env.cost_estimate().resources();
+    // Notice that disk read bytes and write bytes are increased even though the
+    // function itself is itself read-only.
+    assert!(resources.disk_read_bytes > 0);
+    assert!(resources.write_bytes > 0);
+    assert_eq!(resources.write_entries, 1);
+
+    // TTL is now 5000 ledgers again.
+    env.as_contract(&contract_id, || {
+        assert_eq!(env.storage().persistent().get_ttl(&DataKey::MyKey), 5000);
+    });
+
+    // Bump the ledger sequence even more to cause the contract instance to
+    // also be archived.
+    env.ledger().with_mut(|li| {
+        li.sequence_number += 100_000;
+    });
+
+    client.extend_persistent();
+    let resources = env.cost_estimate().resources();
+    // We have 2 entries restored now and thus written (contract instance entry
+    // and persistent data entry).
+    assert_eq!(resources.write_entries, 2);
+
+    // Contract still can be called as usual:
+
+    env.as_contract(&contract_id, || {
+        assert_eq!(env.storage().persistent().get_ttl(&DataKey::MyKey), 5000);
+    });
 }

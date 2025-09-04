@@ -15,7 +15,7 @@ fn generate_keypair() -> Keypair {
     Keypair::generate(&mut thread_rng())
 }
 
-fn create_account_contract(e: &Env) -> SimpleAccountClient {
+fn create_account_contract(e: &Env) -> SimpleAccountClient<'_> {
     SimpleAccountClient::new(e, &e.register(SimpleAccount, ()))
 }
 

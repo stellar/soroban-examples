@@ -7,10 +7,11 @@
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
+use soroban_env_host::ledger_info::LedgerInfo;
 use soroban_fuzzing_contract::*;
 use soroban_sdk::testutils::{
     arbitrary::{arbitrary, Arbitrary},
-    Address as _, Ledger, LedgerInfo,
+    Address as _, Ledger,
 };
 use soroban_sdk::token::Client as TokenClient;
 use soroban_sdk::token::StellarAssetClient as TokenAdminClient;

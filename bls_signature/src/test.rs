@@ -96,7 +96,7 @@ fn sign_and_aggregate(env: &Env, msg: &Bytes) -> BytesN<192> {
     bls.g2_msm(vec_msg, vec_sk).to_bytes()
 }
 
-fn create_client(e: &Env) -> IncrementContractClient {
+fn create_client(e: &Env) -> IncrementContractClient<'_> {
     IncrementContractClient::new(e, &e.register(IncrementContract {}, ()))
 }
 
