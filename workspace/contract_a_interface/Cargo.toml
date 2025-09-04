@@ -3,7 +3,7 @@ name = "soroban-workspace-contract-a-interface"
 version.workspace = true
 edition = "2021"
 publish = false
-rust-version = "1.85.0"
+rust-version = "1.89.0"
 
 [lib]
 crate-type = ["rlib"]

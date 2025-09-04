@@ -27,12 +27,12 @@
 	"ghcr.io/devcontainers/features/rust:1.3.1": {
 	  "targets": "wasm32v1-none",
 	  "profile": "default",
-	  "version": "1.85"
+	  "version": "1.89"
 	},
 	"ghcr.io/devcontainers-extra/features/gh-release:1.0.25": {
 	  "repo": "stellar/stellar-cli",
 	  "binaryNames": "stellar",
-	  "version": "22.6.0"
+	  "version": "23.1.1"
 	},
 	"ghcr.io/rapidsai/devcontainers/features/sccache:25.6.1": {
 	  "repository": "mozilla/sccache",

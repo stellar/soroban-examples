@@ -35,7 +35,7 @@ impl Contract {
         let mut input_slice = &mut input_buf[..input.len() as usize];
         input.copy_into_slice(&mut input_slice);
 
-        let input = Input::abi_decode(&input_slice, false).map_err(|_| Error::Decode)?;
+        let input = Input::abi_decode(&input_slice).map_err(|_| Error::Decode)?;
         let output = Output {
             a: input.a,
             r: input.b + input.c,

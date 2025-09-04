@@ -1,7 +1,7 @@
 #![no_std]
 use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, symbol_short, vec, Address, Bytes, BytesN,
-    Env, Map, String, Symbol, Val, Vec, I256, U256,
+    contract, contracterror, contractevent, contractimpl, contracttype, symbol_short, vec, Address,
+    Bytes, BytesN, Env, Map, String, Symbol, Val, Vec, I256, U256,
 };
 
 const COUNTER: Symbol = symbol_short!("COUNTER");
@@ -54,6 +54,14 @@ pub enum Error {
     /// Please provide an odd number
     NumberMustBeOdd = 1,
 }
+
+#[contractevent(topics = ["auth"])]
+struct AuthEvent {
+    #[topic]
+    hello: Address,
+    world: Symbol,
+}
+
 #[contractimpl]
 impl CustomTypesContract {
     pub fn hello(_env: Env, hello: Symbol) -> Symbol {
@@ -63,7 +71,11 @@ impl CustomTypesContract {
     pub fn auth(env: Env, addr: Address, world: Symbol) -> Address {
         addr.require_auth();
         // Emit test event
-        env.events().publish(("auth",), world);
+        AuthEvent {
+            hello: addr.clone(),
+            world,
+        }
+        .publish(&env);
 
         addr
     }

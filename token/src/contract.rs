@@ -7,10 +7,12 @@ use crate::metadata::{read_decimal, read_name, read_symbol, write_metadata};
 #[cfg(test)]
 use crate::storage_types::{AllowanceDataKey, AllowanceValue, DataKey};
 use crate::storage_types::{INSTANCE_BUMP_AMOUNT, INSTANCE_LIFETIME_THRESHOLD};
-use soroban_sdk::token::{self, Interface as _};
-use soroban_sdk::{contract, contractimpl, Address, Env, String};
+use soroban_sdk::{
+    contract, contractevent, contractimpl, token::TokenInterface, Address, Env, MuxedAddress,
+    String,
+};
+use soroban_token_sdk::events;
 use soroban_token_sdk::metadata::TokenMetadata;
-use soroban_token_sdk::TokenUtils;
 
 fn check_nonnegative_amount(amount: i128) {
     if amount < 0 {
@@ -20,6 +22,15 @@ fn check_nonnegative_amount(amount: i128) {
 
 #[contract]
 pub struct Token;
+
+// SetAdmin is not a standardized token event, so we just define a custom event
+// for our token.
+#[contractevent(data_format = "single-value")]
+pub struct SetAdmin {
+    #[topic]
+    admin: Address,
+    new_admin: Address,
+}
 
 #[contractimpl]
 impl Token {
@@ -48,7 +59,7 @@ impl Token {
             .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
         receive_balance(&e, to.clone(), amount);
-        TokenUtils::new(&e).events().mint(admin, to, amount);
+        events::MintWithAmountOnly { to, amount }.publish(&e);
     }
 
     pub fn set_admin(e: Env, new_admin: Address) {
@@ -60,7 +71,7 @@ impl Token {
             .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
         write_administrator(&e, &new_admin);
-        TokenUtils::new(&e).events().set_admin(admin, new_admin);
+        SetAdmin { admin, new_admin }.publish(&e);
     }
 
     #[cfg(test)]
@@ -72,7 +83,7 @@ impl Token {
 }
 
 #[contractimpl]
-impl token::Interface for Token {
+impl TokenInterface for Token {
     fn allowance(e: Env, from: Address, spender: Address) -> i128 {
         e.storage()
             .instance()
@@ -90,9 +101,13 @@ impl token::Interface for Token {
             .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
         write_allowance(&e, from.clone(), spender.clone(), amount, expiration_ledger);
-        TokenUtils::new(&e)
-            .events()
-            .approve(from, spender, amount, expiration_ledger);
+        events::Approve {
+            from,
+            spender,
+            amount,
+            expiration_ledger,
+        }
+        .publish(&e);
     }
 
     fn balance(e: Env, id: Address) -> i128 {
@@ -102,7 +117,7 @@ impl token::Interface for Token {
         read_balance(&e, id)
     }
 
-    fn transfer(e: Env, from: Address, to: Address, amount: i128) {
+    fn transfer(e: Env, from: Address, to_muxed: MuxedAddress, amount: i128) {
         from.require_auth();
 
         check_nonnegative_amount(amount);
@@ -112,8 +127,15 @@ impl token::Interface for Token {
             .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
         spend_balance(&e, from.clone(), amount);
+        let to: Address = to_muxed.address();
         receive_balance(&e, to.clone(), amount);
-        TokenUtils::new(&e).events().transfer(from, to, amount);
+        events::Transfer {
+            from,
+            to,
+            to_muxed_id: to_muxed.id(),
+            amount,
+        }
+        .publish(&e);
     }
 
     fn transfer_from(e: Env, spender: Address, from: Address, to: Address, amount: i128) {
@@ -128,7 +150,14 @@ impl token::Interface for Token {
         spend_allowance(&e, from.clone(), spender, amount);
         spend_balance(&e, from.clone(), amount);
         receive_balance(&e, to.clone(), amount);
-        TokenUtils::new(&e).events().transfer(from, to, amount)
+        events::Transfer {
+            from,
+            to,
+            // `transfer_from` does not support muxed destination.
+            to_muxed_id: None,
+            amount,
+        }
+        .publish(&e);
     }
 
     fn burn(e: Env, from: Address, amount: i128) {
@@ -141,7 +170,7 @@ impl token::Interface for Token {
             .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
         spend_balance(&e, from.clone(), amount);
-        TokenUtils::new(&e).events().burn(from, amount);
+        events::Burn { from, amount }.publish(&e);
     }
 
     fn burn_from(e: Env, spender: Address, from: Address, amount: i128) {
@@ -155,7 +184,7 @@ impl token::Interface for Token {
 
         spend_allowance(&e, from.clone(), spender, amount);
         spend_balance(&e, from.clone(), amount);
-        TokenUtils::new(&e).events().burn(from, amount)
+        events::Burn { from, amount }.publish(&e);
     }
 
     fn decimals(e: Env) -> u32 {

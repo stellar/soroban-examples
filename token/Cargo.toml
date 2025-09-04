@@ -3,17 +3,17 @@ name = "soroban-token-contract"
 description = "Soroban standard token contract"
 version = "0.0.6"
 edition = "2021"
-rust-version = "1.85.0"
+rust-version = "1.89.0"
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-soroban-sdk = { version = "22.0.7" }
-soroban-token-sdk = { version = "22.0.1" }
+soroban-sdk = { version = "23.0.1" }
+soroban-token-sdk = { version = "23.0.1" }
 
 [dev-dependencies]
-soroban-sdk = { version = "22.0.7", features = ["testutils"] }
+soroban-sdk = { version = "23.0.1", features = ["testutils"] }
 
 [profile.release]
 opt-level = "z"

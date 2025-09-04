@@ -1,7 +1,8 @@
 {
   "generators": {
     "address": 6,
-    "nonce": 3
+    "nonce": 3,
+    "mux_id": 0
   },
   "auth": [
     [],
@@ -39,10 +40,7 @@
                         "symbol": "limit"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 100
-                        }
+                        "i128": "100"
                       }
                     }
                   ]
@@ -59,7 +57,7 @@
     []
   ],
   "ledger": {
-    "protocol_version": 22,
+    "protocol_version": 23,
     "sequence_number": 0,
     "timestamp": 0,
     "network_id": "0000000000000000000000000000000000000000000000000000000000000000",
@@ -106,7 +104,7 @@
             "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
             "key": {
               "ledger_key_nonce": {
-                "nonce": 2
+                "nonce": "2"
               }
             },
             "durability": "temporary"
@@ -121,7 +119,7 @@
                 "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
                 "key": {
                   "ledger_key_nonce": {
-                    "nonce": 2
+                    "nonce": "2"
                   }
                 },
                 "durability": "temporary",
@@ -189,10 +187,7 @@
                         "symbol": "limit"
                       },
                       "val": {
-                        "i128": {
-                          "hi": 0,
-                          "lo": 100
-                        }
+                        "i128": "100"
                       }
                     }
                   ]

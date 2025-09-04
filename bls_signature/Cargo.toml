@@ -3,7 +3,7 @@ name = "soroban-bls-signature"
 version = "0.0.0"
 edition = "2021"
 publish = false
-rust-version = "1.85.0"
+rust-version = "1.89.0"
 description = """
 WARNING: DO NOT USE THIS LIBRARY IN PRODUCTION OR FOR SECURE APPLICATIONS!
 
@@ -17,10 +17,10 @@ USE THIS CODE AT YOUR OWN RISK.
 crate-type = ["cdylib"]
 
 [dependencies]
-soroban-sdk = { version = "22.0.7"}
+soroban-sdk = { version = "23.0.1"}
 
 [dev-dependencies]
-soroban-sdk = { version = "22.0.7", features = ["testutils"] }
+soroban-sdk = { version = "23.0.1", features = ["testutils"] }
 hex-literal = { version = "0.4.1"}
 rand = { version = "0.7.3" }
 

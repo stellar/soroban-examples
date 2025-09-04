@@ -27,7 +27,7 @@ fn g2_from_coords(env: &Env, x1: &str, x2: &str, y1: &str, y2: &str) -> G2Affine
     G2Affine::from_array(env, &buf)
 }
 
-fn create_client(e: &Env) -> Groth16VerifierClient {
+fn create_client(e: &Env) -> Groth16VerifierClient<'_> {
     Groth16VerifierClient::new(e, &e.register(Groth16Verifier {}, ()))
 }
 
