@@ -27,6 +27,7 @@ atomic_multiswap**: This contract performs a batch of atomic token swaps between
 - **increment**: Demonstrates how to increment a stored value and returning the updated value
 - **liquidity_pool**: A minimalistic implementation of a liquidity pool and token swap
 - **logging**: A basic example of how to use the standard Soroban terminal logging
+- **merkle_airdrop**: A Merkle airdrop contract that verifies Merkle proofs to distribute tokens efficiently to eligible recipients
 - **mint-lock**: Demonstrates token minting, including minting authorization
 - **other_custom_types**: The smart contract implements types, including custom types
 - **simple_account**: A minimal example of an account contract, owned by a single ed25519 public key
