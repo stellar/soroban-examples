@@ -1301,7 +1301,6 @@ dependencies = [
 name = "soroban-merkle-distribution-contract"
 version = "0.0.0"
 dependencies = [
- "hex",
  "soroban-sdk",
 ]
 
