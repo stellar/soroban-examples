@@ -1,0 +1,34 @@
+[package]
+name = "soroban-merkle-distribution-contract"
+version = "0.0.0"
+edition = "2021"
+publish = false
+rust-version = "1.89.0"
+
+[lib]
+crate-type = ["cdylib"]
+doctest = false
+
+[features]
+testutils = ["soroban-sdk/testutils"]
+
+[dependencies]
+soroban-sdk = { version = "23.0.1" }
+
+[dev-dependencies]
+soroban-sdk = { version = "23.0.1", features = ["testutils"] }
+hex = "0.4.3"
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
+lto = true
+
+[profile.release-with-logs]
+inherits = "release"
+debug-assertions = true
