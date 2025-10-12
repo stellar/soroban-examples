@@ -3,7 +3,7 @@
 use super::*;
 use soroban_sdk::token::TokenClient;
 use soroban_sdk::Address;
-use soroban_sdk::{testutils::Address as _, vec, Env};
+use soroban_sdk::{bytesn, testutils::Address as _, vec, Env};
 use token::StellarAssetClient as TokenAdminClient;
 
 fn create_token_contract<'a>(e: &Env, admin: &Address) -> (TokenClient<'a>, TokenAdminClient<'a>) {
@@ -29,11 +29,6 @@ fn make_args(
     (root_hash, token, funding_amount, funding_source)
 }
 
-fn hex_to_bytes(env: &Env, hex_str: &str) -> BytesN<32> {
-    let hash_bytes = hex::decode(hex_str).unwrap().try_into().unwrap();
-    BytesN::from_array(env, &hash_bytes)
-}
-
 #[test]
 fn test_valid_claim() {
     let env = Env::default();
@@ -51,8 +46,8 @@ fn test_valid_claim() {
         token_admin_client.address.clone(),
     );
 
-    let contract_id = env.register(MerkleAirdropContract {}, constructor_args);
-    let client = MerkleAirdropContractClient::new(&env, &contract_id);
+    let contract_id = env.register(MerkleDistributionContract {}, constructor_args);
+    let client = MerkleDistributionContractClient::new(&env, &contract_id);
 
     let receiver = Address::from_str(
         &env,
@@ -61,13 +56,13 @@ fn test_valid_claim() {
     let amount = 100;
     let proofs = vec![
         &env,
-        hex_to_bytes(
+        bytesn!(
             &env,
-            "fc0d9c2f46c1e910bd3af8665318714c7c97486d2a206f96236c6e7e50c080d7",
+            0xfc0d9c2f46c1e910bd3af8665318714c7c97486d2a206f96236c6e7e50c080d7
         ),
-        hex_to_bytes(
+        bytesn!(
             &env,
-            "c83f7b26055572e5e84c78ec4d4f45b85b71698951077baafe195279c1f30be4",
+            0xc83f7b26055572e5e84c78ec4d4f45b85b71698951077baafe195279c1f30be4
         ),
     ];
 
@@ -94,8 +89,8 @@ fn test_double_claim() {
         1000,
         token_admin_client.address.clone(),
     );
-    let contract_id = env.register(MerkleAirdropContract {}, args);
-    let client = MerkleAirdropContractClient::new(&env, &contract_id);
+    let contract_id = env.register(MerkleDistributionContract {}, args);
+    let client = MerkleDistributionContractClient::new(&env, &contract_id);
 
     let receiver = Address::from_str(
         &env,
@@ -104,13 +99,13 @@ fn test_double_claim() {
     let amount: i128 = 100;
     let proofs = vec![
         &env,
-        hex_to_bytes(
+        bytesn!(
             &env,
-            "fc0d9c2f46c1e910bd3af8665318714c7c97486d2a206f96236c6e7e50c080d7",
+            0xfc0d9c2f46c1e910bd3af8665318714c7c97486d2a206f96236c6e7e50c080d7
         ),
-        hex_to_bytes(
+        bytesn!(
             &env,
-            "c83f7b26055572e5e84c78ec4d4f45b85b71698951077baafe195279c1f30be4",
+            0xc83f7b26055572e5e84c78ec4d4f45b85b71698951077baafe195279c1f30be4
         ),
     ];
 
@@ -135,8 +130,8 @@ fn test_bad_claim() {
         1000,
         token_admin_client.address.clone(),
     );
-    let contract_id = env.register(MerkleAirdropContract {}, args);
-    let client = MerkleAirdropContractClient::new(&env, &contract_id);
+    let contract_id = env.register(MerkleDistributionContract {}, args);
+    let client = MerkleDistributionContractClient::new(&env, &contract_id);
 
     let receiver = Address::from_str(
         &env,
@@ -145,13 +140,13 @@ fn test_bad_claim() {
     let amount = 100000; // This is a different amount
     let proofs = vec![
         &env,
-        hex_to_bytes(
+        bytesn!(
             &env,
-            "fc0d9c2f46c1e910bd3af8665318714c7c97486d2a206f96236c6e7e50c080d7",
+            0xfc0d9c2f46c1e910bd3af8665318714c7c97486d2a206f96236c6e7e50c080d7
         ),
-        hex_to_bytes(
+        bytesn!(
             &env,
-            "c83f7b26055572e5e84c78ec4d4f45b85b71698951077baafe195279c1f30be4",
+            0xc83f7b26055572e5e84c78ec4d4f45b85b71698951077baafe195279c1f30be4
         ),
     ];
 

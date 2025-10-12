@@ -1,5 +1,5 @@
 [package]
-name = "soroban-merkle-airdrop-contract"
+name = "soroban-merkle-distribution-contract"
 version = "0.0.0"
 edition = "2021"
 publish = false

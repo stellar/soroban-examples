@@ -1,7 +1,10 @@
-//! A Merkle Airdrop contract for distributing tokens based on a Merkle tree.
+//! A Merkle distribution contract for distributing tokens based on a Merkle tree.
 //!
-//! This contract verifies Merkle proofs submitted by users to claim their airdrop.
+//! This contract verifies Merkle proofs submitted by users to claim their tokens.
 //! Merkle proofs must be generated off-chain and provided to users claiming tokens.
+//!
+//! Use cases include airdrops, rewards programs, vesting, and other distributions where
+//! recipients are known ahead of time.
 #![no_std]
 
 use soroban_sdk::{
@@ -34,17 +37,17 @@ struct Receiver {
 }
 
 #[contract]
-pub struct MerkleAirdropContract;
+pub struct MerkleDistributionContract;
 
 #[contractimpl]
-impl MerkleAirdropContract {
-    /// Constructor to initialize the Merkle Airdrop contract.
+impl MerkleDistributionContract {
+    /// Constructor to initialize the Merkle distribution contract.
     ///
     /// # Arguments
     ///
     /// * `env` - The Soroban environment.
     /// * `root_hash` - The root hash of the Merkle tree.
-    /// * `token` - The address of the token to be airdropped.
+    /// * `token` - The address of the token to be distributed.
     /// * `funding_amount` - The total amount of tokens to fund the contract with.
     /// * `funding_source` - The address that funds the contract.
     pub fn __constructor(
