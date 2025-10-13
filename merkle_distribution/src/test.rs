@@ -14,21 +14,6 @@ fn create_token_contract<'a>(e: &Env, admin: &Address) -> (TokenClient<'a>, Toke
     )
 }
 
-fn make_args(
-    env: &Env,
-    hash: &str,
-    token: Address,
-    funding_amount: i128,
-    funding_source: Address,
-) -> (BytesN<32>, Address, i128, Address) {
-    let mut hash_bytes = [0u8; 32];
-    hex::decode_to_slice(hash, &mut hash_bytes).unwrap();
-
-    let root_hash = BytesN::from_array(env, &hash_bytes);
-
-    (root_hash, token, funding_amount, funding_source)
-}
-
 #[test]
 fn test_valid_claim() {
     let env = Env::default();
@@ -38,15 +23,18 @@ fn test_valid_claim() {
     let (token, token_admin_client) = create_token_contract(&env, &token_admin);
     token_admin_client.mint(&token_admin_client.address, &1000);
 
-    let constructor_args = make_args(
-        &env,
-        "11932105f1a4d0092e87cead3a543da5afd8adcff63f9a8ceb6c5db3c8135722",
-        token.address.clone(),
-        1000,
-        token_admin_client.address.clone(),
+    let contract_id = env.register(
+        MerkleDistributionContract,
+        MerkleDistributionContractArgs::__constructor(
+            &bytesn!(
+                &env,
+                0x11932105f1a4d0092e87cead3a543da5afd8adcff63f9a8ceb6c5db3c8135722
+            ),
+            &token.address,
+            &1000,
+            &token_admin_client.address,
+        ),
     );
-
-    let contract_id = env.register(MerkleDistributionContract {}, constructor_args);
     let client = MerkleDistributionContractClient::new(&env, &contract_id);
 
     let receiver = Address::from_str(
@@ -82,14 +70,18 @@ fn test_double_claim() {
     let (token, token_admin_client) = create_token_contract(&env, &token_admin);
     token_admin_client.mint(&token_admin_client.address, &1000);
 
-    let args = make_args(
-        &env,
-        "11932105f1a4d0092e87cead3a543da5afd8adcff63f9a8ceb6c5db3c8135722",
-        token.address.clone(),
-        1000,
-        token_admin_client.address.clone(),
+    let contract_id = env.register(
+        MerkleDistributionContract,
+        MerkleDistributionContractArgs::__constructor(
+            &bytesn!(
+                &env,
+                0x11932105f1a4d0092e87cead3a543da5afd8adcff63f9a8ceb6c5db3c8135722
+            ),
+            &token.address,
+            &1000,
+            &token_admin_client.address,
+        ),
     );
-    let contract_id = env.register(MerkleDistributionContract {}, args);
     let client = MerkleDistributionContractClient::new(&env, &contract_id);
 
     let receiver = Address::from_str(
@@ -123,14 +115,18 @@ fn test_bad_claim() {
     let (token, token_admin_client) = create_token_contract(&env, &token_admin);
     token_admin_client.mint(&token_admin_client.address, &1000);
 
-    let args = make_args(
-        &env,
-        "11932105f1a4d0092e87cead3a543da5afd8adcff63f9a8ceb6c5db3c8135722",
-        token.address.clone(),
-        1000,
-        token_admin_client.address.clone(),
+    let contract_id = env.register(
+        MerkleDistributionContract,
+        MerkleDistributionContractArgs::__constructor(
+            &bytesn!(
+                &env,
+                0x11932105f1a4d0092e87cead3a543da5afd8adcff63f9a8ceb6c5db3c8135722
+            ),
+            &token.address,
+            &1000,
+            &token_admin_client.address,
+        ),
     );
-    let contract_id = env.register(MerkleDistributionContract {}, args);
     let client = MerkleDistributionContractClient::new(&env, &contract_id);
 
     let receiver = Address::from_str(

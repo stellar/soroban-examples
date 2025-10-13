@@ -17,7 +17,6 @@ soroban-sdk = { version = "23.0.1" }
 
 [dev-dependencies]
 soroban-sdk = { version = "23.0.1", features = ["testutils"] }
-hex = "0.4.3"
 
 [profile.release]
 opt-level = "z"
