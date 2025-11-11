@@ -7,9 +7,9 @@
 
 use crate::arbitrary::Unstructured;
 use libfuzzer_sys::fuzz_target;
-use soroban_env_host::ledger_info::LedgerInfo;
 use soroban_fuzzing_contract::*;
 use soroban_ledger_snapshot::LedgerSnapshot;
+use soroban_sdk::testutils::LedgerInfo;
 use soroban_sdk::testutils::{
     arbitrary::{arbitrary, Arbitrary, SorobanArbitrary},
     Address as _,
