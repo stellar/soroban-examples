@@ -9,10 +9,9 @@ use crate::arbitrary::Unstructured;
 use libfuzzer_sys::fuzz_target;
 use soroban_fuzzing_contract::*;
 use soroban_ledger_snapshot::LedgerSnapshot;
-use soroban_sdk::testutils::LedgerInfo;
 use soroban_sdk::testutils::{
     arbitrary::{arbitrary, Arbitrary, SorobanArbitrary},
-    Address as _,
+    Address as _, LedgerInfo,
 };
 use soroban_sdk::token::Client as TokenClient;
 use soroban_sdk::token::StellarAssetClient as TokenAdminClient;
