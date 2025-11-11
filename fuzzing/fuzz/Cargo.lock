@@ -1269,9 +1269,7 @@ name = "soroban-fuzzing-contract-fuzzer"
 version = "0.0.0"
 dependencies = [
  "libfuzzer-sys",
- "soroban-env-host",
  "soroban-fuzzing-contract",
- "soroban-ledger-snapshot",
  "soroban-sdk",
 ]
 

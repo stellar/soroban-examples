@@ -7,7 +7,6 @@
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
-use soroban_env_host::ledger_info::LedgerInfo;
 use soroban_fuzzing_contract::*;
 use soroban_sdk::testutils::{
     arbitrary::{arbitrary, Arbitrary},
@@ -28,15 +27,15 @@ fuzz_target!(|input: Input| {
 
     env.mock_all_auths();
 
-    env.ledger().set(LedgerInfo {
-        timestamp: 12345,
-        protocol_version: 1,
-        sequence_number: 10,
-        network_id: Default::default(),
-        base_reserve: 10,
-        min_temp_entry_ttl: u32::MAX,
-        min_persistent_entry_ttl: u32::MAX,
-        max_entry_ttl: u32::MAX,
+    env.ledger().with_mut(|ledger_info| {
+        ledger_info.timestamp = 12345;
+        ledger_info.protocol_version = 1;
+        ledger_info.sequence_number = 10;
+        ledger_info.network_id = Default::default();
+        ledger_info.base_reserve = 10;
+        ledger_info.min_temp_entry_ttl = u32::MAX;
+        ledger_info.min_persistent_entry_ttl = u32::MAX;
+        ledger_info.max_entry_ttl = u32::MAX;
     });
 
     // Turn off the CPU/memory budget for testing.
