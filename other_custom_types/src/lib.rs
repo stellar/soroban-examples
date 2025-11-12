@@ -47,6 +47,31 @@ pub enum ComplexEnum {
     Void,
 }
 
+#[contracttype]
+pub enum ComplexEnum2 {
+    Stellar(Address),
+    Other(Symbol),
+}
+
+#[contracttype]
+
+pub enum ComplexEnum3 {
+    Some((Address, i128)),
+    None,
+}
+
+#[contracttype]
+pub struct ComplexStruct {
+    pub admin: Address,
+    pub a64: u64,
+    pub assets_vec: Vec<ComplexEnum2>,
+    pub base_asset: ComplexEnum2,
+    pub a32: u32,
+    pub b32: u32,
+    pub c32: u32,
+    pub complex_enum3: ComplexEnum3,
+}
+
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(u32)]
@@ -210,5 +235,9 @@ impl CustomTypesContract {
 
     pub fn tuple_strukt(_env: Env, tuple_strukt: TupleStruct) -> TupleStruct {
         tuple_strukt
+    }
+
+    pub fn complex_struct(_env: &Env, config: ComplexStruct) -> ComplexStruct {
+        config
     }
 }
