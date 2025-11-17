@@ -1,10 +1,10 @@
 # Soroban Privacy Pools
 
-> **Warning**: This project is currently a work in progress and is a merely a prototype for educational purposed only. It does not yet constitute a secure or functional system. Features and APIs may change. No warranty provided.
+This project is currently a work in progress and is a merely a prototype for research and educational purposes only. It does not yet constitute a secure or functional system. Features and APIs may change. It also contains known limitations and security gaps and some jurisdictions may prohibit or limit features. Any implementation requires comprehensive legal and regulatory analysis by qualified counsel. 
 
-> **Warning regarding Poseidon hash implementation**: This repository contains an implementation of the Poseidon hash. This proprietary implementation was put in place to serve this proof of concept and have a hash that is consistent between the Circom circuit and Rust code. It is currently not audited for security and should not be used as a reference code for secure Poseidon implementations.
+**Warning regarding Poseidon hash implementation**: This repository contains an implementation of the Poseidon hash. This proprietary implementation was put in place to serve this proof of concept and have a hash that is consistent between the Circom circuit and Rust code. It is currently not audited for security and should not be used as a reference code for secure Poseidon implementations.
 
-A privacy-preserving transaction system built on Stellar using Soroban smart contracts and zero-knowledge proofs (zkSNARKs). This project implements privacy pools that allow users to deposit and withdraw tokens while maintaining transaction privacy through cryptographic commitments and Merkle tree inclusion proofs. It includes compliance enablement features through the use of Association Sets.
+A privacy-preserving transaction system built on Stellar using Soroban smart contracts and zero-knowledge proofs (zkSNARKs). This project implements privacy pools that allow users to deposit and withdraw tokens while maintaining transaction privacy through cryptographic commitments and Merkle tree inclusion proofs. It includes the incorporation of Association Set Providers (ASPs) that define inclusion criteria intended to help mitigate illicit use. ASPs enable participants to selectively associate with sets of other participants who meet their chosen compliance standards
 
 > **Note**: The commitments Merkle-tree is very small in the current version of the code. It will be possible to increase the depth of the commitments tree once Poseidon hashing is added as a host function (CAP-75)[https://github.com/stellar/stellar-protocol/blob/master/core/cap-0075.md], more hashing operations to fit within a function's budget.
 
@@ -14,7 +14,7 @@ A privacy-preserving transaction system built on Stellar using Soroban smart con
 - **Zero-knowledge proofs**: Uses Groth16 zkSNARKs with BLS12-381 curve for cryptographic verification
 - **Commitment scheme**: Cryptographic commitments using Poseidon hashing
 - **Merkle tree inclusion**: Efficient proof of commitment inclusion in the pool state
-- **Association sets**: Compliance feature allowing withdrawals only from approved subsets of deposits
+- **Association sets**: A compliance feature that lets users, at withdrawal, prove membership in the group of deposits defined by a specific Association Set Provider's (ASP) policy.
 - **Soroban integration**: Native integration with Stellar's smart contract platform
 
 ## Project Structure
@@ -151,7 +151,7 @@ The Soroban contract (`contracts/privacy-pools/`) implements:
 - Deposit functionality with commitment generation
 - Withdrawal with zero-knowledge proof verification using BLS12-381
 - Nullifier tracking to prevent double-spending
-- Association set management for compliance verification
+- Association set management for membership verification
 - Integration with Soroban's native BLS12-381 curve operations
 
 ### Proof Generation and Conversion
@@ -195,7 +195,7 @@ cargo run --bin coinutils updateAssociation <association_set_file> <label>
 - **Coin Generation**: Creates new coins with random nullifiers and secrets
 - **Commitment Calculation**: Implements the same commitment scheme as the circuits
 - **Merkle Tree Integration**: Uses lean-imt for consistent merkle tree operations
-- **Association Set Management**: Creates and manages association sets for compliance
+- **Association Set Management**: Creates and manages association sets to verify membership
 - **Withdrawal Preparation**: Generates circuit inputs with merkle tree and association set proofs
 - **BLS12-381 Field Operations**: Uses arkworks for proper field arithmetic
 - **Poseidon Hashing**: Matches the circuit's hash implementation
@@ -387,14 +387,13 @@ soroban contract invoke --id <CONTRACT_ID> --source <ADMIN> --network <NETWORK> 
 
 ## Association Sets
 
-Association sets provide a compliance mechanism for privacy pools, allowing withdrawals only from approved subsets of deposits. This feature enables regulatory compliance while maintaining privacy.
+A compliance feature that lets users, at withdrawal, prove membership in the group of deposits defined by a specific Association Set Provider's (ASP) policy.
 
 ### How Association Sets Work
 
 1. **Label Generation**: Each coin has a unique label derived from its scope and nonce
 2. **Association Tree**: Labels are organized in a Merkle tree (depth 2, max 4 labels)
-3. **Compliance Verification**: Withdrawals must prove the coin's label is in the approved association set
-4. **Backward Compatibility**: Contracts without association sets configured allow any withdrawal
+3. **Compliance Verification**: The withdrawal proof must include a valid membership proof showing that the coin's label is contained in the on-chain association root published by an Association Set Provider (ASP).
 
 ### Association Set Management
 
@@ -677,7 +676,6 @@ Withdrawal successful!
 0
 🎉 Demo completed successfully!
 ```
-
 
 ## Contributing
 
