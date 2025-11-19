@@ -7,7 +7,7 @@ use soroban_sdk::{
     vec, Bytes, BytesN, Env, Vec,
 };
 
-use crate::{AccError, IncrementContract, IncrementContractClient};
+use crate::{AccError, IncrementContract, IncrementContractArgs, IncrementContractClient};
 
 use hex_literal::hex;
 
@@ -96,18 +96,17 @@ fn sign_and_aggregate(env: &Env, msg: &Bytes) -> BytesN<192> {
     bls.g2_msm(vec_msg, vec_sk).to_bytes()
 }
 
-fn create_client(e: &Env) -> IncrementContractClient<'_> {
-    IncrementContractClient::new(e, &e.register(IncrementContract {}, ()))
-}
-
 #[test]
 fn test() {
     let env = Env::default();
     let pk = aggregate_pk_bytes(&env);
     env.mock_all_auths();
 
-    let client = create_client(&env);
-    client.init(&pk);
+    let contract_id = env.register(
+        IncrementContract {},
+        IncrementContractArgs::__constructor(&pk),
+    );
+    let client = IncrementContractClient::new(&env, &contract_id);
     let payload = BytesN::random(&env);
     let sig_val = sign_and_aggregate(&env, &payload.clone().into()).to_val();
 
