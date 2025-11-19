@@ -102,10 +102,7 @@ fn test() {
     let pk = aggregate_pk_bytes(&env);
     env.mock_all_auths();
 
-    let contract_id = env.register(
-        IncrementContract {},
-        IncrementContractArgs::__constructor(&pk),
-    );
+    let contract_id = env.register(IncrementContract, IncrementContractArgs::__constructor(&pk));
     let client = IncrementContractClient::new(&env, &contract_id);
     let payload = BytesN::random(&env);
     let sig_val = sign_and_aggregate(&env, &payload.clone().into()).to_val();
