@@ -8,15 +8,10 @@ use soroban_sdk::Error;
 use soroban_sdk::Val;
 use soroban_sdk::{testutils::BytesN as _, vec, BytesN, Env, IntoVal};
 
-use crate::SimpleAccount;
-use crate::SimpleAccountClient;
+use crate::{SimpleAccount, SimpleAccountArgs, SimpleAccountClient};
 
 fn generate_keypair() -> Keypair {
     Keypair::generate(&mut thread_rng())
-}
-
-fn create_account_contract(e: &Env) -> SimpleAccountClient<'_> {
-    SimpleAccountClient::new(e, &e.register(SimpleAccount, ()))
 }
 
 fn sign(e: &Env, signer: &Keypair, payload: &BytesN<32>) -> Val {
@@ -31,10 +26,10 @@ fn sign(e: &Env, signer: &Keypair, payload: &BytesN<32>) -> Val {
 fn test_account() {
     let env = Env::default();
 
-    let account_contract = create_account_contract(&env);
-
     let signer = generate_keypair();
-    account_contract.init(&signer.public.to_bytes().into_val(&env));
+    let public_key: BytesN<32> = signer.public.to_bytes().into_val(&env);
+    let contract_id = env.register(SimpleAccount, SimpleAccountArgs::__constructor(&public_key));
+    let account_contract = SimpleAccountClient::new(&env, &contract_id);
 
     let payload = BytesN::random(&env);
     // `__check_auth` can't be called directly, hence we need to use
