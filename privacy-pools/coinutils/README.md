@@ -33,19 +33,19 @@ The application is organized into the following modules:
 ### Generate a Coin
 
 ```bash
-coinutils generate my_pool_scope coin.json
+stellar-coinutils generate my_pool_scope coin.json
 ```
 
 ### Withdraw a Coin
 
 ```bash
-coinutils withdraw coin.json state.json association.json withdrawal.json
+stellar-coinutils withdraw coin.json state.json association.json withdrawal.json
 ```
 
 ### Update Association Set
 
 ```bash
-coinutils updateAssociation association.json "1234567890..."
+stellar-coinutils updateAssociation association.json "1234567890..."
 ```
 
 ## File Formats
@@ -109,7 +109,7 @@ cargo build --release
 The application supports configurable logging. Set the `RUST_LOG` environment variable to control log levels:
 
 ```bash
-RUST_LOG=debug coinutils generate my_scope coin.json
+RUST_LOG=debug stellar-coinutils generate my_scope coin.json
 ```
 
 Available log levels: `error`, `warn`, `info`, `debug`, `trace`

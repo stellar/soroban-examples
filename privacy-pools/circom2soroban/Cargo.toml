@@ -3,6 +3,10 @@ name = "circom2soroban"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "stellar-circom2soroban"
+path = "src/main.rs"
+
 [dependencies]
 ark-bls12-381 = "0.4"
 ark-ec = "0.4"

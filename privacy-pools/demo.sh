@@ -22,7 +22,7 @@ cargo build --target wasm32v1-none --release -p privacy-pools || { echo "❌ Err
 stellar contract optimize --wasm target/wasm32v1-none/release/privacy_pools.wasm --wasm-out target/wasm32v1-none/release/privacy_pools.optimized.wasm || { echo "❌ Error: Failed to optimize WASM"; exit 1; }
 # Convert verification key to hex format and extract it
 echo "🔑 Converting verification key..."
-cargo run --bin circom2soroban vk circuits/output/main_verification_key.json > vk_hex.txt || { echo "❌ Error: Failed to convert verification key"; exit 1; }
+cargo run --bin stellar-circom2soroban vk circuits/output/main_verification_key.json > vk_hex.txt || { echo "❌ Error: Failed to convert verification key"; exit 1; }
 VK_HEX=$(cat vk_hex.txt | grep -o '[0-9a-f]*$')
 if [ -z "$VK_HEX" ]; then
     echo "❌ Error: Failed to extract verification key hex"
@@ -43,7 +43,7 @@ stellar contract invoke --id $CONTRACT_ID --source demo_user --network $NETWORK 
 
 # Step 2: Generate coin
 echo "🪙 Generating coin..."
-cargo run --bin coinutils generate demo_pool -o demo_coin.json || { echo "❌ Error: Failed to generate coin"; exit 1; }
+cargo run --bin stellar-coinutils generate demo_pool -o demo_coin.json || { echo "❌ Error: Failed to generate coin"; exit 1; }
 COMMITMENT_HEX=$(cat demo_coin.json | jq -r '.commitment_hex' | sed 's/^0x//')
 if [ -z "$COMMITMENT_HEX" ]; then
     echo "❌ Error: Failed to extract commitment hex"
@@ -69,7 +69,7 @@ echo "{
 
 echo "🏷️  Creating association set..."
 LABEL=$(cat demo_coin.json | jq -r '.coin.label')
-cargo run --bin coinutils update-association demo_association.json "$LABEL" || { echo "❌ Error: Failed to create association set"; exit 1; }
+cargo run --bin stellar-coinutils update-association demo_association.json "$LABEL" || { echo "❌ Error: Failed to create association set"; exit 1; }
 
 # Extract association root from the association set and set it in the contract
 echo "🔗 Setting association root in contract..."
@@ -103,15 +103,15 @@ stellar contract invoke --id $CONTRACT_ID --source demo_user --network $NETWORK 
 echo "✅ Association root set successfully"
 
 echo "🔐 Creating withdrawal proof..."
-cargo run --bin coinutils withdraw demo_coin.json demo_state.json demo_association.json -o withdrawal_input.json || { echo "❌ Error: Failed to create withdrawal input"; exit 1; }
+cargo run --bin stellar-coinutils withdraw demo_coin.json demo_state.json demo_association.json -o withdrawal_input.json || { echo "❌ Error: Failed to create withdrawal input"; exit 1; }
 echo "📝 Generating witness and proof..."
 cd circuits
 node build/main_js/generate_witness.js build/main_js/main.wasm ../withdrawal_input.json witness.wtns || { echo "❌ Error: Failed to generate witness"; exit 1; }
 snarkjs groth16 prove output/main_final.zkey witness.wtns proof.json public.json || { echo "❌ Error: Failed to generate proof"; exit 1; }
 cd ..
 echo "🔄 Converting proof for Soroban..."
-cargo run --bin circom2soroban proof circuits/proof.json > proof_hex.txt || { echo "❌ Error: Failed to convert proof"; exit 1; }
-cargo run --bin circom2soroban public circuits/public.json > public_hex.txt || { echo "❌ Error: Failed to convert public signals"; exit 1; }
+cargo run --bin stellar-circom2soroban proof circuits/proof.json > proof_hex.txt || { echo "❌ Error: Failed to convert proof"; exit 1; }
+cargo run --bin stellar-circom2soroban public circuits/public.json > public_hex.txt || { echo "❌ Error: Failed to convert public signals"; exit 1; }
 PROOF_HEX=$(sed -n '/^Proof Hex encoding:/{n;p;}' proof_hex.txt | tr -d '[:space:]' | sed -E 's/^0x//i')
 PUBLIC_HEX=$(sed -n '/^Public signals Hex encoding:/{n;p;}' public_hex.txt | tr -d '[:space:]' | sed -E 's/^0x//i')
 if [ -z "$PROOF_HEX" ] || [ -z "$PUBLIC_HEX" ]; then

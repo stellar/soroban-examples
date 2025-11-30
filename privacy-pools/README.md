@@ -167,13 +167,13 @@ snarkjs groth16 prove output/main_final.zkey witness.wtns proof.json public.json
 snarkjs groth16 verify output/main_verification_key.json public.json proof.json
 
 # Convert verification key for Soroban
-cargo run --bin circom2soroban vk output/main_verification_key.json
+cargo run --bin stellar-circom2soroban vk output/main_verification_key.json
 
 # Convert proof for Soroban
-cargo run --bin circom2soroban proof proof.json
+cargo run --bin stellar-circom2soroban proof proof.json
 
 # Convert public outputs for Soroban
-cargo run --bin circom2soroban public public.json
+cargo run --bin stellar-circom2soroban public public.json
 ```
 
 ### coinutils Tool
@@ -182,13 +182,13 @@ The `coinutils` utility helps generate and manage privacy pool coins with proper
 
 ```bash
 # Generate a new coin for a privacy pool
-cargo run --bin coinutils generate <scope> [output_file]
+cargo run --bin stellar-coinutils generate <scope> [output_file]
 
 # Create withdrawal inputs from an existing coin (requires state file and association set file)
-cargo run --bin coinutils withdraw <coin_file> <state_file> <association_set_file> [output_file]
+cargo run --bin stellar-coinutils withdraw <coin_file> <state_file> <association_set_file> [output_file]
 
 # Add a label to an association set
-cargo run --bin coinutils updateAssociation <association_set_file> <label>
+cargo run --bin stellar-coinutils updateAssociation <association_set_file> <label>
 ```
 
 **Features:**
@@ -203,17 +203,17 @@ cargo run --bin coinutils updateAssociation <association_set_file> <label>
 **Examples:**
 ```bash
 # Generate a coin for "my_pool" scope
-cargo run --bin coinutils generate my_pool coin.json
+cargo run --bin stellar-coinutils generate my_pool coin.json
 
 # Create state file with commitments
 echo '{"commitments": ["commitment1", "commitment2", "..."], "scope": "my_pool"}' > state.json
 
 # Create association set with coin's label
 LABEL=$(cat coin.json | jq -r '.coin.label')
-cargo run --bin coinutils updateAssociation association.json "$LABEL"
+cargo run --bin stellar-coinutils updateAssociation association.json "$LABEL"
 
 # Create withdrawal from existing coin with state file and association set
-cargo run --bin coinutils withdraw coin.json state.json association.json withdrawal.json
+cargo run --bin stellar-coinutils withdraw coin.json state.json association.json withdrawal.json
 ```
 
 **Generated Coin Structure:**
@@ -286,15 +286,15 @@ The `circom2soroban` utility converts snarkjs artifacts to Soroban-compatible fo
 
 ```bash
 # Convert verification key
-cargo run --bin circom2soroban vk <verification_key.json>
+cargo run --bin stellar-circom2soroban vk <verification_key.json>
 # Outputs: Rust code with verification key coordinates
 
 # Convert proof
-cargo run --bin circom2soroban proof <proof.json>
+cargo run --bin stellar-circom2soroban proof <proof.json>
 # Outputs: Rust code with proof coordinates
 
 # Convert public outputs
-cargo run --bin circom2soroban public <public.json>
+cargo run --bin stellar-circom2soroban public <public.json>
 # Outputs: Rust code with public inputs as U256 and Fr conversion
 ```
 
@@ -324,7 +324,7 @@ let output = Vec::from_array(&env, [Fr::from_u256(public_0), Fr::from_u256(publi
 
 ```bash
 # 1. Generate a test coin
-cargo run --bin coinutils generate test_pool_scope test_coin.json
+cargo run --bin stellar-coinutils generate test_pool_scope test_coin.json
 
 # 2. Create state file with commitments (including the generated coin's commitment)
 COMMITMENT=$(cat test_coin.json | jq -r '.coin.commitment')
@@ -337,10 +337,10 @@ echo "{
 
 # 3. Create association set with the coin's label
 LABEL=$(cat test_coin.json | jq -r '.coin.label')
-cargo run --bin coinutils updateAssociation test_association.json "$LABEL"
+cargo run --bin stellar-coinutils updateAssociation test_association.json "$LABEL"
 
 # 4. Create withdrawal input from the coin with state file and association set
-cargo run --bin coinutils withdraw test_coin.json state.json test_association.json withdrawal_input.json
+cargo run --bin stellar-coinutils withdraw test_coin.json state.json test_association.json withdrawal_input.json
 
 # 5. Generate witness and proof
 cd circuits
@@ -349,9 +349,9 @@ snarkjs groth16 prove output/main_final.zkey witness.wtns proof.json public.json
 
 # 6. Convert for Soroban
 cd ..
-cargo run --bin circom2soroban vk circuits/output/main_verification_key.json
-cargo run --bin circom2soroban proof circuits/proof.json
-cargo run --bin circom2soroban public circuits/public.json
+cargo run --bin stellar-circom2soroban vk circuits/output/main_verification_key.json
+cargo run --bin stellar-circom2soroban proof circuits/proof.json
+cargo run --bin stellar-circom2soroban public circuits/public.json
 
 # 7. Update test with new values and run
 cargo test test_coin_ownership
@@ -399,13 +399,13 @@ A compliance feature that lets users, at withdrawal, prove membership in the gro
 
 ```bash
 # Create or update an association set
-cargo run --bin coinutils updateAssociation <association_file> <label>
+cargo run --bin stellar-coinutils updateAssociation <association_file> <label>
 
 # Check association set contents
 cat <association_file>
 
 # Withdraw with association set verification
-cargo run --bin coinutils withdraw <coin_file> <state_file> <association_file> <output_file>
+cargo run --bin stellar-coinutils withdraw <coin_file> <state_file> <association_file> <output_file>
 ```
 
 ### Contract Integration
@@ -522,7 +522,7 @@ cargo build --target wasm32v1-none --release -p privacy-pools
 soroban contract optimize --wasm target/wasm32v1-none/release/privacy_pools.wasm --wasm-out target/wasm32v1-none/release/privacy_pools.optimized.wasm
 
 # Convert verification key to hex format and extract it
-cargo run --bin circom2soroban vk circuits/output/main_verification_key.json > vk_hex.txt
+cargo run --bin stellar-circom2soroban vk circuits/output/main_verification_key.json > vk_hex.txt
 VK_HEX=$(cat vk_hex.txt | grep -o '[0-9a-f]*$')
 
 # Deploy the contract (replace TOKEN_ADDRESS with actual token contract address)
@@ -541,7 +541,7 @@ Create a new coin with a random nullifier and secret:
 
 ```bash
 # Generate a coin for the demo pool
-cargo run --bin coinutils generate demo_pool demo_coin.json
+cargo run --bin stellar-coinutils generate demo_pool demo_coin.json
 
 # View the generated coin
 cat demo_coin.json
@@ -594,10 +594,10 @@ echo "{
 
 # Create association set with the coin's label
 LABEL=$(cat demo_coin.json | jq -r '.coin.label')
-cargo run --bin coinutils updateAssociation demo_association.json "$LABEL"
+cargo run --bin stellar-coinutils updateAssociation demo_association.json "$LABEL"
 
 # Create withdrawal inputs from the coin with state file and association set
-cargo run --bin coinutils withdraw demo_coin.json demo_state.json demo_association.json withdrawal_input.json
+cargo run --bin stellar-coinutils withdraw demo_coin.json demo_state.json demo_association.json withdrawal_input.json
 
 # Generate witness and proof using the main circuit
 cd circuits
@@ -606,8 +606,8 @@ snarkjs groth16 prove ../output/main_final.zkey witness.wtns proof.json public.j
 
 # Convert proof and public signals for Soroban
 cd ..
-cargo run --bin circom2soroban proof circuits/proof.json > proof_hex.txt
-cargo run --bin circom2soroban public circuits/public.json > public_hex.txt
+cargo run --bin stellar-circom2soroban proof circuits/proof.json > proof_hex.txt
+cargo run --bin stellar-circom2soroban public circuits/public.json > public_hex.txt
 
 # Extract the hex strings (without 0x prefix)
 PROOF_HEX=$(sed -n '/^Proof Hex encoding:/{n;p;}' proof_hex.txt | tr -d '[:space:]' | sed -E 's/^0x//i')

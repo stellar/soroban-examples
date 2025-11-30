@@ -3,6 +3,13 @@ name = "coinutils"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+doctest = false
+
+[[bin]]
+name = "stellar-coinutils"
+path = "src/main.rs"
+
 [dependencies]
 rand = "0.8"
 hex = "0.4"
