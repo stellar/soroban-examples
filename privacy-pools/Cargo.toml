@@ -1,12 +1,12 @@
 [workspace]
 resolver = "2"
 members = [
-  "contracts/privacy-pools",
-  "circom2soroban",
-  "coinutils",
-  "zk",
-  "lean-imt",
-  "poseidon",
+  "contract",
+  "libs/lean-imt",
+  "libs/poseidon",
+  "libs/zk",
+  "cli/circom2soroban",
+  "cli/coinutils",
   "circuits/test/lean-imt-test",
   "circuits/test/poseidon-test"
 ]

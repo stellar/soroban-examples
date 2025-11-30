@@ -19,8 +19,41 @@ A privacy-preserving transaction system built on Stellar using Soroban smart con
 
 ## Project Structure
 
+This repository demonstrates a complete privacy pool implementation for Soroban, organized into on-chain components, reusable libraries, and command-line tools.
+
 ```
 .
+├── contract/                 # Soroban smart contract
+│   ├── src/
+│   │   ├── lib.rs            # Main contract logic
+│   │   └── test.rs           # Contract tests
+│   ├── Cargo.toml
+│   └── Makefile
+├── libs/                     # Reusable libraries (may be extracted to separate crates)
+│   ├── lean-imt/             # Lean Incremental Merkle Tree implementation
+│   │   ├── src/
+│   │   │   ├── lib.rs        # LeanIMT core implementation
+│   │   │   └── tests.rs      # LeanIMT tests
+│   │   ├── Cargo.toml
+│   │   └── README.md
+│   ├── poseidon/             # Poseidon hash implementation (⚠️ not audited)
+│   │   ├── src/
+│   │   │   ├── lib.rs        # Poseidon hash functions
+│   │   │   └── test.rs       # Poseidon hash tests
+│   │   └── Cargo.toml
+│   └── zk/                   # Zero-knowledge proof verification using BLS12-381
+│       ├── src/
+│       │   ├── lib.rs        # ZK proof verification logic
+│       │   └── test.rs       # ZK verification tests
+│       └── Cargo.toml
+├── cli/                      # Command-line tools for off-chain operations
+│   ├── circom2soroban/       # Converts circom artifacts to Soroban format
+│   │   ├── src/main.rs       # Converts VK/proofs/public signals
+│   │   └── Cargo.toml
+│   └── coinutils/            # Coin generation and management CLI
+│       ├── src/main.rs       # CLI for generating coins and withdrawal inputs
+│       ├── README.md
+│       └── Cargo.toml
 ├── circuits/                 # Circom circuits for zero-knowledge proofs
 │   ├── commitment.circom     # Commitment hashing logic
 │   ├── main.circom           # Main withdrawal verification circuit
@@ -32,35 +65,6 @@ A privacy-preserving transaction system built on Stellar using Soroban smart con
 │       ├── lean-imt-test/    # LeanIMT integration tests
 │       ├── poseidon-test/    # Poseidon hash tests
 │       └── test_*.circom     # Test circuit files
-├── contracts/                # Soroban smart contracts
-│   └── privacy-pools/
-│       ├── src/
-│       │   ├── lib.rs        # Main contract logic
-│       │   └── test.rs       # Contract tests
-│       ├── Cargo.toml
-│       └── Makefile
-├── zk/                       # Zero-knowledge verification library
-│   ├── src/
-│   │   ├── lib.rs            # ZK proof verification logic
-│   │   └── test.rs           # ZK verification tests
-│   └── Cargo.toml
-├── lean-imt/                 # Lean Incremental Merkle Tree implementation
-│   ├── src/
-│   │   ├── lib.rs            # LeanIMT core implementation
-│   │   └── tests.rs          # LeanIMT tests
-│   ├── Cargo.toml
-│   └── README.md
-├── poseidon/                 # Poseidon hash implementation library
-│   ├── src/
-│   │   ├── lib.rs            # Poseidon hash functions
-│   │   └── test.rs           # Poseidon hash tests
-│   └── Cargo.toml
-├── circom2soroban/           # Utility for converting circom artifacts
-│   ├── src/main.rs           # Converts VK/proofs/public to Soroban format
-│   └── Cargo.toml
-├── coinutils/                # Coin generation and management utility
-│   ├── src/main.rs           # CLI for generating coins and withdrawal inputs
-│   └── Cargo.toml
 ├── Cargo.toml                # Workspace configuration
 ├── Makefile                  # Circuit compilation commands
 ├── demo.sh                   # Complete demo script
@@ -146,7 +150,7 @@ The project includes several Circom circuits:
 
 ### Smart Contract
 
-The Soroban contract (`contracts/privacy-pools/`) implements:
+The Soroban contract (`contract/`) implements:
 
 - Deposit functionality with commitment generation
 - Withdrawal with zero-knowledge proof verification using BLS12-381

@@ -10,9 +10,9 @@ doctest = false
 
 [dependencies]
 soroban-sdk = { workspace = true, features = ["alloc"] }
-zk = { path = "../../zk" }
-lean-imt = { path = "../../lean-imt" }
-poseidon = { path = "../../poseidon" }
+zk = { path = "../libs/zk" }
+lean-imt = { path = "../libs/lean-imt" }
+poseidon = { path = "../libs/poseidon" }
 ark-ff = { version = "0.4.2", default-features = false }
 ark-bls12-381 = { version = "0.4.0", default-features = false }
 num-bigint = { version = "0.4", default-features = false }
