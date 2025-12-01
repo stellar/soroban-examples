@@ -42,7 +42,7 @@ pub enum AccError {
 
 #[contractimpl]
 impl IncrementContract {
-    pub fn init(env: Env, agg_pk: BytesN<96>) {
+    pub fn __constructor(env: Env, agg_pk: BytesN<96>) {
         // Initialize the account contract essentials: the aggregated pubkey and
         // the DST. Because the message to be signed (which is
         // the hash of some call stack) is the same for all signers, we can
