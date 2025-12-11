@@ -270,13 +270,8 @@ fn test_deposit_and_withdraw_correct_proof() {
     let nullifier = pub_signals_struct.pub_signals.get(0).unwrap().to_bytes();
 
     let result = client.withdraw(&bob, &proof, &pub_signals);
-    assert_eq!(
-        result,
-        vec![
-            &env,
-            String::from_str(&env, ERROR_WITHDRAW_SUCCESS)
-        ]
-    );
+    // Success is now logged as a diagnostic event, so we return an empty vec
+    assert_eq!(result, vec![&env]);
 
     // Check balances after withdrawal
     assert_eq!(token_client.balance(&bob), 1000000000); // Bob should have the tokens
@@ -472,6 +467,7 @@ fn test_contract_initialization() {
 }
 
 #[test]
+#[should_panic(expected = "Association root must be set before withdrawal")]
 fn test_withdraw_without_association_set() {
     let env = Env::default();
     let (token_id, contract_id, _admin) = setup_test_environment(&env);
@@ -515,27 +511,18 @@ fn test_withdraw_without_association_set() {
     // Verify no association set is configured
     assert_eq!(client.has_association_set(), false);
 
+    // Verify state before withdrawal attempt
+    assert_eq!(token_client.balance(&bob), 0); // Bob should have 0
+    assert_eq!(token_client.balance(&contract_id), 1000000000); // Contract should have tokens
+    assert_eq!(client.get_nullifiers().len(), 0); // No nullifiers should be stored
+
     // Test withdraw with no association set configured
-    // Since association root is now required, withdrawal should fail
+    // Since association root is now required, withdrawal should panic
     let proof = init_proof(&env);
     let pub_signals = init_pub_signals(&env);
 
-    let result = client.withdraw(&bob, &proof, &pub_signals);
-    assert_eq!(
-        result,
-        vec![
-            &env,
-            String::from_str(&env, "Association root must be set before withdrawal")
-        ]
-    );
-
-    // Check that balances are unchanged (withdrawal failed)
-    assert_eq!(token_client.balance(&bob), 0); // Bob should still have 0
-    assert_eq!(token_client.balance(&contract_id), 1000000000); // Contract should still have tokens
-
-    // Check that no nullifier was stored when withdrawal failed
-    let nullifiers = client.get_nullifiers();
-    assert_eq!(nullifiers.len(), 0);
+    env.mock_all_auths();
+    client.withdraw(&bob, &proof, &pub_signals);
 }
 
 #[test]
@@ -663,6 +650,7 @@ fn test_set_association_root_non_admin() {
 }
 
 #[test]
+#[should_panic(expected = "Association root must be set before withdrawal")]
 fn test_withdraw_requires_association_root() {
     let env = Env::default();
     let (token_id, contract_id, _admin) = setup_test_environment(&env);
@@ -697,29 +685,17 @@ fn test_withdraw_requires_association_root() {
     // Verify no association set is configured
     assert_eq!(client.has_association_set(), false);
 
-    // Attempt to withdraw without setting association root - this should fail
+    // Verify state before withdrawal attempt
+    assert_eq!(token_client.balance(&bob), 0); // Bob should have 0
+    assert_eq!(token_client.balance(&contract_id), 1000000000); // Contract should have tokens
+    assert_eq!(client.get_nullifiers().len(), 0); // No nullifiers should be stored
+
+    // Attempt to withdraw without setting association root - this should panic
     let proof = init_proof(&env);
     let pub_signals = init_pub_signals(&env);
 
     env.mock_all_auths();
-    let result = client.withdraw(&bob, &proof, &pub_signals);
-    
-    // Verify withdrawal fails with appropriate error message
-    assert_eq!(
-        result,
-        vec![
-            &env,
-            String::from_str(&env, "Association root must be set before withdrawal")
-        ]
-    );
-
-    // Check that balances are unchanged (withdrawal failed)
-    assert_eq!(token_client.balance(&bob), 0); // Bob should still have 0
-    assert_eq!(token_client.balance(&contract_id), 1000000000); // Contract should still have tokens
-    
-    // Check that no nullifier was stored when withdrawal failed
-    let nullifiers = client.get_nullifiers();
-    assert_eq!(nullifiers.len(), 0);
+    client.withdraw(&bob, &proof, &pub_signals);
 }
 
 #[cfg(feature = "test_hash")]

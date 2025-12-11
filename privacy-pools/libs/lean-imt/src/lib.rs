@@ -29,8 +29,8 @@ pub fn bytes_to_bls_scalar(bytes_n: &BytesN<32>) -> BlsScalar {
 /// Lean Incremental Merkle Tree implementation with hybrid approach:
 /// - Internal computation uses BlsScalar for perfect Circom compatibility
 /// - Storage and API uses BytesN<32> for Soroban compatibility
-pub struct LeanIMT<'a> {
-    env: &'a Env,
+pub struct LeanIMT {
+    env: Env,
     leaves: Vec<BytesN<32>>,
     depth: u32,
     capacity: u32,  // Pre-computed capacity (2^depth), cached for efficiency
@@ -45,19 +45,20 @@ pub struct LeanIMT<'a> {
     sparse_cache: Map<(u32, u32), BlsScalar>,
 }
 
-impl<'a> LeanIMT<'a> {
+impl LeanIMT {
     /// Creates a new LeanIMT with a fixed depth. Missing leaves are assumed zero.
-    pub fn new(env: &'a Env, depth: u32) -> Self {
+    pub fn new(env: &Env, depth: u32) -> Self {
         let capacity = 1u32.checked_shl(depth).unwrap_or(u32::MAX);
+        let env_clone = env.clone();
         let mut tree = Self {
-            env,
-            leaves: vec![env],
+            env: env_clone.clone(),
+            leaves: vec![&env_clone],
             depth,
             capacity,
-            root: BytesN::from_array(env, &[0u8; 32]),
-            poseidon: Poseidon255::new(env, 3),
-            subtree_cache: Map::new(env),
-            sparse_cache: Map::new(env),
+            root: BytesN::from_array(&env_clone, &[0u8; 32]),
+            poseidon: Poseidon255::new(&env_clone, 3),
+            subtree_cache: Map::new(&env_clone),
+            sparse_cache: Map::new(&env_clone),
         };
         tree.recompute_tree();
         tree
@@ -80,7 +81,7 @@ impl<'a> LeanIMT<'a> {
 
     /// Inserts a u64 leaf (converts to BlsScalar internally)
     pub fn insert_u64(&mut self, leaf_value: u64) -> Result<(), &'static str> {
-        let leaf_scalar = u64_to_bls_scalar(self.env, leaf_value);
+        let leaf_scalar = u64_to_bls_scalar(&self.env, leaf_value);
         let leaf_bytes = bls_scalar_to_bytes(leaf_scalar);
         self.insert(leaf_bytes)
     }
@@ -121,7 +122,7 @@ impl<'a> LeanIMT<'a> {
             return None;
         }
 
-        let mut siblings = vec![self.env];
+        let mut siblings = vec![&self.env];
         
         // Handle the simple 2-leaf case correctly
         if self.depth == 1 && self.leaves.len() == 2 {
@@ -150,7 +151,7 @@ impl<'a> LeanIMT<'a> {
                         let sibling_bytes = self.leaves.get(sibling_index).unwrap();
                         bytes_to_bls_scalar(&sibling_bytes)
                     } else {
-                        BlsScalar::from_u256(U256::from_u32(self.env, 0))
+                        BlsScalar::from_u256(U256::from_u32(&self.env, 0))
                     }
                 } else {
                     // At internal levels, compute the actual node value
@@ -176,7 +177,7 @@ impl<'a> LeanIMT<'a> {
     /// Now uses memoization cache for efficiency
     fn compute_node_at_level_scalar(&self, node_index: u32, target_level: u32) -> BlsScalar {
         if target_level > self.depth {
-            return BlsScalar::from_u256(U256::from_u32(self.env, 0));
+            return BlsScalar::from_u256(U256::from_u32(&self.env, 0));
         }
         
         // Check if we have this node cached using hybrid cache system
@@ -190,7 +191,7 @@ impl<'a> LeanIMT<'a> {
                 let leaf_bytes = self.leaves.get(node_index).unwrap();
                 bytes_to_bls_scalar(&leaf_bytes)
             } else {
-                BlsScalar::from_u256(U256::from_u32(self.env, 0))
+                BlsScalar::from_u256(U256::from_u32(&self.env, 0))
             }
         } else {
             // For levels > 0, compute by hashing the two children from the level below
@@ -251,7 +252,7 @@ impl<'a> LeanIMT<'a> {
                     let sibling_bytes = self.leaves.get(sibling_index).unwrap();
                     bytes_to_bls_scalar(&sibling_bytes)
                 } else {
-                    BlsScalar::from_u256(U256::from_u32(self.env, 0))
+                    BlsScalar::from_u256(U256::from_u32(&self.env, 0))
                 }
             } else {
                 // At internal levels, use hybrid cache system
@@ -323,8 +324,8 @@ impl<'a> LeanIMT<'a> {
 
         // For trees with leaves, clear both caches and let them rebuild on-demand
         // The hybrid cache system will handle the rest
-        self.subtree_cache = Map::new(self.env);
-        self.sparse_cache = Map::new(self.env);
+        self.subtree_cache = Map::new(&self.env);
+        self.sparse_cache = Map::new(&self.env);
     }
 
     /// Recomputes the entire tree after insertion using fixed depth and zero padding
@@ -332,13 +333,13 @@ impl<'a> LeanIMT<'a> {
     fn recompute_tree(&mut self) {
         if self.depth == 0 {
             // Special case: depth 0 tree with no leaves
-            self.root = BytesN::from_array(self.env, &[0u8; 32]);
+            self.root = BytesN::from_array(&self.env, &[0u8; 32]);
             return;
         }
 
         // For empty trees, all subtrees at the same level are identical
         // We only need to compute one hash per level: hash(level_n, level_n) = level_n+1
-        let zero_scalar = BlsScalar::from_u256(U256::from_u32(self.env, 0));
+        let zero_scalar = BlsScalar::from_u256(U256::from_u32(&self.env, 0));
         let mut current_level_hash = zero_scalar.clone();
 
         // Compute hashes level by level, reusing the same hash for all nodes at each level
@@ -361,7 +362,7 @@ impl<'a> LeanIMT<'a> {
 
     /// Hashes two BlsScalar values using Poseidon hash function
     fn hash_pair(&self, left: BlsScalar, right: BlsScalar) -> BlsScalar {
-        self.poseidon.hash_two(self.env, &left, &right)
+        self.poseidon.hash_two(&self.env, &left, &right)
     }
 
     /// Serializes the tree state for storage
@@ -370,17 +371,18 @@ impl<'a> LeanIMT<'a> {
     }
 
     /// Deserializes the tree state from storage
-    pub fn from_storage(env: &'a Env, leaves: Vec<BytesN<32>>, depth: u32, root: BytesN<32>) -> Self {
+    pub fn from_storage(env: &Env, leaves: Vec<BytesN<32>>, depth: u32, root: BytesN<32>) -> Self {
         let capacity = 1u32.checked_shl(depth).unwrap_or(u32::MAX);
+        let env_clone = env.clone();
         let mut tree = Self {
-            env,
+            env: env_clone.clone(),
             leaves,
             depth,
             capacity,
             root,
-            poseidon: Poseidon255::new(env, 3),
-            subtree_cache: Map::new(env),
-            sparse_cache: Map::new(env),
+            poseidon: Poseidon255::new(&env_clone, 3),
+            subtree_cache: Map::new(&env_clone),
+            sparse_cache: Map::new(&env_clone),
         };
         
         // Rebuild the cache for the deserialized tree
@@ -452,7 +454,7 @@ impl<'a> LeanIMT<'a> {
     /// which sibling subtrees could be cached (left of current position) vs
     /// which need to be computed (right of current position).
     pub fn analyze_optimization_path(&self, new_leaf_index: u32) -> Vec<(u32, u32, bool)> {
-        let mut path_analysis = vec![self.env];
+        let mut path_analysis = vec![&self.env];
         let mut current_index = new_leaf_index;
         let mut current_level = 0;
         

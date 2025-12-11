@@ -5,17 +5,16 @@ extern crate alloc;
 use soroban_sdk::{
     contract, contractimpl, 
     vec, Env, String, Vec, Address, symbol_short, Symbol, Bytes, BytesN,
-    crypto::bls12_381::Fr as BlsScalar, token,
+    token, log,
 };
 
 #[cfg(feature = "test_hash")]
-use soroban_sdk::U256;
+use soroban_sdk::{U256, crypto::bls12_381::Fr as BlsScalar};
 
 use zk::{Groth16Verifier, VerificationKey, Proof, PublicSignals};
 use lean_imt::{LeanIMT, TREE_ROOT_KEY, TREE_DEPTH_KEY, TREE_LEAVES_KEY};
 #[cfg(feature = "test_hash")]
 use poseidon::Poseidon255;
-use num_bigint::BigUint;
 
 #[cfg(test)]
 mod test;
@@ -167,7 +166,7 @@ impl PrivacyPoolsContract {
     /// # Returns
     ///
     /// Returns a vector containing status messages:
-    /// * `["Withdrawal successful"]` on successful withdrawal
+    /// * Empty vector `[]` on successful withdrawal (success is logged as a diagnostic event)
     /// * `["Nullifier already used"]` if the nullifier has been used before
     /// * `["Couldn't verify coin ownership proof"]` if the zero-knowledge proof verification fails
     /// * `["Insufficient balance"]` if the contract doesn't have enough funds
@@ -197,7 +196,7 @@ impl PrivacyPoolsContract {
 
         // Require association root to be set before any withdrawal
         if !Self::has_association_set(env) {
-            return vec![env, String::from_str(env, "Association root must be set before withdrawal")]
+            panic!("Association root must be set before withdrawal");
         }
 
         // Get the stored token address
@@ -223,16 +222,9 @@ impl PrivacyPoolsContract {
 
         // Verify association set root matches the proof
         let stored_association_root = Self::get_association_root(env);
-        let stored_association_scalar = lean_imt::bytes_to_bls_scalar(&stored_association_root);
-        let stored_association_str = Self::bls_scalar_to_decimal_string(env, &stored_association_scalar);
+        let proof_association_root_bytes = proof_association_root.to_bytes();
         
-        let proof_association_u256 = proof_association_root.to_u256();
-        let proof_association_bytes = proof_association_u256.to_be_bytes();
-        let mut proof_association_array = [0u8; 32];
-        proof_association_bytes.copy_into_slice(&mut proof_association_array);
-        let proof_association_str = Self::bytes_to_decimal_string(env, &proof_association_array);
-        
-        if stored_association_str != proof_association_str {
+        if stored_association_root != proof_association_root_bytes {
             return vec![env, String::from_str(env, "Association set root mismatch")]
         }
 
@@ -250,20 +242,9 @@ impl PrivacyPoolsContract {
         let state_root: BytesN<32> = env.storage().instance().get(&TREE_ROOT_KEY)
             .unwrap_or(BytesN::from_array(&env, &[0u8; 32]));
         
-        let state_root_scalar = lean_imt::bytes_to_bls_scalar(&state_root);
-        let proof_root_u256 = proof_root.to_u256();
-        let proof_root_bytes = proof_root_u256.to_be_bytes();
-        let mut proof_root_array = [0u8; 32];
-        proof_root_bytes.copy_into_slice(&mut proof_root_array);
-        let proof_root_str = Self::bytes_to_decimal_string(env, &proof_root_array);
+        let proof_root_bytes = proof_root.to_bytes();
         
-        // Convert state_root_scalar (BlsScalar) to decimal string
-        let state_root_str = Self::bls_scalar_to_decimal_string(env, &state_root_scalar);
-        
-        // env.logs().add("Proof root", &[proof_root_str.clone().into()]);
-        // env.logs().add("State root", &[state_root_str.clone().into()]);
-        
-        if state_root_str != proof_root_str {
+        if state_root != proof_root_bytes {
              return vec![env, String::from_str(env, ERROR_COIN_OWNERSHIP_PROOF)]
         }
         
@@ -280,7 +261,10 @@ impl PrivacyPoolsContract {
         // Transfer the asset from the contract to the recipient
         token_client.transfer(&env.current_contract_address(), &to, &FIXED_AMOUNT);
 
-        return vec![env, String::from_str(env, ERROR_WITHDRAW_SUCCESS)]
+        // Log success message as diagnostic event
+        log!(&env, "{}", ERROR_WITHDRAW_SUCCESS);
+        
+        vec![env]
     }
 
     /// Gets the current merkle root of the commitment tree
@@ -397,20 +381,6 @@ impl PrivacyPoolsContract {
     /// * The address of the admin (contract deployer)
     pub fn get_admin(env: &Env) -> Address {
         env.storage().instance().get(&ADMIN_KEY).unwrap()
-    }
-
-    /// Helper function to convert BlsScalar to decimal string for logging
-    fn bls_scalar_to_decimal_string(env: &Env, scalar: &BlsScalar) -> String {
-        let array = scalar.to_bytes().to_array();
-        Self::bytes_to_decimal_string(env, &array)
-    }
-
-    /// Helper function to convert bytes to decimal string for logging
-    /// Uses num-bigint for efficient conversion
-    fn bytes_to_decimal_string(env: &Env, bytes: &[u8; 32]) -> String {
-        let biguint = BigUint::from_bytes_be(bytes);
-        let decimal_str = biguint.to_str_radix(10);
-        String::from_str(env, &decimal_str)
     }
 
 }
