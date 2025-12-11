@@ -15,3 +15,6 @@ test_circuits: .circuits
 		snarkjs wtns export json test_merkleProof.wtns test_merkleProof.wtns.json  && \
 		head test_merkleProof.wtns.json && \
 		rm circuit_input.json test_merkleProof.wtns test_merkleProof.wtns.json
+
+fmt:
+	@cd test && cargo fmt --all
