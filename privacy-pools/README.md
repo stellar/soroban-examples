@@ -98,7 +98,7 @@ cargo install --locked soroban-cli
 
 ```bash
 # Compile all circuits with BLS12-381 curve
-make .circuits
+cd circuits && make .circuits && cd ..
 ```
 
 ### 2. Generate Trusted Setup (BLS12-381)
@@ -504,7 +504,7 @@ Before running the demo, ensure you have:
 
 ```bash
 # Ensure circuits are compiled
-make .circuits
+cd circuits && make .circuits && cd ..
 
 # Build all utilities
 cargo build --release
