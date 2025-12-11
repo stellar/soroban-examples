@@ -45,7 +45,7 @@ impl Cli {
     pub fn parse() -> Self {
         <Self as clap::Parser>::parse()
     }
-    
+
     /// Print usage information
     pub fn print_usage() {
         println!("Usage:");

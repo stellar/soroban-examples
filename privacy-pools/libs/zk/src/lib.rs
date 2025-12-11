@@ -1,9 +1,9 @@
 #![no_std]
 
 use soroban_sdk::{
-    contracterror,
-    crypto::bls12_381::{Fr, G1Affine, G2Affine, G1_SERIALIZED_SIZE, G2_SERIALIZED_SIZE},
-    vec, Env, Vec, Bytes, U256,
+    Bytes, Env, U256, Vec, contracterror,
+    crypto::bls12_381::{Fr, G1_SERIALIZED_SIZE, G1Affine, G2_SERIALIZED_SIZE, G2Affine},
+    vec,
 };
 
 // Re-export types compatible with groth16_verifier contract
@@ -52,7 +52,7 @@ impl VerificationKey {
             *pos += N;
             arr
         }
-        
+
         // Deserialize fields
         let alpha = G1Affine::from_array(env, &take::<G1_SERIALIZED_SIZE>(bytes, &mut pos));
         let beta = G2Affine::from_array(env, &take::<G2_SERIALIZED_SIZE>(bytes, &mut pos));
@@ -66,7 +66,13 @@ impl VerificationKey {
             let g1 = G1Affine::from_array(env, &take::<G1_SERIALIZED_SIZE>(bytes, &mut pos));
             ic.push_back(g1);
         }
-        Ok(VerificationKey { alpha, beta, gamma, delta, ic })
+        Ok(VerificationKey {
+            alpha,
+            beta,
+            gamma,
+            delta,
+            ic,
+        })
     }
 }
 
@@ -156,7 +162,7 @@ mod groth16_verifier_wasm {
 
 // The verification logic below matches the groth16_verifier contract implementation
 // located at ../../groth16_verifier/src/lib.rs
-// 
+//
 // Note: Since contractimport! only works in contracts or test modules (not libraries),
 // and env.register() is only available in test contexts, this library provides
 // the same verification logic for use in contracts. The groth16_verifier contract
@@ -165,7 +171,7 @@ pub struct Groth16Verifier;
 
 impl Groth16Verifier {
     /// Verifies a Groth16 proof.
-    /// 
+    ///
     /// This implementation matches the groth16_verifier contract.
     pub fn verify_proof(
         env: &Env,

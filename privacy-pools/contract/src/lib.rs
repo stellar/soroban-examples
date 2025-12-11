@@ -3,18 +3,17 @@
 extern crate alloc;
 
 use soroban_sdk::{
-    contract, contractimpl, 
-    vec, Env, String, Vec, Address, symbol_short, Symbol, Bytes, BytesN,
-    token, log,
+    contract, contractimpl, log, symbol_short, token, vec, Address, Bytes, BytesN, Env, String,
+    Symbol, Vec,
 };
 
 #[cfg(feature = "test_hash")]
-use soroban_sdk::{U256, crypto::bls12_381::Fr as BlsScalar};
+use soroban_sdk::{crypto::bls12_381::Fr as BlsScalar, U256};
 
-use zk::{VerificationKey, Proof, PublicSignals};
-use lean_imt::{LeanIMT, TREE_ROOT_KEY, TREE_DEPTH_KEY, TREE_LEAVES_KEY};
+use lean_imt::{LeanIMT, TREE_DEPTH_KEY, TREE_LEAVES_KEY, TREE_ROOT_KEY};
 #[cfg(feature = "test_hash")]
 use poseidon::Poseidon255;
+use zk::{Proof, PublicSignals, VerificationKey};
 
 #[cfg(test)]
 mod test;
@@ -65,14 +64,22 @@ pub struct PrivacyPoolsContract;
 
 #[contractimpl]
 impl PrivacyPoolsContract {
-    pub fn __constructor(env: &Env, vk_bytes: Bytes, token_address: Address, admin: Address, groth16_verifier: Address) {
+    pub fn __constructor(
+        env: &Env,
+        vk_bytes: Bytes,
+        token_address: Address,
+        admin: Address,
+        groth16_verifier: Address,
+    ) {
         // Store the admin
         env.storage().instance().set(&ADMIN_KEY, &admin);
-        
+
         env.storage().instance().set(&VK_KEY, &vk_bytes);
         env.storage().instance().set(&TOKEN_KEY, &token_address);
-        env.storage().instance().set(&GROTH16_VERIFIER_KEY, &groth16_verifier);
-        
+        env.storage()
+            .instance()
+            .set(&GROTH16_VERIFIER_KEY, &groth16_verifier);
+
         // Initialize empty merkle tree with fixed depth
         let tree = LeanIMT::new(env, TREE_DEPTH);
         let (leaves, depth, root) = tree.to_storage();
@@ -82,29 +89,34 @@ impl PrivacyPoolsContract {
     }
 
     /// Stores a commitment in the merkle tree and updates the tree state
-    /// 
+    ///
     /// # Arguments
     /// * `env` - The Soroban environment
     /// * `commitment` - The commitment to store
-    /// 
+    ///
     /// # Returns
     /// * A Result containing a tuple of (updated_merkle_root, leaf_index) after insertion
     fn store_commitment(env: &Env, commitment: BytesN<32>) -> Result<(BytesN<32>, u32), Error> {
         // Load current tree state
-        let leaves: Vec<BytesN<32>> = env.storage().instance().get(&TREE_LEAVES_KEY)
+        let leaves: Vec<BytesN<32>> = env
+            .storage()
+            .instance()
+            .get(&TREE_LEAVES_KEY)
             .unwrap_or(vec![&env]);
-        let depth: u32 = env.storage().instance().get(&TREE_DEPTH_KEY)
-            .unwrap_or(0);
-        let root: BytesN<32> = env.storage().instance().get(&TREE_ROOT_KEY)
+        let depth: u32 = env.storage().instance().get(&TREE_DEPTH_KEY).unwrap_or(0);
+        let root: BytesN<32> = env
+            .storage()
+            .instance()
+            .get(&TREE_ROOT_KEY)
             .unwrap_or(BytesN::from_array(&env, &[0u8; 32]));
-        
+
         // Create tree and insert new commitment
         let mut tree = LeanIMT::from_storage(env, leaves, depth, root);
         tree.insert(commitment).map_err(|_| Error::TreeAtCapacity)?;
-        
+
         // Get the leaf index (it's the last leaf in the tree)
         let leaf_index = tree.get_leaf_count() - 1;
-        
+
         // Store updated tree state
         let (new_leaves, new_depth, new_root) = tree.to_storage();
         env.storage().instance().set(&TREE_LEAVES_KEY, &new_leaves);
@@ -143,14 +155,14 @@ impl PrivacyPoolsContract {
     /// * Transfers the asset from the depositor to the contract
     pub fn deposit(env: &Env, from: Address, commitment: BytesN<32>) -> Result<u32, Error> {
         from.require_auth();
-        
+
         // Get the stored token address
         let token_address: Address = env.storage().instance().get(&TOKEN_KEY).unwrap();
-        
+
         // Create token client and transfer from depositor to contract
         let token_client = token::Client::new(env, &token_address);
         token_client.transfer(&from, &env.current_contract_address(), &FIXED_AMOUNT);
-        
+
         // Store the commitment in the merkle tree
         let (_, leaf_index) = Self::store_commitment(env, commitment)?;
 
@@ -196,10 +208,12 @@ impl PrivacyPoolsContract {
     /// * The withdrawal doesn't reveal which specific commitment is being spent
     /// * The nullifier ensures the same commitment cannot be spent twice
     /// * The zero-knowledge proof proves ownership without revealing the commitment details
-    pub fn withdraw(env: &Env, 
-            to: Address,
-            proof_bytes: Bytes, 
-            pub_signals_bytes: Bytes) -> Vec<String> {
+    pub fn withdraw(
+        env: &Env,
+        to: Address,
+        proof_bytes: Bytes,
+        pub_signals_bytes: Bytes,
+    ) -> Vec<String> {
         to.require_auth();
 
         // Require association root to be set before any withdrawal
@@ -214,7 +228,7 @@ impl PrivacyPoolsContract {
         let token_client = token::Client::new(env, &token_address);
         let contract_balance = token_client.balance(&env.current_contract_address());
         if contract_balance < FIXED_AMOUNT {
-            return vec![env, String::from_str(env, ERROR_INSUFFICIENT_BALANCE)]
+            return vec![env, String::from_str(env, ERROR_INSUFFICIENT_BALANCE)];
         }
 
         let vk_bytes: Bytes = env.storage().instance().get(&VK_KEY).unwrap();
@@ -231,35 +245,39 @@ impl PrivacyPoolsContract {
         // Verify association set root matches the proof
         let stored_association_root = Self::get_association_root(env);
         let proof_association_root_bytes = proof_association_root.to_bytes();
-        
+
         if stored_association_root != proof_association_root_bytes {
-            return vec![env, String::from_str(env, "Association set root mismatch")]
+            return vec![env, String::from_str(env, "Association set root mismatch")];
         }
 
         // Check if nullifier has been used before
-        let mut nullifiers: Vec<BytesN<32>> = env.storage().instance().get(&NULL_KEY)
-            .unwrap_or(vec![env]);
+        let mut nullifiers: Vec<BytesN<32>> =
+            env.storage().instance().get(&NULL_KEY).unwrap_or(vec![env]);
 
         let nullifier = nullifier_hash.to_bytes();
-        
+
         if nullifiers.contains(&nullifier) {
-            return vec![env, String::from_str(env, ERROR_NULLIFIER_USED)]
+            return vec![env, String::from_str(env, ERROR_NULLIFIER_USED)];
         }
-        
+
         // Verify state root matches
-        let state_root: BytesN<32> = env.storage().instance().get(&TREE_ROOT_KEY)
+        let state_root: BytesN<32> = env
+            .storage()
+            .instance()
+            .get(&TREE_ROOT_KEY)
             .unwrap_or(BytesN::from_array(&env, &[0u8; 32]));
-        
+
         let proof_root_bytes = proof_root.to_bytes();
-        
+
         if state_root != proof_root_bytes {
-             return vec![env, String::from_str(env, ERROR_COIN_OWNERSHIP_PROOF)]
+            return vec![env, String::from_str(env, ERROR_COIN_OWNERSHIP_PROOF)];
         }
-        
+
         // Verify the zero-knowledge proof using the groth16_verifier contract
-        let groth16_verifier_id: Address = env.storage().instance().get(&GROTH16_VERIFIER_KEY).unwrap();
+        let groth16_verifier_id: Address =
+            env.storage().instance().get(&GROTH16_VERIFIER_KEY).unwrap();
         let verifier_client = groth16_verifier_wasm::Client::new(env, &groth16_verifier_id);
-        
+
         // Convert zk library types to contract types
         // Note: contractimport! generates types that expect BytesN (serialized form)
         // even though the groth16_verifier contract internally uses #[contracttype] with G1Affine/G2Affine
@@ -267,7 +285,7 @@ impl PrivacyPoolsContract {
         for g1 in vk.ic.iter() {
             contract_ic.push_back(g1.to_bytes());
         }
-        
+
         let contract_vk = groth16_verifier_wasm::VerificationKey {
             alpha: vk.alpha.to_bytes(),
             beta: vk.beta.to_bytes(),
@@ -280,16 +298,17 @@ impl PrivacyPoolsContract {
             b: proof.b.to_bytes(),
             c: proof.c.to_bytes(),
         };
-        
+
         // Convert public signals from Vec<Fr> to Vec<U256> (contractimport! expects U256)
         let mut contract_pub_signals = Vec::new(env);
         for fr in pub_signals.pub_signals.iter() {
             contract_pub_signals.push_back(fr.to_u256());
         }
-        
-        let res = verifier_client.verify_proof(&contract_vk, &contract_proof, &contract_pub_signals);
+
+        let res =
+            verifier_client.verify_proof(&contract_vk, &contract_proof, &contract_pub_signals);
         if !res {
-            return vec![env, String::from_str(env, ERROR_COIN_OWNERSHIP_PROOF)]
+            return vec![env, String::from_str(env, ERROR_COIN_OWNERSHIP_PROOF)];
         }
 
         // Add nullifier to used nullifiers only after all checks pass
@@ -301,38 +320,43 @@ impl PrivacyPoolsContract {
 
         // Log success message as diagnostic event
         log!(&env, "{}", ERROR_WITHDRAW_SUCCESS);
-        
+
         vec![env]
     }
 
     /// Gets the current merkle root of the commitment tree
     pub fn get_merkle_root(env: &Env) -> BytesN<32> {
-        env.storage().instance().get(&TREE_ROOT_KEY)
+        env.storage()
+            .instance()
+            .get(&TREE_ROOT_KEY)
             .unwrap_or(BytesN::from_array(&env, &[0u8; 32]))
     }
 
     /// Gets the current depth of the merkle tree
     pub fn get_merkle_depth(env: &Env) -> u32 {
-        env.storage().instance().get(&TREE_DEPTH_KEY)
-            .unwrap_or(0)
+        env.storage().instance().get(&TREE_DEPTH_KEY).unwrap_or(0)
     }
 
     /// Gets the number of commitments (leaves) in the merkle tree
     pub fn get_commitment_count(env: &Env) -> u32 {
-        let leaves: Vec<BytesN<32>> = env.storage().instance().get(&TREE_LEAVES_KEY)
+        let leaves: Vec<BytesN<32>> = env
+            .storage()
+            .instance()
+            .get(&TREE_LEAVES_KEY)
             .unwrap_or(vec![&env]);
         leaves.len() as u32
     }
 
     /// Gets all commitments (leaves) in the merkle tree
     pub fn get_commitments(env: &Env) -> Vec<BytesN<32>> {
-        env.storage().instance().get(&TREE_LEAVES_KEY)
+        env.storage()
+            .instance()
+            .get(&TREE_LEAVES_KEY)
             .unwrap_or(vec![env])
     }
 
     pub fn get_nullifiers(env: &Env) -> Vec<BytesN<32>> {
-        env.storage().instance().get(&NULL_KEY)
-            .unwrap_or(vec![env])
+        env.storage().instance().get(&NULL_KEY).unwrap_or(vec![env])
     }
 
     /// Gets the balance of the configured token held by the contract
@@ -379,15 +403,21 @@ impl PrivacyPoolsContract {
     ///
     /// * Requires authentication from the caller
     /// * Only the contract deployer (admin) can update association sets
-    pub fn set_association_root(env: &Env, caller: Address, association_root: BytesN<32>) -> Vec<String> {
+    pub fn set_association_root(
+        env: &Env,
+        caller: Address,
+        association_root: BytesN<32>,
+    ) -> Vec<String> {
         caller.require_auth();
-        
+
         // Verify that the caller is actually the admin
         if !Self::is_admin(env, &caller) {
             return vec![env, String::from_str(env, ERROR_ONLY_ADMIN)];
         }
-        
-        env.storage().instance().set(&ASSOCIATION_ROOT_KEY, &association_root);
+
+        env.storage()
+            .instance()
+            .set(&ASSOCIATION_ROOT_KEY, &association_root);
         vec![env, String::from_str(env, SUCCESS_ASSOCIATION_ROOT_SET)]
     }
 
@@ -397,7 +427,9 @@ impl PrivacyPoolsContract {
     ///
     /// * The current association set root, or zero bytes if not set
     pub fn get_association_root(env: &Env) -> BytesN<32> {
-        env.storage().instance().get(&ASSOCIATION_ROOT_KEY)
+        env.storage()
+            .instance()
+            .get(&ASSOCIATION_ROOT_KEY)
             .unwrap_or(BytesN::from_array(&env, &[0u8; 32]))
     }
 
@@ -420,13 +452,12 @@ impl PrivacyPoolsContract {
     pub fn get_admin(env: &Env) -> Address {
         env.storage().instance().get(&ADMIN_KEY).unwrap()
     }
-
 }
 
 #[cfg(feature = "test_hash")]
 #[contractimpl]
 impl PrivacyPoolsContract {
-    pub fn test_hash(env: &Env) ->  () {
+    pub fn test_hash(env: &Env) -> () {
         let poseidon = Poseidon255::new_with_t(env, 3);
         let zero = BlsScalar::from_u256(U256::from_u32(env, 0));
         poseidon.hash_two(&zero, &zero);

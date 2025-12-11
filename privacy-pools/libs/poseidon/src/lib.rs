@@ -1531,4 +1531,3 @@ impl Poseidon255 {
 
 #[cfg(test)]
 mod test;
-

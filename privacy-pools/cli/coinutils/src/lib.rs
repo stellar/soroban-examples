@@ -6,9 +6,9 @@ pub mod io;
 pub mod merkle;
 pub mod types;
 
-pub use cli::{Cli, Commands, CommandHandler};
+pub use cli::{Cli, CommandHandler, Commands};
 pub use config::*;
-pub use crypto::{conversions::*, poseidon::*, coin::*};
+pub use crypto::{coin::*, conversions::*, poseidon::*};
 pub use error::*;
 pub use io::*;
 pub use merkle::*;

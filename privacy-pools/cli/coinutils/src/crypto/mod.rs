@@ -1,7 +1,7 @@
+pub mod coin;
 pub mod conversions;
 pub mod poseidon;
-pub mod coin;
 
+pub use coin::*;
 pub use conversions::*;
 pub use poseidon::*;
-pub use coin::*;

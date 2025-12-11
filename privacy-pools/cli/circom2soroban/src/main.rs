@@ -1,20 +1,20 @@
-use serde::Deserialize;
-use std::fs;
+use base64::engine::Engine;
+use base64::{self, engine::general_purpose};
 use clap::Parser;
 use num_bigint::BigUint;
 use num_traits::Num;
-use base64::{self, engine::general_purpose};
-use base64::engine::Engine;
+use serde::Deserialize;
+use std::fs;
 
 // imports related to constructing VK, Proof and Public Signals
-use core::str::FromStr;
-use soroban_sdk::{Bytes, Env, Vec};
 use ark_bls12_381::{Fq, Fq2};
 use ark_serialize::CanonicalSerialize;
-use soroban_sdk::crypto::bls12_381::{G1Affine, G2Affine, G1_SERIALIZED_SIZE, G2_SERIALIZED_SIZE};
-use zk::{VerificationKey, Proof, PublicSignals};
+use core::str::FromStr;
 use soroban_sdk::crypto::bls12_381::Fr;
+use soroban_sdk::crypto::bls12_381::{G1Affine, G2Affine, G1_SERIALIZED_SIZE, G2_SERIALIZED_SIZE};
 use soroban_sdk::U256;
+use soroban_sdk::{Bytes, Env, Vec};
+use zk::{Proof, PublicSignals, VerificationKey};
 
 #[derive(Parser)]
 struct Args {
@@ -42,7 +42,7 @@ struct ProofJson {
     #[serde(rename = "protocol")]
     _protocol: String,
     #[serde(rename = "curve")]
-    _curve: String
+    _curve: String,
 }
 
 // Remove the old PublicOutputJson struct and replace with type alias
@@ -72,10 +72,9 @@ fn validate_vk(vk: &VerificationKeyJson) {
     }
 }
 
-fn print_vk(json_str: &String)
-{
+fn print_vk(json_str: &String) {
     let vk: VerificationKeyJson = serde_json::from_str(json_str).expect("Invalid JSON");
-    
+
     // Validate the verification key structure
     validate_vk(&vk);
 
@@ -98,7 +97,7 @@ fn print_vk(json_str: &String)
     println!("let deltay1 = \"{}\";", vk.vk_delta_2[1][0]);
     println!("let deltay2 = \"{}\";", vk.vk_delta_2[1][1]);
     println!("\n");
-    
+
     // Generate IC variables based on nPublic
     // The IC array has nPublic + 1 elements (first is generator point)
     for i in 0..=vk.n_public {
@@ -106,19 +105,18 @@ fn print_vk(json_str: &String)
         println!("let ic{}y = \"{}\";", i, vk.ic[i as usize][1]);
         println!("\n");
     }
-    
+
     println!("// CODE END");
 }
 
-fn vk_to_bytes(json_str: &String) -> Bytes
-{
+fn vk_to_bytes(json_str: &String) -> Bytes {
     let env = Env::default();
 
     let vk_json: VerificationKeyJson = serde_json::from_str(json_str).expect("Invalid JSON");
-    
+
     // Validate the verification key structure
     validate_vk(&vk_json);
-    
+
     let alphax = vk_json.vk_alpha_1[0].clone();
     let alphay = vk_json.vk_alpha_1[1].clone();
     let betax1 = vk_json.vk_beta_2[0][0].clone();
@@ -133,7 +131,7 @@ fn vk_to_bytes(json_str: &String) -> Bytes
     let deltax2 = vk_json.vk_delta_2[0][1].clone();
     let deltay1 = vk_json.vk_delta_2[1][0].clone();
     let deltay2 = vk_json.vk_delta_2[1][1].clone();
-    
+
     // Build IC array dynamically based on nPublic
     let mut ic_array = Vec::new(&env);
     for i in 0..=vk_json.n_public {
@@ -149,7 +147,7 @@ fn vk_to_bytes(json_str: &String) -> Bytes
         delta: g2_from_coords(&env, &deltax1, &deltax2, &deltay1, &deltay2),
         ic: ic_array,
     };
-    
+
     return vk.to_bytes(&env);
 }
 
@@ -206,10 +204,17 @@ fn print_public_output(json_str: &String) {
             bytes = padded;
         }
         // Format as hex for Rust array
-        let bytes_str = bytes.iter().map(|b| format!("0x{:02x}", b)).collect::<std::vec::Vec<_>>().join(", ");
-        println!("let public_{} = U256::from_be_bytes(&env, &Bytes::from_array(&env, &[{}]));", i, bytes_str);
+        let bytes_str = bytes
+            .iter()
+            .map(|b| format!("0x{:02x}", b))
+            .collect::<std::vec::Vec<_>>()
+            .join(", ");
+        println!(
+            "let public_{} = U256::from_be_bytes(&env, &Bytes::from_array(&env, &[{}]));",
+            i, bytes_str
+        );
     }
-    
+
     println!("\n// Create output vector for verification:");
     print!("let output = Vec::from_array(&env, [");
     for (i, _) in public_output.iter().enumerate() {
@@ -247,7 +252,7 @@ fn public_output_to_bytes(json_str: &String) -> Bytes {
 fn main() {
     let args = Args::parse();
     let json_str = fs::read_to_string(&args.filename).expect("Failed to read file");
-    
+
     if args.filetype == "vk" {
         print_vk(&json_str);
         let vk_bytes = vk_to_bytes(&json_str);

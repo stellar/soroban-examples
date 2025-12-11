@@ -1,6 +1,6 @@
 use crate::{
-    types::SnarkInput,
     error::{CoinUtilsError, Result},
+    types::SnarkInput,
 };
 
 /// Serialization utilities for different data formats
@@ -10,17 +10,15 @@ impl SerializationManager {
     pub fn new() -> Self {
         Self
     }
-    
+
     /// Serialize SNARK input to JSON string
     pub fn serialize_snark_input(&self, input: &SnarkInput) -> Result<String> {
-        serde_json::to_string_pretty(input)
-            .map_err(|e| CoinUtilsError::Json(e))
+        serde_json::to_string_pretty(input).map_err(|e| CoinUtilsError::Json(e))
     }
-    
+
     /// Deserialize JSON string to SNARK input
     pub fn deserialize_snark_input(&self, json: &str) -> Result<SnarkInput> {
-        serde_json::from_str(json)
-            .map_err(|e| CoinUtilsError::Json(e))
+        serde_json::from_str(json).map_err(|e| CoinUtilsError::Json(e))
     }
 }
 
@@ -28,7 +26,7 @@ impl SerializationManager {
 mod tests {
     use super::*;
     use crate::types::SnarkInput;
-    
+
     #[test]
     fn test_snark_input_serialization() {
         let manager = SerializationManager::new();
@@ -45,12 +43,15 @@ mod tests {
             label_index: "1".to_string(),
             label_siblings: vec!["10000".to_string(), "11000".to_string()],
         };
-        
+
         let json = manager.serialize_snark_input(&input).unwrap();
         let deserialized = manager.deserialize_snark_input(&json).unwrap();
-        
+
         assert_eq!(input.withdrawn_value, deserialized.withdrawn_value);
         assert_eq!(input.label, deserialized.label);
-        assert_eq!(input.state_siblings.len(), deserialized.state_siblings.len());
+        assert_eq!(
+            input.state_siblings.len(),
+            deserialized.state_siblings.len()
+        );
     }
 }

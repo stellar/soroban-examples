@@ -1,7 +1,7 @@
 pub mod coin;
-pub mod state;
 pub mod snark;
+pub mod state;
 
 pub use coin::*;
-pub use state::*;
 pub use snark::*;
+pub use state::*;
