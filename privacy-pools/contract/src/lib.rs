@@ -11,13 +11,19 @@ use soroban_sdk::{
 #[cfg(feature = "test_hash")]
 use soroban_sdk::{U256, crypto::bls12_381::Fr as BlsScalar};
 
-use zk::{Groth16Verifier, VerificationKey, Proof, PublicSignals};
+use zk::{VerificationKey, Proof, PublicSignals};
 use lean_imt::{LeanIMT, TREE_ROOT_KEY, TREE_DEPTH_KEY, TREE_LEAVES_KEY};
 #[cfg(feature = "test_hash")]
 use poseidon::Poseidon255;
 
 #[cfg(test)]
 mod test;
+
+mod groth16_verifier_wasm {
+    soroban_sdk::contractimport!(
+        file = "../../groth16_verifier/target/wasm32v1-none/release/soroban_groth16_verifier_contract.wasm"
+    );
+}
 
 use soroban_sdk::contracterror;
 
@@ -50,6 +56,7 @@ const VK_KEY: Symbol = symbol_short!("vk");
 const TOKEN_KEY: Symbol = symbol_short!("token");
 const ASSOCIATION_ROOT_KEY: Symbol = symbol_short!("assoc");
 const ADMIN_KEY: Symbol = symbol_short!("admin");
+const GROTH16_VERIFIER_KEY: Symbol = symbol_short!("g16v");
 
 const FIXED_AMOUNT: i128 = 1000000000; // 1 XLM in stroops
 
@@ -58,12 +65,13 @@ pub struct PrivacyPoolsContract;
 
 #[contractimpl]
 impl PrivacyPoolsContract {
-    pub fn __constructor(env: &Env, vk_bytes: Bytes, token_address: Address, admin: Address) {
+    pub fn __constructor(env: &Env, vk_bytes: Bytes, token_address: Address, admin: Address, groth16_verifier: Address) {
         // Store the admin
         env.storage().instance().set(&ADMIN_KEY, &admin);
         
         env.storage().instance().set(&VK_KEY, &vk_bytes);
         env.storage().instance().set(&TOKEN_KEY, &token_address);
+        env.storage().instance().set(&GROTH16_VERIFIER_KEY, &groth16_verifier);
         
         // Initialize empty merkle tree with fixed depth
         let tree = LeanIMT::new(env, TREE_DEPTH);
@@ -248,9 +256,39 @@ impl PrivacyPoolsContract {
              return vec![env, String::from_str(env, ERROR_COIN_OWNERSHIP_PROOF)]
         }
         
-        // Verify the zero-knowledge proof
-        let res = Groth16Verifier::verify_proof(env, vk, proof, &pub_signals.pub_signals);
-        if res.is_err() || !res.unwrap() {
+        // Verify the zero-knowledge proof using the groth16_verifier contract
+        let groth16_verifier_id: Address = env.storage().instance().get(&GROTH16_VERIFIER_KEY).unwrap();
+        let verifier_client = groth16_verifier_wasm::Client::new(env, &groth16_verifier_id);
+        
+        // Convert zk library types to contract types
+        // Note: contractimport! generates types that expect BytesN (serialized form)
+        // even though the groth16_verifier contract internally uses #[contracttype] with G1Affine/G2Affine
+        let mut contract_ic = Vec::new(env);
+        for g1 in vk.ic.iter() {
+            contract_ic.push_back(g1.to_bytes());
+        }
+        
+        let contract_vk = groth16_verifier_wasm::VerificationKey {
+            alpha: vk.alpha.to_bytes(),
+            beta: vk.beta.to_bytes(),
+            gamma: vk.gamma.to_bytes(),
+            delta: vk.delta.to_bytes(),
+            ic: contract_ic,
+        };
+        let contract_proof = groth16_verifier_wasm::Proof {
+            a: proof.a.to_bytes(),
+            b: proof.b.to_bytes(),
+            c: proof.c.to_bytes(),
+        };
+        
+        // Convert public signals from Vec<Fr> to Vec<U256> (contractimport! expects U256)
+        let mut contract_pub_signals = Vec::new(env);
+        for fr in pub_signals.pub_signals.iter() {
+            contract_pub_signals.push_back(fr.to_u256());
+        }
+        
+        let res = verifier_client.verify_proof(&contract_vk, &contract_proof, &contract_pub_signals);
+        if !res {
             return vec![env, String::from_str(env, ERROR_COIN_OWNERSHIP_PROOF)]
         }
 

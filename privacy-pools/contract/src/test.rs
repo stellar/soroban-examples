@@ -10,6 +10,12 @@ use soroban_sdk::{
 };
 use soroban_sdk::testutils::Address as TestAddress;
 
+mod groth16_verifier_wasm {
+    soroban_sdk::contractimport!(
+        file = "../../groth16_verifier/target/wasm32v1-none/release/soroban_groth16_verifier_contract.wasm"
+    );
+}
+
 // Mock token contract for testing
 #[contract]
 pub struct MockToken;
@@ -184,6 +190,9 @@ fn init_erronous_pub_signals(env: &Env) -> Bytes {
 }
 
 fn setup_test_environment(env: &Env) -> (Address, Address, Address) {
+    // Deploy groth16_verifier contract
+    let groth16_verifier_id = env.register(groth16_verifier_wasm::WASM, ());
+    
     // Deploy mock token
     let token_admin = Address::generate(env);
     let token_id = env.register(MockToken, ());
@@ -199,7 +208,7 @@ fn setup_test_environment(env: &Env) -> (Address, Address, Address) {
     
     // Deploy privacy pools contract
     let admin = Address::generate(env);
-    let privacy_pools_id = env.register(PrivacyPoolsContract, (init_vk(env), token_id.clone(), admin.clone()));
+    let privacy_pools_id = env.register(PrivacyPoolsContract, (init_vk(env), token_id.clone(), admin.clone(), groth16_verifier_id));
     
     (token_id, privacy_pools_id, admin)
 }
@@ -703,7 +712,8 @@ fn test_withdraw_requires_association_root() {
 fn test_hash_method() {
     let env = Env::default();
     let token_address = Address::generate(&env);
-    let contract_id = env.register(PrivacyPoolsContract, (init_vk(&env), token_address));
+    let groth16_verifier_id = env.register(groth16_verifier_wasm::WASM, ());
+    let contract_id = env.register(PrivacyPoolsContract, (init_vk(&env), token_address, Address::generate(&env), groth16_verifier_id));
     let client = PrivacyPoolsContractClient::new(&env, &contract_id);
     
     // Should execute without panicking

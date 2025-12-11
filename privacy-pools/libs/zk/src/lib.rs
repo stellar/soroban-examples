@@ -6,6 +6,8 @@ use soroban_sdk::{
     vec, Env, Vec, Bytes, U256,
 };
 
+// Re-export types compatible with groth16_verifier contract
+// These types match the groth16_verifier contract types for compatibility
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(u32)]
@@ -143,11 +145,28 @@ impl PublicSignals {
         PublicSignals { pub_signals }
     }
 }
+// Import the groth16_verifier contract for use in tests
+// The contract must be built first: cd ../../../groth16_verifier && make build
+#[cfg(test)]
+mod groth16_verifier_wasm {
+    soroban_sdk::contractimport!(
+        file = "../../../groth16_verifier/target/wasm32v1-none/release/soroban_groth16_verifier_contract.wasm"
+    );
+}
 
-
+// The verification logic below matches the groth16_verifier contract implementation
+// located at ../../groth16_verifier/src/lib.rs
+// 
+// Note: Since contractimport! only works in contracts or test modules (not libraries),
+// and env.register() is only available in test contexts, this library provides
+// the same verification logic for use in contracts. The groth16_verifier contract
+// is imported in the test module above for testing purposes.
 pub struct Groth16Verifier;
 
 impl Groth16Verifier {
+    /// Verifies a Groth16 proof.
+    /// 
+    /// This implementation matches the groth16_verifier contract.
     pub fn verify_proof(
         env: &Env,
         vk: VerificationKey,

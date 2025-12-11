@@ -16,8 +16,23 @@ command -v stellar >/dev/null 2>&1 || { echo "❌ Error: stellar CLI is required
 # Fund demo_user account if needed
 echo "🏦 Ensuring demo_user account is funded..."
 (stellar keys generate demo_user && stellar keys fund demo_user --network $NETWORK) > /dev/null 2>&1 || echo "⚠️  demo_user may already be funded"
-# Step 1: Deploy contract
-echo "📦 Deploying contract..."
+# Step 1: Deploy groth16_verifier contract first
+echo "📦 Building groth16_verifier contract..."
+cd ../groth16_verifier
+make build || { echo "❌ Error: Failed to build groth16_verifier contract"; exit 1; }
+stellar contract optimize --wasm target/wasm32v1-none/release/soroban_groth16_verifier_contract.wasm --wasm-out target/wasm32v1-none/release/soroban_groth16_verifier_contract.optimized.wasm || { echo "❌ Error: Failed to optimize groth16_verifier WASM"; exit 1; }
+cd ../privacy-pools
+
+echo "🚀 Deploying groth16_verifier contract to $NETWORK..."
+GROTH16_VERIFIER_ID=$(stellar contract deploy --wasm ../groth16_verifier/target/wasm32v1-none/release/soroban_groth16_verifier_contract.optimized.wasm --source demo_user --network $NETWORK 2>&1 | grep -o 'C[A-Z0-9]\{55\}' | tail -1)
+if [ -z "$GROTH16_VERIFIER_ID" ]; then
+    echo "❌ Error: Failed to extract groth16_verifier contract ID from deployment"
+    exit 1
+fi
+echo "✅ Groth16 verifier contract deployed with ID: $GROTH16_VERIFIER_ID"
+
+# Step 2: Deploy privacy-pools contract
+echo "📦 Building privacy-pools contract..."
 cargo build --target wasm32v1-none --release -p privacy-pools || { echo "❌ Error: Failed to build contract"; exit 1; }
 stellar contract optimize --wasm target/wasm32v1-none/release/privacy_pools.wasm --wasm-out target/wasm32v1-none/release/privacy_pools.optimized.wasm || { echo "❌ Error: Failed to optimize WASM"; exit 1; }
 # Convert verification key to hex format and extract it
@@ -29,19 +44,19 @@ if [ -z "$VK_HEX" ]; then
     exit 1
 fi
 
-echo "🚀 Deploying contract to $NETWORK..."
-CONTRACT_ID=$(stellar contract deploy --wasm target/wasm32v1-none/release/privacy_pools.optimized.wasm --source demo_user --network $NETWORK -- --vk_bytes $VK_HEX --token_address $TOKEN_ADDRESS --admin demo_user 2>&1 | grep -o 'C[A-Z0-9]\{55\}' | tail -1)
+echo "🚀 Deploying privacy-pools contract to $NETWORK..."
+CONTRACT_ID=$(stellar contract deploy --wasm target/wasm32v1-none/release/privacy_pools.optimized.wasm --source demo_user --network $NETWORK -- --vk_bytes $VK_HEX --token_address $TOKEN_ADDRESS --admin demo_user --groth16_verifier $GROTH16_VERIFIER_ID 2>&1 | grep -o 'C[A-Z0-9]\{55\}' | tail -1)
 if [ -z "$CONTRACT_ID" ]; then
     echo "❌ Error: Failed to extract contract ID from deployment"
     exit 1
 fi
-echo "✅ Contract deployed with ID: $CONTRACT_ID"
+echo "✅ Privacy-pools contract deployed with ID: $CONTRACT_ID"
 
 # Check who the admin is
 echo "👤 Checking contract admin..."
 stellar contract invoke --id $CONTRACT_ID --source demo_user --network $NETWORK -- get_admin || { echo "❌ Error: Failed to get admin"; exit 1; }
 
-# Step 2: Generate coin
+# Step 3: Generate coin
 echo "🪙 Generating coin..."
 cargo run --bin stellar-coinutils generate demo_pool -o demo_coin.json || { echo "❌ Error: Failed to generate coin"; exit 1; }
 COMMITMENT_HEX=$(cat demo_coin.json | jq -r '.commitment_hex' | sed 's/^0x//')
@@ -50,14 +65,14 @@ if [ -z "$COMMITMENT_HEX" ]; then
     exit 1
 fi
 echo "Generated coin with commitment: $COMMITMENT_HEX"
-# Step 3: Deposit
+# Step 4: Deposit
 echo "💰 Depositing coin..."
 stellar contract invoke --id $CONTRACT_ID --source demo_user --network $NETWORK -- deposit --from demo_user --commitment $COMMITMENT_HEX || { echo "❌ Error: Failed to deposit coin"; exit 1; }
 echo "Deposit successful!"
-# Step 4: Check balance
+# Step 5: Check balance
 echo "📊 Checking balance..."
 stellar contract invoke --id $CONTRACT_ID --source demo_user --network $NETWORK -- get_balance || { echo "❌ Error: Failed to get balance"; exit 1; }
-# Step 5: Create state file and association set
+# Step 6: Create state file and association set
 echo "📋 Creating state file..."
 COMMITMENT=$(cat demo_coin.json | jq -r '.coin.commitment')
 echo "{
@@ -121,11 +136,11 @@ fi
 echo "🔍 Debug: Proof hex length: ${#PROOF_HEX}"
 echo "🔍 Debug: Public hex length: ${#PUBLIC_HEX}"
 
-# Step 6: Withdraw
+# Step 7: Withdraw
 echo "💸 Withdrawing coin..."
 stellar contract invoke --id $CONTRACT_ID --source demo_user --network $NETWORK -- withdraw --to demo_user --proof_bytes "$PROOF_HEX" --pub_signals_bytes "$PUBLIC_HEX" || { echo "❌ Error: Failed to withdraw coin"; exit 1; }
 echo "Withdrawal successful!"
-# Step 7: Verify
+# Step 8: Verify
 echo "✅ Verifying withdrawal..."
 stellar contract invoke --id $CONTRACT_ID --source demo_user --network $NETWORK -- get_nullifiers || { echo "❌ Error: Failed to get nullifiers"; exit 1; }
 stellar contract invoke --id $CONTRACT_ID --source demo_user --network $NETWORK -- get_balance || { echo "❌ Error: Failed to get final balance"; exit 1; }
