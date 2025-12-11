@@ -99,6 +99,17 @@ jobs:
       with:
         deno-version: v2.x
 
+    # Setup Node.js (for circom/snarkjs)
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    # Setup Circom
+    - name: Install circom
+      run: cargo install circom --locked
+    - name: Install circomlib and snarkjs
+      run: npm install -g circomlib snarkjs
+
     # Setup Stellar CLI
     - uses: stellar/stellar-cli@v23.1.1
 
@@ -106,3 +117,4 @@ jobs:
     - run: make test
       env:
         CARGO_BUILD_TARGET: ${{ matrix.sys.target }}
+        CIRCOMLIB: /usr/local/lib/node_modules/circomlib/circuits

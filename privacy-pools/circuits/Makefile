@@ -1,4 +1,4 @@
-CIRCOMLIB=/opt/homebrew/lib/node_modules/circomlib/circuits
+CIRCOMLIB?=/opt/homebrew/lib/node_modules/circomlib/circuits
 CIRCUITS=main.circom commitment.circom merkleProof.circom
 
 .circuits: $(CIRCUITS)
@@ -18,3 +18,5 @@ test_circuits: .circuits
 
 fmt:
 	@cd test && cargo fmt --all
+
+test: test_circuits
