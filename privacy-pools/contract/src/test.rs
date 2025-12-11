@@ -823,24 +823,3 @@ fn test_withdraw_requires_association_root() {
     env.mock_all_auths();
     client.withdraw(&bob, &proof, &pub_signals);
 }
-
-#[cfg(feature = "test_hash")]
-#[test]
-fn test_hash_method() {
-    let env = Env::default();
-    let token_address = Address::generate(&env);
-    let groth16_verifier_id = env.register(groth16_verifier_wasm::WASM, ());
-    let contract_id = env.register(
-        PrivacyPoolsContract,
-        (
-            init_vk(&env),
-            token_address,
-            Address::generate(&env),
-            groth16_verifier_id,
-        ),
-    );
-    let client = PrivacyPoolsContractClient::new(&env, &contract_id);
-
-    // Should execute without panicking
-    client.test_hash();
-}

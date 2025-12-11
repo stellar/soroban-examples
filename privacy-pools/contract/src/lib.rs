@@ -7,12 +7,7 @@ use soroban_sdk::{
     Symbol, Vec,
 };
 
-#[cfg(feature = "test_hash")]
-use soroban_sdk::{crypto::bls12_381::Fr as BlsScalar, U256};
-
 use lean_imt::{LeanIMT, TREE_DEPTH_KEY, TREE_LEAVES_KEY, TREE_ROOT_KEY};
-#[cfg(feature = "test_hash")]
-use poseidon::Poseidon255;
 use zk::{Proof, PublicSignals, VerificationKey};
 
 #[cfg(test)]
@@ -451,15 +446,5 @@ impl PrivacyPoolsContract {
     /// * The address of the admin (contract deployer)
     pub fn get_admin(env: &Env) -> Address {
         env.storage().instance().get(&ADMIN_KEY).unwrap()
-    }
-}
-
-#[cfg(feature = "test_hash")]
-#[contractimpl]
-impl PrivacyPoolsContract {
-    pub fn test_hash(env: &Env) -> () {
-        let poseidon = Poseidon255::new_with_t(env, 3);
-        let zero = BlsScalar::from_u256(U256::from_u32(env, 0));
-        poseidon.hash_two(&zero, &zero);
     }
 }
