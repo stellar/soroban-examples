@@ -20,8 +20,8 @@ pub enum DataKey {
 
 #[contractimpl]
 impl SimpleAccount {
-    // Initialize the contract with an owner's ed25519 public key.
-    pub fn init(env: Env, public_key: BytesN<32>) {
+    // Initialize the contract with the ed25519 public key as the owner.
+    pub fn __constructor(env: Env, public_key: BytesN<32>) {
         if env.storage().instance().has(&DataKey::Owner) {
             panic!("owner is already set");
         }
