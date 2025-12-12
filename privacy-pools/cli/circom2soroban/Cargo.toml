@@ -1,0 +1,23 @@
+[package]
+name = "circom2soroban"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "stellar-circom2soroban"
+path = "src/main.rs"
+
+[dependencies]
+ark-bls12-381 = "0.4"
+ark-ec = "0.4"
+ark-ff = "0.4"
+num-bigint = "0.4"
+num-traits = "0.2"
+ark-serialize = { version = "0.4.2" }
+soroban-sdk = { workspace = true, features = ["testutils"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+clap = { version = "4.0", features = ["derive"] }
+hex = "0.4"
+zk = { path = "../../libs/zk" }
+base64 = "0.21"

@@ -1,0 +1,15 @@
+# Rust's output directory
+target
+test_snapshots
+# circuits build
+circuits/build
+circuits/output
+circuits/input
+circuits/test/node_modules
+circuits/*.wtns
+circuits/test/*.wtns
+circuits/test/*.wtns.json
+# Local settings
+.soroban
+.stellar
+.vscode

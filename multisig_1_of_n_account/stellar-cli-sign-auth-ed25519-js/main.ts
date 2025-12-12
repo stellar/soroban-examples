@@ -3,6 +3,7 @@ import { stderr, stdin, stdout } from "./io.ts";
 import { decodeHex, encodeHex } from "@std/encoding/hex";
 import { hash, Keypair, xdr } from "@stellar/stellar-sdk";
 import init, { decode } from "@stellar/stellar-xdr-json";
+import { Buffer } from "node:buffer";
 await init();
 
 // CLI.
@@ -26,7 +27,7 @@ program.parse();
 const opts = program.opts();
 
 // Derive the network id from the network passphrase.
-const networkId = hash(new TextEncoder().encode(opts.networkPassphrase));
+const networkId = hash(Buffer.from(opts.networkPassphrase));
 
 // Derive public key from secret key, and prepare keypair for signing.
 const keypair = Keypair.fromRawEd25519Seed(opts.secretKey);
