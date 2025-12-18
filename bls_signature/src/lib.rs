@@ -65,7 +65,7 @@ impl IncrementContract {
     }
 }
 
-#[contractimpl]
+#[contractimpl(contracttrait)]
 impl CustomAccountInterface for IncrementContract {
     type Signature = BytesN<192>;
 

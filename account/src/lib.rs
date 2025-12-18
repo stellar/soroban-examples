@@ -76,7 +76,7 @@ impl AccountContract {
     }
 }
 
-#[contractimpl]
+#[contractimpl(contracttrait)]
 impl CustomAccountInterface for AccountContract {
     type Signature = Vec<AccSignature>;
     type Error = AccError;

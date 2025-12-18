@@ -41,7 +41,7 @@ impl Contract {
     }
 }
 
-#[contractimpl]
+#[contractimpl(contracttrait)]
 impl CustomAccountInterface for Contract {
     type Signature = Signature;
     type Error = Error;
