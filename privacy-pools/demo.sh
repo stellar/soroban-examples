@@ -15,7 +15,12 @@ command -v jq >/dev/null 2>&1 || { echo "❌ Error: jq is required but not insta
 command -v stellar >/dev/null 2>&1 || { echo "❌ Error: stellar CLI is required but not installed."; exit 1; }
 # Fund demo_user account if needed
 echo "🏦 Ensuring demo_user account is funded..."
-(stellar keys generate demo_user && stellar keys fund demo_user --network $NETWORK) > /dev/null 2>&1 || echo "⚠️  demo_user may already be funded"
+if ! stellar keys ls 2>/dev/null | grep -q "demo_user"; then
+    echo "   Generating demo_user key..."
+    stellar keys generate demo_user > /dev/null 2>&1
+fi
+echo "   Funding demo_user account..."
+stellar keys fund demo_user --network $NETWORK 2>&1 | grep -q "funded" && echo "   ✅ Account funded" || echo "⚠️  demo_user may already be funded"
 # Step 1: Deploy groth16_verifier contract first
 echo "📦 Building groth16_verifier contract..."
 cd ../groth16_verifier
@@ -24,9 +29,17 @@ stellar contract optimize --wasm target/wasm32v1-none/release/soroban_groth16_ve
 cd ../privacy-pools
 
 echo "🚀 Deploying groth16_verifier contract to $NETWORK..."
-GROTH16_VERIFIER_ID=$(stellar contract deploy --wasm ../groth16_verifier/target/wasm32v1-none/release/soroban_groth16_verifier_contract.optimized.wasm --source demo_user --network $NETWORK 2>&1 | grep -o 'C[A-Z0-9]\{55\}' | tail -1)
+GROTH16_DEPLOY_OUTPUT=$(stellar contract deploy --wasm ../groth16_verifier/target/wasm32v1-none/release/soroban_groth16_verifier_contract.optimized.wasm --source demo_user --network $NETWORK 2>&1)
+if [ $? -ne 0 ]; then
+    echo "❌ Error: Groth16 verifier contract deployment failed"
+    echo "$GROTH16_DEPLOY_OUTPUT"
+    exit 1
+fi
+GROTH16_VERIFIER_ID=$(echo "$GROTH16_DEPLOY_OUTPUT" | grep -oE 'C[A-Z0-9]{55}' | tail -1)
 if [ -z "$GROTH16_VERIFIER_ID" ]; then
     echo "❌ Error: Failed to extract groth16_verifier contract ID from deployment"
+    echo "Deployment output:"
+    echo "$GROTH16_DEPLOY_OUTPUT"
     exit 1
 fi
 echo "✅ Groth16 verifier contract deployed with ID: $GROTH16_VERIFIER_ID"
@@ -45,9 +58,17 @@ if [ -z "$VK_HEX" ]; then
 fi
 
 echo "🚀 Deploying privacy-pools contract to $NETWORK..."
-CONTRACT_ID=$(stellar contract deploy --wasm target/wasm32v1-none/release/privacy_pools.optimized.wasm --source demo_user --network $NETWORK -- --vk_bytes $VK_HEX --token_address $TOKEN_ADDRESS --admin demo_user --groth16_verifier $GROTH16_VERIFIER_ID 2>&1 | grep -o 'C[A-Z0-9]\{55\}' | tail -1)
+DEPLOY_OUTPUT=$(stellar contract deploy --wasm target/wasm32v1-none/release/privacy_pools.optimized.wasm --source demo_user --network $NETWORK -- --vk_bytes $VK_HEX --token_address $TOKEN_ADDRESS --admin demo_user --groth16_verifier $GROTH16_VERIFIER_ID 2>&1)
+if [ $? -ne 0 ]; then
+    echo "❌ Error: Contract deployment failed"
+    echo "$DEPLOY_OUTPUT"
+    exit 1
+fi
+CONTRACT_ID=$(echo "$DEPLOY_OUTPUT" | grep -oE 'C[A-Z0-9]{55}' | tail -1)
 if [ -z "$CONTRACT_ID" ]; then
     echo "❌ Error: Failed to extract contract ID from deployment"
+    echo "Deployment output:"
+    echo "$DEPLOY_OUTPUT"
     exit 1
 fi
 echo "✅ Privacy-pools contract deployed with ID: $CONTRACT_ID"
