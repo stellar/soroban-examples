@@ -82,7 +82,7 @@ impl Token {
     }
 }
 
-#[contractimpl]
+#[contractimpl(contracttrait)]
 impl TokenInterface for Token {
     fn allowance(e: Env, from: Address, spender: Address) -> i128 {
         e.storage()
