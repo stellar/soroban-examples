@@ -15,7 +15,7 @@ command -v jq >/dev/null 2>&1 || { echo "❌ Error: jq is required but not insta
 command -v stellar >/dev/null 2>&1 || { echo "❌ Error: stellar CLI is required but not installed."; exit 1; }
 # Fund demo_user account if needed
 echo "🏦 Ensuring demo_user account is funded..."
-if ! stellar keys ls 2>/dev/null | grep -q "demo_user"; then
+if ! stellar keys ls 2>/dev/null | grep -q "^demo_user$"; then
     echo "   Generating demo_user key..."
     stellar keys generate demo_user > /dev/null 2>&1
 fi
