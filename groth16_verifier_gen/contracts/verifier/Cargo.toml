@@ -1,0 +1,17 @@
+[package]
+name = "verifier"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = "25"
+
+[dev-dependencies]
+soroban-sdk = { version = "25", features = ["testutils"] }
+ark-bls12-381 = "0.5"
+ark-serialize = "0.5"
