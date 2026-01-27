@@ -1,5 +1,7 @@
 #![cfg(test)]
 
+extern crate std;
+
 use ark_bls12_381::{Fq, Fq2};
 use ark_serialize::CanonicalSerialize;
 use core::str::FromStr;
