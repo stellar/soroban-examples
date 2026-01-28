@@ -1,8 +1,11 @@
-use num_bigint::BigUint;
-use poseidon::Poseidon255;
+use soroban_poseidon::{poseidon_hash as poseidon_hash_native};
+use soroban_sdk::{
+    crypto::bls12_381::Fr as BlsScalar,
+    Env, U256, BytesN, Vec
+};
 use serde::Deserialize;
-use soroban_sdk::{crypto::bls12_381::Fr as BlsScalar, BytesN, Env, U256};
 use std::io::{self, Read};
+use num_bigint::BigUint;
 
 #[derive(Deserialize)]
 struct Input {
@@ -39,15 +42,30 @@ fn biguint_to_bls_scalar(env: &Env, biguint: &BigUint) -> BlsScalar {
     BlsScalar::from_bytes(BytesN::from_array(env, &padded_bytes))
 }
 
+/// Hash using native Poseidon implementation with t=2 (1 input)
+fn poseidon_hash_t2(env: &Env, input: &BlsScalar) -> BlsScalar {
+    let mut u256_inputs = Vec::new(env);
+    u256_inputs.push_back(BlsScalar::to_u256(input));
+    let result_u256 = poseidon_hash_native::<2, soroban_sdk::crypto::bls12_381::Fr>(&env, &u256_inputs);
+    BlsScalar::from_u256(result_u256)
+}
+
+/// Hash using native Poseidon implementation with t=3 (2 inputs)
+fn poseidon_hash_t3(env: &Env, input1: &BlsScalar, input2: &BlsScalar) -> BlsScalar {
+    let mut u256_inputs = Vec::new(env);
+    u256_inputs.push_back(BlsScalar::to_u256(input1));
+    u256_inputs.push_back(BlsScalar::to_u256(input2));
+    let result_u256 = poseidon_hash_native::<3, soroban_sdk::crypto::bls12_381::Fr>(&env, &u256_inputs);
+    BlsScalar::from_u256(result_u256)
+}
+
 fn main() {
     // Create soroban environment for testing
     let env = Env::default();
 
     // Read JSON input from stdin
     let mut input = String::new();
-    io::stdin()
-        .read_to_string(&mut input)
-        .expect("Failed to read input");
+    io::stdin().read_to_string(&mut input).expect("Failed to read input");
 
     // Parse the JSON input
     let input_data: Input = serde_json::from_str(&input).expect("Failed to parse JSON");
@@ -56,11 +74,11 @@ fn main() {
     let input1_scalar = match input_data.in1_value {
         serde_json::Value::String(s) => {
             // Parse the large number as a BigUint first
-            let big_num =
-                BigUint::parse_bytes(s.as_bytes(), 10).expect("Failed to parse string to BigUint");
+            let big_num = BigUint::parse_bytes(s.as_bytes(), 10)
+                .expect("Failed to parse string to BigUint");
             // Convert BigUint to BlsScalar
             biguint_to_bls_scalar(&env, &big_num)
-        }
+        },
         serde_json::Value::Number(n) => {
             if let Some(u64_val) = n.as_u64() {
                 BlsScalar::from_u256(U256::from_u32(&env, u64_val as u32))
@@ -71,18 +89,18 @@ fn main() {
                     .expect("Failed to parse number to BigUint");
                 biguint_to_bls_scalar(&env, &big_num)
             }
-        }
+        },
         _ => panic!("Expected string or number for 'in1' field"),
     };
 
     let input2_scalar = match input_data.in2_value {
         serde_json::Value::String(s) => {
             // Parse the large number as a BigUint first
-            let big_num =
-                BigUint::parse_bytes(s.as_bytes(), 10).expect("Failed to parse string to BigUint");
+            let big_num = BigUint::parse_bytes(s.as_bytes(), 10)
+                .expect("Failed to parse string to BigUint");
             // Convert BigUint to BlsScalar
             biguint_to_bls_scalar(&env, &big_num)
-        }
+        },
         serde_json::Value::Number(n) => {
             if let Some(u64_val) = n.as_u64() {
                 BlsScalar::from_u256(U256::from_u32(&env, u64_val as u32))
@@ -93,16 +111,16 @@ fn main() {
                     .expect("Failed to parse number to BigUint");
                 biguint_to_bls_scalar(&env, &big_num)
             }
-        }
+        },
         _ => panic!("Expected string or number for 'in2' field"),
     };
 
-    let poseidon1 = Poseidon255::new(&env, 2);
-    let output1 = poseidon1.hash(&env, &input1_scalar);
+    // Hash single input (t=2)
+    let output1 = poseidon_hash_t2(&env, &input1_scalar);
     let decimal_output1 = bls_scalar_to_decimal(output1);
 
-    let poseidon2 = Poseidon255::new(&env, 3);
-    let output2 = poseidon2.hash_two(&env, &input1_scalar, &input2_scalar);
+    // Hash two inputs (t=3)
+    let output2 = poseidon_hash_t3(&env, &input1_scalar, &input2_scalar);
     let decimal_output2 = bls_scalar_to_decimal(output2);
 
     println!("{}", decimal_output1);

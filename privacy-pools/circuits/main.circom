@@ -79,4 +79,4 @@ template Withdraw(treeDepth, associationDepth) {
     // (this is enforced by the remainingValue being non-negative through range check)
 }
 
-component main {public [withdrawnValue, stateRoot, associationRoot]} = Withdraw(2, 2);  // state tree depth 2, association tree depth 2
+component main {public [withdrawnValue, stateRoot, associationRoot]} = Withdraw(20, 2);  // state tree depth 20, association tree depth 2

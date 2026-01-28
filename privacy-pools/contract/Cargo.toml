@@ -2,7 +2,6 @@
 name = "privacy-pools"
 version = "0.0.0"
 edition = "2021"
-rust-version = "1.89.0"
 publish = false
 
 [lib]
@@ -13,10 +12,8 @@ doctest = false
 soroban-sdk = { workspace = true, features = ["alloc"] }
 zk = { path = "../libs/zk" }
 lean-imt = { path = "../libs/lean-imt" }
-poseidon = { path = "../libs/poseidon" }
 ark-ff = { version = "0.4.2", default-features = false }
 ark-bls12-381 = { version = "0.4.0", default-features = false }
-num-bigint = { version = "0.4", default-features = false }
 
 [dev-dependencies]
 soroban-sdk = { workspace = true, features = ["testutils"] }
@@ -28,3 +25,4 @@ hex = { version = "0.4.3" }
 
 [features]
 default = []
+test_hash = []

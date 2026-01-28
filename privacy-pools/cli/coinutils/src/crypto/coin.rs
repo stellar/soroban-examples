@@ -1,21 +1,28 @@
+use soroban_sdk::{crypto::bls12_381::Fr as BlsScalar, Env, Bytes, U256};
+use rand::{thread_rng, Rng};
 use crate::{
     config::COIN_VALUE,
     crypto::{poseidon_hash, random_fr},
     types::{CoinData, GeneratedCoin},
 };
-use rand::{thread_rng, Rng};
-use soroban_sdk::{crypto::bls12_381::Fr as BlsScalar, BytesN, Env, U256};
 
 /// Generate a label for a coin based on scope and nonce
 pub fn generate_label(env: &Env, scope: &[u8], nonce: &[u8; 32]) -> BlsScalar {
     // Convert scope and nonce to field elements for Poseidon hashing
-    let scope_fr = BlsScalar::from_bytes(BytesN::from_array(env, &{
+    // Use only lower 31 bytes to ensure values are within BLS12-381 scalar field modulus
+    let scope_fr = BlsScalar::from_u256({
         let mut bytes = [0u8; 32];
-        let len = scope.len().min(32);
-        bytes[..len].copy_from_slice(&scope[..len]);
-        bytes
-    }));
-    let nonce_fr = BlsScalar::from_bytes(BytesN::from_array(env, nonce));
+        let len = scope.len().min(31);
+        // Place scope bytes in lower positions (big-endian U256, so pad at start)
+        bytes[32 - len..].copy_from_slice(&scope[..len]);
+        U256::from_be_bytes(env, &Bytes::from_slice(env, &bytes))
+    });
+    let nonce_fr = BlsScalar::from_u256({
+        // Use lower 31 bytes of nonce to stay within field modulus
+        let mut bytes = [0u8; 32];
+        bytes[1..].copy_from_slice(&nonce[..31]);
+        U256::from_be_bytes(env, &Bytes::from_slice(env, &bytes))
+    });
 
     // Hash using Poseidon
     poseidon_hash(env, &[scope_fr, nonce_fr])
@@ -27,7 +34,7 @@ pub fn generate_commitment(
     value: BlsScalar,
     label: BlsScalar,
     nullifier: BlsScalar,
-    secret: BlsScalar,
+    secret: BlsScalar
 ) -> BlsScalar {
     let precommitment = poseidon_hash(env, &[nullifier, secret]);
     poseidon_hash(env, &[value, label, precommitment])
@@ -42,13 +49,7 @@ pub fn generate_coin(env: &Env, scope: &[u8]) -> GeneratedCoin {
     let secret = random_fr(env);
     let nonce = thread_rng().gen::<[u8; 32]>();
     let label = generate_label(env, scope, &nonce);
-    let commitment = generate_commitment(
-        env,
-        value.clone(),
-        label.clone(),
-        nullifier.clone(),
-        secret.clone(),
-    );
+    let commitment = generate_commitment(env, value.clone(), label.clone(), nullifier.clone(), secret.clone());
 
     let value_decimal = bls_scalar_to_decimal_string(&value);
     let nullifier_decimal = bls_scalar_to_decimal_string(&nullifier);

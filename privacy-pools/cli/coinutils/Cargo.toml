@@ -15,8 +15,8 @@ rand = "0.8"
 hex = "0.4"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-poseidon = { path = "../../libs/poseidon" }
 lean-imt = { path = "../../libs/lean-imt" }
+soroban-poseidon = { workspace = true }
 soroban-sdk = { workspace = true }
 num-bigint = "0.4"
 clap = { version = "4.0", features = ["derive"] }

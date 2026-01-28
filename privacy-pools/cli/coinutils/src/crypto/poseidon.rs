@@ -1,23 +1,26 @@
-use poseidon::Poseidon255;
-use soroban_sdk::{crypto::bls12_381::Fr as BlsScalar, Env, U256};
+use soroban_poseidon::poseidon_hash as poseidon_hash_native;
+use soroban_sdk::{crypto::bls12_381::Fr as BlsScalar, Env, Vec, U256};
 
-/// Poseidon-based hash for field elements
+/// Poseidon-based hash for field elements using native SDK implementation
+/// Uses poseidon_hash (not poseidon2_hash) to match the circom circuit
 pub fn poseidon_hash(env: &Env, inputs: &[BlsScalar]) -> BlsScalar {
-    let poseidon1 = Poseidon255::new(env, 2);
-    let poseidon2 = Poseidon255::new(env, 3);
-
-    match inputs.len() {
-        1 => poseidon1.hash(env, &inputs[0]),
-        2 => poseidon2.hash_two(env, &inputs[0], &inputs[1]),
-        _ => {
-            // For more than 2 inputs, hash them sequentially
-            let mut result = inputs[0].clone();
-            for input in inputs.iter().skip(1) {
-                result = poseidon2.hash_two(env, &result, input);
-            }
-            result
-        }
+    // Convert Fr inputs to U256
+    let mut u256_inputs = Vec::new(env);
+    for input in inputs.iter() {
+        u256_inputs.push_back(BlsScalar::to_u256(input));
     }
+
+    // Hash using native implementation with appropriate state size
+    // State size t = inputs.len() + 1 (rate = t - 1 = inputs.len())
+    let result_u256 = match inputs.len() {
+        1 => poseidon_hash_native::<2, BlsScalar>(env, &u256_inputs),
+        2 => poseidon_hash_native::<3, BlsScalar>(env, &u256_inputs),
+        3 => poseidon_hash_native::<4, BlsScalar>(env, &u256_inputs),
+        _ => panic!("poseidon_hash supports 1-3 inputs"),
+    };
+
+    // Convert U256 result back to Fr
+    BlsScalar::from_u256(result_u256)
 }
 
 /// Generate a random field element
