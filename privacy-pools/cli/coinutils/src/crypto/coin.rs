@@ -1,10 +1,10 @@
-use soroban_sdk::{crypto::bls12_381::Fr as BlsScalar, Env, Bytes, U256};
-use rand::{thread_rng, Rng};
 use crate::{
     config::COIN_VALUE,
     crypto::{poseidon_hash, random_fr},
     types::{CoinData, GeneratedCoin},
 };
+use rand::{thread_rng, Rng};
+use soroban_sdk::{crypto::bls12_381::Fr as BlsScalar, Bytes, Env, U256};
 
 /// Generate a label for a coin based on scope and nonce
 pub fn generate_label(env: &Env, scope: &[u8], nonce: &[u8; 32]) -> BlsScalar {
@@ -35,7 +35,7 @@ pub fn generate_commitment(
     value: BlsScalar,
     label: BlsScalar,
     nullifier: BlsScalar,
-    secret: BlsScalar
+    secret: BlsScalar,
 ) -> BlsScalar {
     let precommitment = poseidon_hash(env, &[nullifier, secret]);
     poseidon_hash(env, &[value, label, precommitment])
@@ -50,7 +50,13 @@ pub fn generate_coin(env: &Env, scope: &[u8]) -> GeneratedCoin {
     let secret = random_fr(env);
     let nonce = thread_rng().gen::<[u8; 32]>();
     let label = generate_label(env, scope, &nonce);
-    let commitment = generate_commitment(env, value.clone(), label.clone(), nullifier.clone(), secret.clone());
+    let commitment = generate_commitment(
+        env,
+        value.clone(),
+        label.clone(),
+        nullifier.clone(),
+        secret.clone(),
+    );
 
     let value_decimal = bls_scalar_to_decimal_string(&value);
     let nullifier_decimal = bls_scalar_to_decimal_string(&nullifier);
