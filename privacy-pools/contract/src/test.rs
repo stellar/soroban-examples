@@ -714,14 +714,3 @@ fn test_withdraw_requires_association_root() {
     client.withdraw(&bob, &proof, &pub_signals);
 }
 
-#[cfg(feature = "test_hash")]
-#[test]
-fn test_hash_method() {
-    let env = Env::default();
-    let token_address = Address::generate(&env);
-    let contract_id = env.register(PrivacyPoolsContract, (init_vk(&env), token_address));
-    let client = PrivacyPoolsContractClient::new(&env, &contract_id);
-
-    // Should execute without panicking
-    client.test_hash();
-}

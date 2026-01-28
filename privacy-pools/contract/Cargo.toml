@@ -25,4 +25,3 @@ hex = { version = "0.4.3" }
 
 [features]
 default = []
-test_hash = []
