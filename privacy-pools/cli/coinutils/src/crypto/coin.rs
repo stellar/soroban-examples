@@ -20,7 +20,8 @@ pub fn generate_label(env: &Env, scope: &[u8], nonce: &[u8; 32]) -> BlsScalar {
     let nonce_fr = BlsScalar::from_u256({
         // Use lower 31 bytes of nonce to stay within field modulus
         let mut bytes = [0u8; 32];
-        bytes[1..].copy_from_slice(&nonce[..31]);
+        // Zero MSB (bytes[0]) and take the least-significant 31 bytes of the nonce
+        bytes[1..].copy_from_slice(&nonce[1..]);
         U256::from_be_bytes(env, &Bytes::from_slice(env, &bytes))
     });
 
