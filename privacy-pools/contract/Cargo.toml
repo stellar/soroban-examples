@@ -3,6 +3,7 @@ name = "privacy-pools"
 version = "0.0.0"
 edition = "2021"
 publish = false
+rust-version.workspace = true
 
 [lib]
 crate-type = ["lib", "cdylib"]

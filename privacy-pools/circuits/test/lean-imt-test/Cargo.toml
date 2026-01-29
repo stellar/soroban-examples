@@ -3,6 +3,7 @@ name = "merkle-tree-tests"
 version = "0.1.0"
 edition = "2021"
 publish = false
+rust-version.workspace = true
 
 [dependencies]
 lean-imt = { path = "../../../libs/lean-imt" }
