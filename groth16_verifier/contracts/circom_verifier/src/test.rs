@@ -70,8 +70,12 @@ fn test() {
     // Create the contract client
     let client = create_client(&env);
 
-    // Test Case 1: Verify the proof with the correct public output (33, copied from `data/circom/public.json`)
-    let output = Vec::from_array(&env, [Fr::from_u256(U256::from_u32(&env, 33))]);
+    // // Test Case 1: Verify the proof with the correct public output loaded from `data/circom/public.json`
+    let public_json_str = include_str!("../../../data/circom/public.json");
+    let public_signals: std::vec::Vec<std::string::String> =
+        serde_json::from_str(public_json_str).unwrap();
+    let expected_output: u32 = public_signals[0].parse().unwrap();
+    let output = Vec::from_array(&env, [Fr::from_u256(U256::from_u32(&env, expected_output))]);
     let res = client.verify_proof(&proof, &output);
     assert_eq!(res, true);
 

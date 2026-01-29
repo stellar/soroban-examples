@@ -41,8 +41,8 @@ fn merkle_tree() {
     let proof = tree.generate_proof(4).unwrap();
     let root = tree.root();
 
-    // Create circuit with dummy proof for parameter generation
-    // We use the same proof but with a dummy leaf value
+    // Create circuit instance for parameter generation
+    // We reuse the actual leaf value and clone the authentication path
     let dummy_circuit = MerkleTreeVerification {
         leaf_crh_params: Some(leaf_crh_params.clone()),
         two_to_one_crh_params: Some(two_to_one_crh_params.clone()),
