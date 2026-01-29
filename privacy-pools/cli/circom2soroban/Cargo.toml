@@ -2,6 +2,7 @@
 name = "circom2soroban"
 version = "0.1.0"
 edition = "2021"
+rust-version.workspace = true
 
 [[bin]]
 name = "stellar-circom2soroban"
