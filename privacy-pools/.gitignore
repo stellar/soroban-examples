@@ -13,3 +13,5 @@ circuits/test/*.wtns.json
 .soroban
 .stellar
 .vscode
+# Agents
+.claude

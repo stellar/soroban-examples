@@ -4,18 +4,26 @@ use crate::{
     types::{CoinData, GeneratedCoin},
 };
 use rand::{thread_rng, Rng};
-use soroban_sdk::{crypto::bls12_381::Fr as BlsScalar, BytesN, Env, U256};
+use soroban_sdk::{crypto::bls12_381::Fr as BlsScalar, Bytes, Env, U256};
 
 /// Generate a label for a coin based on scope and nonce
 pub fn generate_label(env: &Env, scope: &[u8], nonce: &[u8; 32]) -> BlsScalar {
     // Convert scope and nonce to field elements for Poseidon hashing
-    let scope_fr = BlsScalar::from_bytes(BytesN::from_array(env, &{
+    // Use only lower 31 bytes to ensure values are within BLS12-381 scalar field modulus
+    let scope_fr = BlsScalar::from_u256({
         let mut bytes = [0u8; 32];
-        let len = scope.len().min(32);
-        bytes[..len].copy_from_slice(&scope[..len]);
-        bytes
-    }));
-    let nonce_fr = BlsScalar::from_bytes(BytesN::from_array(env, nonce));
+        let len = scope.len().min(31);
+        // Place scope bytes in lower positions (big-endian U256, so pad at start)
+        bytes[32 - len..].copy_from_slice(&scope[..len]);
+        U256::from_be_bytes(env, &Bytes::from_slice(env, &bytes))
+    });
+    let nonce_fr = BlsScalar::from_u256({
+        // Use lower 31 bytes of nonce to stay within field modulus
+        let mut bytes = [0u8; 32];
+        // Zero MSB (bytes[0]) and take the least-significant 31 bytes of the nonce
+        bytes[1..].copy_from_slice(&nonce[1..]);
+        U256::from_be_bytes(env, &Bytes::from_slice(env, &bytes))
+    });
 
     // Hash using Poseidon
     poseidon_hash(env, &[scope_fr, nonce_fr])

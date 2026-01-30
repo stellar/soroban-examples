@@ -3,6 +3,7 @@ name = "lean-imt"
 version = "0.1.0"
 edition = "2021"
 publish = false
+rust-version.workspace = true
 
 [lib]
 crate-type = ["lib"]
@@ -10,7 +11,7 @@ doctest = false
 
 [dependencies]
 soroban-sdk = { workspace = true }
-poseidon = { path = "../poseidon" }
+soroban-poseidon = { workspace = true }
 
 [dev-dependencies]
 soroban-sdk = { workspace = true, features = ["testutils"] }

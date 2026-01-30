@@ -1,6 +1,7 @@
 #![no_std]
 
-use poseidon::Poseidon255;
+use soroban_poseidon::{poseidon_hash, PoseidonSponge};
+
 use soroban_sdk::{
     crypto::bls12_381::Fr as BlsScalar, symbol_short, vec, BytesN, Env, Map, Symbol, Vec, U256,
 };
@@ -34,7 +35,6 @@ pub struct LeanIMT {
     depth: u32,
     capacity: u32, // Pre-computed capacity (2^depth), cached for efficiency
     root: BytesN<32>,
-    poseidon: Poseidon255,
     // Hybrid cache system:
     // 1. subtree_cache: Dynamic programming cache for empty tree levels
     //    Key: level -> Value: hash of subtrees at that level (all identical for empty trees)
@@ -55,7 +55,6 @@ impl LeanIMT {
             depth,
             capacity,
             root: BytesN::from_array(&env_clone, &[0u8; 32]),
-            poseidon: Poseidon255::new(&env_clone, 3),
             subtree_cache: Map::new(&env_clone),
             sparse_cache: Map::new(&env_clone),
         };
@@ -232,6 +231,9 @@ impl LeanIMT {
         let leaf_bytes = self.leaves.get(leaf_index).unwrap();
         let leaf_scalar = bytes_to_bls_scalar(&leaf_bytes);
 
+        // Create sponge once for efficient repeated hashing
+        let mut sponge = PoseidonSponge::<3, BlsScalar>::new(&self.env);
+
         // Start from the leaf and work our way up to the root
         let mut current_index = leaf_index;
         let mut current_level = 0;
@@ -262,11 +264,11 @@ impl LeanIMT {
                 }
             };
 
-            // Compute the parent hash
+            // Compute the parent hash (reuse sponge for efficiency)
             let parent_scalar = if current_index % 2 == 0 {
-                self.hash_pair(current_scalar, sibling_scalar)
+                self.hash_pair_with_sponge(&mut sponge, current_scalar, sibling_scalar)
             } else {
-                self.hash_pair(sibling_scalar, current_scalar)
+                self.hash_pair_with_sponge(&mut sponge, sibling_scalar, current_scalar)
             };
 
             // Cache the parent hash in sparse cache (specific node update)
@@ -336,6 +338,9 @@ impl LeanIMT {
             return;
         }
 
+        // Create sponge once for efficient repeated hashing
+        let mut sponge = PoseidonSponge::<3, BlsScalar>::new(&self.env);
+
         // For empty trees, all subtrees at the same level are identical
         // We only need to compute one hash per level: hash(level_n, level_n) = level_n+1
         let zero_scalar = BlsScalar::from_u256(U256::from_u32(&self.env, 0));
@@ -347,8 +352,12 @@ impl LeanIMT {
                 // Level 0: all leaves are zero
                 current_level_hash = zero_scalar.clone();
             } else {
-                // Level 1+: hash the previous level with itself
-                current_level_hash = self.hash_pair(current_level_hash.clone(), current_level_hash);
+                // Level 1+: hash the previous level with itself (reuse sponge for efficiency)
+                current_level_hash = self.hash_pair_with_sponge(
+                    &mut sponge,
+                    current_level_hash.clone(),
+                    current_level_hash,
+                );
             }
 
             // Cache this hash for the level (all nodes at this level are identical)
@@ -361,7 +370,27 @@ impl LeanIMT {
 
     /// Hashes two BlsScalar values using Poseidon hash function
     fn hash_pair(&self, left: BlsScalar, right: BlsScalar) -> BlsScalar {
-        self.poseidon.hash_two(&self.env, &left, &right)
+        let left_u256 = BlsScalar::to_u256(&left);
+        let right_u256 = BlsScalar::to_u256(&right);
+        let inputs = Vec::from_array(&self.env, [left_u256, right_u256]);
+        // Use poseidon_hash (not poseidon2_hash) to match circom circuit
+        let result_u256 = poseidon_hash::<3, BlsScalar>(&self.env, &inputs);
+        BlsScalar::from_u256(result_u256)
+    }
+
+    /// Hashes two BlsScalar values using a pre-initialized sponge for efficiency
+    /// Use this in loops where many hashes are computed
+    fn hash_pair_with_sponge(
+        &self,
+        sponge: &mut PoseidonSponge<3, BlsScalar>,
+        left: BlsScalar,
+        right: BlsScalar,
+    ) -> BlsScalar {
+        let left_u256 = BlsScalar::to_u256(&left);
+        let right_u256 = BlsScalar::to_u256(&right);
+        let inputs = Vec::from_array(&self.env, [left_u256, right_u256]);
+        let result_u256 = sponge.compute_hash(&inputs);
+        BlsScalar::from_u256(result_u256)
     }
 
     /// Serializes the tree state for storage
@@ -379,7 +408,6 @@ impl LeanIMT {
             depth,
             capacity,
             root,
-            poseidon: Poseidon255::new(&env_clone, 3),
             subtree_cache: Map::new(&env_clone),
             sparse_cache: Map::new(&env_clone),
         };

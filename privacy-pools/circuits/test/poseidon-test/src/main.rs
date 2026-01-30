@@ -1,7 +1,7 @@
 use num_bigint::BigUint;
-use poseidon::Poseidon255;
 use serde::Deserialize;
-use soroban_sdk::{crypto::bls12_381::Fr as BlsScalar, BytesN, Env, U256};
+use soroban_poseidon::poseidon_hash as poseidon_hash_native;
+use soroban_sdk::{crypto::bls12_381::Fr as BlsScalar, BytesN, Env, Vec, U256};
 use std::io::{self, Read};
 
 #[derive(Deserialize)]
@@ -37,6 +37,25 @@ fn biguint_to_bls_scalar(env: &Env, biguint: &BigUint) -> BlsScalar {
 
     // Convert to BlsScalar
     BlsScalar::from_bytes(BytesN::from_array(env, &padded_bytes))
+}
+
+/// Hash using native Poseidon implementation with t=2 (1 input)
+fn poseidon_hash_t2(env: &Env, input: &BlsScalar) -> BlsScalar {
+    let mut u256_inputs = Vec::new(env);
+    u256_inputs.push_back(BlsScalar::to_u256(input));
+    let result_u256 =
+        poseidon_hash_native::<2, soroban_sdk::crypto::bls12_381::Fr>(&env, &u256_inputs);
+    BlsScalar::from_u256(result_u256)
+}
+
+/// Hash using native Poseidon implementation with t=3 (2 inputs)
+fn poseidon_hash_t3(env: &Env, input1: &BlsScalar, input2: &BlsScalar) -> BlsScalar {
+    let mut u256_inputs = Vec::new(env);
+    u256_inputs.push_back(BlsScalar::to_u256(input1));
+    u256_inputs.push_back(BlsScalar::to_u256(input2));
+    let result_u256 =
+        poseidon_hash_native::<3, soroban_sdk::crypto::bls12_381::Fr>(&env, &u256_inputs);
+    BlsScalar::from_u256(result_u256)
 }
 
 fn main() {
@@ -97,12 +116,12 @@ fn main() {
         _ => panic!("Expected string or number for 'in2' field"),
     };
 
-    let poseidon1 = Poseidon255::new(&env, 2);
-    let output1 = poseidon1.hash(&env, &input1_scalar);
+    // Hash single input (t=2)
+    let output1 = poseidon_hash_t2(&env, &input1_scalar);
     let decimal_output1 = bls_scalar_to_decimal(output1);
 
-    let poseidon2 = Poseidon255::new(&env, 3);
-    let output2 = poseidon2.hash_two(&env, &input1_scalar, &input2_scalar);
+    // Hash two inputs (t=3)
+    let output2 = poseidon_hash_t3(&env, &input1_scalar, &input2_scalar);
     let decimal_output2 = bls_scalar_to_decimal(output2);
 
     println!("{}", decimal_output1);
