@@ -1,0 +1,7 @@
+function,fee_proposed,inclusion_fee,resource_fee,non_refundable,refundable,inclusion_fee_charged,non_refundable_charged,refundable_charged,resource_fee_charged,fee_charged,refunded
+store_u32,28885,100,28785,5872,22913,100100,5872,11507,17379,1001737917479,11406
+load_u32,,,,,,,,,,,
+event_u32,13398,100,13298,2966,10332,100100,2966,567,3533,10035333633,9765
+store_u256,32631,100,32531,6042,26489,100100,6042,14618,20660,1002066020760,11871
+load_u256,,,,,,,,,,,
+event_u256,13680,100,13580,3090,10490,100100,3090,704,3794,10037943894,9786
