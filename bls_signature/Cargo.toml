@@ -17,10 +17,10 @@ USE THIS CODE AT YOUR OWN RISK.
 crate-type = ["cdylib"]
 
 [dependencies]
-soroban-sdk = { version = "23.4.0" }
+soroban-sdk = { version = "25.0.2" }
 
 [dev-dependencies]
-soroban-sdk = { version = "23.4.0", features = ["testutils"] }
+soroban-sdk = { version = "25.0.2", features = ["testutils"] }
 hex-literal = { version = "0.4.1"}
 rand = { version = "0.7.3" }
 

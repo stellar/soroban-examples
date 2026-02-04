@@ -1,4 +1,4 @@
-$MAKEFILES = $(shell find . -maxdepth 3 -type f -name Makefile)
+$MAKEFILES = $(shell find . -maxdepth 3 -type f -name Makefile | grep -v '/circuits/')
 SUBDIRS   = $(filter-out ./,$(dir $($MAKEFILES)))
 
 default: build
@@ -7,6 +7,7 @@ all: test
 
 build:
 	@for dir in $(SUBDIRS) ; do \
+		echo "Building in $$dir..."; \
 		$(MAKE) -C $$dir build || exit 1; \
 	done
 
