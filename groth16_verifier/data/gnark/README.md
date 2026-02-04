@@ -1,6 +1,6 @@
 # Gnark example
 
-The proof and verification key are generated using [gnark](https://github.com/consensys/gnark) (a zk-SNARK library written in Go) with the BLS12-381 curve (same as Soroban).
+The proof and verification key are generated using [gnark](https://github.com/consensys/gnark) (a zk-SNARK library written in Go) with the BLS12-381 curve.
 
 The computation demonstrates a polynomial circuit: `x³ + x + 5 = y`, where:
 

@@ -1,6 +1,6 @@
 # Arkworks example
 
-The proof and verification key are generated using [arkworks](https://github.com/arkworks-rs) (a Rust ecosystem for zero-knowledge cryptography) with the BLS12-381 curve (same as Soroban).
+The proof and verification key are generated using [arkworks](https://github.com/arkworks-rs) (a Rust ecosystem for zero-knowledge cryptography) with the BLS12-381 curve.
 
 The computation demonstrates a **Merkle tree membership verification** circuit: given a Merkle tree root and an authentication path, prove that a specific leaf value exists in the tree without revealing the entire tree structure.
 
