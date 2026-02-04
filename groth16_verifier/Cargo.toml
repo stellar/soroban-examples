@@ -1,23 +1,9 @@
-[package]
-name = "soroban-groth16-verifier-contract"
-version = "0.0.0"
-edition = "2021"
-publish = false
+[workspace]
+members = ["bls12-381", "bn254"]
+resolver = "2"
+
+[workspace.package]
 rust-version = "1.89.0"
-
-[lib]
-crate-type = ["cdylib"]
-doctest = false
-
-[dependencies]
-soroban-sdk = { version = "23.0.1" }
-
-[dev-dependencies]
-soroban-sdk = { version = "23.0.1", features = ["testutils"] }
-ark-bls12-381 = { version = "0.4.0"}
-ark-serialize = { version = "0.4.2"}
-ark-ff = { version = "0.4.2"}
-ark-ec = { version = "0.4.2"}
 
 [profile.release]
 opt-level = "z"
