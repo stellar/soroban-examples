@@ -5,6 +5,12 @@ resolver = "2"
 [workspace.package]
 rust-version = "1.89.0"
 
+[workspace.dependencies]
+soroban-sdk = { version = "25.0.2" }
+
+[workspace.dev-dependencies]
+soroban-sdk = { version = "25.0.2", features = ["testutils"] }
+
 [profile.release]
 opt-level = "z"
 overflow-checks = true
