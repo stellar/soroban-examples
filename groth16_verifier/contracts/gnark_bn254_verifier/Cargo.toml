@@ -1,0 +1,20 @@
+[package]
+name = "gnark_bn254_verifier"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = "25"
+
+[dev-dependencies]
+soroban-sdk = { version = "25", features = ["testutils"] }
+ark-bn254 = "0.5"
+ark-serialize = "0.5"
+ark-ff = "0.5"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
