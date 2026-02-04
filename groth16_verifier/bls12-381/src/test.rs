@@ -64,9 +64,7 @@ fn create_client(e: &Env) -> Groth16VerifierClient<'_> {
 }
 
 mod groth16_verifier_contract {
-    soroban_sdk::contractimport!(
-        file = "../opt/soroban_groth16_verifier_bls12_381.wasm"
-    );
+    soroban_sdk::contractimport!(file = "../opt/soroban_groth16_verifier_bls12_381.wasm");
 }
 
 fn build_vk(env: &Env) -> VerificationKey {

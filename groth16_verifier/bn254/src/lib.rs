@@ -5,8 +5,6 @@ use soroban_sdk::{
     vec, Env, Vec,
 };
 
-
-
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(u32)]
