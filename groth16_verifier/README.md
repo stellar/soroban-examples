@@ -1,6 +1,6 @@
 # Groth16 Verifier Contract
 
-Soroban smart contract that verifies Groth16 zero-knowledge proofs over BLS12-381.
+Soroban smart contract that verifies Groth16 zero-knowledge proofs over BLS12-381 and BN254.
 
 This project demonstrates how Groth16 verifiers can be generated and executed on Stellar Soroban, using snarkjs-compatible JSON artifacts produced by multiple ZK toolchains.
 
@@ -27,7 +27,9 @@ For proof verification, three key files are required per toolchain. **Example fo
 
 Intermediate artifacts (witness code, Powers of Tau outputs, etc.) live under `./data/circom/auxiliary` (see [data/circom/README.md](./data/circom/README.md) for the Circom setup steps).
 
-For gnark, circuit definitions and setup code are in `./data/gnark/auxiliary` (see [data/gnark/README.md](./data/gnark/README.md)).
+For gnark BLS12-381, circuit definitions and setup code are in `./data/gnark/auxiliary` (see [data/gnark/README.md](./data/gnark/README.md)).
+
+For gnark BN254, circuit definitions and setup code are in `./data/gnark_bn254/auxiliary` (see [data/gnark_bn254/README.md](./data/gnark_bn254/README.md)).
 
 For arkworks, circuit definitions and setup code are in `./data/arkworks/auxiliary` (see [data/arkworks/README.md](./data/arkworks/README.md)).
 
@@ -38,9 +40,13 @@ cd groth16_verifier
 
 cargo install soroban-verifier-gen
 
+# bls12-381
 soroban-verifier-gen --vk data/circom/verification_key.json --out contracts/circom_verifier --crate-name circom_verifier
 soroban-verifier-gen --vk data/gnark/verification_key.json --out contracts/gnark_verifier --crate-name gnark_verifier
 soroban-verifier-gen --vk data/arkworks/verification_key.json --out contracts/ark_verifier --crate-name ark_verifier
+
+# bn254
+soroban-verifier-gen --vk data/gnark_bn254/verification_key.json --out contracts/gnark_bn254_verifier --crate-name gnark_bn254_verifier --curve bn254
 ```
 
 ---
