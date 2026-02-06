@@ -1,4 +1,4 @@
-$MAKEFILES = $(shell find . -maxdepth 3 -type f -name Makefile | grep -v '/circuits/')
+$MAKEFILES = $(shell find . -maxdepth 3 -type f -name Makefile)
 SUBDIRS   = $(filter-out ./,$(dir $($MAKEFILES)))
 
 default: build
