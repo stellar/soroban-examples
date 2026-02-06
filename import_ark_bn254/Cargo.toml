@@ -10,14 +10,14 @@ crate-type = ["cdylib"]
 doctest = false
 
 [dependencies]
-soroban-sdk = { version = "23.0.1", features = ["alloc"]}
+soroban-sdk = { version = "25.1.0", features = ["alloc"]}
 ark-bn254 = "0.5.0"
 ark-serialize = "0.5.0"
 ark-ec = "0.5.0"
 ark-ff = "0.5.0"
 
 [dev-dependencies]
-soroban-sdk = { version = "23.0.1", features = ["alloc", "testutils"] }
+soroban-sdk = { version = "25.1.0", features = ["alloc", "testutils"] }
 ark-std = "0.5.0"
 
 [profile.release]

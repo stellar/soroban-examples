@@ -10,7 +10,7 @@ cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "0.4"
-soroban-sdk = { version = "23.0.1", features = ["testutils"] }
+soroban-sdk = { version = "25.1.0", features = ["testutils"] }
 
 [dependencies.soroban-increment-with-fuzz-contract]
 path = ".."

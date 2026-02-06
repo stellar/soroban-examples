@@ -7,6 +7,7 @@ all: test
 
 build:
 	@for dir in $(SUBDIRS) ; do \
+		echo "Building in $$dir..."; \
 		$(MAKE) -C $$dir build || exit 1; \
 	done
 
