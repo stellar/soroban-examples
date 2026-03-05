@@ -2,14 +2,16 @@ default: build
 
 all: test
 
-test:
-	$(MAKE) -C contract test
+test: build
+	cd contract && cargo test
 
 build:
-	$(MAKE) -C contract build
+	$(MAKE) -C ../groth16_verifier || break; 
+	cd contract && stellar contract build
+	@ls -l target/wasm32v1-none/release/*.wasm
 
 fmt:
-	$(MAKE) -C contract fmt
+	cargo fmt --all
 
 clean:
-	$(MAKE) -C contract clean
+	cargo clean
