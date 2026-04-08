@@ -13,9 +13,9 @@ impl AllocContract {
         let mut v1 = alloc::vec![];
         (0..count).for_each(|i| v1.push(i));
 
-        let mut sum = 0;
+        let mut sum: u32 = 0;
         for i in v1 {
-            sum += i;
+            sum = sum.checked_add(i).expect("overflow");
         }
 
         sum
