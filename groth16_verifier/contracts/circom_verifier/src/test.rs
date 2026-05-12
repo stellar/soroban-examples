@@ -8,7 +8,9 @@ use core::str::FromStr;
 use serde::Deserialize;
 use soroban_sdk::{
     Env, U256, Vec,
-    crypto::bls12_381::{Fr, G1_SERIALIZED_SIZE, G1Affine, G2_SERIALIZED_SIZE, G2Affine},
+    crypto::bls12_381::{
+        Bls12381Fr, Bls12381G1Affine, Bls12381G2Affine, G1_SERIALIZED_SIZE, G2_SERIALIZED_SIZE,
+    },
 };
 
 use crate::{Groth16Verifier, Groth16VerifierClient, Proof};
@@ -20,20 +22,20 @@ struct ProofJson {
     pi_c: [std::string::String; 3],
 }
 
-fn g1_from_coords(env: &Env, x: &str, y: &str) -> G1Affine {
+fn g1_from_coords(env: &Env, x: &str, y: &str) -> Bls12381G1Affine {
     let ark_g1 = ark_bls12_381::G1Affine::new(Fq::from_str(x).unwrap(), Fq::from_str(y).unwrap());
     let mut buf = [0u8; G1_SERIALIZED_SIZE];
     ark_g1.serialize_uncompressed(&mut buf[..]).unwrap();
-    G1Affine::from_array(env, &buf)
+    Bls12381G1Affine::from_array(env, &buf)
 }
 
-fn g2_from_coords(env: &Env, x1: &str, x2: &str, y1: &str, y2: &str) -> G2Affine {
+fn g2_from_coords(env: &Env, x1: &str, x2: &str, y1: &str, y2: &str) -> Bls12381G2Affine {
     let x = Fq2::new(Fq::from_str(x1).unwrap(), Fq::from_str(x2).unwrap());
     let y = Fq2::new(Fq::from_str(y1).unwrap(), Fq::from_str(y2).unwrap());
     let ark_g2 = ark_bls12_381::G2Affine::new(x, y);
     let mut buf = [0u8; G2_SERIALIZED_SIZE];
     ark_g2.serialize_uncompressed(&mut buf[..]).unwrap();
-    G2Affine::from_array(env, &buf)
+    Bls12381G2Affine::from_array(env, &buf)
 }
 
 fn create_client(e: &Env) -> Groth16VerifierClient<'_> {
@@ -75,12 +77,15 @@ fn test() {
     let public_signals: std::vec::Vec<std::string::String> =
         serde_json::from_str(public_json_str).unwrap();
     let expected_output: u32 = public_signals[0].parse().unwrap();
-    let output = Vec::from_array(&env, [Fr::from_u256(U256::from_u32(&env, expected_output))]);
+    let output = Vec::from_array(
+        &env,
+        [Bls12381Fr::from_u256(U256::from_u32(&env, expected_output))],
+    );
     let res = client.verify_proof(&proof, &output);
     assert_eq!(res, true);
 
     // Test Case 2: Verify the proof with an incorrect public output
-    let output = Vec::from_array(&env, [Fr::from_u256(U256::from_u32(&env, 22))]);
+    let output = Vec::from_array(&env, [Bls12381Fr::from_u256(U256::from_u32(&env, 22))]);
     let res = client.verify_proof(&proof, &output);
     assert_eq!(res, false);
 }

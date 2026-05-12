@@ -9,11 +9,12 @@ crate-type = ["lib", "cdylib"]
 doctest = false
 
 [dependencies]
-soroban-sdk = "25"
+soroban-sdk = "26"
 
 [dev-dependencies]
-soroban-sdk = { version = "25", features = ["testutils"] }
-ark-bls12-381 = "0.5"
-ark-serialize = "0.5"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+soroban-sdk = { version = "26", features = ["testutils"] }
+ark-bls12-381 = "0.6"
+ark-ff = "0.6"
+ark-serialize = "0.6"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

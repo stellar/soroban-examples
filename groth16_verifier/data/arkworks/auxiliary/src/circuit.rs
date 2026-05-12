@@ -6,7 +6,7 @@ use ark_crypto_primitives::crh::{CRHScheme, TwoToOneCRHScheme};
 use ark_crypto_primitives::merkle_tree::constraints::{ConfigGadget, PathVar};
 
 use ark_r1cs_std::prelude::*;
-use ark_relations::r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError};
+use ark_relations::gr1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError};
 
 /// Merkle tree gadget config: binds hash gadgets + digest types to the MerkleConfig.
 pub struct MerkleConfigGadget;

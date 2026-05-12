@@ -9,7 +9,7 @@ use serde::Deserialize;
 use soroban_sdk::{
     Env, U256, Vec,
     crypto::bn254::{
-        BN254_G1_SERIALIZED_SIZE, BN254_G2_SERIALIZED_SIZE, Bn254G1Affine, Bn254G2Affine, Fr,
+        BN254_G1_SERIALIZED_SIZE, BN254_G2_SERIALIZED_SIZE, Bn254Fr, Bn254G1Affine, Bn254G2Affine,
     },
 };
 
@@ -81,12 +81,12 @@ fn test() {
     let mut output = Vec::new(&env);
     for s in &proof_json.public_signals {
         let val: u32 = s.parse().unwrap();
-        output.push_back(Fr::from_u256(U256::from_u32(&env, val)));
+        output.push_back(Bn254Fr::from_u256(U256::from_u32(&env, val)));
     }
     let res = client.verify_proof(&proof, &output);
     assert_eq!(res, true);
 
-    let output = Vec::from_array(&env, [Fr::from_u256(U256::from_u32(&env, 22))]);
+    let output = Vec::from_array(&env, [Bn254Fr::from_u256(U256::from_u32(&env, 22))]);
     let res = client.verify_proof(&proof, &output);
     assert_eq!(res, false);
 }

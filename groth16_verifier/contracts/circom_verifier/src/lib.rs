@@ -1,12 +1,12 @@
 #![no_std]
-
 #[cfg(test)]
 mod test;
 
 use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype,
-    crypto::bls12_381::{Fr, G1Affine, G2Affine, G1_SERIALIZED_SIZE, G2_SERIALIZED_SIZE},
-    Env, Vec,
+    Env, Vec, contract, contracterror, contractimpl, contracttype,
+    crypto::bls12_381::{
+        Bls12381Fr, Bls12381G1Affine, Bls12381G2Affine, G1_SERIALIZED_SIZE, G2_SERIALIZED_SIZE,
+    },
 };
 
 #[contracterror]
@@ -19,19 +19,19 @@ pub enum Groth16Error {
 #[derive(Clone)]
 #[contracttype]
 pub struct VerificationKey {
-    pub alpha: G1Affine,
-    pub beta: G2Affine,
-    pub gamma: G2Affine,
-    pub delta: G2Affine,
-    pub ic: Vec<G1Affine>,
+    pub alpha: Bls12381G1Affine,
+    pub beta: Bls12381G2Affine,
+    pub gamma: Bls12381G2Affine,
+    pub delta: Bls12381G2Affine,
+    pub ic: Vec<Bls12381G1Affine>,
 }
 
 #[derive(Clone)]
 #[contracttype]
 pub struct Proof {
-    pub a: G1Affine,
-    pub b: G2Affine,
-    pub c: G1Affine,
+    pub a: Bls12381G1Affine,
+    pub b: Bls12381G2Affine,
+    pub c: Bls12381G1Affine,
 }
 
 // AUTO-GENERATED VK BYTES (uncompressed). DO NOT EDIT.
@@ -108,14 +108,14 @@ const VK_IC: [[u8; G1_SERIALIZED_SIZE]; 2] = [
 ];
 
 fn vk(env: &Env) -> VerificationKey {
-    let alpha = G1Affine::from_array(env, &VK_ALPHA);
-    let beta = G2Affine::from_array(env, &VK_BETA);
-    let gamma = G2Affine::from_array(env, &VK_GAMMA);
-    let delta = G2Affine::from_array(env, &VK_DELTA);
+    let alpha = Bls12381G1Affine::from_array(env, &VK_ALPHA);
+    let beta = Bls12381G2Affine::from_array(env, &VK_BETA);
+    let gamma = Bls12381G2Affine::from_array(env, &VK_GAMMA);
+    let delta = Bls12381G2Affine::from_array(env, &VK_DELTA);
 
     let mut ic = Vec::new(env);
     for p in VK_IC.iter() {
-        ic.push_back(G1Affine::from_array(env, p));
+        ic.push_back(Bls12381G1Affine::from_array(env, p));
     }
 
     VerificationKey {
@@ -135,7 +135,7 @@ impl Groth16Verifier {
     pub fn verify_proof(
         env: Env,
         proof: Proof,
-        pub_signals: Vec<Fr>,
+        pub_signals: Vec<Bls12381Fr>,
     ) -> Result<bool, Groth16Error> {
         let bls = env.crypto().bls12_381();
         let vk = vk(&env);
