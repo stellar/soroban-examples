@@ -10,7 +10,7 @@ exclude = [
 ]
 
 [workspace.dependencies]
-soroban-sdk = "25"
+soroban-sdk = "26"
 
 [profile.release]
 opt-level = "z"

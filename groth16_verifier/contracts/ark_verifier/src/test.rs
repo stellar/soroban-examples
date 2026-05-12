@@ -9,7 +9,9 @@ use core::str::FromStr;
 use serde::Deserialize;
 use soroban_sdk::{
     Bytes, Env, U256, Vec,
-    crypto::bls12_381::{Fr, G1_SERIALIZED_SIZE, G1Affine, G2_SERIALIZED_SIZE, G2Affine},
+    crypto::bls12_381::{
+        Bls12381Fr, Bls12381G1Affine, Bls12381G2Affine, G1_SERIALIZED_SIZE, G2_SERIALIZED_SIZE,
+    },
 };
 use std::vec::Vec as AllocVec;
 
@@ -24,20 +26,20 @@ struct ProofJson {
     public_signals: AllocVec<std::string::String>,
 }
 
-fn g1_from_coords(env: &Env, x: &str, y: &str) -> G1Affine {
+fn g1_from_coords(env: &Env, x: &str, y: &str) -> Bls12381G1Affine {
     let ark_g1 = ark_bls12_381::G1Affine::new(Fq::from_str(x).unwrap(), Fq::from_str(y).unwrap());
     let mut buf = [0u8; G1_SERIALIZED_SIZE];
     ark_g1.serialize_uncompressed(&mut buf[..]).unwrap();
-    G1Affine::from_array(env, &buf)
+    Bls12381G1Affine::from_array(env, &buf)
 }
 
-fn g2_from_coords(env: &Env, x1: &str, x2: &str, y1: &str, y2: &str) -> G2Affine {
+fn g2_from_coords(env: &Env, x1: &str, x2: &str, y1: &str, y2: &str) -> Bls12381G2Affine {
     let x = Fq2::new(Fq::from_str(x1).unwrap(), Fq::from_str(x2).unwrap());
     let y = Fq2::new(Fq::from_str(y1).unwrap(), Fq::from_str(y2).unwrap());
     let ark_g2 = ark_bls12_381::G2Affine::new(x, y);
     let mut buf = [0u8; G2_SERIALIZED_SIZE];
     ark_g2.serialize_uncompressed(&mut buf[..]).unwrap();
-    G2Affine::from_array(env, &buf)
+    Bls12381G2Affine::from_array(env, &buf)
 }
 
 fn create_client(e: &Env) -> Groth16VerifierClient<'_> {
@@ -45,7 +47,7 @@ fn create_client(e: &Env) -> Groth16VerifierClient<'_> {
     Groth16VerifierClient::new(e, &contract_id)
 }
 
-fn fr_from_str(env: &Env, s: &str) -> Fr {
+fn fr_from_str(env: &Env, s: &str) -> Bls12381Fr {
     // Parse string -> arkworks Fr -> bytes -> Soroban Fr
     let ark_fr = ArkFr::from_str(s).unwrap();
     let bigint = ark_fr.into_bigint();
@@ -54,7 +56,7 @@ fn fr_from_str(env: &Env, s: &str) -> Fr {
     u256_bytes[..bytes.len().min(32)].copy_from_slice(&bytes[..bytes.len().min(32)]);
     u256_bytes.reverse(); // little-endian -> big-endian for U256
     let bytes_obj = Bytes::from_array(&env, &u256_bytes);
-    Fr::from_u256(U256::from_be_bytes(&env, &bytes_obj))
+    Bls12381Fr::from_u256(U256::from_be_bytes(&env, &bytes_obj))
 }
 
 #[test]

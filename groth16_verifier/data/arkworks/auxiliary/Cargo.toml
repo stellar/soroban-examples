@@ -4,20 +4,20 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-ark-ff = "0.5.0"
-ark-ec = "0.5.0"
-ark-std = { version = "0.5.0", features = ["getrandom"] }
-ark-relations = "0.5.0"
-ark-r1cs-std = "0.5.0"
-ark-snark = "0.5.0"
-ark-serialize = "0.5.0"
+ark-ff = "0.6.0"
+ark-ec = "0.6.0"
+ark-std = { version = "0.6.0", features = ["getrandom"] }
+ark-relations = "0.6.0"
+ark-r1cs-std = "0.6.0"
+ark-snark = "0.6.0"
+ark-serialize = "0.6.0"
 
-ark-bls12-381 = "0.5.0"
-ark-ed-on-bls12-381 = { version = "0.5.0", features = ["r1cs"] }
-ark-groth16 = "0.5.0"
+ark-bls12-381 = "0.6.0"
+ark-ed-on-bls12-381 = { version = "0.6.0", features = ["r1cs"] }
+ark-groth16 = "0.6.0"
 
-ark-crypto-primitives = { version = "0.5.0", default-features = false, features = ["std", "crh", "r1cs", "merkle_tree"] }
+ark-crypto-primitives = { version = "0.6.0", default-features = false, features = ["std", "crh", "constraints", "merkle_tree"] }
 
-tracing-subscriber = "0.3.22"
+tracing-subscriber = "0.3.23"
 tracing = { version = "0.1.44", features = ["attributes"] }
-ark-snarkjs = "0.1.4"
+ark-snarkjs = "0.2.0"
