@@ -11,7 +11,7 @@ The examples in this repository:
 
 - **account**: This a basic multi-sig account contract that with a customizable per-token authorization policy
 - **alloc**: Allocates a temporary vector holding values (0..count), then computes and returns their sum
-  atomic_multiswap\*\*: This contract performs a batch of atomic token swaps between multiple parties and does a simple price matching
+- **atomic_multiswap**: This contract performs a batch of atomic token swaps between multiple parties and does a simple price matching
 - **atomic_swap**: This contract performs an atomic token swap between two parties that don't need to know each other
 - **auth**: This contract demonstrates how to implement authorization using Soroban-managed auth framework for a simple case
 - **bls_signature**: This is a basic custom account contract that implements the FastAggregateVerify function in BLS Signatures
