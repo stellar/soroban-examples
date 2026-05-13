@@ -3,11 +3,6 @@ resolver = "2"
 members = [
   "contracts/*",
 ]
-exclude = [
-  "data/arkworks/auxiliary",
-  "data/circom/**",
-  "data/gnark/**",
-]
 
 [workspace.dependencies]
 soroban-sdk = "26"

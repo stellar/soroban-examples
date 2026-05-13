@@ -1,0 +1,172 @@
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    str::FromStr,
+};
+
+use ark_bls12_381::{Fq, Fq2, Fr as ArkFr};
+use ark_ff::{BigInteger, PrimeField};
+use ark_serialize::CanonicalSerialize;
+use bls12_381_verifier::{Groth16Verifier, Groth16VerifierClient, Proof, VerificationKey};
+use serde::Deserialize;
+use soroban_sdk::{
+    Address, Bytes, Env, U256, Vec,
+    crypto::bls12_381::{
+        Bls12381Fr, Bls12381G1Affine, Bls12381G2Affine, G1_SERIALIZED_SIZE, G2_SERIALIZED_SIZE,
+    },
+};
+
+pub struct Fixture {
+    pub verification_key: VerificationKey,
+    pub proof: Proof,
+    pub public_signals: Vec<Bls12381Fr>,
+}
+
+#[derive(Deserialize)]
+struct VerificationKeyJson {
+    vk_alpha_1: [String; 3],
+    vk_beta_2: [[String; 2]; 3],
+    vk_gamma_2: [[String; 2]; 3],
+    vk_delta_2: [[String; 2]; 3],
+    #[serde(rename = "IC")]
+    ic: std::vec::Vec<[String; 3]>,
+}
+
+#[derive(Deserialize)]
+struct ProofJson {
+    pi_a: [String; 3],
+    pi_b: [[String; 2]; 3],
+    pi_c: [String; 3],
+    #[serde(rename = "publicSignals")]
+    public_signals: Option<std::vec::Vec<String>>,
+}
+
+pub fn load_fixture(env: &Env, fixture_name: &str) -> Fixture {
+    let dir = fixture_dir(fixture_name);
+    let proof_json: ProofJson = serde_json::from_str(&read_file(dir.join("proof.json"))).unwrap();
+    let verification_key_json: VerificationKeyJson =
+        serde_json::from_str(&read_file(dir.join("verification_key.json"))).unwrap();
+
+    let public_signals = match proof_json.public_signals {
+        Some(values) => values,
+        None => {
+            let public_path = dir.join("public.json");
+            serde_json::from_str(&read_file(public_path)).unwrap()
+        }
+    };
+
+    let mut signals = Vec::new(env);
+    for signal in public_signals {
+        signals.push_back(fr_from_str(env, &signal));
+    }
+
+    let mut ic = Vec::new(env);
+    for point in verification_key_json.ic {
+        ic.push_back(g1_from_coords(env, &point[0], &point[1]));
+    }
+
+    Fixture {
+        verification_key: VerificationKey {
+            alpha: g1_from_coords(
+                env,
+                &verification_key_json.vk_alpha_1[0],
+                &verification_key_json.vk_alpha_1[1],
+            ),
+            beta: g2_from_coords(
+                env,
+                &verification_key_json.vk_beta_2[0][0],
+                &verification_key_json.vk_beta_2[0][1],
+                &verification_key_json.vk_beta_2[1][0],
+                &verification_key_json.vk_beta_2[1][1],
+            ),
+            gamma: g2_from_coords(
+                env,
+                &verification_key_json.vk_gamma_2[0][0],
+                &verification_key_json.vk_gamma_2[0][1],
+                &verification_key_json.vk_gamma_2[1][0],
+                &verification_key_json.vk_gamma_2[1][1],
+            ),
+            delta: g2_from_coords(
+                env,
+                &verification_key_json.vk_delta_2[0][0],
+                &verification_key_json.vk_delta_2[0][1],
+                &verification_key_json.vk_delta_2[1][0],
+                &verification_key_json.vk_delta_2[1][1],
+            ),
+            ic,
+        },
+        proof: Proof {
+            a: g1_from_coords(env, &proof_json.pi_a[0], &proof_json.pi_a[1]),
+            b: g2_from_coords(
+                env,
+                &proof_json.pi_b[0][0],
+                &proof_json.pi_b[0][1],
+                &proof_json.pi_b[1][0],
+                &proof_json.pi_b[1][1],
+            ),
+            c: g1_from_coords(env, &proof_json.pi_c[0], &proof_json.pi_c[1]),
+        },
+        public_signals: signals,
+    }
+}
+
+pub fn deploy<'a>(
+    env: &Env,
+    admin: &Address,
+    verification_key: &VerificationKey,
+) -> Groth16VerifierClient<'a> {
+    let contract_id = env.register(Groth16Verifier, (admin, verification_key));
+    Groth16VerifierClient::new(env, &contract_id)
+}
+
+pub fn replace_first_signal(env: &Env, signals: &Vec<Bls12381Fr>, replacement: &str) -> Vec<Bls12381Fr> {
+    let mut updated = Vec::new(env);
+    if signals.is_empty() {
+        return updated;
+    }
+
+    updated.push_back(fr_from_str(env, replacement));
+    for signal in signals.iter().skip(1) {
+        updated.push_back(signal);
+    }
+    updated
+}
+
+fn fixture_dir(fixture_name: &str) -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("data")
+        .join(fixture_name)
+}
+
+fn read_file(path: PathBuf) -> String {
+    fs::read_to_string(&path).unwrap_or_else(|err| panic!("failed to read {}: {err}", path.display()))
+}
+
+fn g1_from_coords(env: &Env, x: &str, y: &str) -> Bls12381G1Affine {
+    let ark_g1 = ark_bls12_381::G1Affine::new(Fq::from_str(x).unwrap(), Fq::from_str(y).unwrap());
+    let mut buf = [0u8; G1_SERIALIZED_SIZE];
+    ark_g1.serialize_uncompressed(&mut buf[..]).unwrap();
+    Bls12381G1Affine::from_array(env, &buf)
+}
+
+fn g2_from_coords(env: &Env, x1: &str, x2: &str, y1: &str, y2: &str) -> Bls12381G2Affine {
+    let x = Fq2::new(Fq::from_str(x1).unwrap(), Fq::from_str(x2).unwrap());
+    let y = Fq2::new(Fq::from_str(y1).unwrap(), Fq::from_str(y2).unwrap());
+    let ark_g2 = ark_bls12_381::G2Affine::new(x, y);
+    let mut buf = [0u8; G2_SERIALIZED_SIZE];
+    ark_g2.serialize_uncompressed(&mut buf[..]).unwrap();
+    Bls12381G2Affine::from_array(env, &buf)
+}
+
+fn fr_from_str(env: &Env, s: &str) -> Bls12381Fr {
+    let ark_fr = ArkFr::from_str(s).unwrap();
+    let bigint = ark_fr.into_bigint();
+    let bytes = bigint.to_bytes_le();
+    let mut u256_bytes = [0u8; 32];
+    let copy_len = bytes.len().min(32);
+    u256_bytes[..copy_len].copy_from_slice(&bytes[..copy_len]);
+    u256_bytes.reverse();
+    let bytes_obj = Bytes::from_array(env, &u256_bytes);
+    Bls12381Fr::from_u256(U256::from_be_bytes(env, &bytes_obj))
+}

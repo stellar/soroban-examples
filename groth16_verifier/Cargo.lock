@@ -307,18 +307,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ark_verifier"
-version = "0.1.0"
-dependencies = [
- "ark-bls12-381 0.6.0",
- "ark-ff 0.6.0",
- "ark-serialize 0.6.0",
- "serde",
- "serde_json",
- "soroban-sdk",
-]
-
-[[package]]
 name = "arrayvec"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -355,6 +343,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71"
 dependencies = [
  "generic-array",
+]
+
+[[package]]
+name = "bls12_381_verifier"
+version = "0.1.0"
+dependencies = [
+ "ark-bls12-381 0.6.0",
+ "ark-ff 0.6.0",
+ "ark-serialize 0.6.0",
+ "serde",
+ "serde_json",
+ "soroban-sdk",
+]
+
+[[package]]
+name = "bn254_verifier"
+version = "0.1.0"
+dependencies = [
+ "ark-bn254 0.6.0",
+ "ark-ff 0.6.0",
+ "serde",
+ "serde_json",
+ "soroban-sdk",
 ]
 
 [[package]]
@@ -418,18 +429,6 @@ dependencies = [
  "num-traits",
  "serde",
  "windows-link",
-]
-
-[[package]]
-name = "circom_verifier"
-version = "0.1.0"
-dependencies = [
- "ark-bls12-381 0.6.0",
- "ark-ff 0.6.0",
- "ark-serialize 0.6.0",
- "serde",
- "serde_json",
- "soroban-sdk",
 ]
 
 [[package]]
@@ -837,30 +836,6 @@ dependencies = [
  "libc",
  "wasi",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "gnark_bn254_verifier"
-version = "0.1.0"
-dependencies = [
- "ark-bn254 0.6.0",
- "ark-ff 0.6.0",
- "ark-serialize 0.6.0",
- "serde",
- "serde_json",
- "soroban-sdk",
-]
-
-[[package]]
-name = "gnark_verifier"
-version = "0.1.0"
-dependencies = [
- "ark-bls12-381 0.6.0",
- "ark-ff 0.6.0",
- "ark-serialize 0.6.0",
- "serde",
- "serde_json",
- "soroban-sdk",
 ]
 
 [[package]]
