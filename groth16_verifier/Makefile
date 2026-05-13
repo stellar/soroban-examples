@@ -1,3 +1,5 @@
+.PHONY: default all test build fmt clean
+
 default: build
 
 CONTRACT_DIRS = contracts/bls12_381_verifier contracts/bn254_verifier
