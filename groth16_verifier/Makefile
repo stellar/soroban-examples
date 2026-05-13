@@ -1,13 +1,16 @@
+.PHONY: default all test build fmt clean
+
 default: build
+
+CONTRACT_DIRS = contracts/bls12_381_verifier contracts/bn254_verifier
 
 all: test
 
 test: build
-	cargo test
+	cargo test --workspace
 
 build:
-	stellar contract build
-	@ls -l target/wasm32v1-none/release/*.wasm
+	@for dir in $(CONTRACT_DIRS); do $(MAKE) -C $$dir build; done
 
 fmt:
 	cargo fmt --all
