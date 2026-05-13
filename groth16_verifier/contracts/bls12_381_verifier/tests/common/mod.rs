@@ -119,7 +119,11 @@ pub fn deploy<'a>(
     Groth16VerifierClient::new(env, &contract_id)
 }
 
-pub fn replace_first_signal(env: &Env, signals: &Vec<Bls12381Fr>, replacement: &str) -> Vec<Bls12381Fr> {
+pub fn replace_first_signal(
+    env: &Env,
+    signals: &Vec<Bls12381Fr>,
+    replacement: &str,
+) -> Vec<Bls12381Fr> {
     let mut updated = Vec::new(env);
     if signals.is_empty() {
         return updated;
@@ -140,7 +144,8 @@ fn fixture_dir(fixture_name: &str) -> PathBuf {
 }
 
 fn read_file(path: PathBuf) -> String {
-    fs::read_to_string(&path).unwrap_or_else(|err| panic!("failed to read {}: {err}", path.display()))
+    fs::read_to_string(&path)
+        .unwrap_or_else(|err| panic!("failed to read {}: {err}", path.display()))
 }
 
 fn g1_from_coords(env: &Env, x: &str, y: &str) -> Bls12381G1Affine {

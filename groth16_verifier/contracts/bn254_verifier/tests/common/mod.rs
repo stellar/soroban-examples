@@ -131,7 +131,8 @@ fn fixture_dir() -> PathBuf {
 }
 
 fn read_file(path: PathBuf) -> String {
-    fs::read_to_string(&path).unwrap_or_else(|err| panic!("failed to read {}: {err}", path.display()))
+    fs::read_to_string(&path)
+        .unwrap_or_else(|err| panic!("failed to read {}: {err}", path.display()))
 }
 
 fn fq_to_bytes_be(fq: &Fq) -> [u8; 32] {

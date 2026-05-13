@@ -39,9 +39,14 @@ The BLS12-381 contract is exercised with Circom, Gnark, and Arkworks fixtures. T
 ```sh
 cd groth16_verifier
 
+# Runs the workspace tests directly through Cargo.
 cargo test --workspace
+
+# Builds the Wasm artifacts with Stellar CLI, then runs the workspace tests.
 make test
 ```
+
+If you only want to run the Rust tests, `cargo test --workspace` is enough. The `make` targets additionally require the `stellar` binary because they invoke `stellar contract build`.
 
 If you want to generate verifier contracts directly from verification keys, you can use
 [`soroban-verifier-gen`](https://github.com/mysteryon88/soroban-verifier-gen).

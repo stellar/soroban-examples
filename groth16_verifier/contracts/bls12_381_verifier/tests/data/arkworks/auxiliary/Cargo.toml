@@ -2,6 +2,8 @@
 name = "merkle"
 version = "0.1.0"
 edition = "2024"
+publish = false
+rust-version = "1.89.0"
 
 [dependencies]
 ark-ff = "0.6.0"
@@ -21,3 +23,5 @@ ark-crypto-primitives = { version = "0.6.0", default-features = false, features 
 tracing-subscriber = "0.3.23"
 tracing = { version = "0.1.44", features = ["attributes"] }
 ark-snarkjs = "0.2.0"
+
+[workspace]
