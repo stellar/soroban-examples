@@ -1,0 +1,32 @@
+[package]
+name = "soroban-modular-account-contract"
+version = "0.0.0"
+edition = "2021"
+publish = false
+rust-version = "1.89.0"
+
+[lib]
+crate-type = ["cdylib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = { version = "27.0.0-rc.1" }
+
+[dev-dependencies]
+soroban-sdk = { version = "27.0.0-rc.1", features = ["testutils"] }
+ed25519-dalek = { version = "2.1.1" }
+sha2 = { version = "0.10.8" }
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
+lto = true
+
+[profile.release-with-logs]
+inherits = "release"
+debug-assertions = true
