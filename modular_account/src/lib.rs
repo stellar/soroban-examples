@@ -20,7 +20,7 @@ use soroban_sdk::{
     auth::{Context, CustomAccountInterface},
     contract, contracterror, contractimpl, contracttype,
     crypto::Hash,
-    Address, BytesN, Env, Symbol, Vec,
+    Address, Env, Symbol, Vec,
 };
 
 #[contracterror]
@@ -32,8 +32,6 @@ pub enum ModularAccountError {
 
 #[contracttype]
 pub enum DataKey {
-    // The account's own ed25519 public key.
-    PublicKey,
     // The set of addresses allowed to act as delegates for this account.
     Signers,
     // A log of the function names this account has approved, used by the tests
@@ -48,30 +46,24 @@ pub struct ModularAccount;
 
 #[contractimpl]
 impl ModularAccount {
-    pub fn __constructor(env: Env, public_key: BytesN<32>, signers: Vec<Address>) {
-        env.storage()
-            .instance()
-            .set(&DataKey::PublicKey, &public_key);
+    pub fn __constructor(env: Env, signers: Vec<Address>) {
         env.storage().instance().set(&DataKey::Signers, &signers);
     }
 }
 
 #[contractimpl]
 impl CustomAccountInterface for ModularAccount {
-    type Signature = BytesN<64>;
+    // This account holds no key of its own; it authenticates purely by
+    // delegating, so it carries no signature.
+    type Signature = ();
     type Error = ModularAccountError;
 
     fn __check_auth(
         env: Env,
-        signature_payload: Hash<32>,
-        signature: BytesN<64>,
+        _signature_payload: Hash<32>,
+        _signature: (),
         auth_contexts: Vec<Context>,
     ) -> Result<(), ModularAccountError> {
-        // Even though we use delegated authentication, the account can still
-        // perform the regular verification if necessary.
-        let public_key: BytesN<32> = env.storage().instance().get(&DataKey::PublicKey).unwrap();
-        env.crypto()
-            .ed25519_verify(&public_key, &signature_payload.into(), &signature);
         record_authorized_calls(&env, &auth_contexts);
 
         // The signers the user attached to the auth entry for this account's

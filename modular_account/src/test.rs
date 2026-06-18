@@ -14,7 +14,7 @@ use soroban_sdk::{
     auth::{Context, CustomAccountInterface},
     contract, contractimpl,
     crypto::Hash,
-    vec, Address, BytesN, Env, Symbol, TryFromVal, Vec,
+    symbol_short, vec, Address, BytesN, Env, Symbol, TryFromVal, Vec,
 };
 
 use crate::{record_authorized_calls, DataKey, ModularAccount};
@@ -31,7 +31,7 @@ impl DelegateAccount {
     pub fn __constructor(env: Env, public_key: BytesN<32>) {
         env.storage()
             .instance()
-            .set(&DataKey::PublicKey, &public_key);
+            .set(&symbol_short!("pubkey"), &public_key);
     }
 }
 
@@ -46,7 +46,11 @@ impl CustomAccountInterface for DelegateAccount {
         signature: BytesN<64>,
         auth_contexts: Vec<Context>,
     ) -> Result<(), soroban_sdk::Error> {
-        let public_key: BytesN<32> = env.storage().instance().get(&DataKey::PublicKey).unwrap();
+        let public_key: BytesN<32> = env
+            .storage()
+            .instance()
+            .get(&symbol_short!("pubkey"))
+            .unwrap();
         env.crypto()
             .ed25519_verify(&public_key, &signature_payload.into(), &signature);
         record_authorized_calls(&env, &auth_contexts);
@@ -74,7 +78,6 @@ fn sign(env: &Env, key: &SigningKey, payload: &[u8; 32]) -> ScVal {
 fn test_delegate_auth() {
     let env = Env::default();
 
-    let account_key = SigningKey::from_bytes(&[1u8; 32]);
     let key_a = SigningKey::from_bytes(&[2u8; 32]);
     let key_b = SigningKey::from_bytes(&[3u8; 32]);
 
@@ -87,13 +90,11 @@ fn test_delegate_auth() {
         (BytesN::from_array(&env, &key_b.verifying_key().to_bytes()),),
     );
 
-    // Register the account with its own key and both delegates as signers.
+    // Register the account with both delegates as signers. The account holds no
+    // key of its own and authenticates purely by delegating.
     let account = env.register(
         ModularAccount,
-        (
-            BytesN::from_array(&env, &account_key.verifying_key().to_bytes()),
-            vec![&env, delegate_a.clone(), delegate_b.clone()],
-        ),
+        (vec![&env, delegate_a.clone(), delegate_b.clone()],),
     );
     let protected = env.register(Protected, ());
 
@@ -162,7 +163,8 @@ fn test_delegate_auth() {
                     address: account_addr.clone(),
                     nonce,
                     signature_expiration_ledger,
-                    signature: sign(&env, &account_key, &payload),
+                    // The account has no signature of its own.
+                    signature: ScVal::Void,
                 },
                 delegates: bad_delegates.try_into().unwrap(),
             },
@@ -200,10 +202,8 @@ fn test_delegate_auth() {
                     address: account_addr.clone(),
                     nonce,
                     signature_expiration_ledger,
-                    // Also include the account's own signature in the
-                    // credentials, as it is required by `ModularAccount`'s own
-                    // verification step.
-                    signature: sign(&env, &account_key, &payload),
+                    // The account has no signature of its own.
+                    signature: ScVal::Void,
                 },
                 delegates: delegates.try_into().unwrap(),
             },
