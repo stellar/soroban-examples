@@ -11,13 +11,13 @@ use soroban_sdk::xdr::{
     SorobanCredentials, SorobanDelegateSignature, StringM, VecM, WriteXdr,
 };
 use soroban_sdk::{
-    auth::{Context, CustomAccountInterface},
+    auth::{Context, ContractContext, CustomAccountInterface},
     contract, contractimpl,
     crypto::Hash,
-    symbol_short, vec, Address, BytesN, Env, Symbol, TryFromVal, Vec,
+    symbol_short, vec, Address, BytesN, Env, IntoVal, Symbol, TryFromVal, Vec,
 };
 
-use crate::{record_authorized_calls, DataKey, ModularAccount};
+use crate::{record_authorized_contexts, DataKey, ModularAccount};
 
 // An account that performs ed25519 verification and is used as a delegate
 // signer of `ModularAccount`. Any address type (G- or C-) that implements
@@ -53,7 +53,7 @@ impl CustomAccountInterface for DelegateAccount {
             .unwrap();
         env.crypto()
             .ed25519_verify(&public_key, &signature_payload.into(), &signature);
-        record_authorized_calls(&env, &auth_contexts);
+        record_authorized_contexts(&env, &auth_contexts);
         Ok(())
     }
 }
@@ -219,16 +219,23 @@ fn test_delegate_auth() {
     // only `set_auths` plus a wrapper call can be used to test the full flow.
     ProtectedClient::new(&env, &protected).protected(&account);
 
-    // Both the account and its delegates observe a single call to `protected`
-    // in their authorization contexts.
-    let expected = vec![&env, Symbol::new(&env, "protected")];
+    // The account and both delegates each observe the same single authorization
+    // context: the call to `protected` with the account as its argument.
+    let expected = vec![
+        &env,
+        Context::Contract(ContractContext {
+            contract: protected.clone(),
+            fn_name: Symbol::new(&env, "protected"),
+            args: (account.clone(),).into_val(&env),
+        }),
+    ];
     for addr in [&account, &delegate_a, &delegate_b] {
-        let calls: Vec<Symbol> = env.as_contract(addr, || {
+        let contexts: Vec<Context> = env.as_contract(addr, || {
             env.storage()
                 .instance()
-                .get(&DataKey::AuthorizedCalls)
+                .get(&DataKey::AuthorizedContexts)
                 .unwrap()
         });
-        assert_eq!(calls, expected);
+        assert!(contexts == expected);
     }
 }

@@ -20,7 +20,7 @@ use soroban_sdk::{
     auth::{Context, CustomAccountInterface},
     contract, contracterror, contractimpl, contracttype,
     crypto::Hash,
-    Address, Env, Symbol, Vec,
+    Address, Env, Vec,
 };
 
 #[contracterror]
@@ -34,9 +34,9 @@ pub enum ModularAccountError {
 pub enum DataKey {
     // The set of addresses allowed to act as delegates for this account.
     Signers,
-    // A log of the function names this account has approved, used by the tests
+    // The authorization contexts this account has approved, used by the tests
     // to verify what was authorized.
-    AuthorizedCalls,
+    AuthorizedContexts,
 }
 
 // A custom account that can delegate authentication to a set of registered
@@ -64,7 +64,7 @@ impl CustomAccountInterface for ModularAccount {
         _signature: (),
         auth_contexts: Vec<Context>,
     ) -> Result<(), ModularAccountError> {
-        record_authorized_calls(&env, &auth_contexts);
+        record_authorized_contexts(&env, &auth_contexts);
 
         // The signers the user attached to the auth entry for this account's
         // authorization. These are unsanitized user input, so the account must
@@ -89,22 +89,12 @@ impl CustomAccountInterface for ModularAccount {
     }
 }
 
-// Appends the function name from each contract-call context to a per-account
-// log in instance storage so the tests can verify what the account approved.
-fn record_authorized_calls(env: &Env, auth_contexts: &Vec<Context>) {
-    let mut calls: Vec<Symbol> = env
-        .storage()
-        .instance()
-        .get(&DataKey::AuthorizedCalls)
-        .unwrap_or_else(|| Vec::new(env));
-    for ctx in auth_contexts.iter() {
-        if let Context::Contract(c) = ctx {
-            calls.push_back(c.fn_name);
-        }
-    }
+// Stores the full set of authorization contexts this account approved in
+// instance storage so the tests can assert on the entire auth context.
+fn record_authorized_contexts(env: &Env, auth_contexts: &Vec<Context>) {
     env.storage()
         .instance()
-        .set(&DataKey::AuthorizedCalls, &calls);
+        .set(&DataKey::AuthorizedContexts, auth_contexts);
 }
 
 mod test;
