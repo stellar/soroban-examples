@@ -63,10 +63,12 @@ impl CustomAccountInterface for ModularAccount {
                 return Err(Error::UnknownDelegate);
             }
         }
+        
         // Forward the current authorization to each delegate.
         for delegate in delegates.iter() {
             env.custom_account().delegate_auth(&delegate);
         }
+        
         Ok(())
     }
 }
