@@ -1449,8 +1449,6 @@ dependencies = [
 name = "soroban-modular-account-contract"
 version = "0.0.0"
 dependencies = [
- "ed25519-dalek",
- "sha2",
  "soroban-sdk",
 ]
 

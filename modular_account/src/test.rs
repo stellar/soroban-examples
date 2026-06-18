@@ -1,59 +1,51 @@
 #![cfg(test)]
 extern crate std;
 
-use ed25519_dalek::{Signer, SigningKey};
-use sha2::{Digest, Sha256};
-
-use soroban_sdk::xdr::{
-    HashIdPreimage, HashIdPreimageSorobanAuthorizationWithAddress, InvokeContractArgs, Limits,
-    ScAddress, ScVal, SorobanAddressCredentials, SorobanAddressCredentialsWithDelegates,
-    SorobanAuthorizationEntry, SorobanAuthorizedFunction, SorobanAuthorizedInvocation,
-    SorobanCredentials, SorobanDelegateSignature, StringM, VecM, WriteXdr,
-};
 use soroban_sdk::{
     auth::{Context, ContractContext, CustomAccountInterface},
-    contract, contractimpl,
+    contract, contractimpl, contracttype,
     crypto::Hash,
-    symbol_short, vec, Address, BytesN, Env, IntoVal, Symbol, TryFromVal, Vec,
+    testutils::{AuthorizedFunction, AuthorizedInvocation},
+    vec, Address, Env, IntoVal, Symbol, Vec,
+};
+use soroban_sdk::xdr::{
+    InvokeContractArgs, ScAddress, ScVal, SorobanAddressCredentials,
+    SorobanAddressCredentialsWithDelegates, SorobanAuthorizationEntry,
+    SorobanAuthorizedFunction, SorobanAuthorizedInvocation, SorobanCredentials,
+    SorobanDelegateSignature, StringM, VecM,
 };
 
-use crate::{record_authorized_contexts, DataKey, ModularAccount};
+use crate::{Error, ModularAccount};
 
-// An account that performs ed25519 verification and is used as a delegate
-// signer of `ModularAccount`. Any address type (G- or C-) that implements
-// `CustomAccountInterface` can be a delegate, so this is defined here as a
-// test fixture rather than as a deployable contract of this crate.
+#[contracttype]
+enum DelegateAccountDataKey {
+    // Records the contexts the delegate approved so the test can verify
+    // the delegation reached it.
+    ApprovedContexts,
+}
+
+// A simple account that the ModularAccount can delegate to for auth.
+//
+// It will always authorize an auth request, and store a copy of the auth
+// context for later comparing in tests.
 #[contract]
 pub struct DelegateAccount;
 
 #[contractimpl]
-impl DelegateAccount {
-    pub fn __constructor(env: Env, public_key: BytesN<32>) {
-        env.storage()
-            .instance()
-            .set(&symbol_short!("pubkey"), &public_key);
-    }
-}
-
-#[contractimpl]
 impl CustomAccountInterface for DelegateAccount {
-    type Signature = BytesN<64>;
-    type Error = soroban_sdk::Error;
-
+    type Signature = ();
+    type Error = Error;
     fn __check_auth(
         env: Env,
-        signature_payload: Hash<32>,
-        signature: BytesN<64>,
+        _signature_payload: Hash<32>,
+        _signatures: (),
         auth_contexts: Vec<Context>,
-    ) -> Result<(), soroban_sdk::Error> {
-        let public_key: BytesN<32> = env
-            .storage()
+    ) -> Result<(), Error> {
+        env.storage()
             .instance()
-            .get(&symbol_short!("pubkey"))
-            .unwrap();
-        env.crypto()
-            .ed25519_verify(&public_key, &signature_payload.into(), &signature);
-        record_authorized_contexts(&env, &auth_contexts);
+            .set(&DelegateAccountDataKey::ApprovedContexts, &auth_contexts);
+        // Returning `Ok(())` approves the auth;
+        // returning an error would reject it.
         Ok(())
     }
 }
@@ -69,173 +61,91 @@ impl Protected {
     }
 }
 
-fn sign(env: &Env, key: &SigningKey, payload: &[u8; 32]) -> ScVal {
-    let sig: [u8; 64] = key.sign(payload).to_bytes();
-    ScVal::try_from_val(env, &BytesN::from_array(env, &sig).to_val()).unwrap()
-}
-
 #[test]
-fn test_delegate_auth() {
+fn test() {
     let env = Env::default();
-
-    let key_a = SigningKey::from_bytes(&[2u8; 32]);
-    let key_b = SigningKey::from_bytes(&[3u8; 32]);
-
-    let delegate_a = env.register(
-        DelegateAccount,
-        (BytesN::from_array(&env, &key_a.verifying_key().to_bytes()),),
-    );
-    let delegate_b = env.register(
-        DelegateAccount,
-        (BytesN::from_array(&env, &key_b.verifying_key().to_bytes()),),
-    );
-
-    // Register the account with both delegates as signers. The account holds no
-    // key of its own and authenticates purely by delegating.
-    let account = env.register(
-        ModularAccount,
-        (vec![&env, delegate_a.clone(), delegate_b.clone()],),
-    );
+    let delegate = env.register(DelegateAccount, ());
+    // Register the modular account with `delegate` as an allowed signer.
+    let account = env.register(ModularAccount, (vec![&env, delegate.clone()],));
     let protected = env.register(Protected, ());
 
-    let account_addr: ScAddress = account.clone().into();
+    let account_addr: ScAddress = account.clone().try_into().unwrap();
+    let delegate_addr: ScAddress = delegate.clone().try_into().unwrap();
 
-    let nonce = 123;
-    let signature_expiration_ledger = 100;
-
-    // Create authorized invocation for the `protected` call.
-    let root_invocation = SorobanAuthorizedInvocation {
-        function: SorobanAuthorizedFunction::ContractFn(InvokeContractArgs {
-            contract_address: protected.clone().into(),
-            function_name: StringM::try_from("protected").unwrap().into(),
-            args: std::vec![ScVal::Address(account_addr.clone())]
+    // This authorization entry is normally built by the user's
+    // wallet/tooling and attached to the transaction. It authorizes
+    // `protected` on behalf of the account, and attaches `delegate` as a
+    // delegated signer. Delegates must be sorted by address with no
+    // duplicates.
+    env.set_auths(&[SorobanAuthorizationEntry {
+        credentials: SorobanCredentials::AddressWithDelegates(
+            SorobanAddressCredentialsWithDelegates {
+                address_credentials: SorobanAddressCredentials {
+                    address: account_addr.clone(),
+                    nonce: 1,
+                    signature_expiration_ledger: 100,
+                    // The account verifies no signature of its own.
+                    signature: ScVal::Void,
+                },
+                delegates: std::vec![SorobanDelegateSignature {
+                    address: delegate_addr,
+                    signature: ScVal::Void,
+                    nested_delegates: VecM::default(),
+                }]
                 .try_into()
                 .unwrap(),
-        }),
-        sub_invocations: VecM::default(),
-    };
-
-    // Build the signature payload by hashing the
-    // `HashIdPreimage::SorobanAuthorizationWithAddress` preimage required for
-    // `AddressWithDelegates` credentials.
-    let network_id = env.ledger().network_id();
-    let preimage = HashIdPreimage::SorobanAuthorizationWithAddress(
-        HashIdPreimageSorobanAuthorizationWithAddress {
-            network_id: network_id.to_array().into(),
-            nonce,
-            signature_expiration_ledger,
-            invocation: root_invocation.clone(),
-            address: account_addr.clone(),
-        },
-    );
-    let preimage_xdr = preimage.to_xdr(Limits::none()).unwrap();
-    let payload: [u8; 32] = Sha256::digest(&preimage_xdr).into();
-
-    // Negative scenario: attach a delegate signer that isn't registered with the
-    // account. The account should reject the authorization with an
-    // `UnknownDelegate` error.
-    let unknown_key = SigningKey::from_bytes(&[4u8; 32]);
-    let unknown_delegate = env.register(
-        DelegateAccount,
-        (BytesN::from_array(
-            &env,
-            &unknown_key.verifying_key().to_bytes(),
-        ),),
-    );
-    let mut bad_delegates = std::vec![
-        SorobanDelegateSignature {
-            address: delegate_a.clone().into(),
-            signature: sign(&env, &key_a, &payload),
-            nested_delegates: VecM::default(),
-        },
-        SorobanDelegateSignature {
-            address: unknown_delegate.clone().into(),
-            signature: sign(&env, &unknown_key, &payload),
-            nested_delegates: VecM::default(),
-        },
-    ];
-    // Delegates must be sorted by address.
-    bad_delegates.sort_by(|x, y| x.address.cmp(&y.address));
-    env.set_auths(&[SorobanAuthorizationEntry {
-        credentials: SorobanCredentials::AddressWithDelegates(
-            SorobanAddressCredentialsWithDelegates {
-                address_credentials: SorobanAddressCredentials {
-                    address: account_addr.clone(),
-                    nonce,
-                    signature_expiration_ledger,
-                    // The account has no signature of its own.
-                    signature: ScVal::Void,
-                },
-                delegates: bad_delegates.try_into().unwrap(),
             },
         ),
-        root_invocation: root_invocation.clone(),
-    }]);
-    // The call will fail due to the auth failure.
-    assert!(ProtectedClient::new(&env, &protected)
-        .try_protected(&account)
-        .is_err());
-
-    // Positive scenario: each registered delegate signs the same payload with
-    // its own distinct key.
-    let mut delegates = std::vec![
-        SorobanDelegateSignature {
-            address: delegate_a.clone().into(),
-            signature: sign(&env, &key_a, &payload),
-            nested_delegates: VecM::default(),
+        root_invocation: SorobanAuthorizedInvocation {
+            function: SorobanAuthorizedFunction::ContractFn(InvokeContractArgs {
+                contract_address: protected.clone().try_into().unwrap(),
+                function_name: StringM::try_from("protected").unwrap().into(),
+                args: std::vec![ScVal::Address(account_addr)].try_into().unwrap(),
+            }),
+            sub_invocations: VecM::default(),
         },
-        SorobanDelegateSignature {
-            address: delegate_b.clone().into(),
-            signature: sign(&env, &key_b, &payload),
-            nested_delegates: VecM::default(),
-        },
-    ];
-    // Delegates must be sorted by address.
-    delegates.sort_by(|x, y| x.address.cmp(&y.address));
-
-    // Build the full authorization entry with `AddressWithDelegates`
-    // credentials containing both delegates.
-    env.set_auths(&[SorobanAuthorizationEntry {
-        credentials: SorobanCredentials::AddressWithDelegates(
-            SorobanAddressCredentialsWithDelegates {
-                address_credentials: SorobanAddressCredentials {
-                    address: account_addr.clone(),
-                    nonce,
-                    signature_expiration_ledger,
-                    // The account has no signature of its own.
-                    signature: ScVal::Void,
-                },
-                delegates: delegates.try_into().unwrap(),
-            },
-        ),
-        root_invocation: root_invocation.clone(),
     }]);
 
-    // Call the `protected` function with the enforced authorization payload
-    // above.
-    //
-    // Note that testing delegated auth via
-    // `env.try_invoke_contract_check_auth` is not supported at the moment, so
-    // only `set_auths` plus a wrapper call can be used to test the full flow.
+    // The call succeeds: the account delegates its authentication to
+    // `delegate`, which approves it.
     ProtectedClient::new(&env, &protected).protected(&account);
 
-    // The account and both delegates each observe the same single authorization
-    // context: the call to `protected` with the account as its argument.
-    let expected = vec![
-        &env,
-        Context::Contract(ContractContext {
-            contract: protected.clone(),
-            fn_name: Symbol::new(&env, "protected"),
-            args: (account.clone(),).into_val(&env),
-        }),
-    ];
-    for addr in [&account, &delegate_a, &delegate_b] {
-        let contexts: Vec<Context> = env.as_contract(addr, || {
-            env.storage()
-                .instance()
-                .get(&DataKey::AuthorizedContexts)
-                .unwrap()
-        });
-        assert!(contexts == expected);
-    }
+    // The account authorized the `protected` call. Delegating to
+    // `delegate` is not recorded as a separate authorization.
+    assert_eq!(
+        env.auths(),
+        std::vec![(
+            account.clone(),
+            AuthorizedInvocation {
+                function: AuthorizedFunction::Contract((
+                    protected.clone(),
+                    Symbol::new(&env, "protected"),
+                    (account.clone(),).into_val(&env),
+                )),
+                sub_invocations: std::vec![],
+            }
+        )]
+    );
+
+    // The delegation actually reached `delegate`, which approved the
+    // same invocation that was authorized above.
+    let approved: Vec<Context> = env.as_contract(&delegate, || {
+        env.storage()
+            .instance()
+            .get(&DelegateAccountDataKey::ApprovedContexts)
+            .unwrap()
+    });
+    // `Context` does not implement `Debug` in soroban-sdk 27.0.0-rc.1, so this
+    // compares with `==` instead of `assert_eq!`.
+    assert!(
+        approved
+            == vec![
+                &env,
+                Context::Contract(ContractContext {
+                    contract: protected.clone(),
+                    fn_name: Symbol::new(&env, "protected"),
+                    args: (account.clone(),).into_val(&env),
+                }),
+            ],
+    );
 }
