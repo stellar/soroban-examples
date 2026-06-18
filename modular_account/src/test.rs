@@ -1,18 +1,17 @@
 #![cfg(test)]
 extern crate std;
 
+use soroban_sdk::xdr::{
+    InvokeContractArgs, ScAddress, ScVal, SorobanAddressCredentials,
+    SorobanAddressCredentialsWithDelegates, SorobanAuthorizationEntry, SorobanAuthorizedFunction,
+    SorobanAuthorizedInvocation, SorobanCredentials, SorobanDelegateSignature, StringM, VecM,
+};
 use soroban_sdk::{
     auth::{Context, ContractContext, CustomAccountInterface},
     contract, contractimpl, contracttype,
     crypto::Hash,
     testutils::{AuthorizedFunction, AuthorizedInvocation},
     vec, Address, Env, IntoVal, Symbol, Vec,
-};
-use soroban_sdk::xdr::{
-    InvokeContractArgs, ScAddress, ScVal, SorobanAddressCredentials,
-    SorobanAddressCredentialsWithDelegates, SorobanAuthorizationEntry,
-    SorobanAuthorizedFunction, SorobanAuthorizedInvocation, SorobanCredentials,
-    SorobanDelegateSignature, StringM, VecM,
 };
 
 use crate::{Error, ModularAccount};
