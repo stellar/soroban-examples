@@ -14,7 +14,7 @@ use std::{
 use clap::Parser;
 use ed25519_dalek::{Keypair, Signer};
 use sha2::{Digest, Sha256};
-use stellar_xdr::curr::{
+use stellar_xdr::{
     Hash, HashIdPreimage, HashIdPreimageSorobanAuthorization, Limited, Limits, ReadXdr, ScBytes,
     ScMap, ScSymbol, ScVal, SorobanCredentials, TransactionEnvelope, WriteXdr,
 };
