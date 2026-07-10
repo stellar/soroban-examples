@@ -1,6 +1,24 @@
 CIRCOMLIB=/opt/homebrew/lib/node_modules/circomlib/circuits
 CIRCUITS=main.circom commitment.circom merkleProof.circom
 
+# These circuits are not part of the Soroban wasm build. Building/testing them
+# requires the circom compiler, snarkjs, and circomlib, which are not part of
+# the standard toolchain. The `build`/`test` targets are therefore no-ops so the
+# repo-wide `make build`/`make test` sweep does not fail here. Use the
+# `test_circuits` target to run the circuit compatibility tests.
+default: build
+
+all: test
+
+build:
+	@echo "circuits: skipping (requires circom/snarkjs/circomlib; run 'make test_circuits')"
+
+test:
+	@echo "circuits: skipping (requires circom/snarkjs/circomlib; run 'make test_circuits')"
+
+clean:
+	@rm -rf build
+
 .circuits: $(CIRCUITS)
 	@mkdir -p build
 	@circom main.circom --r1cs --wasm --sym -o build -l $(CIRCOMLIB) --prime bls12381
