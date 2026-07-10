@@ -1,7 +1,7 @@
 #![no_std]
 use soroban_sdk::{
     contract, contracterror, contractimpl, contracttype,
-    crypto::bls12_381::{Fr, G1Affine, G2Affine},
+    crypto::bls12_381::{Bls12381Fr as Fr, Bls12381G1Affine as G1Affine, Bls12381G2Affine as G2Affine},
     vec, Env, Vec,
 };
 

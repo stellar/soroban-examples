@@ -1,7 +1,7 @@
 use lean_imt::LeanIMT;
 use num_bigint::BigUint;
 use serde::{Deserialize, Serialize};
-use soroban_sdk::{crypto::bls12_381::Fr as BlsScalar, Env};
+use soroban_sdk::{crypto::bls12_381::Bls12381Fr as BlsScalar, Env};
 
 /// Converts a BlsScalar to a decimal string representation
 fn bls_scalar_to_decimal(scalar: BlsScalar) -> String {

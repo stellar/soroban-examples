@@ -10,7 +10,7 @@ use soroban_sdk::{
     auth::{Context, CustomAccountInterface},
     bytesn, contract, contracterror, contractimpl, contracttype,
     crypto::{
-        bls12_381::{G1Affine, G2Affine},
+        bls12_381::{Bls12381G1Affine as G1Affine, Bls12381G2Affine as G2Affine},
         Hash,
     },
     vec, Bytes, BytesN, Env, Vec,

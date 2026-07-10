@@ -3,7 +3,7 @@
 use soroban_poseidon::{poseidon_hash, PoseidonSponge};
 
 use soroban_sdk::{
-    crypto::bls12_381::Fr as BlsScalar, symbol_short, vec, BytesN, Env, Map, Symbol, Vec, U256,
+    crypto::bls12_381::Bls12381Fr as BlsScalar, symbol_short, vec, BytesN, Env, Map, Symbol, Vec, U256,
 };
 
 /// Storage keys for the LeanIMT

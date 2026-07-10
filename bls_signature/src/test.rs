@@ -2,7 +2,7 @@
 extern crate std;
 
 use soroban_sdk::{
-    crypto::bls12_381::{Fr, G1Affine, G2Affine},
+    crypto::bls12_381::{Bls12381Fr as Fr, Bls12381G1Affine as G1Affine, Bls12381G2Affine as G2Affine},
     testutils::BytesN as _,
     vec, Bytes, BytesN, Env, Vec,
 };

@@ -5,7 +5,7 @@ use ark_bls12_381::{Fq, Fq2};
 use ark_serialize::CanonicalSerialize;
 use core::str::FromStr;
 use soroban_sdk::{
-    crypto::bls12_381::{Fr, G1Affine, G2Affine, G1_SERIALIZED_SIZE, G2_SERIALIZED_SIZE},
+    crypto::bls12_381::{Bls12381Fr as Fr, Bls12381G1Affine as G1Affine, Bls12381G2Affine as G2Affine, G1_SERIALIZED_SIZE, G2_SERIALIZED_SIZE},
     Env, Vec, U256,
 };
 

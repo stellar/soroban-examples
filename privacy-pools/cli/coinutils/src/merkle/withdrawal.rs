@@ -5,7 +5,7 @@ use crate::{
     types::{AssociationSetFile, CoinData, SnarkInput, StateFile},
 };
 use lean_imt::LeanIMT;
-use soroban_sdk::{crypto::bls12_381::Fr as BlsScalar, Env};
+use soroban_sdk::{crypto::bls12_381::Bls12381Fr as BlsScalar, Env};
 
 /// Manager for handling coin withdrawal operations
 pub struct WithdrawalManager;

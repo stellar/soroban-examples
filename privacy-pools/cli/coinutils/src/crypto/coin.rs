@@ -4,7 +4,7 @@ use crate::{
     types::{CoinData, GeneratedCoin},
 };
 use rand::{thread_rng, Rng};
-use soroban_sdk::{crypto::bls12_381::Fr as BlsScalar, Bytes, Env, U256};
+use soroban_sdk::{crypto::bls12_381::Bls12381Fr as BlsScalar, Bytes, Env, U256};
 
 /// Generate a label for a coin based on scope and nonce
 pub fn generate_label(env: &Env, scope: &[u8], nonce: &[u8; 32]) -> BlsScalar {
