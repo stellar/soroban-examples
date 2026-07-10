@@ -5,7 +5,10 @@ use ark_serialize::CanonicalSerialize;
 use core::str::FromStr;
 use soroban_sdk::{
     Bytes, Env, U256, Vec,
-    crypto::bls12_381::{Bls12381Fr as Fr, G1_SERIALIZED_SIZE, Bls12381G1Affine as G1Affine, G2_SERIALIZED_SIZE, Bls12381G2Affine as G2Affine},
+    crypto::bls12_381::{
+        Bls12381Fr as Fr, Bls12381G1Affine as G1Affine, Bls12381G2Affine as G2Affine,
+        G1_SERIALIZED_SIZE, G2_SERIALIZED_SIZE,
+    },
 };
 
 use crate::{Groth16Verifier, Proof, PublicSignals, VerificationKey};
