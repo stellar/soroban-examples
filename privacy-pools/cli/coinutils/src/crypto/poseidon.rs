@@ -1,5 +1,5 @@
 use soroban_poseidon::poseidon_hash as poseidon_hash_native;
-use soroban_sdk::{crypto::bls12_381::Fr as BlsScalar, Env, Vec, U256};
+use soroban_sdk::{crypto::bls12_381::Bls12381Fr as BlsScalar, Env, Vec, U256};
 
 /// Poseidon-based hash for field elements using native SDK implementation
 /// Uses poseidon_hash (not poseidon2_hash) to match the circom circuit

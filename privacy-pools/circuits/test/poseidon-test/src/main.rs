@@ -1,7 +1,7 @@
 use num_bigint::BigUint;
 use serde::Deserialize;
 use soroban_poseidon::poseidon_hash as poseidon_hash_native;
-use soroban_sdk::{crypto::bls12_381::Fr as BlsScalar, BytesN, Env, Vec, U256};
+use soroban_sdk::{crypto::bls12_381::Bls12381Fr as BlsScalar, BytesN, Env, Vec, U256};
 use std::io::{self, Read};
 
 #[derive(Deserialize)]
@@ -44,7 +44,7 @@ fn poseidon_hash_t2(env: &Env, input: &BlsScalar) -> BlsScalar {
     let mut u256_inputs = Vec::new(env);
     u256_inputs.push_back(BlsScalar::to_u256(input));
     let result_u256 =
-        poseidon_hash_native::<2, soroban_sdk::crypto::bls12_381::Fr>(&env, &u256_inputs);
+        poseidon_hash_native::<2, soroban_sdk::crypto::bls12_381::Bls12381Fr>(&env, &u256_inputs);
     BlsScalar::from_u256(result_u256)
 }
 
@@ -54,7 +54,7 @@ fn poseidon_hash_t3(env: &Env, input1: &BlsScalar, input2: &BlsScalar) -> BlsSca
     u256_inputs.push_back(BlsScalar::to_u256(input1));
     u256_inputs.push_back(BlsScalar::to_u256(input2));
     let result_u256 =
-        poseidon_hash_native::<3, soroban_sdk::crypto::bls12_381::Fr>(&env, &u256_inputs);
+        poseidon_hash_native::<3, soroban_sdk::crypto::bls12_381::Bls12381Fr>(&env, &u256_inputs);
     BlsScalar::from_u256(result_u256)
 }
 
