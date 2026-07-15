@@ -53,6 +53,12 @@ impl CustomAccountInterface for ModularAccount {
         // account's authorization.
         let delegates = env.custom_account().get_delegated_signers();
 
+        // With no delegates to forward to, the account would authenticate
+        // nothing and be effectively unauthenticated, so reject it.
+        if delegates.is_empty() {
+            return Err(Error::UnknownDelegate);
+        }
+
         // Check if the delegates are accepted by the modular account.
         for delegate in delegates.iter() {
             if !env
