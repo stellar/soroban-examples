@@ -134,17 +134,15 @@ fn test() {
             .get(&DelegateAccountDataKey::ApprovedContexts)
             .unwrap()
     });
-    // `Context` does not implement `Debug` in soroban-sdk 27.0.0-rc.1, so this
-    // compares with `==` instead of `assert_eq!`.
-    assert!(
-        approved
-            == vec![
-                &env,
-                Context::Contract(ContractContext {
-                    contract: protected.clone(),
-                    fn_name: Symbol::new(&env, "protected"),
-                    args: (account.clone(),).into_val(&env),
-                }),
-            ],
+    assert_eq!(
+        approved,
+        vec![
+            &env,
+            Context::Contract(ContractContext {
+                contract: protected.clone(),
+                fn_name: Symbol::new(&env, "protected"),
+                args: (account.clone(),).into_val(&env),
+            }),
+        ],
     );
 }
