@@ -1,0 +1,268 @@
+#![cfg(test)]
+extern crate std;
+
+use soroban_sdk::xdr::{
+    InvokeContractArgs, ScAddress, ScErrorCode, ScErrorType, ScVal, SorobanAddressCredentials,
+    SorobanAddressCredentialsWithDelegates, SorobanAuthorizationEntry, SorobanAuthorizedFunction,
+    SorobanAuthorizedInvocation, SorobanCredentials, SorobanDelegateSignature, StringM, VecM,
+};
+use soroban_sdk::{
+    auth::{Context, ContractContext, CustomAccountInterface},
+    contract, contractimpl, contracttype,
+    crypto::Hash,
+    testutils::{AuthorizedFunction, AuthorizedInvocation},
+    vec, Address, Env, IntoVal, Symbol, Vec,
+};
+
+use crate::{Error, ModularAccount};
+
+#[contracttype]
+enum DelegateAccountDataKey {
+    // Records the contexts the delegate approved so the test can verify
+    // the delegation reached it.
+    ApprovedContexts,
+}
+
+// A simple account that the ModularAccount can delegate to for auth.
+//
+// It will always authorize an auth request, and store a copy of the auth
+// context for later comparing in tests.
+#[contract]
+pub struct DelegateAccount;
+
+#[contractimpl]
+impl CustomAccountInterface for DelegateAccount {
+    type Signature = ();
+    type Error = Error;
+    fn __check_auth(
+        env: Env,
+        _signature_payload: Hash<32>,
+        _signatures: (),
+        auth_contexts: Vec<Context>,
+    ) -> Result<(), Error> {
+        env.storage()
+            .instance()
+            .set(&DelegateAccountDataKey::ApprovedContexts, &auth_contexts);
+        // Returning `Ok(())` approves the auth;
+        // returning an error would reject it.
+        Ok(())
+    }
+}
+
+// A contract with an operation that requires the account's authorization.
+#[contract]
+pub struct Protected;
+
+#[contractimpl]
+impl Protected {
+    pub fn protected(account: Address) {
+        account.require_auth();
+    }
+}
+
+#[test]
+fn test() {
+    let env = Env::default();
+    let delegate = env.register(DelegateAccount, ());
+    // Register the modular account with `delegate` as an allowed signer.
+    let account = env.register(ModularAccount, (vec![&env, delegate.clone()],));
+    let protected = env.register(Protected, ());
+
+    let account_addr: ScAddress = account.clone().try_into().unwrap();
+    let delegate_addr: ScAddress = delegate.clone().try_into().unwrap();
+
+    // This authorization entry is normally built by the user's
+    // wallet/tooling and attached to the transaction. It authorizes
+    // `protected` on behalf of the account, and attaches `delegate` as a
+    // delegated signer. Delegates must be sorted by address with no
+    // duplicates.
+    env.set_auths(&[SorobanAuthorizationEntry {
+        credentials: SorobanCredentials::AddressWithDelegates(
+            SorobanAddressCredentialsWithDelegates {
+                address_credentials: SorobanAddressCredentials {
+                    address: account_addr.clone(),
+                    nonce: 1,
+                    signature_expiration_ledger: 100,
+                    // The account verifies no signature of its own.
+                    signature: ScVal::Void,
+                },
+                delegates: std::vec![SorobanDelegateSignature {
+                    address: delegate_addr,
+                    signature: ScVal::Void,
+                    nested_delegates: VecM::default(),
+                }]
+                .try_into()
+                .unwrap(),
+            },
+        ),
+        root_invocation: SorobanAuthorizedInvocation {
+            function: SorobanAuthorizedFunction::ContractFn(InvokeContractArgs {
+                contract_address: protected.clone().try_into().unwrap(),
+                function_name: StringM::try_from("protected").unwrap().into(),
+                args: std::vec![ScVal::Address(account_addr)].try_into().unwrap(),
+            }),
+            sub_invocations: VecM::default(),
+        },
+    }]);
+
+    // The call succeeds: the account delegates its authentication to
+    // `delegate`, which approves it.
+    ProtectedClient::new(&env, &protected).protected(&account);
+
+    // The account authorized the `protected` call. Delegating to
+    // `delegate` is not recorded as a separate authorization.
+    assert_eq!(
+        env.auths(),
+        std::vec![(
+            account.clone(),
+            AuthorizedInvocation {
+                function: AuthorizedFunction::Contract((
+                    protected.clone(),
+                    Symbol::new(&env, "protected"),
+                    (account.clone(),).into_val(&env),
+                )),
+                sub_invocations: std::vec![],
+            }
+        )]
+    );
+
+    // The delegation actually reached `delegate`, which approved the
+    // same invocation that was authorized above.
+    let approved: Vec<Context> = env.as_contract(&delegate, || {
+        env.storage()
+            .instance()
+            .get(&DelegateAccountDataKey::ApprovedContexts)
+            .unwrap()
+    });
+    assert_eq!(
+        approved,
+        vec![
+            &env,
+            Context::Contract(ContractContext {
+                contract: protected.clone(),
+                fn_name: Symbol::new(&env, "protected"),
+                args: (account.clone(),).into_val(&env),
+            }),
+        ],
+    );
+}
+
+// Asserts the host recorded a diagnostic event carrying the account's own
+// `__check_auth` error code. The caller only sees the generic auth failure,
+// but the underlying `Error(Contract, #<code>)` is captured in the host's
+// diagnostic events, formatted here and matched by substring.
+fn assert_check_auth_error(env: &Env, expected: Error) {
+    let needle = std::format!("Error(Contract, #{})", expected as u32);
+    let found = env
+        .host()
+        .get_diagnostic_events()
+        .unwrap()
+        .0
+        .iter()
+        .any(|event| std::format!("{event}").contains(&needle));
+    assert!(found, "expected a diagnostic event reporting {needle}");
+}
+
+// A delegate the account has not registered is rejected with
+// `UnknownDelegate`, so the protected call fails.
+#[test]
+fn test_unknown_delegate_is_rejected() {
+    let env = Env::default();
+    let delegate = env.register(DelegateAccount, ());
+    let stranger = env.register(DelegateAccount, ());
+    let account = env.register(ModularAccount, (vec![&env, delegate],));
+    let protected = env.register(Protected, ());
+
+    let account_addr: ScAddress = account.clone().try_into().unwrap();
+    let stranger_addr: ScAddress = stranger.try_into().unwrap();
+
+    env.set_auths(&[SorobanAuthorizationEntry {
+        credentials: SorobanCredentials::AddressWithDelegates(
+            SorobanAddressCredentialsWithDelegates {
+                address_credentials: SorobanAddressCredentials {
+                    address: account_addr.clone(),
+                    nonce: 1,
+                    signature_expiration_ledger: 100,
+                    signature: ScVal::Void,
+                },
+                delegates: std::vec![SorobanDelegateSignature {
+                    address: stranger_addr,
+                    signature: ScVal::Void,
+                    nested_delegates: VecM::default(),
+                }]
+                .try_into()
+                .unwrap(),
+            },
+        ),
+        root_invocation: SorobanAuthorizedInvocation {
+            function: SorobanAuthorizedFunction::ContractFn(InvokeContractArgs {
+                contract_address: protected.clone().try_into().unwrap(),
+                function_name: StringM::try_from("protected").unwrap().into(),
+                args: std::vec![ScVal::Address(account_addr)].try_into().unwrap(),
+            }),
+            sub_invocations: VecM::default(),
+        },
+    }]);
+
+    let res = ProtectedClient::new(&env, &protected).try_protected(&account);
+    // A failed `__check_auth` surfaces as a generic auth error, not the
+    // account's own error code.
+    assert_eq!(
+        res,
+        Err(Ok(soroban_sdk::Error::from_type_and_code(
+            ScErrorType::Context,
+            ScErrorCode::InvalidAction,
+        )))
+    );
+    // The account itself rejected the unregistered delegate with its own
+    // `UnknownDelegate` code.
+    assert_check_auth_error(&env, Error::UnknownDelegate);
+}
+
+// An auth entry with no delegates would leave the account authenticating
+// nothing, so it is rejected and the protected call fails.
+#[test]
+fn test_empty_delegates_is_rejected() {
+    let env = Env::default();
+    let delegate = env.register(DelegateAccount, ());
+    let account = env.register(ModularAccount, (vec![&env, delegate],));
+    let protected = env.register(Protected, ());
+
+    let account_addr: ScAddress = account.clone().try_into().unwrap();
+
+    env.set_auths(&[SorobanAuthorizationEntry {
+        credentials: SorobanCredentials::AddressWithDelegates(
+            SorobanAddressCredentialsWithDelegates {
+                address_credentials: SorobanAddressCredentials {
+                    address: account_addr.clone(),
+                    nonce: 1,
+                    signature_expiration_ledger: 100,
+                    signature: ScVal::Void,
+                },
+                delegates: VecM::default(),
+            },
+        ),
+        root_invocation: SorobanAuthorizedInvocation {
+            function: SorobanAuthorizedFunction::ContractFn(InvokeContractArgs {
+                contract_address: protected.clone().try_into().unwrap(),
+                function_name: StringM::try_from("protected").unwrap().into(),
+                args: std::vec![ScVal::Address(account_addr)].try_into().unwrap(),
+            }),
+            sub_invocations: VecM::default(),
+        },
+    }]);
+
+    let res = ProtectedClient::new(&env, &protected).try_protected(&account);
+    // A failed `__check_auth` surfaces as a generic auth error, not the
+    // account's own error code.
+    assert_eq!(
+        res,
+        Err(Ok(soroban_sdk::Error::from_type_and_code(
+            ScErrorType::Context,
+            ScErrorCode::InvalidAction,
+        )))
+    );
+    // The account itself rejected the empty delegate list with its own
+    // `InsufficientDelegates` code.
+    assert_check_auth_error(&env, Error::InsufficientDelegates);
+}

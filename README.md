@@ -29,6 +29,7 @@ atomic_multiswap**: This contract performs a batch of atomic token swaps between
 - **logging**: A basic example of how to use the standard Soroban terminal logging
 - **merkle_distribution**: A Merkle distribution contract that verifies Merkle proofs to distribute tokens efficiently to eligible recipients
 - **mint-lock**: Demonstrates token minting, including minting authorization
+- **modular_account**: A custom account contract that uses CAP-71 auth delegation to forward `__check_auth` to registered delegate signers
 - **other_custom_types**: The smart contract implements types, including custom types
 - **privacy-pools**: A prototype for Privacy Pools for Soroban.
 - **simple_account**: A minimal example of an account contract, owned by a single ed25519 public key
