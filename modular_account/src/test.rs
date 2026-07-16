@@ -147,15 +147,19 @@ fn test() {
     );
 }
 
-// Builds and sets an auth entry that calls `protected` on behalf of
-// `account`, attaching `delegates` as the account's delegated signers.
-fn set_delegated_auth(
-    env: &Env,
-    account: &Address,
-    protected: &Address,
-    delegates: std::vec::Vec<ScAddress>,
-) {
+// A delegate the account has not registered is rejected with
+// `UnknownDelegate`, so the protected call fails.
+#[test]
+fn test_unknown_delegate_is_rejected() {
+    let env = Env::default();
+    let delegate = env.register(DelegateAccount, ());
+    let stranger = env.register(DelegateAccount, ());
+    let account = env.register(ModularAccount, (vec![&env, delegate],));
+    let protected = env.register(Protected, ());
+
     let account_addr: ScAddress = account.clone().try_into().unwrap();
+    let stranger_addr: ScAddress = stranger.try_into().unwrap();
+
     env.set_auths(&[SorobanAuthorizationEntry {
         credentials: SorobanCredentials::AddressWithDelegates(
             SorobanAddressCredentialsWithDelegates {
@@ -165,16 +169,13 @@ fn set_delegated_auth(
                     signature_expiration_ledger: 100,
                     signature: ScVal::Void,
                 },
-                delegates: delegates
-                    .into_iter()
-                    .map(|address| SorobanDelegateSignature {
-                        address,
-                        signature: ScVal::Void,
-                        nested_delegates: VecM::default(),
-                    })
-                    .collect::<std::vec::Vec<_>>()
-                    .try_into()
-                    .unwrap(),
+                delegates: std::vec![SorobanDelegateSignature {
+                    address: stranger_addr,
+                    signature: ScVal::Void,
+                    nested_delegates: VecM::default(),
+                }]
+                .try_into()
+                .unwrap(),
             },
         ),
         root_invocation: SorobanAuthorizedInvocation {
@@ -186,24 +187,6 @@ fn set_delegated_auth(
             sub_invocations: VecM::default(),
         },
     }]);
-}
-
-// A delegate the account has not registered is rejected with
-// `UnknownDelegate`, so the protected call fails.
-#[test]
-fn test_unknown_delegate_is_rejected() {
-    let env = Env::default();
-    let delegate = env.register(DelegateAccount, ());
-    let stranger = env.register(DelegateAccount, ());
-    let account = env.register(ModularAccount, (vec![&env, delegate],));
-    let protected = env.register(Protected, ());
-
-    set_delegated_auth(
-        &env,
-        &account,
-        &protected,
-        std::vec![stranger.try_into().unwrap()],
-    );
 
     let res = ProtectedClient::new(&env, &protected).try_protected(&account);
     assert!(res.is_err());
@@ -218,7 +201,29 @@ fn test_empty_delegates_is_rejected() {
     let account = env.register(ModularAccount, (vec![&env, delegate],));
     let protected = env.register(Protected, ());
 
-    set_delegated_auth(&env, &account, &protected, std::vec![]);
+    let account_addr: ScAddress = account.clone().try_into().unwrap();
+
+    env.set_auths(&[SorobanAuthorizationEntry {
+        credentials: SorobanCredentials::AddressWithDelegates(
+            SorobanAddressCredentialsWithDelegates {
+                address_credentials: SorobanAddressCredentials {
+                    address: account_addr.clone(),
+                    nonce: 1,
+                    signature_expiration_ledger: 100,
+                    signature: ScVal::Void,
+                },
+                delegates: VecM::default(),
+            },
+        ),
+        root_invocation: SorobanAuthorizedInvocation {
+            function: SorobanAuthorizedFunction::ContractFn(InvokeContractArgs {
+                contract_address: protected.clone().try_into().unwrap(),
+                function_name: StringM::try_from("protected").unwrap().into(),
+                args: std::vec![ScVal::Address(account_addr)].try_into().unwrap(),
+            }),
+            sub_invocations: VecM::default(),
+        },
+    }]);
 
     let res = ProtectedClient::new(&env, &protected).try_protected(&account);
     assert!(res.is_err());
