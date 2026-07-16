@@ -12,6 +12,7 @@ use soroban_sdk::{
 #[repr(u32)]
 pub enum Error {
     UnknownDelegate = 1,
+    InsufficientDelegates = 2,
 }
 
 #[contracttype]
@@ -54,9 +55,10 @@ impl CustomAccountInterface for ModularAccount {
         let delegates = env.custom_account().get_delegated_signers();
 
         // With no delegates to forward to, the account would authenticate
-        // nothing and be effectively unauthenticated, so reject it.
+        // nothing and be effectively unauthenticated, so reject it. A real
+        // account might require more than one delegate to meet a threshold.
         if delegates.is_empty() {
-            return Err(Error::UnknownDelegate);
+            return Err(Error::InsufficientDelegates);
         }
 
         // Check if the delegates are accepted by the modular account.
