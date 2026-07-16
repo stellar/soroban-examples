@@ -2,7 +2,7 @@
 extern crate std;
 
 use soroban_sdk::xdr::{
-    InvokeContractArgs, ScAddress, ScVal, SorobanAddressCredentials,
+    InvokeContractArgs, ScAddress, ScErrorCode, ScErrorType, ScVal, SorobanAddressCredentials,
     SorobanAddressCredentialsWithDelegates, SorobanAuthorizationEntry, SorobanAuthorizedFunction,
     SorobanAuthorizedInvocation, SorobanCredentials, SorobanDelegateSignature, StringM, VecM,
 };
@@ -189,7 +189,15 @@ fn test_unknown_delegate_is_rejected() {
     }]);
 
     let res = ProtectedClient::new(&env, &protected).try_protected(&account);
-    assert!(res.is_err());
+    // A failed `__check_auth` surfaces as a generic auth error, not the
+    // account's own error code.
+    assert_eq!(
+        res,
+        Err(Ok(soroban_sdk::Error::from_type_and_code(
+            ScErrorType::Context,
+            ScErrorCode::InvalidAction,
+        )))
+    );
 }
 
 // An auth entry with no delegates would leave the account authenticating
@@ -226,5 +234,13 @@ fn test_empty_delegates_is_rejected() {
     }]);
 
     let res = ProtectedClient::new(&env, &protected).try_protected(&account);
-    assert!(res.is_err());
+    // A failed `__check_auth` surfaces as a generic auth error, not the
+    // account's own error code.
+    assert_eq!(
+        res,
+        Err(Ok(soroban_sdk::Error::from_type_and_code(
+            ScErrorType::Context,
+            ScErrorCode::InvalidAction,
+        )))
+    );
 }
