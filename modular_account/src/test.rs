@@ -147,6 +147,22 @@ fn test() {
     );
 }
 
+// Asserts the host recorded a diagnostic event carrying the account's own
+// `__check_auth` error code. The caller only sees the generic auth failure,
+// but the underlying `Error(Contract, #<code>)` is captured in the host's
+// diagnostic events, formatted here and matched by substring.
+fn assert_check_auth_error(env: &Env, expected: Error) {
+    let needle = std::format!("Error(Contract, #{})", expected as u32);
+    let found = env
+        .host()
+        .get_diagnostic_events()
+        .unwrap()
+        .0
+        .iter()
+        .any(|event| std::format!("{event}").contains(&needle));
+    assert!(found, "expected a diagnostic event reporting {needle}");
+}
+
 // A delegate the account has not registered is rejected with
 // `UnknownDelegate`, so the protected call fails.
 #[test]
@@ -198,6 +214,9 @@ fn test_unknown_delegate_is_rejected() {
             ScErrorCode::InvalidAction,
         )))
     );
+    // The account itself rejected the unregistered delegate with its own
+    // `UnknownDelegate` code.
+    assert_check_auth_error(&env, Error::UnknownDelegate);
 }
 
 // An auth entry with no delegates would leave the account authenticating
@@ -243,4 +262,7 @@ fn test_empty_delegates_is_rejected() {
             ScErrorCode::InvalidAction,
         )))
     );
+    // The account itself rejected the empty delegate list with its own
+    // `InsufficientDelegates` code.
+    assert_check_auth_error(&env, Error::InsufficientDelegates);
 }
