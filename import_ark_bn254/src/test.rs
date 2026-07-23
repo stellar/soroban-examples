@@ -64,7 +64,6 @@ fn test_running_contract_as_wasm() {
     // This contract is too expensive to run with production budget and mainnet
     // resource limits, so first reset the budget to unlimited and disable the
     // resource limit enforcement.
-    env.cost_estimate().budget().reset_unlimited();
     env.cost_estimate().disable_resource_limits();
 
     let contract_id = env.register(bn254_contract::WASM, ());
