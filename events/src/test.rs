@@ -1,7 +1,5 @@
 #![cfg(test)]
 
-extern crate std;
-
 use super::*;
 use soroban_sdk::{testutils::Events, Env, Event, IntoVal};
 
@@ -17,7 +15,7 @@ fn test() {
     assert_eq!(client.increment(), 1);
     assert_eq!(
         env.events().all(),
-        std::vec![IncrementEvent { count: 1 }.to_xdr(&env, &contract_id)]
+        [IncrementEvent { count: 1 }.to_xdr(&env, &contract_id)]
     );
 
     // Assert on the events emitted by the last contract invocation that
@@ -26,7 +24,7 @@ fn test() {
     assert_eq!(client.increment(), 2);
     assert_eq!(
         env.events().all().filter_by_contract(&contract_id),
-        std::vec![IncrementEvent { count: 2 }.to_xdr(&env, &contract_id)]
+        [IncrementEvent { count: 2 }.to_xdr(&env, &contract_id)]
     );
 
     // Assert on the events emitted by the last contract invocation by
