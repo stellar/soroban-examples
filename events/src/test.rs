@@ -1,7 +1,5 @@
 #![cfg(test)]
 
-extern crate std;
-
 use super::*;
 use soroban_sdk::{testutils::Events, Env, Event, IntoVal};
 
