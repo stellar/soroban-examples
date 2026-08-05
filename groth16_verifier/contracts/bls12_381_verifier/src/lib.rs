@@ -1,7 +1,7 @@
 #![no_std]
 
 use soroban_sdk::{
-    Address, Env, Vec, contract, contracterror, contractimpl, contracttype,
+    Address, Bytes, BytesN, Env, U256, Vec, contract, contracterror, contractimpl, contracttype,
     crypto::bls12_381::{Bls12381Fr, Bls12381G1Affine, Bls12381G2Affine},
 };
 
@@ -11,6 +11,21 @@ use soroban_sdk::{
 pub enum Groth16Error {
     MalformedVerifyingKey = 0,
     VerificationKeyNotSet = 1,
+    NonCanonicalPublicInput = 2,
+}
+
+const FR_MODULUS_BE: [u8; 32] = [
+    0x73, 0xed, 0xa7, 0x53, 0x29, 0x9d, 0x7d, 0x48, 0x33, 0x39, 0xd8, 0x08, 0x09, 0xa1, 0xd8, 0x05,
+    0x53, 0xbd, 0xa4, 0x02, 0xff, 0xfe, 0x5b, 0xfe, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x01,
+];
+
+fn canonical_fr(env: &Env, bytes: BytesN<32>) -> Result<Bls12381Fr, Groth16Error> {
+    let value = U256::from_be_bytes(env, &Bytes::from_array(env, &bytes.to_array()));
+    let modulus = U256::from_be_bytes(env, &Bytes::from_array(env, &FR_MODULUS_BE));
+    if value >= modulus {
+        return Err(Groth16Error::NonCanonicalPublicInput);
+    }
+    Ok(Bls12381Fr::from_u256(value))
 }
 
 #[derive(Clone)]
@@ -62,7 +77,7 @@ impl Groth16Verifier {
     pub fn verify_proof(
         env: Env,
         proof: Proof,
-        pub_signals: Vec<Bls12381Fr>,
+        public_inputs: Vec<BytesN<32>>,
     ) -> Result<bool, Groth16Error> {
         let vk: VerificationKey = env
             .storage()
@@ -70,8 +85,13 @@ impl Groth16Verifier {
             .get(&DataKey::VerificationKey)
             .ok_or(Groth16Error::VerificationKeyNotSet)?;
 
-        if pub_signals.len() + 1 != vk.ic.len() {
+        if public_inputs.len() + 1 != vk.ic.len() {
             return Err(Groth16Error::MalformedVerifyingKey);
+        }
+
+        let mut pub_signals = Vec::new(&env);
+        for input in public_inputs.iter() {
+            pub_signals.push_back(canonical_fr(&env, input)?);
         }
 
         let bls = env.crypto().bls12_381();

@@ -10,16 +10,16 @@ use ark_serialize::CanonicalSerialize;
 use bls12_381_verifier::{Groth16Verifier, Groth16VerifierClient, Proof, VerificationKey};
 use serde::Deserialize;
 use soroban_sdk::{
-    Address, Bytes, Env, U256, Vec,
+    Address, BytesN, Env, Vec,
     crypto::bls12_381::{
-        Bls12381Fr, Bls12381G1Affine, Bls12381G2Affine, G1_SERIALIZED_SIZE, G2_SERIALIZED_SIZE,
+        Bls12381G1Affine, Bls12381G2Affine, G1_SERIALIZED_SIZE, G2_SERIALIZED_SIZE,
     },
 };
 
 pub struct Fixture {
     pub verification_key: VerificationKey,
     pub proof: Proof,
-    pub public_signals: Vec<Bls12381Fr>,
+    pub public_signals: Vec<BytesN<32>>,
 }
 
 #[derive(Deserialize)]
@@ -57,7 +57,7 @@ pub fn load_fixture(env: &Env, fixture_name: &str) -> Fixture {
 
     let mut signals = Vec::new(env);
     for signal in public_signals {
-        signals.push_back(fr_from_str(env, &signal));
+        signals.push_back(fr_bytes_from_str(env, &signal));
     }
 
     let mut ic = Vec::new(env);
@@ -121,15 +121,15 @@ pub fn deploy<'a>(
 
 pub fn replace_first_signal(
     env: &Env,
-    signals: &Vec<Bls12381Fr>,
+    signals: &Vec<BytesN<32>>,
     replacement: &str,
-) -> Vec<Bls12381Fr> {
+) -> Vec<BytesN<32>> {
     let mut updated = Vec::new(env);
     if signals.is_empty() {
         return updated;
     }
 
-    updated.push_back(fr_from_str(env, replacement));
+    updated.push_back(fr_bytes_from_str(env, replacement));
     for signal in signals.iter().skip(1) {
         updated.push_back(signal);
     }
@@ -164,7 +164,7 @@ fn g2_from_coords(env: &Env, x1: &str, x2: &str, y1: &str, y2: &str) -> Bls12381
     Bls12381G2Affine::from_array(env, &buf)
 }
 
-fn fr_from_str(env: &Env, s: &str) -> Bls12381Fr {
+fn fr_bytes_from_str(env: &Env, s: &str) -> BytesN<32> {
     let ark_fr = ArkFr::from_str(s).unwrap();
     let bigint = ark_fr.into_bigint();
     let bytes = bigint.to_bytes_le();
@@ -172,6 +172,5 @@ fn fr_from_str(env: &Env, s: &str) -> Bls12381Fr {
     let copy_len = bytes.len().min(32);
     u256_bytes[..copy_len].copy_from_slice(&bytes[..copy_len]);
     u256_bytes.reverse();
-    let bytes_obj = Bytes::from_array(env, &u256_bytes);
-    Bls12381Fr::from_u256(U256::from_be_bytes(env, &bytes_obj))
+    BytesN::from_array(env, &u256_bytes)
 }

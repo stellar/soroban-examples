@@ -30,7 +30,7 @@ Both curve-specific contracts expose the same shape:
 
 - `__constructor(admin, verification_key)` stores the initial admin and verification key
 - `set_verification_key(verification_key)` updates the stored verification key after admin auth
-- `verify_proof(proof, pub_signals)` verifies a Groth16 proof against the stored verification key
+- `verify_proof(proof, public_inputs)` verifies canonical big-endian `BytesN<32>` field elements against the stored verification key and rejects values outside the scalar field
 
 The BLS12-381 contract is exercised with Circom, Gnark, and Arkworks fixtures. The BN254 contract is exercised with Gnark fixtures.
 
