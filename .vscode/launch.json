@@ -1,0 +1,1066 @@
+{
+  // Soroban debug configurations — one (or two) per example in this repository.
+  //
+  // Each configuration runs an ordered transaction sequence against one fresh
+  // local ledger and opens the debug session on the transaction named by
+  // `trace`. Everything a call depends on (other contracts, constructors,
+  // minted balances, prior state) is set up as earlier transactions, so the
+  // traced call executes against realistic state.
+  //
+  // Conventions used throughout:
+  //   * Every transaction is signed by ONE source account, `${sourceAddress}`.
+  //     Where an example needs several parties (atomic_swap, single_offer), the
+  //     source account plays each role; the multi-party authorization logic is
+  //     still exercised.
+  //   * `Bytes`/`BytesN` arguments are base64 (that is what the spec encoder
+  //     behind `args` accepts — note `docs/debug-config.md` says hex).
+  //   * Token amounts use 7 decimals, so "1000000000" is 100 tokens.
+  //   * Environment notes, verified against the local komet-node + komet:
+  //     every argument type these configurations use now encodes (String, void,
+  //     u256/i256 and the composite vec/map/struct/enum forms), and instance
+  //     `extend_ttl` works. Two host-call families are still unimplemented in
+  //     the semantics, so a traced call that reaches one settles FAILED — the
+  //     session still opens and steps up to that host call:
+  //       - contract creation from within a contract (`l.d` / `l.e`), i.e. the
+  //         factory `deploy` in "deployer: factory deploys a contract on its
+  //         own behalf". The other deployer configuration below does not need
+  //         it;
+  //       - crypto (`sha256`, `ed25519_verify`, bls12-381): account,
+  //         simple_account, multisig_1_of_n_account, merkle_distribution,
+  //         bls_signature, groth16_verifier, privacy-pools.
+  //   * Fixed accounts used as counterparties:
+  //       alice GDVEU3DD4KOFECV66VIHWEZOYX4ZKR3WV27L464SIIPOU2IUI3JCZA57
+  //       bob   GAJZR5RMNUNEK7CRXJVEWXZ5XUXWT7FJGILCDDOITF7EC26RPWJ4UVOE
+  //       carol GD6ROJBYLKQMOW3E7N4M2YBPUHMZD7PL65VRHRMO24BOVSBV5H3BQRSL
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "hello_world: hello(\"Soroban\")",
+      "transactions": [
+        { "kind": "deploy", "id": "hello", "contract": "${workspaceFolder}/hello_world" },
+        { "kind": "invoke", "contract": "hello", "function": "hello", "args": { "to": "Soroban" } }
+      ]
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "logging: hello(friend)",
+      "transactions": [
+        { "kind": "deploy", "id": "logger", "contract": "${workspaceFolder}/logging" },
+        { "kind": "invoke", "contract": "logger", "function": "hello", "args": { "value": "friend" } }
+      ]
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "increment: third increment (2 -> 3)",
+      // The counter is instance storage, so the two earlier calls are what make
+      // the traced call start from 2 instead of 0.
+      "transactions": [
+        { "kind": "deploy", "id": "counter", "contract": "${workspaceFolder}/increment" },
+        { "kind": "invoke", "contract": "counter", "function": "increment" },
+        { "kind": "invoke", "contract": "counter", "function": "increment" },
+        { "kind": "invoke", "contract": "counter", "function": "increment" }
+      ],
+      "trace": "last"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "increment_with_fuzz: second increment (1 -> 2)",
+      "transactions": [
+        { "kind": "deploy", "id": "counter", "contract": "${workspaceFolder}/increment_with_fuzz" },
+        { "kind": "invoke", "contract": "counter", "function": "increment" },
+        { "kind": "invoke", "contract": "counter", "function": "increment" }
+      ]
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "alloc: sum(12)",
+      "transactions": [
+        { "kind": "deploy", "id": "alloc", "contract": "${workspaceFolder}/alloc" },
+        { "kind": "invoke", "contract": "alloc", "function": "sum", "args": { "count": 12 } }
+      ]
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "events: increment publishes COUNTER/increment",
+      "transactions": [
+        { "kind": "deploy", "id": "counter", "contract": "${workspaceFolder}/events" },
+        { "kind": "invoke", "contract": "counter", "function": "increment" },
+        { "kind": "invoke", "contract": "counter", "function": "increment" }
+      ]
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "custom_types: increment(7) on a State{count:5}",
+      "transactions": [
+        { "kind": "deploy", "id": "counter", "contract": "${workspaceFolder}/custom_types" },
+        { "kind": "invoke", "contract": "counter", "function": "increment", "args": { "incr": 5 } },
+        { "kind": "invoke", "id": "second_incr", "contract": "counter", "function": "increment", "args": { "incr": 7 } },
+        { "kind": "invoke", "contract": "counter", "function": "get_state" }
+      ],
+      "trace": "second_incr"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "errors: sixth increment reverts (LimitReached)",
+      // MAX is 5, so the traced (sixth) call is the one that returns
+      // Err(Error::LimitReached) — a reverting transaction stays debuggable.
+      "transactions": [
+        { "kind": "deploy", "id": "counter", "contract": "${workspaceFolder}/errors" },
+        { "kind": "invoke", "contract": "counter", "function": "increment" },
+        { "kind": "invoke", "contract": "counter", "function": "increment" },
+        { "kind": "invoke", "contract": "counter", "function": "increment" },
+        { "kind": "invoke", "contract": "counter", "function": "increment" },
+        { "kind": "invoke", "contract": "counter", "function": "increment" },
+        { "kind": "invoke", "contract": "counter", "function": "increment" }
+      ],
+      "trace": "last"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "eth_abi: exec(abi.encode(bytes32,uint256,uint256))",
+      // input = abi.encode(a = bytes32("soroban"), b = 1e18, c = 2e18);
+      // the contract decodes it and returns Output{a, r = b + c = 3e18}.
+      "transactions": [
+        { "kind": "deploy", "id": "abi", "contract": "${workspaceFolder}/eth_abi" },
+        {
+          "kind": "invoke",
+          "contract": "abi",
+          "function": "exec",
+          "args": {
+            "input": "c29yb2JhbgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN4Lazp2QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABvBbWdOyAAA"
+          }
+        }
+      ]
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "ttl: extend_persistent after setup",
+      // `setup` must run first: the persistent entry has to exist before its
+      // TTL can be extended.
+      "transactions": [
+        { "kind": "deploy", "id": "ttl", "contract": "${workspaceFolder}/ttl" },
+        { "kind": "invoke", "contract": "ttl", "function": "setup" },
+        { "kind": "invoke", "id": "extend_persistent", "contract": "ttl", "function": "extend_persistent" },
+        { "kind": "invoke", "contract": "ttl", "function": "extend_instance" },
+        { "kind": "invoke", "contract": "ttl", "function": "extend_temporary" }
+      ],
+      "trace": "extend_persistent"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "auth: increment(user, 5) on a counter of 5",
+      "transactions": [
+        { "kind": "deploy", "id": "counter", "contract": "${workspaceFolder}/auth" },
+        {
+          "kind": "invoke", "contract": "counter", "function": "increment",
+          "args": { "user": "${sourceAddress}", "value": 5 }
+        },
+        {
+          "kind": "invoke", "contract": "counter", "function": "increment",
+          "args": { "user": "${sourceAddress}", "value": 5 }
+        }
+      ]
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "pause: set(true)",
+      "transactions": [
+        { "kind": "deploy", "id": "pause", "contract": "${workspaceFolder}/pause" },
+        { "kind": "invoke", "contract": "pause", "function": "paused" },
+        { "kind": "invoke", "id": "pause_on", "contract": "pause", "function": "set", "args": { "paused": true } },
+        { "kind": "invoke", "contract": "pause", "function": "paused" }
+      ],
+      "trace": "pause_on"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "increment_with_pause: increment while unpaused",
+      // Two contracts: the counter cross-calls the pause contract's `paused()`
+      // through the address it was constructed with.
+      "transactions": [
+        { "kind": "deploy", "id": "pause", "contract": "${workspaceFolder}/pause" },
+        { "kind": "deploy", "id": "counter", "contract": "${workspaceFolder}/increment_with_pause" },
+        {
+          "kind": "invoke", "contract": "counter", "function": "__constructor",
+          "args": { "pause": "${contract:pause}" }
+        },
+        { "kind": "invoke", "contract": "counter", "function": "increment" },
+        { "kind": "invoke", "contract": "counter", "function": "increment" }
+      ]
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "increment_with_pause: increment while paused (reverts)",
+      "transactions": [
+        { "kind": "deploy", "id": "pause", "contract": "${workspaceFolder}/pause" },
+        { "kind": "deploy", "id": "counter", "contract": "${workspaceFolder}/increment_with_pause" },
+        {
+          "kind": "invoke", "contract": "counter", "function": "__constructor",
+          "args": { "pause": "${contract:pause}" }
+        },
+        { "kind": "invoke", "contract": "counter", "function": "increment" },
+        { "kind": "invoke", "contract": "pause", "function": "set", "args": { "paused": true } },
+        { "kind": "invoke", "contract": "counter", "function": "increment" }
+      ],
+      "trace": "last"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "cross_contract: contract_b.add_with(contract_a, 1985, 40)",
+      // contract_b `contractimport!`s contract_a's built wasm, so contract_a
+      // must be the first deploy — its build writes the file contract_b's build
+      // then reads.
+      "transactions": [
+        { "kind": "deploy", "id": "contract_a", "contract": "${workspaceFolder}/cross_contract/contract_a" },
+        { "kind": "deploy", "id": "contract_b", "contract": "${workspaceFolder}/cross_contract/contract_b" },
+        {
+          "kind": "invoke", "contract": "contract_b", "function": "add_with",
+          "args": { "contract": "${contract:contract_a}", "x": 1985, "y": 40 }
+        }
+      ]
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "workspace: contract_b.add_with(contract_a, 12, 30)",
+      // Both crates are members of workspace/Cargo.toml, so cargo would put
+      // their artifacts in the workspace-root target dir. CARGO_TARGET_DIR
+      // keeps each artifact under its own crate directory, where the debugger
+      // looks for it.
+      "transactions": [
+        {
+          "kind": "deploy", "id": "contract_a",
+          "contract": "${workspaceFolder}/workspace/contract_a",
+          "buildCommand": "CARGO_TARGET_DIR=target stellar contract build"
+        },
+        {
+          "kind": "deploy", "id": "contract_b",
+          "contract": "${workspaceFolder}/workspace/contract_b",
+          "buildCommand": "CARGO_TARGET_DIR=target stellar contract build"
+        },
+        {
+          "kind": "invoke", "contract": "contract_b", "function": "add_with",
+          "args": { "contract": "${contract:contract_a}", "x": 12, "y": 30 }
+        }
+      ]
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "deployer: factory deploys a contract on its own behalf",
+      // NOTE: the traced `deploy` calls the `create_contract_with_constructor`
+      // host function (`l.e`), which komet does not implement yet, so the
+      // transaction fails there. Everything up to that call is debuggable.
+      // `deploy` needs the hash of an ALREADY UPLOADED wasm. Deploying
+      // hello_world first uploads it; `wasm_hash` below is the sha256 of that
+      // upload (the built wasm with its debug sections stripped, which is what
+      // the debugger uploads). Regenerate it if the toolchain or hello_world
+      // changes — the traced transaction fails with a missing-wasm error if the
+      // hash no longer matches.
+      // `constructor_args` is empty because hello_world declares no
+      // constructor (and `Vec<Val>` values cannot be spelled in JSON).
+      "transactions": [
+        { "kind": "deploy", "id": "hello", "contract": "${workspaceFolder}/hello_world" },
+        { "kind": "deploy", "id": "factory", "contract": "${workspaceFolder}/deployer/deployer" },
+        {
+          "kind": "invoke", "contract": "factory", "function": "__constructor",
+          "args": { "admin": "${sourceAddress}" }
+        },
+        {
+          "kind": "invoke", "contract": "factory", "function": "deploy",
+          "args": {
+            "wasm_hash": "sZWsIb9BvwaxQtVBJOTgj8z4O25BV+VQcYQSuihTX/s=",
+            "salt": "rwsNdcw/xZTLnbscDV3YHIdSQzmCRi/exRwB6hwPna4=",
+            "constructor_args": []
+          }
+        }
+      ]
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "deployer: the deployed contract's __constructor(42)",
+      "transactions": [
+        { "kind": "deploy", "id": "target", "contract": "${workspaceFolder}/deployer/contract" },
+        {
+          "kind": "invoke", "id": "ctor", "contract": "target", "function": "__constructor",
+          "args": { "value": 42 }
+        },
+        { "kind": "invoke", "contract": "target", "function": "value" }
+      ],
+      "trace": "ctor"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "upgradeable_contract: upgrade v1 -> v2",
+      // Deploying new_contract uploads its wasm so the old contract can point
+      // itself at that hash. `new_wasm_hash` is the sha256 of that upload —
+      // regenerate it if the toolchain or new_contract changes.
+      // The `version()` calls around the upgrade return 1 before and 2 after.
+      "transactions": [
+        { "kind": "deploy", "id": "new", "contract": "${workspaceFolder}/upgradeable_contract/new_contract" },
+        { "kind": "deploy", "id": "old", "contract": "${workspaceFolder}/upgradeable_contract/old_contract" },
+        {
+          "kind": "invoke", "contract": "old", "function": "__constructor",
+          "args": { "admin": "${sourceAddress}" }
+        },
+        { "kind": "invoke", "contract": "old", "function": "version" },
+        {
+          "kind": "invoke", "id": "the_upgrade", "contract": "old", "function": "upgrade",
+          "args": { "new_wasm_hash": "ke4pO1NBSLThriwVN5fvGBsRJfDv3FjUPsrEICCzNUc=" }
+        },
+        { "kind": "invoke", "contract": "old", "function": "version" }
+      ],
+      "trace": "the_upgrade"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "token: transfer_from spends an allowance",
+      "transactions": [
+        { "kind": "deploy", "id": "token", "contract": "${workspaceFolder}/token" },
+        {
+          "kind": "invoke", "contract": "token", "function": "__constructor",
+          "args": {
+            "admin": "${sourceAddress}", "decimal": 7,
+            "name": "Example Token", "symbol": "EXTK"
+          }
+        },
+        {
+          "kind": "invoke", "contract": "token", "function": "mint",
+          "args": { "to": "${sourceAddress}", "amount": "1000000000" }
+        },
+        {
+          "kind": "invoke", "id": "the_transfer", "contract": "token", "function": "transfer",
+          "args": {
+            "from": "${sourceAddress}",
+            "to_muxed": "GDVEU3DD4KOFECV66VIHWEZOYX4ZKR3WV27L464SIIPOU2IUI3JCZA57",
+            "amount": "250000000"
+          }
+        },
+        {
+          "kind": "invoke", "contract": "token", "function": "approve",
+          "args": {
+            "from": "${sourceAddress}", "spender": "${sourceAddress}",
+            "amount": "100000000", "expiration_ledger": 100000
+          }
+        },
+        {
+          "kind": "invoke", "contract": "token", "function": "transfer_from",
+          "args": {
+            "spender": "${sourceAddress}", "from": "${sourceAddress}",
+            "to": "GAJZR5RMNUNEK7CRXJVEWXZ5XUXWT7FJGILCDDOITF7EC26RPWJ4UVOE",
+            "amount": "50000000"
+          }
+        }
+      ],
+      "trace": "last"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "timelock: claim a deposited balance",
+      "transactions": [
+        { "kind": "deploy", "id": "token", "contract": "${workspaceFolder}/token" },
+        { "kind": "deploy", "id": "timelock", "contract": "${workspaceFolder}/timelock" },
+        {
+          "kind": "invoke", "contract": "token", "function": "__constructor",
+          "args": {
+            "admin": "${sourceAddress}", "decimal": 7,
+            "name": "Example Token", "symbol": "EXTK"
+          }
+        },
+        {
+          "kind": "invoke", "contract": "token", "function": "mint",
+          "args": { "to": "${sourceAddress}", "amount": "1000000000" }
+        },
+        {
+          "kind": "invoke", "contract": "timelock", "function": "deposit",
+          "args": {
+            "from": "${sourceAddress}",
+            "token": "${contract:token}",
+            "amount": "500000000",
+            "claimants": [
+              "${sourceAddress}",
+              "GDVEU3DD4KOFECV66VIHWEZOYX4ZKR3WV27L464SIIPOU2IUI3JCZA57"
+            ],
+            "time_bound": { "kind": { "tag": "Before" }, "timestamp": "4102444800" }
+          }
+        },
+        {
+          "kind": "invoke", "contract": "timelock", "function": "claim",
+          "args": { "claimant": "${sourceAddress}" }
+        }
+      ],
+      "trace": "last"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "fuzzing: partial claim of a timelocked balance",
+      // The fuzzing example is the timelock contract with a claimable amount,
+      // so the traced claim takes half the deposit and leaves the rest.
+      "transactions": [
+        { "kind": "deploy", "id": "token", "contract": "${workspaceFolder}/token" },
+        { "kind": "deploy", "id": "timelock", "contract": "${workspaceFolder}/fuzzing" },
+        {
+          "kind": "invoke", "contract": "token", "function": "__constructor",
+          "args": {
+            "admin": "${sourceAddress}", "decimal": 7,
+            "name": "Example Token", "symbol": "EXTK"
+          }
+        },
+        {
+          "kind": "invoke", "contract": "token", "function": "mint",
+          "args": { "to": "${sourceAddress}", "amount": "1000000000" }
+        },
+        {
+          "kind": "invoke", "contract": "timelock", "function": "deposit",
+          "args": {
+            "from": "${sourceAddress}",
+            "token": "${contract:token}",
+            "amount": "500000000",
+            "claimants": ["${sourceAddress}"],
+            "time_bound": { "kind": { "tag": "After" }, "timestamp": "0" }
+          }
+        },
+        {
+          "kind": "invoke", "contract": "timelock", "function": "claim",
+          "args": { "claimant": "${sourceAddress}", "amount": "250000000" }
+        }
+      ],
+      "trace": "last"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "single_offer: trade against a 10:1 offer",
+      // The seller creates the offer, funds the contract with sell tokens, then
+      // a buyer trades 0.1 buy token for 1 sell token (sell_price:buy_price =
+      // 1000:100). Seller and buyer are the same account here.
+      "transactions": [
+        { "kind": "deploy", "id": "sell_token", "contract": "${workspaceFolder}/token" },
+        { "kind": "deploy", "id": "buy_token", "contract": "${workspaceFolder}/token" },
+        { "kind": "deploy", "id": "offer", "contract": "${workspaceFolder}/single_offer" },
+        {
+          "kind": "invoke", "contract": "sell_token", "function": "__constructor",
+          "args": { "admin": "${sourceAddress}", "decimal": 7, "name": "Sell Token", "symbol": "SELL" }
+        },
+        {
+          "kind": "invoke", "contract": "buy_token", "function": "__constructor",
+          "args": { "admin": "${sourceAddress}", "decimal": 7, "name": "Buy Token", "symbol": "BUY" }
+        },
+        {
+          "kind": "invoke", "contract": "offer", "function": "create",
+          "args": {
+            "seller": "${sourceAddress}",
+            "sell_token": "${contract:sell_token}",
+            "buy_token": "${contract:buy_token}",
+            "sell_price": 1000,
+            "buy_price": 100
+          }
+        },
+        {
+          "kind": "invoke", "contract": "sell_token", "function": "mint",
+          "args": { "to": "${sourceAddress}", "amount": "1000000000" }
+        },
+        {
+          "kind": "invoke", "contract": "buy_token", "function": "mint",
+          "args": { "to": "${sourceAddress}", "amount": "1000000000" }
+        },
+        {
+          // The seller moves the tokens for sale into the offer contract.
+          "kind": "invoke", "contract": "sell_token", "function": "transfer",
+          "args": {
+            "from": "${sourceAddress}", "to_muxed": "${contract:offer}", "amount": "500000000"
+          }
+        },
+        {
+          "kind": "invoke", "contract": "offer", "function": "trade",
+          "args": {
+            "buyer": "${sourceAddress}",
+            "buy_token_amount": "10000000",
+            "min_sell_token_amount": "100000000"
+          }
+        }
+      ],
+      "trace": "last"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "liquidity_pool: swap 10 USDC-worth out of the pool",
+      // The pool's constructor requires token_a < token_b (address order). The
+      // handle names below are chosen so the deterministic contract ids come
+      // out in that order; if the constructor ever panics with "token_a must be
+      // less than token_b", swap the two arguments.
+      // deposit seeds reserves of 50/50, then the traced swap buys 10 of
+      // token_b for at most 13 of token_a (0.3% fee).
+      "transactions": [
+        { "kind": "deploy", "id": "usdc", "contract": "${workspaceFolder}/token" },
+        { "kind": "deploy", "id": "xlm", "contract": "${workspaceFolder}/token" },
+        { "kind": "deploy", "id": "pool", "contract": "${workspaceFolder}/liquidity_pool" },
+        {
+          "kind": "invoke", "contract": "usdc", "function": "__constructor",
+          "args": { "admin": "${sourceAddress}", "decimal": 7, "name": "USD Coin", "symbol": "USDC" }
+        },
+        {
+          "kind": "invoke", "contract": "xlm", "function": "__constructor",
+          "args": { "admin": "${sourceAddress}", "decimal": 7, "name": "Lumen", "symbol": "XLM" }
+        },
+        {
+          "kind": "invoke", "contract": "pool", "function": "__constructor",
+          "args": { "token_a": "${contract:usdc}", "token_b": "${contract:xlm}" }
+        },
+        {
+          "kind": "invoke", "contract": "usdc", "function": "mint",
+          "args": { "to": "${sourceAddress}", "amount": "10000000000" }
+        },
+        {
+          "kind": "invoke", "contract": "xlm", "function": "mint",
+          "args": { "to": "${sourceAddress}", "amount": "10000000000" }
+        },
+        {
+          "kind": "invoke", "contract": "pool", "function": "deposit",
+          "args": {
+            "to": "${sourceAddress}",
+            "desired_a": "500000000", "min_a": "500000000",
+            "desired_b": "500000000", "min_b": "500000000"
+          }
+        },
+        {
+          "kind": "invoke", "contract": "pool", "function": "swap",
+          "args": { "to": "${sourceAddress}", "buy_a": false, "out": "100000000", "in_max": "130000000" }
+        }
+      ],
+      "trace": "last"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "atomic_swap: swap 100 A for 500 B",
+      // Both parties authorize their own half of the swap; here one account
+      // plays both roles, so `a` and `b` are the same address.
+      "transactions": [
+        { "kind": "deploy", "id": "token_a", "contract": "${workspaceFolder}/token" },
+        { "kind": "deploy", "id": "token_b", "contract": "${workspaceFolder}/token" },
+        { "kind": "deploy", "id": "swap", "contract": "${workspaceFolder}/atomic_swap" },
+        {
+          "kind": "invoke", "contract": "token_a", "function": "__constructor",
+          "args": { "admin": "${sourceAddress}", "decimal": 7, "name": "Token A", "symbol": "TOKA" }
+        },
+        {
+          "kind": "invoke", "contract": "token_b", "function": "__constructor",
+          "args": { "admin": "${sourceAddress}", "decimal": 7, "name": "Token B", "symbol": "TOKB" }
+        },
+        {
+          "kind": "invoke", "contract": "token_a", "function": "mint",
+          "args": { "to": "${sourceAddress}", "amount": "10000000000" }
+        },
+        {
+          "kind": "invoke", "contract": "token_b", "function": "mint",
+          "args": { "to": "${sourceAddress}", "amount": "100000000000" }
+        },
+        {
+          "kind": "invoke", "contract": "swap", "function": "swap",
+          "args": {
+            "a": "${sourceAddress}",
+            "b": "${sourceAddress}",
+            "token_a": "${contract:token_a}",
+            "token_b": "${contract:token_b}",
+            "amount_a": "1000000000",
+            "min_b_for_a": "4500000000",
+            "amount_b": "5000000000",
+            "min_a_for_b": "950000000"
+          }
+        }
+      ],
+      "trace": "last"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "atomic_multiswap: batch two A-sellers against two B-sellers",
+      // multi_swap price-matches the two sides and calls `swap` on the
+      // atomic_swap contract for each match, so atomic_swap must be deployed
+      // first (atomic_multiswap also `contractimport!`s its built wasm).
+      "transactions": [
+        { "kind": "deploy", "id": "swap", "contract": "${workspaceFolder}/atomic_swap" },
+        { "kind": "deploy", "id": "multiswap", "contract": "${workspaceFolder}/atomic_multiswap" },
+        { "kind": "deploy", "id": "token_a", "contract": "${workspaceFolder}/token" },
+        { "kind": "deploy", "id": "token_b", "contract": "${workspaceFolder}/token" },
+        {
+          "kind": "invoke", "contract": "token_a", "function": "__constructor",
+          "args": { "admin": "${sourceAddress}", "decimal": 7, "name": "Token A", "symbol": "TOKA" }
+        },
+        {
+          "kind": "invoke", "contract": "token_b", "function": "__constructor",
+          "args": { "admin": "${sourceAddress}", "decimal": 7, "name": "Token B", "symbol": "TOKB" }
+        },
+        {
+          "kind": "invoke", "contract": "token_a", "function": "mint",
+          "args": { "to": "${sourceAddress}", "amount": "100000000000" }
+        },
+        {
+          "kind": "invoke", "contract": "token_b", "function": "mint",
+          "args": { "to": "${sourceAddress}", "amount": "1000000000000" }
+        },
+        {
+          "kind": "invoke", "contract": "multiswap", "function": "multi_swap",
+          "args": {
+            "swap_contract": "${contract:swap}",
+            "token_a": "${contract:token_a}",
+            "token_b": "${contract:token_b}",
+            "swaps_a": [
+              { "address": "${sourceAddress}", "amount": "1000000000", "min_recv": "4500000000" },
+              { "address": "${sourceAddress}", "amount": "500000000", "min_recv": "2000000000" }
+            ],
+            "swaps_b": [
+              { "address": "${sourceAddress}", "amount": "5000000000", "min_recv": "950000000" },
+              { "address": "${sourceAddress}", "amount": "2500000000", "min_recv": "450000000" }
+            ]
+          }
+        }
+      ],
+      "trace": "last"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "mint-lock: minter mints within its epoch limit",
+      // The token's admin is the mint-lock contract, so mint-lock is what may
+      // mint. The source account is registered as a minter with a 100-token
+      // per-epoch limit, and then hands the mint-lock admin role to alice — so
+      // the traced mint takes the limited-minter path (admin == minter skips
+      // the limit check).
+      "transactions": [
+        { "kind": "deploy", "id": "token", "contract": "${workspaceFolder}/token" },
+        { "kind": "deploy", "id": "minter", "contract": "${workspaceFolder}/mint-lock" },
+        {
+          "kind": "invoke", "contract": "token", "function": "__constructor",
+          "args": {
+            "admin": "${contract:minter}", "decimal": 7,
+            "name": "Example Token", "symbol": "EXTK"
+          }
+        },
+        {
+          "kind": "invoke", "contract": "minter", "function": "__constructor",
+          "args": { "admin": "${sourceAddress}" }
+        },
+        {
+          "kind": "invoke", "contract": "minter", "function": "set_minter",
+          "args": {
+            "contract": "${contract:token}",
+            "minter": "${sourceAddress}",
+            "config": { "limit": "1000000000", "epoch_length": 17280 }
+          }
+        },
+        {
+          "kind": "invoke", "contract": "minter", "function": "set_admin",
+          "args": { "new_admin": "GDVEU3DD4KOFECV66VIHWEZOYX4ZKR3WV27L464SIIPOU2IUI3JCZA57" }
+        },
+        {
+          "kind": "invoke", "contract": "minter", "function": "mint",
+          "args": {
+            "contract": "${contract:token}",
+            "minter": "${sourceAddress}",
+            "to": "GAJZR5RMNUNEK7CRXJVEWXZ5XUXWT7FJGILCDDOITF7EC26RPWJ4UVOE",
+            "amount": "250000000"
+          }
+        }
+      ],
+      "trace": "last"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "merkle_distribution: claim an airdrop with a Merkle proof",
+      // Root, index, receiver, amount and proof are the committed test vectors
+      // from src/test.rs, so the proof verifies against the stored root.
+      "transactions": [
+        { "kind": "deploy", "id": "token", "contract": "${workspaceFolder}/token" },
+        { "kind": "deploy", "id": "airdrop", "contract": "${workspaceFolder}/merkle_distribution" },
+        {
+          "kind": "invoke", "contract": "token", "function": "__constructor",
+          "args": {
+            "admin": "${sourceAddress}", "decimal": 7,
+            "name": "Airdrop Token", "symbol": "DROP"
+          }
+        },
+        {
+          "kind": "invoke", "contract": "token", "function": "mint",
+          "args": { "to": "${sourceAddress}", "amount": "1000" }
+        },
+        {
+          "kind": "invoke", "contract": "airdrop", "function": "__constructor",
+          "args": {
+            "root_hash": "EZMhBfGk0Akuh86tOlQ9pa/Yrc/2P5qM62xds8gTVyI=",
+            "token": "${contract:token}",
+            "funding_amount": "1000",
+            "funding_source": "${sourceAddress}"
+          }
+        },
+        {
+          "kind": "invoke", "contract": "airdrop", "function": "claim",
+          "args": {
+            "index": 3,
+            "receiver": "CAASCQKVVBSLREPEUGPOTQZ4BC2NDBY2MW7B2LGIGFUPIY4Z3XUZRVTX",
+            "amount": "100",
+            "proof": [
+              "/A2cL0bB6RC9OvhmUxhxTHyXSG0qIG+WI2xuflDAgNc=",
+              "yD97JgVVcuXoTHjsTU9FuFtxaYlRB3uq/hlSecHzC+Q="
+            ]
+          }
+        }
+      ],
+      "trace": "last"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "deep_contract_auth: A -> B -> C with pre-authorized sub-invocation",
+      // All three contracts live in the same crate, so the same wasm is
+      // deployed three times under different handles.
+      "transactions": [
+        { "kind": "deploy", "id": "contract_a", "contract": "${workspaceFolder}/deep_contract_auth" },
+        { "kind": "deploy", "id": "contract_b", "contract": "${workspaceFolder}/deep_contract_auth" },
+        { "kind": "deploy", "id": "contract_c", "contract": "${workspaceFolder}/deep_contract_auth" },
+        {
+          "kind": "invoke", "contract": "contract_a", "function": "call_b",
+          "args": {
+            "contract_b_address": "${contract:contract_b}",
+            "contract_c_address": "${contract:contract_c}"
+          }
+        }
+      ]
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "other_custom_types: complex_struct round-trip",
+      // One call per interesting type: struct, numeric enum (RoyalCard::Queen =
+      // 12), unit union variant, union variant with data, map, tuple, Option,
+      // i256 and finally the nested ComplexStruct that is traced. The
+      // `u32_fail_on_even(4)` step deliberately reverts with NumberMustBeOdd —
+      // the sequence keeps going and reports its status in the debug console.
+      "transactions": [
+        { "kind": "deploy", "id": "types", "contract": "${workspaceFolder}/other_custom_types" },
+        { "kind": "invoke", "contract": "types", "function": "strukt_hel", "args": { "strukt": { "a": 42, "b": true, "c": "world" } } },
+        { "kind": "invoke", "contract": "types", "function": "card", "args": { "card": 12 } },
+        { "kind": "invoke", "contract": "types", "function": "simple", "args": { "simple": { "tag": "Second" } } },
+        {
+          "kind": "invoke", "contract": "types", "function": "complex",
+          "args": { "complex": { "tag": "Asset", "values": ["${sourceAddress}", "1000000000"] } }
+        },
+        { "kind": "invoke", "contract": "types", "function": "map", "args": { "map": [[1, true], [2, false]] } },
+        { "kind": "invoke", "contract": "types", "function": "tuple", "args": { "tuple": ["hello", 7] } },
+        { "kind": "invoke", "contract": "types", "function": "option", "args": { "option": 5 } },
+        { "kind": "invoke", "contract": "types", "function": "i256", "args": { "i256": "-170141183460469231731687303715884105728" } },
+        { "kind": "invoke", "contract": "types", "function": "u32_fail_on_even", "args": { "u32_": 4 } },
+        {
+          "kind": "invoke", "contract": "types", "function": "complex_struct",
+          "args": {
+            "config": {
+              "admin": "${sourceAddress}",
+              "a64": "1700000000",
+              "assets_vec": [
+                { "tag": "Stellar", "values": ["${contract:types}"] },
+                { "tag": "Other", "values": ["USDC"] }
+              ],
+              "base_asset": { "tag": "Other", "values": ["XLM"] },
+              "a32": 1,
+              "b32": 2,
+              "c32": 3,
+              "complex_enum3": { "tag": "Some", "values": [["${sourceAddress}", "2500000000"]] }
+            }
+          }
+        }
+      ],
+      "trace": "last"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "account: __check_auth with all three signers",
+      // A custom account contract's entry point is `__check_auth`, which the
+      // host calls during `require_auth`. A launch config cannot attach custom
+      // account signatures to a transaction, so the sequence invokes
+      // `__check_auth` directly with real ed25519 signatures over the payload.
+      // All three registered signers sign, which is what lets the spend-limit
+      // policy pass unconditionally.
+      // Signatures MUST be ordered by ascending public key.
+      "transactions": [
+        { "kind": "deploy", "id": "account", "contract": "${workspaceFolder}/account" },
+        {
+          "kind": "invoke", "contract": "account", "function": "__constructor",
+          "args": {
+            "signers": [
+              "F8t5+ytBIPKx7GXkGY1uCLKOgT/rAeSkAIObheGAgM4=",
+              "oJql9HpnWYAv+VX43C0qFKXJnSO+l/hkEn/5ODRVpPA=",
+              "0EqyMnQrtKs6E2i9RhXk5tAiSrcaAWuvhSCjMsl3hzc="
+            ]
+          }
+        },
+        {
+          "kind": "invoke", "contract": "account", "function": "__check_auth",
+          "args": {
+            "signature_payload": "ln98pzzS5k8+YZEw5gcu7o0WSTam1vM3jQslUPAs3Ws=",
+            "signatures": [
+              {
+                "public_key": "F8t5+ytBIPKx7GXkGY1uCLKOgT/rAeSkAIObheGAgM4=",
+                "signature": "JlMlJzkPqG3RtM9Sxvq4tLL942VduH9TgUIm/v7aKOHuf3q3OKFfujwC4k41h4EARBrXBV+oUqJs8mIJ4V8dBw=="
+              },
+              {
+                "public_key": "oJql9HpnWYAv+VX43C0qFKXJnSO+l/hkEn/5ODRVpPA=",
+                "signature": "5yGJuaYJ5NorXOUg+X0kWW1jBbeqr7P+0VmvBOApWVsaw91tSQwYZhHHa+IDIo5DVM/mc+4g39pjLlT7vVp4Dg=="
+              },
+              {
+                "public_key": "0EqyMnQrtKs6E2i9RhXk5tAiSrcaAWuvhSCjMsl3hzc=",
+                "signature": "rZD0B+QRSGWKLhWIigRtz+JqBKnGkz8nWMDlIjaoaqDqsRr+DeIJJb08NH1z1S8bKFghOzgxkWjf6GImSmrWBQ=="
+              }
+            ],
+            "auth_context": []
+          }
+        }
+      ],
+      "trace": "last"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "simple_account: __check_auth verifies the owner's signature",
+      "transactions": [
+        { "kind": "deploy", "id": "account", "contract": "${workspaceFolder}/simple_account" },
+        {
+          "kind": "invoke", "contract": "account", "function": "__constructor",
+          "args": { "public_key": "0EqyMnQrtKs6E2i9RhXk5tAiSrcaAWuvhSCjMsl3hzc=" }
+        },
+        {
+          "kind": "invoke", "contract": "account", "function": "__check_auth",
+          "args": {
+            "signature_payload": "ln98pzzS5k8+YZEw5gcu7o0WSTam1vM3jQslUPAs3Ws=",
+            "signature": "rZD0B+QRSGWKLhWIigRtz+JqBKnGkz8nWMDlIjaoaqDqsRr+DeIJJb08NH1z1S8bKFghOzgxkWjf6GImSmrWBQ==",
+            "auth_context": []
+          }
+        }
+      ],
+      "trace": "last"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "multisig_1_of_n_account: one of three signers authenticates",
+      "transactions": [
+        { "kind": "deploy", "id": "account", "contract": "${workspaceFolder}/multisig_1_of_n_account/contract" },
+        {
+          "kind": "invoke", "contract": "account", "function": "__constructor",
+          "args": {
+            "signers": [
+              "F8t5+ytBIPKx7GXkGY1uCLKOgT/rAeSkAIObheGAgM4=",
+              "oJql9HpnWYAv+VX43C0qFKXJnSO+l/hkEn/5ODRVpPA=",
+              "0EqyMnQrtKs6E2i9RhXk5tAiSrcaAWuvhSCjMsl3hzc="
+            ]
+          }
+        },
+        {
+          "kind": "invoke", "contract": "account", "function": "__check_auth",
+          "args": {
+            "signature_payload": "ln98pzzS5k8+YZEw5gcu7o0WSTam1vM3jQslUPAs3Ws=",
+            "signature": {
+              "public_key": "oJql9HpnWYAv+VX43C0qFKXJnSO+l/hkEn/5ODRVpPA=",
+              "signature": "5yGJuaYJ5NorXOUg+X0kWW1jBbeqr7P+0VmvBOApWVsaw91tSQwYZhHHa+IDIo5DVM/mc+4g39pjLlT7vVp4Dg=="
+            },
+            "auth_context": []
+          }
+        }
+      ],
+      "trace": "last"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "modular_account: __check_auth with no delegates (reverts)",
+      // This account delegates authentication to other addresses, and the
+      // delegates come from the auth entry the host builds during
+      // `require_auth` — something a launch config cannot supply. Invoking
+      // `__check_auth` directly therefore reaches the guard for an empty
+      // delegate set and returns Err(InsufficientDelegates), which is the
+      // interesting branch to step through.
+      "transactions": [
+        { "kind": "deploy", "id": "account", "contract": "${workspaceFolder}/modular_account" },
+        {
+          "kind": "invoke", "contract": "account", "function": "__constructor",
+          "args": {
+            "signers": [
+              "${sourceAddress}",
+              "GDVEU3DD4KOFECV66VIHWEZOYX4ZKR3WV27L464SIIPOU2IUI3JCZA57"
+            ]
+          }
+        },
+        {
+          "kind": "invoke", "contract": "account", "function": "__check_auth",
+          "args": {
+            "signature_payload": "ln98pzzS5k8+YZEw5gcu7o0WSTam1vM3jQslUPAs3Ws=",
+            "signatures": null,
+            "auth_contexts": []
+          }
+        }
+      ],
+      "trace": "last"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "bls_signature: __check_auth verifies an aggregate BLS signature",
+      // agg_pk is the sum of the ten G1 public keys in src/test.rs; agg_sig is
+      // their aggregate signature over the payload below, computed with the
+      // same host functions the contract verifies with.
+      "transactions": [
+        { "kind": "deploy", "id": "account", "contract": "${workspaceFolder}/bls_signature" },
+        {
+          "kind": "invoke", "contract": "account", "function": "__constructor",
+          "args": { "agg_pk": "BSMTel6P63yqp4Ocpm8tvyFC8l/EsE3CMN2LyWE8IpjaahFm4tbbJ+WvJzdip8Z9C5E3MJNnWcCWR8biygiiN0mRwlzGIha6hcFlaKuqKiIeatjFYZjFgB2yc0VYzZR4" }
+        },
+        {
+          "kind": "invoke", "contract": "account", "function": "__check_auth",
+          "args": {
+            "signature_payload": "ln98pzzS5k8+YZEw5gcu7o0WSTam1vM3jQslUPAs3Ws=",
+            "agg_sig": "Ddlf6zqHhcRtUNx7vO/wEPlBajqW5EIkgfXafrC3EEO9nNWqCHu8PoOw/cHHgdAaBR5xqolYa5l5adKFiOhoHLDMDWcIFCNh9Rd/1k/h65A4VB4Im5e7I7xu+od9rOY3DUbYqX6H3UUuOd0VsYvyQMJY4K8l0ixZuuQLaSz/AZWfts7/W2EwOXEQVsMLR8qmCUSODvuwcF/KfOiMDiYh/dsm03AZk3KnkQZ8wjtV5JHDmzPzzhRM3ZnoiSyy8C5A",
+            "auth_contexts": []
+          }
+        }
+      ],
+      "trace": "last"
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "groth16_verifier: verify_proof for a*b=c (public c = 33)",
+      // Verifying key, proof and public signal are the committed circuit
+      // artifacts from src/test.rs (a=3, b=11, c=33, only c public), so the
+      // pairing check returns true.
+      "transactions": [
+        { "kind": "deploy", "id": "verifier", "contract": "${workspaceFolder}/groth16_verifier" },
+        {
+          "kind": "invoke", "contract": "verifier", "function": "verify_proof",
+          "args": {
+            "vk": {
+              "alpha": "BYjaiGJbSLd3uCHZygRTxJDljYV+/5GmhIrccBxTJnSkyb678rZ6+x8r2TR7XK/5ESKDNsBBmbJ1g+A0VDkNee+nyHr2Xaa9GM2X7bx/UFbwl45go+Mi4Jl9uDGVAC3P",
+              "beta": "DAq7UMAMavkUXKDFoJ1hWHSXMTZhDWp6PCIlfAxdK8lOrTizB5OMdLgNrEwTTO/xCIc8fJ+yZeo5wGC0MXF8AllYdcnI5d+zvpfj2Lwbk8hrnl79eQu5ivtYspDutdJXBUcucFGhm538gqeAAX+DNUQke4F7Z6MNCizbzFNIbOmwXkHW3pOXCmDQnYcuOiTQFOS+D5+yyxqF2HWfhfrucuoRZqrCVboW1KneveDa5mWBAlXElzOz4F+2gAGp+Gha",
+              "gamma": "E+ArYFJxn2B9rNOgiCdPZVlr0NCZILYatdphu9x/UEkzTPESE5RdV+WsfQVdBCt+AkqisvCPCpEmCAUnLcUQUcbketT6QDsCtFELZHrj0XcLrAMmqAW779SAVsjBIb24BgbEoC6nNMwyrNKwK8KLmcs+KH6Fp2OvJnSSq1cumas/Nw0nXOwdoaqpB1/wX3m+DOXVJ3J9bhGMyc3G2i41Gq39m6qMvdOnbUKaaVFg0SySOsnMO6yiieGTVIYIuCgB",
+              "delta": "Dog3y9YCPdZOTrlGouTN/a5qNnIbEiRpPbKsLwiJf3tvzLnxD0oJcMmidPLrMxcuE1+ZLJRTeFWM5+3Vh4BY1+BSOGVSNFFja5WBQkES1ZIzJmxTKxEHFK2tDhxmIklqFrbfe9XNOm3ZmAiuci1c9+6mdbCj1puGENxl8afcejZt382wDkcKvoyMnST97XYuBKjVeGGgrTOO5BWa8+pQ1/R+tLKe6Hjvi2jQ0+piR2OuMzHDtIH54yaLEPOJE0wT",
+              "ic": ["BWP80BRJD+yB19LBMOeZgpCAJSq1nKCTjfHeXo9mHVMkeapCHQB95xClhZ5yQOTjFnNtf+AeYOmlY0QhjsgzPdo34ouaUjJ6d+KCfUY4akSJDZSRRxOma0kGF1FCSELW", "ETBEg0Ri3uARPQGG87wodBZ2TEujNsUD1EperkAV+M7dNgSZNbeINO/6CFFJWaM1Do9xr9QbOzUisVED2Jm+nBbvI6nZ8WERCvXNT2IwZMohqvgW9d9kfAj7z0lcdRI9"]
+            },
+            "proof": { "a": "AgsAPdfDC0jFCwrIlljET235UUDgsm352wsTG99mk7J2JBn+wBW3EFzIo6nCyfZuD35G3ldLwLzuwxCJGk5Hj4DVL5kPFAqEnIlnD/M23I2AdpC4KMca/BUKu0pnO3aP", "b": "FAgUba4jFrjXYc1xPPv2dmjJaqE5bgen5f45DVLSewcLzgY+qqpQhbwPqN/rseqxAslIH8QMm5M1fDL89FHwq7aXnPHzucG5Wgm6rU1dhecpR1k74kqRvVSki8BajLgAF4GUgdQ9QNghfxIUw2YSrQE3Fn+KknKH2LrFQwkJcZVYMwyRZ0I6ylzTgPRQADBqClYfGeFaTYPBj0P/kNstLkLYtkeDUONktR4WU6Z74EoTi5d/CJjmYLr/c9tHzFM+", "c": "E9XXYE4udCjDE2GRhGL1MhKFF9VChfvn2sO3f9A/225tOdRm0A9AUmV3v0/MNmUTDS1pJc5Sc6WQ2rmtHZhtoAoCeY7nN8ubJzY10qnaO2n5qaD3JPBfY31IDr1iGaNN" },
+            "pub_signals": ["33"]
+          }
+        }
+      ]
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "import_ark_bn254: mock_verify pairs two BN254 points",
+      // The two points are the ark-serialized G1/G2 points from src/test.rs, so
+      // the pairing is the same one that test performs (it is not 1, so
+      // mock_verify returns false).
+      // This is by far the heaviest example — the whole pairing runs in wasm
+      // (~560M instructions) and the debug build is a ~700KB upload — hence the
+      // raised per-RPC timeout.
+      "node": { "timeoutMs": 1800000 },
+      "transactions": [
+        { "kind": "deploy", "id": "bn254", "contract": "${workspaceFolder}/import_ark_bn254" },
+        {
+          "kind": "invoke", "contract": "bn254", "function": "mock_verify",
+          "args": { "proof": { "g1": "movK/pLt15Epf+6K6JDfctB15qizej2eR03adak2vgLXEoUE7pawN8B2uaKDURvcguW4JsCPrWy9GOlB8vxcqA==", "g2": "PcDiM1Lm8/TAO8pUjZnCNyvYQrQIdr30a9qOeiYGsxMal0MVSXdowCdlsuDmLO8HoCJqONxoxoqxQXoq0yWTCAS3GSurkK2g62aIEebcGMtIKdw5TduvyMrh2k3FzwgoNOqoptfsOCv1kY6tVPW5Ot+eFp9q2rbWuGe0VSXdjqw=" } }
+        }
+      ]
+    },
+    {
+      "type": "soroban",
+      "request": "launch",
+      "name": "privacy-pools: withdraw with a valid zero-knowledge proof",
+      // Groth16 verification over BLS12-381 is expensive, so give the node
+      // room; the pool contract is also a workspace member, hence the
+      // CARGO_TARGET_DIR build command below.
+      "node": { "timeoutMs": 1800000 },
+      // Full deposit -> set association root -> withdraw flow, using the
+      // committed circuit artifacts from contract/src/test.rs. The public
+      // signals commit to the state root, so the single deposit above must use
+      // exactly this commitment for the traced withdrawal to verify.
+      "transactions": [
+        {
+          // Built WITHOUT debug info: the pool only calls into the verifier, and
+          // an opt-level 0 verifier makes the Groth16 pairing many times more
+          // expensive than the budget allows.
+          "kind": "deploy", "id": "verifier",
+          "contract": "${workspaceFolder}/groth16_verifier",
+          "debugInfo": false
+        },
+        { "kind": "deploy", "id": "token", "contract": "${workspaceFolder}/token" },
+        {
+          "kind": "deploy", "id": "pool",
+          "contract": "${workspaceFolder}/privacy-pools/contract",
+          "buildCommand": "CARGO_TARGET_DIR=target stellar contract build"
+        },
+        {
+          "kind": "invoke", "contract": "token", "function": "__constructor",
+          "args": { "admin": "${sourceAddress}", "decimal": 7, "name": "Test Token", "symbol": "TEST" }
+        },
+        {
+          "kind": "invoke", "contract": "token", "function": "mint",
+          "args": { "to": "${sourceAddress}", "amount": "1000000000" }
+        },
+        {
+          "kind": "invoke", "contract": "pool", "function": "__constructor",
+          "args": {
+            "vk_bytes": "EQ8Kt+5XPLM71/If7KUMZbOmrN9TmPaVREdd0Z/cCMkc/RPzlVr6vqm/UwroyOamB4GtaweoMHtp39Vw9QOvAR+wtm0z3/MHTeCNh4pF6af3uc/pRgmJDvo77N0WWjhfCLINwnR65TgerWMhSJlkkUgUHmU1MF1/HNFWpJ2O4jy7G0iqxRRrF3cog4yOVPyACsiENpFSVQ6YcTCE27N2k0RKTO8N1GIwkWRDOgkw9kp3oZ7gLyCMl1tu5zYduUDqFXPpFRAc0GKwRDa6bfLC9l4vLCcAzm8lqUd03xBefmjC3FBDog/5fEjpgc41PcO+DNRfJ0gugdvspDApj0sauP73Ymwa8BoKuW3qmtcJCoVBYo0LIZgyAZg9plKgnb4aE+ArYFJxn2B9rNOgiCdPZVlr0NCZILYatdphu9x/UEkzTPESE5RdV+WsfQVdBCt+AkqisvCPCpEmCAUnLcUQUcbketT6QDsCtFELZHrj0XcLrAMmqAW779SAVsjBIb24BgbEoC6nNMwyrNKwK8KLmcs+KH6Fp2OvJnSSq1cumas/Nw0nXOwdoaqpB1/wX3m+DOXVJ3J9bhGMyc3G2i41Gq39m6qMvdOnbUKaaVFg0SySOsnMO6yiieGTVIYIuCgBD63ZqOLPE5suJflK4EFdL4AvGMvvdSxu3WqL2KKpEPWxkbC+yg/nwElfsA/qDOjvEd5MmZtSS/t1KiJYWFZuhsKBRsBK7cHHbVmfqcjYP9P9ij/lxXaqlQMhacimfRw2BRgm1kFl2pWZ9ZTEob/ug/vZmu96ao19/6fd1qVHQZU2dFDpn6bH/fOFThP4Z/OABv9IT0nH3R/KLCYonSYlBJdrlyHr5zfKqpwvaSdbaOHY5IajCWg/4Az1p2TPsdYtAAAABQyNC6G8CzY/iRxci2a8ijTPyL2dCoKJlcHU2Y+9xD6MCtbjcoHFrXOv+8toJPvIpA5rjhnDMgwLBzohLzLmXeBFYWdDzlyq40Jt+3IVvjHo/uaaoMSWVrwyLEBMl3608xG2mlbiMtKCi+XOEOy4hBOSYaO5qGhUmykha8hfoZOzzvE67edX5ywrLXKQR6IgahF68AMZ0ICrAfzF4P3IBW0fFYyeqA9RW45SkG8ybsSL3nwTL59ZrMKoijIw8sSxBw7K2IFq1bhiAF6RGhUjunM9KC9CnkSapnkDUqkshpi2MDG91nRutEcH3coRp2HhLQ5mvH5bgJiHGVxM7NMOs8l7ipE7CKPD4Gnfp1dM+JQxU3KKDKjlNq4OaMAgGZ5Rww1ZhDaTN/TuwV1HivpGEEol0Le0wezydiIKq9WOddNw1Bs2TReyWgMRk1Dm61/XMwwX1czUHCe9ADrUrBwyQp+CkhXlYR0N8x6RMG4QFgkM6vJc/pgWwBVzoNRRiR7ZsBKOS3ViKQ20WIpFHcECBhyX9Jg4qTBH5twKJOMqONUa7pgN2K/BxJ3Wjz3behHiChZiCX70MLF5otfpcJaLLMA/Wpf/BEGrIoKWG+1b3Kx7OFSkzJaguYHbVdzxYoWPqg==",
+            "token_address": "${contract:token}",
+            "admin": "${sourceAddress}",
+            "groth16_verifier": "${contract:verifier}"
+          }
+        },
+        {
+          "kind": "invoke", "contract": "pool", "function": "deposit",
+          "args": {
+            "from": "${sourceAddress}",
+            "commitment": "EMtjHRdKmLJEC2jS5X2irpoT99HMyx9Bod09aaIvquk="
+          }
+        },
+        {
+          "kind": "invoke", "contract": "pool", "function": "set_association_root",
+          "args": {
+            "caller": "${sourceAddress}",
+            "association_root": "XVgm+ckYe9shPwHe1tIw6fGrZTtb7mA2UE6CvAcWuqI="
+          }
+        },
+        {
+          "kind": "invoke", "contract": "pool", "function": "withdraw",
+          "args": {
+            "to": "${sourceAddress}",
+            "proof_bytes": "AWFY8SxFQshBcwnyfTzwSEr/JH6220uf7VsvrnSPvvLTpBDOxotcru/l2rMHtffbBsgUUg6SITAPVjjYCPQzAxePk5YjNXLbB9OaLf6G+X4WFrvMGoZ7kCpozqzS+X4GE0JGLjAS5K81HNnJKv3zxf4E4Uo0ZzrP13ERhMW0pjZDny/arpCg4H5qf4HWO3gaFjYH9pR1Po1ZPQTntXjXSyNzvzzSQleOqrVtQDv0dhC1PZAJ5cfLWGhJEnBFOrN4D/r1SeY8/EPJ7teNf8t2MoJYNSY3fhMwBWJhhFnVWlmrBIwKOmEaLPwTmIjWn0l/FPHJjcgFnVxxKibmW4vJa6jMXKlpr9vdGHpuvJVldNNpkNxcNtywRC11pazQvJUyAuEBSvHIR4K3zA7P62ejpcW4L829ZDWgw/FyY/tlv3oBi+vVY8mmqBNyVIL9/g1rDauLPjK2CbZAtgKTLtz+8YrYBulzXCgRsEevmDt6aYr0ohXNvhSLJJECn/MlvRHi",
+            "pub_signals_bytes": "AAAABEu3UtWYAeWG+kOqlSqzwjH4yoybhjuCypq9MgCn5aItAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADuaygBKTxGKRPfQc+iLrlTmIG3SSJelQ0i58sjrcH0m9E4yvF1YJvnJGHvbIT8B3tbSMOnxq2U7W+5gNlBOgrwHFrqi"
+          }
+        }
+      ],
+      "trace": "last"
+    }
+  ]
+}
