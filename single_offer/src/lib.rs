@@ -7,29 +7,34 @@ use soroban_sdk::{
     contract, contractimpl, contracttype, token, unwrap::UnwrapOptimized, Address, Env,
 };
 
+/// Storage keys for the single offer contract.
 #[derive(Clone)]
 #[contracttype]
 pub enum DataKey {
+    /// Active offer state key.
     Offer,
 }
 
-// Represents an offer managed by the SingleOffer contract.
-// If a seller wants to sell 1000 XLM for 100 USDC the `sell_price` would be 1000
-// and `buy_price` would be 100 (or 100 and 10, or any other pair of integers
-// in 10:1 ratio).
+/// Represents an offer managed by the SingleOffer contract.
+/// If a seller wants to sell 1000 XLM for 100 USDC the `sell_price` would be 1000
+/// and `buy_price` would be 100 (or 100 and 10, or any other pair of integers
+/// in 10:1 ratio).
 #[derive(Clone)]
 #[contracttype]
 pub struct Offer {
-    // Owner of this offer. Sells sell_token to get buy_token.
+    /// Owner of this offer. Sells sell_token to get buy_token.
     pub seller: Address,
+    /// Token contract address offered for sale.
     pub sell_token: Address,
+    /// Token contract address accepted as payment.
     pub buy_token: Address,
-    // Seller-defined price of the sell token in arbitrary units.
+    /// Seller-defined price of the sell token in arbitrary units.
     pub sell_price: u32,
-    // Seller-defined price of the buy token in arbitrary units.
+    /// Seller-defined price of the buy token in arbitrary units.
     pub buy_price: u32,
 }
 
+/// Contract enabling a seller to trade a token pair with multiple buyers.
 #[contract]
 pub struct SingleOffer;
 
@@ -46,8 +51,8 @@ How this contract should be used:
 */
 #[contractimpl]
 impl SingleOffer {
-    // Creates the offer for seller for the given token pair and initial price.
-    // See comment above the `Offer` struct for information on pricing.
+    /// Creates the offer for seller for the given token pair and initial price.
+    /// See comment above the `Offer` struct for information on pricing.
     pub fn create(
         e: Env,
         seller: Address,
@@ -76,12 +81,12 @@ impl SingleOffer {
         );
     }
 
-    // Trades `buy_token_amount` of buy_token from buyer for `sell_token` amount
-    // defined by the price.
-    // `min_sell_amount` defines a lower bound on the price that the buyer would
-    // accept.
-    // Buyer needs to authorize the `trade` call and internal `transfer` call to
-    // the contract address.
+    /// Trades `buy_token_amount` of buy_token from buyer for `sell_token` amount
+    /// defined by the price.
+    /// `min_sell_token_amount` defines a lower bound on the price that the buyer would
+    /// accept.
+    /// Buyer needs to authorize the `trade` call and internal `transfer` call to
+    /// the contract address.
     pub fn trade(e: Env, buyer: Address, buy_token_amount: i128, min_sell_token_amount: i128) {
         // Buyer needs to authorize the trade.
         buyer.require_auth();
@@ -121,11 +126,11 @@ impl SingleOffer {
         buy_token_client.transfer(&contract, &offer.seller, &buy_token_amount);
     }
 
-    // Sends amount of token from this contract to the seller.
-    // This is intentionally flexible so that the seller can withdraw any
-    // outstanding balance of the contract (in case if they mistakenly
-    // transferred wrong token to it).
-    // Must be authorized by seller.
+    /// Sends amount of token from this contract to the seller.
+    /// This is intentionally flexible so that the seller can withdraw any
+    /// outstanding balance of the contract (in case if they mistakenly
+    /// transferred wrong token to it).
+    /// Must be authorized by seller.
     pub fn withdraw(e: Env, token: Address, amount: i128) {
         let offer = load_offer(&e);
         offer.seller.require_auth();
@@ -136,8 +141,8 @@ impl SingleOffer {
         );
     }
 
-    // Updates the price.
-    // Must be authorized by seller.
+    /// Updates the price.
+    /// Must be authorized by seller.
     pub fn updt_price(e: Env, sell_price: u32, buy_price: u32) {
         if buy_price == 0 || sell_price == 0 {
             panic!("zero price is not allowed");
@@ -149,7 +154,7 @@ impl SingleOffer {
         write_offer(&e, &offer);
     }
 
-    // Returns the current state of the offer.
+    /// Returns the current state of the offer.
     pub fn get_offer(e: Env) -> Offer {
         load_offer(&e)
     }
