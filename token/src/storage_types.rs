@@ -17,7 +17,7 @@ pub struct AllowanceDataKey {
 #[contracttype]
 pub struct AllowanceValue {
     pub amount: i128,
-    pub expiration_ledger: u32,
+    pub live_until_ledger: u32,
 }
 
 #[derive(Clone)]

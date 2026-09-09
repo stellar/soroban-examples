@@ -91,7 +91,7 @@ impl TokenInterface for Token {
         read_allowance(&e, from, spender).amount
     }
 
-    fn approve(e: Env, from: Address, spender: Address, amount: i128, expiration_ledger: u32) {
+    fn approve(e: Env, from: Address, spender: Address, amount: i128, live_until_ledger: u32) {
         from.require_auth();
 
         check_nonnegative_amount(amount);
@@ -100,12 +100,14 @@ impl TokenInterface for Token {
             .instance()
             .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
-        write_allowance(&e, from.clone(), spender.clone(), amount, expiration_ledger);
+        write_allowance(&e, from.clone(), spender.clone(), amount, live_until_ledger);
+        // The event's `expiration_ledger` data field name is unchanged to
+        // preserve on-chain event compatibility (soroban-token-sdk::events::Approve).
         events::Approve {
             from,
             spender,
             amount,
-            expiration_ledger,
+            expiration_ledger: live_until_ledger,
         }
         .publish(&e);
     }
