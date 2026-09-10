@@ -59,7 +59,7 @@ impl IncrementContract {
     pub fn increment(env: Env) -> u32 {
         env.current_contract_address().require_auth();
         let mut count: u32 = env.storage().instance().get(&DataKey::Counter).unwrap_or(0);
-        count += 1;
+        count = count.checked_add(1).expect("overflow");
         env.storage().instance().set(&DataKey::Counter, &count);
         count
     }

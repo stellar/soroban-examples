@@ -87,15 +87,15 @@ fn burn_shares(e: &Env, from: &Address, amount: i128) {
         panic!("insufficient shares");
     }
     let total = get_total_shares(e);
-    put_shares(e, from, current_shares - amount);
-    put_total_shares(e, total - amount);
+    put_shares(e, from, current_shares.checked_sub(amount).expect("underflow"));
+    put_total_shares(e, total.checked_sub(amount).expect("underflow"));
 }
 
 fn mint_shares(e: &Env, to: &Address, amount: i128) {
     let current_shares = get_shares(e, to);
     let total = get_total_shares(e);
-    put_shares(e, to, current_shares + amount);
-    put_total_shares(e, total + amount);
+    put_shares(e, to, current_shares.checked_add(amount).expect("overflow"));
+    put_total_shares(e, total.checked_add(amount).expect("overflow"));
 }
 
 fn transfer(e: &Env, token: Address, to: Address, amount: i128) {
@@ -122,14 +122,14 @@ fn get_deposit_amounts(
         return (desired_a, desired_b);
     }
 
-    let amount_b = desired_a * reserve_b / reserve_a;
+    let amount_b = desired_a.checked_mul(reserve_b).expect("overflow").checked_div(reserve_a).expect("division by zero");
     if amount_b <= desired_b {
         if amount_b < min_b {
             panic!("amount_b less than min")
         }
         (desired_a, amount_b)
     } else {
-        let amount_a = desired_b * reserve_a / reserve_b;
+        let amount_a = desired_b.checked_mul(reserve_a).expect("overflow").checked_div(reserve_b).expect("division by zero");
         if amount_a > desired_a || amount_a < min_a {
             panic!("amount_a invalid")
         }
@@ -199,14 +199,14 @@ impl LiquidityPool {
 
         let zero = 0;
         let new_total_shares = if reserve_a > zero && reserve_b > zero {
-            let shares_a = (balance_a * total_shares) / reserve_a;
-            let shares_b = (balance_b * total_shares) / reserve_b;
+            let shares_a = balance_a.checked_mul(total_shares).expect("overflow").checked_div(reserve_a).expect("division by zero");
+            let shares_b = balance_b.checked_mul(total_shares).expect("overflow").checked_div(reserve_b).expect("division by zero");
             shares_a.min(shares_b)
         } else {
-            (balance_a * balance_b).sqrt()
+            balance_a.checked_mul(balance_b).expect("overflow").sqrt()
         };
 
-        mint_shares(&e, &to, new_total_shares - total_shares);
+        mint_shares(&e, &to, new_total_shares.checked_sub(total_shares).expect("underflow"));
         put_reserve_a(&e, balance_a);
         put_reserve_b(&e, balance_b);
     }
@@ -229,9 +229,9 @@ impl LiquidityPool {
         }
 
         // First calculate how much needs to be sold to buy amount out from the pool
-        let n = reserve_sell * out * 1000;
-        let d = (reserve_buy - out) * 997;
-        let sell_amount = (n / d) + 1;
+        let n = reserve_sell.checked_mul(out).expect("overflow").checked_mul(1000).expect("overflow");
+        let d = reserve_buy.checked_sub(out).expect("underflow").checked_mul(997).expect("overflow");
+        let sell_amount = n.checked_div(d).expect("division by zero").checked_add(1).expect("overflow");
         if sell_amount > in_max {
             panic!("in amount is over max")
         }
@@ -249,28 +249,28 @@ impl LiquidityPool {
 
         // residue_numerator and residue_denominator are the amount that the invariant considers after
         // deducting the fee, scaled up by 1000 to avoid fractions
-        let residue_numerator = 997;
-        let residue_denominator = 1000;
-        let zero = 0;
+        let residue_numerator: i128 = 997;
+        let residue_denominator: i128 = 1000;
+        let zero: i128 = 0;
 
         let new_invariant_factor = |balance: i128, reserve: i128, out: i128| {
-            let delta = balance - reserve - out;
+            let delta = balance.checked_sub(reserve).expect("underflow").checked_sub(out).expect("underflow");
             let adj_delta = if delta > zero {
-                residue_numerator * delta
+                residue_numerator.checked_mul(delta).expect("overflow")
             } else {
-                residue_denominator * delta
+                residue_denominator.checked_mul(delta).expect("overflow")
             };
-            residue_denominator * reserve + adj_delta
+            residue_denominator.checked_mul(reserve).expect("overflow").checked_add(adj_delta).expect("overflow")
         };
 
         let (out_a, out_b) = if buy_a { (out, 0) } else { (0, out) };
 
         let new_inv_a = new_invariant_factor(balance_a, reserve_a, out_a);
         let new_inv_b = new_invariant_factor(balance_b, reserve_b, out_b);
-        let old_inv_a = residue_denominator * reserve_a;
-        let old_inv_b = residue_denominator * reserve_b;
+        let old_inv_a = residue_denominator.checked_mul(reserve_a).expect("overflow");
+        let old_inv_b = residue_denominator.checked_mul(reserve_b).expect("overflow");
 
-        if new_inv_a * new_inv_b < old_inv_a * old_inv_b {
+        if new_inv_a.checked_mul(new_inv_b).expect("overflow") < old_inv_a.checked_mul(old_inv_b).expect("overflow") {
             panic!("constant product invariant does not hold");
         }
 
@@ -280,8 +280,8 @@ impl LiquidityPool {
             transfer_b(&e, to, out_b);
         }
 
-        let new_reserve_a = balance_a - out_a;
-        let new_reserve_b = balance_b - out_b;
+        let new_reserve_a = balance_a.checked_sub(out_a).expect("underflow");
+        let new_reserve_b = balance_b.checked_sub(out_b).expect("underflow");
 
         if new_reserve_a <= 0 || new_reserve_b <= 0 {
             panic!("new reserves must be strictly positive");
@@ -312,8 +312,8 @@ impl LiquidityPool {
         let total_shares = get_total_shares(&e);
 
         // Calculate withdrawal amounts
-        let out_a = (balance_a * share_amount) / total_shares;
-        let out_b = (balance_b * share_amount) / total_shares;
+        let out_a = balance_a.checked_mul(share_amount).expect("overflow").checked_div(total_shares).expect("division by zero");
+        let out_b = balance_b.checked_mul(share_amount).expect("overflow").checked_div(total_shares).expect("division by zero");
 
         if out_a < min_a || out_b < min_b {
             panic!("min not satisfied");
@@ -322,8 +322,8 @@ impl LiquidityPool {
         burn_shares(&e, &to, share_amount);
         transfer_a(&e, to.clone(), out_a);
         transfer_b(&e, to, out_b);
-        put_reserve_a(&e, balance_a - out_a);
-        put_reserve_b(&e, balance_b - out_b);
+        put_reserve_a(&e, balance_a.checked_sub(out_a).expect("underflow"));
+        put_reserve_b(&e, balance_b.checked_sub(out_b).expect("underflow"));
 
         (out_a, out_b)
     }

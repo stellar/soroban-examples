@@ -22,7 +22,7 @@ impl IncrementContract {
         let mut count: u32 = env.storage().instance().get(&COUNTER).unwrap_or(0); // If no value set, assume 0.
 
         // Increment the count.
-        count += 1;
+        count = count.checked_add(1).expect("overflow");
 
         // Save the count.
         env.storage().instance().set(&COUNTER, &count);
