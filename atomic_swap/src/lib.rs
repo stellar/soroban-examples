@@ -14,8 +14,8 @@ pub struct AtomicSwapContract;
 impl AtomicSwapContract {
     /// Swaps token A for token B atomically between parties `a` and `b`.
     ///
-    /// Settles for the minimum requested price for each party, requiring asymmetric authorization
-    /// for only each participant's respective side of the transaction.
+    /// Settles exact token amounts (`min_a_for_b` and `min_b_for_a`) for each party, requiring authorization
+    /// from each participant for their respective transfers.
     ///
     /// # Arguments
     /// * `a` - Address of first party trading `token_a` for `token_b`.

@@ -83,8 +83,8 @@ impl SingleOffer {
 
     /// Trades `buy_token_amount` of buy_token from buyer for `sell_token` amount
     /// defined by the price.
-    /// `min_sell_token_amount` defines a lower bound on the price that the buyer would
-    /// accept.
+    /// `min_sell_token_amount` specifies the minimum `sell_token` quantity the buyer accepts
+    /// as slippage protection.
     /// Buyer needs to authorize the `trade` call and internal `transfer` call to
     /// the contract address.
     pub fn trade(e: Env, buyer: Address, buy_token_amount: i128, min_sell_token_amount: i128) {

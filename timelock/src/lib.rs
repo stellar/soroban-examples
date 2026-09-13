@@ -22,9 +22,9 @@ pub enum DataKey {
 #[derive(Clone)]
 #[contracttype]
 pub enum TimeBoundKind {
-    /// Balance can only be claimed before the specified timestamp.
+    /// Balance can be claimed at or before the specified timestamp (inclusive: ledger_timestamp <= timestamp).
     Before,
-    /// Balance can only be claimed after the specified timestamp.
+    /// Balance can be claimed at or after the specified timestamp (inclusive: ledger_timestamp >= timestamp).
     After,
 }
 
