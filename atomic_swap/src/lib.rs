@@ -6,14 +6,28 @@
 
 use soroban_sdk::{contract, contractimpl, token, Address, Env, IntoVal};
 
+/// Contract implementing atomic multi-party token swap without mutual trust.
 #[contract]
 pub struct AtomicSwapContract;
 
 #[contractimpl]
 impl AtomicSwapContract {
-    // Swap token A for token B atomically. Settle for the minimum requested price
-    // for each party (this is an arbitrary choice; both parties could have
-    // received the full amount as well).
+    /// Swaps token A for token B atomically between parties `a` and `b`.
+    ///
+    /// Each party authorizes transferring up to their offered amount (`amount_a` and `amount_b`)
+    /// conditional on receiving at least their requested threshold (`min_b_for_a` and `min_a_for_b`).
+    /// The contract transfers the requested minimum to each counterparty and refunds any remaining
+    /// balance to the respective sender.
+    ///
+    /// # Arguments
+    /// * `a` - Address of first party trading `token_a` for `token_b`.
+    /// * `b` - Address of second party trading `token_b` for `token_a`.
+    /// * `token_a` - Address of the first token contract.
+    /// * `token_b` - Address of the second token contract.
+    /// * `amount_a` - Maximum amount of `token_a` offered by party `a`.
+    /// * `min_b_for_a` - Minimum acceptable threshold of `token_b` expected by party `a`.
+    /// * `amount_b` - Maximum amount of `token_b` offered by party `b`.
+    /// * `min_a_for_b` - Minimum acceptable threshold of `token_a` expected by party `b`.
     pub fn swap(
         env: Env,
         a: Address,
