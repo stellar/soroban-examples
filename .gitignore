@@ -10,3 +10,5 @@ z-dc-build-info/*
 .idea
 .run/
 .zshrc
+config.bat
+node_modules
