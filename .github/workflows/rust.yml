@@ -100,13 +100,15 @@ jobs:
         deno-version: v2.x
 
     # Setup Stellar CLI
-    # privacy-pools stays on soroban-sdk v27 (blocked on a soroban-poseidon
-    # v28-compatible release), and building it with the newer CLI stamps its
-    # Wasm with a protocol number its soroban-env-host v27 can't run.
+    # privacy-pools and groth16_verifier stay on soroban-sdk v27 (privacy-pools
+    # is blocked on a soroban-poseidon v28-compatible release, and it builds
+    # groth16_verifier's bls12_381_verifier as a dependency); building either
+    # with the newer CLI stamps their Wasm with a protocol number the v27
+    # soroban-env-host they test against can't run.
     - uses: stellar/stellar-cli@v23.1.1
-      if: matrix.working-directory == 'privacy-pools'
+      if: matrix.working-directory == 'privacy-pools' || startsWith(matrix.working-directory, 'groth16_verifier')
     - uses: stellar/stellar-cli@v28.0.0
-      if: matrix.working-directory != 'privacy-pools'
+      if: matrix.working-directory != 'privacy-pools' && !startsWith(matrix.working-directory, 'groth16_verifier')
 
     # Build and Test
     - run: make test
