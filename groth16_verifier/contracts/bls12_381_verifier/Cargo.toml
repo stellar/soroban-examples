@@ -10,10 +10,10 @@ crate-type = ["lib", "cdylib"]
 doctest = false
 
 [dependencies]
-soroban-sdk = "27"
+soroban-sdk = "28"
 
 [dev-dependencies]
-soroban-sdk = { version = "27", features = ["testutils"] }
+soroban-sdk = { version = "28", features = ["testutils"] }
 ark-bls12-381 = "0.6"
 ark-ff = "0.6"
 ark-serialize = "0.6"
