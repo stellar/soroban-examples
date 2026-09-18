@@ -104,9 +104,11 @@ jobs:
     # dependency has no 28.0.0 release yet), and stellar-cli >= 25.2.0 builds
     # contracts targeting protocol 28, which its protocol-27 soroban-env-host
     # can't run in tests. Keep it on the pre-v28 CLI until it can upgrade.
-    - if: startsWith(matrix.working-directory, 'privacy-pools')
+    # bls12_381_verifier stays with it too, since privacy-pools imports its
+    # built Wasm directly and must import a protocol-27 contract.
+    - if: startsWith(matrix.working-directory, 'privacy-pools') || matrix.working-directory == 'groth16_verifier/contracts/bls12_381_verifier'
       uses: stellar/stellar-cli@v23.1.1
-    - if: ${{ !startsWith(matrix.working-directory, 'privacy-pools') }}
+    - if: ${{ !(startsWith(matrix.working-directory, 'privacy-pools') || matrix.working-directory == 'groth16_verifier/contracts/bls12_381_verifier') }}
       uses: stellar/stellar-cli@v28.0.0
 
     # Build and Test
