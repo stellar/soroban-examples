@@ -32,7 +32,7 @@
 	"ghcr.io/devcontainers-extra/features/gh-release:1.0.25": {
 	  "repo": "stellar/stellar-cli",
 	  "binaryNames": "stellar",
-	  "version": "23.1.1"
+	  "version": "28.0.0"
 	},
 	"ghcr.io/rapidsai/devcontainers/features/sccache:25.6.1": {
 	  "repository": "mozilla/sccache",
