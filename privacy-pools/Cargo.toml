@@ -13,8 +13,9 @@ members = [
 [workspace.dependencies]
 soroban-sdk = { version = "28.0.0" }
 # TODO: switch to a crates.io version once rs-soroban-poseidon publishes a
-# release depending on soroban-sdk v28 (see stellar/rs-soroban-poseidon#18).
-soroban-poseidon = { git = "https://github.com/stellar/rs-soroban-poseidon", branch = "bump-soroban-sdk-28" }
+# release depending on soroban-sdk v28 (see stellar/rs-soroban-poseidon#18,
+# merged but not yet released).
+soroban-poseidon = { git = "https://github.com/stellar/rs-soroban-poseidon", rev = "0e680a1883ca177ca90c4d6b10a690101876baa6" }
 
 [workspace.package]
 rust-version = "1.92.0"
