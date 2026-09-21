@@ -3,7 +3,7 @@ name = "stellar-sign-auth-ed25519"
 version = "0.1.0"
 edition = "2021"
 publish = false
-rust-version = "1.91.0"
+rust-version = "1.91.1"
 
 [dependencies]
 stellar-xdr = { version = "28.0.0", features = ["base64", "serde"] }
