@@ -95,7 +95,8 @@ impl SingleOffer {
         let sell_token_amount = buy_token_amount
             .checked_mul(offer.sell_price as i128)
             .unwrap_optimized()
-            / offer.buy_price as i128;
+            .checked_div(offer.buy_price as i128)
+            .expect("division error");
 
         if sell_token_amount < min_sell_token_amount {
             panic!("price is too low");
