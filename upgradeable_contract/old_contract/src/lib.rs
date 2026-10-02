@@ -1,6 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{contract, contractimpl, contracttype, Address, BytesN, Env};
+use soroban_sdk::{contract, contractimpl, contracttype, Address, BytesN, ContractExecutable, Env};
 
 #[contracttype]
 #[derive(Clone)]
@@ -25,7 +25,8 @@ impl UpgradeableContract {
         let admin: Address = e.storage().instance().get(&DataKey::Admin).unwrap();
         admin.require_auth();
 
-        e.deployer().update_current_contract_wasm(new_wasm_hash);
+        e.deployer()
+            .update_current_contract(ContractExecutable::Wasm(new_wasm_hash));
     }
 }
 

@@ -2,7 +2,10 @@
 
 /// This example demonstrates the 'factory' pattern for programmatically
 /// deploying the contracts via `env.deployer()`.
-use soroban_sdk::{contract, contractimpl, symbol_short, Address, BytesN, Env, Symbol, Val, Vec};
+use soroban_sdk::{
+    contract, contractimpl, symbol_short, Address, BytesN, ContractExecutable, Env, Symbol, Val,
+    Vec,
+};
 
 #[contract]
 pub struct Deployer;
@@ -38,7 +41,7 @@ impl Deployer {
         let deployed_address = env
             .deployer()
             .with_address(env.current_contract_address(), salt)
-            .deploy_v2(wasm_hash, constructor_args);
+            .deploy_contract(ContractExecutable::Wasm(wasm_hash), constructor_args);
 
         deployed_address
     }
