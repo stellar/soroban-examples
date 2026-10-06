@@ -1,0 +1,14 @@
+{
+  "workspace": ".",
+  "go_sast_enabled": true,
+  "javascript_sast_enabled": true,
+  "rust_sast_enabled": true,
+  "rust_disabled_rules": "rust-panic-in-production",
+  "sast_ignore_overrides": "js-unhandled-promise-rejection:multisig_1_of_n_account/stellar-cli-sign-auth-ed25519-js/main.ts,rust-sql-injection:privacy-pools/cli/circom2soroban/src/main.rs,rust-sql-injection:privacy-pools/cli/coinutils/src/crypto/conversions.rs,rust-sql-injection:privacy-pools/cli/coinutils/src/merkle/association.rs",
+  "secret_scanning_enabled": true,
+  "console_tabular_enabled": true,
+  "dockerfiles": ".devcontainer/Dockerfile",
+  "socket_tier_1_enabled": false,
+  "trivy_vuln_enabled": false,
+  "trufflehog_exclude_dir": "vendor,node_modules,dist,build,target,.git,yarn.lock,package-lock.json,pnpm-lock.yaml,Cargo.lock,go.sum,poetry.lock,Gemfile.lock,composer.lock"
+}
