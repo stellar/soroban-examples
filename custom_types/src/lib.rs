@@ -21,7 +21,7 @@ impl IncrementContract {
         let mut state = Self::get_state(env.clone());
 
         // Increment the count.
-        state.count += incr;
+        state.count = state.count.checked_add(incr).expect("overflow");
         state.last_incr = incr;
 
         // Save the count.

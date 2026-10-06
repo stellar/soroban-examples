@@ -113,7 +113,7 @@ impl CustomTypesContract {
     // increment count and return new one
     pub fn inc(env: Env) -> u32 {
         let mut count: u32 = env.storage().persistent().get(&COUNTER).unwrap_or(0); // Panic if the value of COUNTER is not u32.
-        count += 1;
+        count = count.checked_add(1).expect("overflow");
         env.storage().persistent().set(&COUNTER, &count);
         count
     }

@@ -88,7 +88,7 @@ impl Contract {
             .persistent()
             .get::<_, MinterConfig>(&StorageKey::Minter(contract.clone(), minter.clone()))
             .ok_or(Error::NotAuthorizedMinter)?;
-        let epoch = env.ledger().sequence() / config.epoch_length;
+        let epoch = env.ledger().sequence().checked_div(config.epoch_length).expect("division by zero");
         let stats = env
             .storage()
             .temporary()
@@ -132,7 +132,7 @@ impl Contract {
             };
 
             // Check and track daily limit.
-            let epoch = env.ledger().sequence() / config.epoch_length;
+            let epoch = env.ledger().sequence().checked_div(config.epoch_length).expect("division by zero");
             let minter_stats_key = StorageKey::MinterStats(
                 contract.clone(),
                 minter.clone(),
@@ -145,7 +145,7 @@ impl Contract {
                 .get::<_, MinterStats>(&minter_stats_key)
                 .unwrap_or_default();
             let new_minter_stats = MinterStats {
-                consumed_limit: minter_stats.consumed_limit + amount,
+                consumed_limit: minter_stats.consumed_limit.checked_add(amount).expect("overflow"),
             };
             if new_minter_stats.consumed_limit > config.limit {
                 return Err(Error::DailyLimitInsufficient);
@@ -155,7 +155,7 @@ impl Contract {
                 .set::<_, MinterStats>(&minter_stats_key, &new_minter_stats);
             // Extend the minter stats entry to live at least until the end
             // of the epoch.
-            let end_of_the_epoch_ledger = config.epoch_length * (epoch + 1) - 1;
+            let end_of_the_epoch_ledger = config.epoch_length.checked_mul(epoch.checked_add(1).expect("overflow")).expect("overflow").checked_sub(1).expect("underflow");
             env.storage().temporary().extend_ttl(
                 &minter_stats_key,
                 end_of_the_epoch_ledger,
