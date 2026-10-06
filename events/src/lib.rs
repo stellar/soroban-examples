@@ -11,12 +11,21 @@ struct IncrementEvent {
     count: u32,
 }
 
+/// A counter contract that emits a Soroban event each time the counter is incremented.
 #[contract]
 pub struct IncrementContract;
 
 #[contractimpl]
 impl IncrementContract {
-    /// Increment increments an internal counter, and returns the value.
+    /// Increments an internal counter and emits a `COUNTER/increment` event.
+    ///
+    /// # Arguments
+    ///
+    /// * `env` - The Soroban environment.
+    ///
+    /// # Returns
+    ///
+    /// The new counter value after incrementing.
     pub fn increment(env: Env) -> u32 {
         // Get the current count.
         let mut count: u32 = env.storage().instance().get(&COUNTER).unwrap_or(0); // If no value set, assume 0.
