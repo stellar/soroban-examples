@@ -44,8 +44,15 @@ fn sign(e: &Env, signer: &Keypair, payload: &BytesN<32>) -> Val {
 fn token_auth_context(e: &Env, token_id: &Address, fn_name: Symbol, amount: i128) -> Context {
     Context::Contract(ContractContext {
         contract: token_id.clone(),
-        fn_name,
-        args: ((), (), amount).into_val(e),
+        fn_name: fn_name.clone(),
+        args: if fn_name == Symbol::new(e, "burn") {
+            // burn(from, amount) has amount at index 1.
+            ((), amount).into_val(e)
+        } else {
+            // transfer(from, to, amount) and approve(from, spender, amount, ...)
+            // have amount at index 2.
+            ((), (), amount).into_val(e)
+        },
     })
 }
 
@@ -172,4 +179,57 @@ fn test_token_auth() {
         ],
     )
     .unwrap();
+}
+
+#[test]
+fn test_burn_with_spend_limit() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let mut signers = [generate_keypair(), generate_keypair()];
+    if signers[0].public.as_bytes() > signers[1].public.as_bytes() {
+        signers.swap(0, 1);
+    }
+    let account_contract = create_account_contract(
+        &env,
+        vec![
+            &env,
+            signer_public_key(&env, &signers[0]),
+            signer_public_key(&env, &signers[1]),
+        ],
+    );
+
+    let payload = BytesN::random(&env);
+    let token = Address::generate(&env);
+
+    account_contract.add_limit(&token, &1000);
+
+    // 1 signer can burn within the spend limit.
+    env.try_invoke_contract_check_auth::<AccError>(
+        &account_contract.address,
+        &payload,
+        vec![&env, sign(&env, &signers[0], &payload)].into(),
+        &vec![
+            &env,
+            token_auth_context(&env, &token, Symbol::new(&env, "burn"), 500),
+        ],
+    )
+    .unwrap();
+
+    // 1 signer cannot burn more than the spend limit.
+    assert_eq!(
+        env.try_invoke_contract_check_auth::<AccError>(
+            &account_contract.address,
+            &payload,
+            vec![&env, sign(&env, &signers[0], &payload)].into(),
+            &vec![
+                &env,
+                token_auth_context(&env, &token, Symbol::new(&env, "burn"), 1001)
+            ],
+        )
+        .err()
+        .unwrap()
+        .unwrap(),
+        AccError::NotEnoughSigners
+    );
 }
