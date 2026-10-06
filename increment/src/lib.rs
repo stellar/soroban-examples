@@ -15,7 +15,7 @@ impl IncrementContract {
         log!(&env, "count: {}", count);
 
         // Increment the count.
-        count += 1;
+        count = count.checked_add(1).expect("overflow");
 
         // Save the count.
         env.storage().instance().set(&COUNTER, &count);
