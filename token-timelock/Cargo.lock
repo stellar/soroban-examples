@@ -1699,7 +1699,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "soroban-timelock-contract"
+name = "soroban-token-timelock-contract"
 version = "0.0.0"
 dependencies = [
  "soroban-sdk",
