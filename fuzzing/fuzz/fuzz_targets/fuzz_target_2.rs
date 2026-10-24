@@ -8,10 +8,9 @@
 use crate::arbitrary::Unstructured;
 use libfuzzer_sys::fuzz_target;
 use soroban_fuzzing_contract::*;
-use soroban_ledger_snapshot::LedgerSnapshot;
 use soroban_sdk::testutils::{
     arbitrary::{arbitrary, Arbitrary, SorobanArbitrary},
-    Address as _, LedgerInfo,
+    Address as _, Ledger as _,
 };
 use soroban_sdk::token::Client as TokenClient;
 use soroban_sdk::token::StellarAssetClient as TokenAdminClient;
@@ -97,24 +96,14 @@ struct Config {
 
 impl Config {
     fn setup(input: Input) -> (Config, Env) {
-        let snapshot = {
-            let init_ledger = LedgerInfo {
-                timestamp: 12345,
-                protocol_version: 1,
-                sequence_number: 10,
-                network_id: Default::default(),
-                base_reserve: 10,
-                min_temp_entry_ttl: u32::MAX,
-                min_persistent_entry_ttl: u32::MAX,
-                max_entry_ttl: u32::MAX,
-            };
-
-            LedgerSnapshot::from(init_ledger, None)
-        };
-
-        let env = Env::from_ledger_snapshot(snapshot);
+        let env = Env::default();
 
         env.mock_all_auths();
+
+        env.ledger().with_mut(|ledger_info| {
+            ledger_info.timestamp = 12345;
+            ledger_info.sequence_number = 10;
+        });
 
         let token_admin = Address::generate(&env);
 
