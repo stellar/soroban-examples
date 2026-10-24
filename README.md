@@ -34,6 +34,7 @@ The examples in this repository:
 - **other_custom_types**: The smart contract implements types, including custom types
 - **privacy-pools**: A prototype for Privacy Pools for Soroban.
 - **simple_account**: A minimal example of an account contract, owned by a single ed25519 public key
+- **simple_token**: A minimal token smart contract with a finite supply and simple transfer functionality (no allowances)
 - **single_offer**: This contract implements trading of one token pair between one seller and multiple buyers
 - **time_lock**: This contract demonstrates how to write a timelock and implements a greatly simplified claimable balance
 - **token**: This contract demonstrates how to write a token contract that implements the Token Interface.
