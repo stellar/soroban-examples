@@ -139,3 +139,64 @@ fn assert_invariants(
         }
     });
 }
+
+
+#[test]
+#[should_panic(expected = "amount must be positive")]
+fn test_claim_negative_amount() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let depositor = Address::generate(&env);
+    let claimant = Address::generate(&env);
+    let token_admin = Address::generate(&env);
+
+    let sac = env.register_stellar_asset_contract_v2(token_admin);
+    let token_contract_id = sac.address();
+    let token_admin_client = TokenAdminClient::new(&env, &token_contract_id);
+    let timelock_contract_id = env.register(ClaimableBalanceContract, ());
+    let timelock_client = ClaimableBalanceContractClient::new(&env, &timelock_contract_id);
+
+    token_admin_client.mint(&depositor, &1000);
+    timelock_client.deposit(
+        &depositor,
+        &token_contract_id,
+        &500,
+        &vec![&env, claimant.clone()],
+        &TimeBound {
+            kind: TimeBoundKind::Before,
+            timestamp: 123456,
+        },
+    );
+
+    timelock_client.claim(&claimant, &-50);
+}
+
+#[test]
+#[should_panic(expected = "amount must be positive")]
+fn test_claim_zero_amount() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let depositor = Address::generate(&env);
+    let claimant = Address::generate(&env);
+    let token_admin = Address::generate(&env);
+
+    let sac = env.register_stellar_asset_contract_v2(token_admin);
+    let token_contract_id = sac.address();
+    let token_admin_client = TokenAdminClient::new(&env, &token_contract_id);
+    let timelock_contract_id = env.register(ClaimableBalanceContract, ());
+    let timelock_client = ClaimableBalanceContractClient::new(&env, &timelock_contract_id);
+
+    token_admin_client.mint(&depositor, &1000);
+    timelock_client.deposit(
+        &depositor,
+        &token_contract_id,
+        &500,
+        &vec![&env, claimant.clone()],
+        &TimeBound {
+            kind: TimeBoundKind::Before,
+            timestamp: 123456,
+        },
+    );
+
+    timelock_client.claim(&claimant, &0);
+}

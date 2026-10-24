@@ -62,6 +62,9 @@ impl ClaimableBalanceContract {
         claimants: Vec<Address>,
         time_bound: TimeBound,
     ) {
+        if amount <= 0 {
+            panic!("amount must be positive");
+        }
         if claimants.len() > 10 {
             panic!("too many claimants");
         }

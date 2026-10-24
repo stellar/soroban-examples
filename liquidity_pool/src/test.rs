@@ -195,3 +195,40 @@ fn swap_reserve_one_nonzero_other_zero() {
     token2.transfer(&user1, &liqpool.address, &1);
     liqpool.swap(&user1, &false, &1, &1);
 }
+
+
+#[test]
+#[should_panic(expected = "amount must be positive")]
+fn test_swap_negative_out() {
+    let e = Env::default();
+    e.mock_all_auths();
+
+    let admin1 = Address::generate(&e);
+    let admin2 = Address::generate(&e);
+
+    let (token1, _) = create_token_contract(&e, &admin1);
+    let (token2, _) = create_token_contract(&e, &admin2);
+    let user1 = Address::generate(&e);
+
+    let liqpool = create_liqpool_contract(&e, &token1.address, &token2.address);
+
+    liqpool.swap(&user1, &false, &-10, &100);
+}
+
+#[test]
+#[should_panic(expected = "share amount must be positive")]
+fn test_withdraw_negative_shares() {
+    let e = Env::default();
+    e.mock_all_auths();
+
+    let admin1 = Address::generate(&e);
+    let admin2 = Address::generate(&e);
+
+    let (token1, _) = create_token_contract(&e, &admin1);
+    let (token2, _) = create_token_contract(&e, &admin2);
+    let user1 = Address::generate(&e);
+
+    let liqpool = create_liqpool_contract(&e, &token1.address, &token2.address);
+
+    liqpool.withdraw(&user1, &-50, &0, &0);
+}

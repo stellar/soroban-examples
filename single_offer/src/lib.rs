@@ -83,6 +83,10 @@ impl SingleOffer {
     // Buyer needs to authorize the `trade` call and internal `transfer` call to
     // the contract address.
     pub fn trade(e: Env, buyer: Address, buy_token_amount: i128, min_sell_token_amount: i128) {
+        if buy_token_amount <= 0 || min_sell_token_amount <= 0 {
+            panic!("amount must be positive");
+        }
+
         // Buyer needs to authorize the trade.
         buyer.require_auth();
 
@@ -127,6 +131,10 @@ impl SingleOffer {
     // transferred wrong token to it).
     // Must be authorized by seller.
     pub fn withdraw(e: Env, token: Address, amount: i128) {
+        if amount <= 0 {
+            panic!("amount must be positive");
+        }
+
         let offer = load_offer(&e);
         offer.seller.require_auth();
         token::Client::new(&e, &token).transfer(
