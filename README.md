@@ -33,6 +33,7 @@ The examples in this repository:
 - **modular_account**: A custom account contract that uses CAP-71 auth delegation to forward `__check_auth` to registered delegate signers
 - **other_custom_types**: The smart contract implements types, including custom types
 - **privacy-pools**: A prototype for Privacy Pools for Soroban.
+- **secp256r1**: Demonstrates how to verify secp256r1 (P-256) ECDSA signatures used in Passkeys and WebAuthn, including custom account authentication
 - **simple_account**: A minimal example of an account contract, owned by a single ed25519 public key
 - **single_offer**: This contract implements trading of one token pair between one seller and multiple buyers
 - **time_lock**: This contract demonstrates how to write a timelock and implements a greatly simplified claimable balance
