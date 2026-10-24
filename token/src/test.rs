@@ -1,10 +1,10 @@
 #![cfg(test)]
 extern crate std;
 
-use crate::{contract::Token, TokenClient};
+use crate::{contract::Token, TokenClient, TokenError};
 use soroban_sdk::{
     symbol_short,
-    testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation},
+    testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation, Ledger as _},
     Address, Env, FromVal, IntoVal, String, Symbol,
 };
 
@@ -201,7 +201,6 @@ fn test_burn() {
 }
 
 #[test]
-#[should_panic(expected = "insufficient balance")]
 fn transfer_insufficient_balance() {
     let e = Env::default();
     e.mock_all_auths();
@@ -214,11 +213,11 @@ fn transfer_insufficient_balance() {
     token.mint(&user1, &1000);
     assert_eq!(token.balance(&user1), 1000);
 
-    token.transfer(&user1, &user2, &1001);
+    let res = token.try_transfer(&user1, &user2, &1001);
+    assert_eq!(res, Err(Ok(TokenError::InsufficientBalance.into())));
 }
 
 #[test]
-#[should_panic(expected = "insufficient allowance")]
 fn transfer_from_insufficient_allowance() {
     let e = Env::default();
     e.mock_all_auths();
@@ -235,11 +234,12 @@ fn transfer_from_insufficient_allowance() {
     token.approve(&user1, &user3, &100, &200);
     assert_eq!(token.allowance(&user1, &user3), 100);
 
-    token.transfer_from(&user3, &user1, &user2, &101);
+    let res = token.try_transfer_from(&user3, &user1, &user2, &101);
+    assert_eq!(res, Err(Ok(TokenError::InsufficientAllowance.into())));
 }
 
 #[test]
-#[should_panic(expected = "Decimal must not be greater than 18")]
+#[should_panic]
 fn decimal_is_over_eighteen() {
     let e = Env::default();
     let admin = Address::generate(&e);
@@ -255,6 +255,52 @@ fn decimal_is_over_eighteen() {
             ),
         ),
     );
+}
+
+#[test]
+fn negative_amount_rejected() {
+    let e = Env::default();
+    e.mock_all_auths();
+
+    let admin = Address::generate(&e);
+    let user1 = Address::generate(&e);
+    let user2 = Address::generate(&e);
+    let token = create_token(&e, &admin);
+
+    assert_eq!(
+        token.try_mint(&user1, &-10),
+        Err(Ok(TokenError::NegativeAmount.into()))
+    );
+    assert_eq!(
+        token.try_transfer(&user1, &user2, &-10),
+        Err(Ok(TokenError::NegativeAmount.into()))
+    );
+    assert_eq!(
+        token.try_approve(&user1, &user2, &-10, &100),
+        Err(Ok(TokenError::NegativeAmount.into()))
+    );
+    assert_eq!(
+        token.try_burn(&user1, &-10),
+        Err(Ok(TokenError::NegativeAmount.into()))
+    );
+}
+
+#[test]
+fn invalid_live_until_ledger_rejected() {
+    let e = Env::default();
+    e.mock_all_auths();
+
+    let admin = Address::generate(&e);
+    let user1 = Address::generate(&e);
+    let user2 = Address::generate(&e);
+    let token = create_token(&e, &admin);
+
+    e.ledger().with_mut(|l| {
+        l.sequence_number = 100;
+    });
+
+    let res = token.try_approve(&user1, &user2, &100, &50);
+    assert_eq!(res, Err(Ok(TokenError::InvalidLiveUntilLedger.into())));
 }
 
 #[test]

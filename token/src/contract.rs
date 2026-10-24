@@ -3,20 +3,21 @@
 use crate::admin::{read_administrator, write_administrator};
 use crate::allowance::{read_allowance, spend_allowance, write_allowance};
 use crate::balance::{read_balance, receive_balance, spend_balance};
+use crate::error::TokenError;
 use crate::metadata::{read_decimal, read_name, read_symbol, write_metadata};
 #[cfg(test)]
 use crate::storage_types::{AllowanceDataKey, AllowanceValue, DataKey};
 use crate::storage_types::{INSTANCE_BUMP_AMOUNT, INSTANCE_LIFETIME_THRESHOLD};
 use soroban_sdk::{
-    contract, contractevent, contractimpl, token::TokenInterface, Address, Env, MuxedAddress,
-    String,
+    contract, contractevent, contractimpl, panic_with_error, token::TokenInterface, Address, Env,
+    MuxedAddress, String,
 };
 use soroban_token_sdk::events;
 use soroban_token_sdk::metadata::TokenMetadata;
 
-fn check_nonnegative_amount(amount: i128) {
+fn check_nonnegative_amount(e: &Env, amount: i128) {
     if amount < 0 {
-        panic!("negative amount is not allowed: {}", amount)
+        panic_with_error!(e, TokenError::NegativeAmount);
     }
 }
 
@@ -36,7 +37,7 @@ pub struct SetAdmin {
 impl Token {
     pub fn __constructor(e: Env, admin: Address, decimal: u32, name: String, symbol: String) {
         if decimal > 18 {
-            panic!("Decimal must not be greater than 18");
+            panic_with_error!(&e, TokenError::DecimalTooLarge);
         }
         write_administrator(&e, &admin);
         write_metadata(
@@ -50,7 +51,7 @@ impl Token {
     }
 
     pub fn mint(e: Env, to: Address, amount: i128) {
-        check_nonnegative_amount(amount);
+        check_nonnegative_amount(&e, amount);
         let admin = read_administrator(&e);
         admin.require_auth();
 
@@ -94,7 +95,7 @@ impl TokenInterface for Token {
     fn approve(e: Env, from: Address, spender: Address, amount: i128, live_until_ledger: u32) {
         from.require_auth();
 
-        check_nonnegative_amount(amount);
+        check_nonnegative_amount(&e, amount);
 
         e.storage()
             .instance()
@@ -120,7 +121,7 @@ impl TokenInterface for Token {
     fn transfer(e: Env, from: Address, to_muxed: MuxedAddress, amount: i128) {
         from.require_auth();
 
-        check_nonnegative_amount(amount);
+        check_nonnegative_amount(&e, amount);
 
         e.storage()
             .instance()
@@ -141,7 +142,7 @@ impl TokenInterface for Token {
     fn transfer_from(e: Env, spender: Address, from: Address, to: Address, amount: i128) {
         spender.require_auth();
 
-        check_nonnegative_amount(amount);
+        check_nonnegative_amount(&e, amount);
 
         e.storage()
             .instance()
@@ -163,7 +164,7 @@ impl TokenInterface for Token {
     fn burn(e: Env, from: Address, amount: i128) {
         from.require_auth();
 
-        check_nonnegative_amount(amount);
+        check_nonnegative_amount(&e, amount);
 
         e.storage()
             .instance()
@@ -176,7 +177,7 @@ impl TokenInterface for Token {
     fn burn_from(e: Env, spender: Address, from: Address, amount: i128) {
         spender.require_auth();
 
-        check_nonnegative_amount(amount);
+        check_nonnegative_amount(&e, amount);
 
         e.storage()
             .instance()
