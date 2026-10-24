@@ -25,6 +25,10 @@ impl AtomicSwapContract {
         amount_b: i128,
         min_a_for_b: i128,
     ) {
+        if amount_a <= 0 || min_b_for_a <= 0 || amount_b <= 0 || min_a_for_b <= 0 {
+            panic!("amounts must be positive");
+        }
+
         // Verify preconditions on the minimum price for both parties.
         if amount_b < min_b_for_a {
             panic!("not enough token B for token A");

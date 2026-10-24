@@ -102,6 +102,10 @@ impl ClaimableBalanceContract {
     }
 
     pub fn claim(env: Env, claimant: Address, amount: i128) {
+        if amount <= 0 {
+            panic!("amount must be positive");
+        }
+
         // Make sure claimant has authorized this call, which ensures their
         // identity.
         claimant.require_auth();

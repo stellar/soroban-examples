@@ -258,3 +258,36 @@ fn test_deposit_after_claim_not_possible() {
         },
     );
 }
+
+
+#[test]
+#[should_panic(expected = "amount must be positive")]
+fn test_deposit_negative_amount() {
+    let test = ClaimableBalanceTest::setup();
+    test.contract.deposit(
+        &test.deposit_address,
+        &test.token.address,
+        &-100,
+        &vec![&test.env, test.claim_addresses[0].clone()],
+        &TimeBound {
+            kind: TimeBoundKind::Before,
+            timestamp: 12346,
+        },
+    );
+}
+
+#[test]
+#[should_panic(expected = "amount must be positive")]
+fn test_deposit_zero_amount() {
+    let test = ClaimableBalanceTest::setup();
+    test.contract.deposit(
+        &test.deposit_address,
+        &test.token.address,
+        &0,
+        &vec![&test.env, test.claim_addresses[0].clone()],
+        &TimeBound {
+            kind: TimeBoundKind::Before,
+            timestamp: 12346,
+        },
+    );
+}

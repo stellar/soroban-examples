@@ -171,3 +171,51 @@ fn test() {
     assert_eq!(buy_token_client.balance(&buyer), 970);
     assert_eq!(buy_token_client.balance(&offer.address), 0);
 }
+
+
+#[test]
+#[should_panic(expected = "amount must be positive")]
+fn test_trade_negative_amount() {
+    let e = Env::default();
+    e.mock_all_auths();
+
+    let token_admin = Address::generate(&e);
+    let seller = Address::generate(&e);
+    let buyer = Address::generate(&e);
+
+    let sell_token = create_token_contract(&e, &token_admin);
+    let buy_token = create_token_contract(&e, &token_admin);
+
+    let offer = create_single_offer_contract(
+        &e,
+        &seller,
+        &sell_token.0.address,
+        &buy_token.0.address,
+        1,
+        2,
+    );
+    offer.trade(&buyer, &-20, &10);
+}
+
+#[test]
+#[should_panic(expected = "amount must be positive")]
+fn test_withdraw_negative_amount() {
+    let e = Env::default();
+    e.mock_all_auths();
+
+    let token_admin = Address::generate(&e);
+    let seller = Address::generate(&e);
+
+    let sell_token = create_token_contract(&e, &token_admin);
+    let buy_token = create_token_contract(&e, &token_admin);
+
+    let offer = create_single_offer_contract(
+        &e,
+        &seller,
+        &sell_token.0.address,
+        &buy_token.0.address,
+        1,
+        2,
+    );
+    offer.withdraw(&sell_token.0.address, &-50);
+}

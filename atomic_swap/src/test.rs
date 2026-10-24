@@ -110,3 +110,60 @@ fn test_atomic_swap() {
     assert_eq!(token_b.balance(&a), 4500);
     assert_eq!(token_b.balance(&b), 500);
 }
+
+
+#[test]
+#[should_panic(expected = "amounts must be positive")]
+fn test_atomic_swap_negative_amount() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let a = Address::generate(&env);
+    let b = Address::generate(&env);
+
+    let token_admin = Address::generate(&env);
+
+    let (token_a, _) = create_token_contract(&env, &token_admin);
+    let (token_b, _) = create_token_contract(&env, &token_admin);
+
+    let contract = create_atomic_swap_contract(&env);
+
+    contract.swap(
+        &a,
+        &b,
+        &token_a.address,
+        &token_b.address,
+        &-1000,
+        &4500,
+        &5000,
+        &950,
+    );
+}
+
+#[test]
+#[should_panic(expected = "amounts must be positive")]
+fn test_atomic_swap_zero_amount() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let a = Address::generate(&env);
+    let b = Address::generate(&env);
+
+    let token_admin = Address::generate(&env);
+
+    let (token_a, _) = create_token_contract(&env, &token_admin);
+    let (token_b, _) = create_token_contract(&env, &token_admin);
+
+    let contract = create_atomic_swap_contract(&env);
+
+    contract.swap(
+        &a,
+        &b,
+        &token_a.address,
+        &token_b.address,
+        &0,
+        &4500,
+        &5000,
+        &950,
+    );
+}

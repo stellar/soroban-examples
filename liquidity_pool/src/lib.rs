@@ -215,6 +215,10 @@ impl LiquidityPool {
     // "out" is the amount being bought, with in_max being a safety to make sure you receive at least that amount.
     // swap will transfer the selling token "to" to this contract, and then the contract will transfer the buying token to "to".
     pub fn swap(e: Env, to: Address, buy_a: bool, out: i128, in_max: i128) {
+        if out <= 0 || in_max <= 0 {
+            panic!("amount must be positive");
+        }
+
         to.require_auth();
 
         let (reserve_a, reserve_b) = (get_reserve_a(&e), get_reserve_b(&e));
@@ -301,6 +305,10 @@ impl LiquidityPool {
         min_a: i128,
         min_b: i128,
     ) -> (i128, i128) {
+        if share_amount <= 0 {
+            panic!("share amount must be positive");
+        }
+
         to.require_auth();
 
         let current_shares = get_shares(&e, &to);
