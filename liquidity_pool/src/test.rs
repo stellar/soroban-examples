@@ -87,7 +87,8 @@ fn test() {
     assert_eq!(token2.balance(&user1), 900);
     assert_eq!(token2.balance(&liqpool.address), 100);
 
-    liqpool.swap(&user1, &false, &49, &100);
+    let out = liqpool.swap(&user1, &false, &97, &49);
+    assert_eq!(out, 49);
     assert_eq!(
         e.auths(),
         std::vec![(
@@ -96,7 +97,7 @@ fn test() {
                 function: AuthorizedFunction::Contract((
                     liqpool.address.clone(),
                     symbol_short!("swap"),
-                    (&user1, false, 49_i128, 100_i128).into_val(&e)
+                    (&user1, false, 97_i128, 49_i128).into_val(&e)
                 )),
                 sub_invocations: std::vec![AuthorizedInvocation {
                     function: AuthorizedFunction::Contract((
@@ -141,6 +142,105 @@ fn test() {
 }
 
 #[test]
+fn test_swap_buy_a() {
+    let e = Env::default();
+    e.mock_all_auths();
+
+    let admin1 = Address::generate(&e);
+    let admin2 = Address::generate(&e);
+
+    let (token1, token1_admin) = create_token_contract(&e, &admin1);
+    let (token2, token2_admin) = create_token_contract(&e, &admin2);
+    let user1 = Address::generate(&e);
+
+    let liqpool = create_liqpool_contract(&e, &token1.address, &token2.address);
+
+    token1_admin.mint(&user1, &1000);
+    token2_admin.mint(&user1, &1000);
+
+    liqpool.deposit(&user1, &100, &100, &100, &100);
+
+    // Swap selling token2 and buying token1 (buy_a = true)
+    let out = liqpool.swap(&user1, &true, &97, &49);
+    assert_eq!(out, 49);
+
+    assert_eq!(token2.balance(&user1), 803);
+    assert_eq!(token2.balance(&liqpool.address), 197);
+    assert_eq!(token1.balance(&user1), 949);
+    assert_eq!(token1.balance(&liqpool.address), 51);
+}
+
+#[test]
+#[should_panic(expected = "out amount is below min")]
+fn test_swap_slippage_protection_panics() {
+    let e = Env::default();
+    e.mock_all_auths();
+
+    let admin1 = Address::generate(&e);
+    let admin2 = Address::generate(&e);
+
+    let (token1, token1_admin) = create_token_contract(&e, &admin1);
+    let (token2, token2_admin) = create_token_contract(&e, &admin2);
+    let user1 = Address::generate(&e);
+
+    let liqpool = create_liqpool_contract(&e, &token1.address, &token2.address);
+
+    token1_admin.mint(&user1, &1000);
+    token2_admin.mint(&user1, &1000);
+
+    liqpool.deposit(&user1, &100, &100, &100, &100);
+
+    // 97 in yields 49 out, but caller demands out_min = 50 -> must panic
+    liqpool.swap(&user1, &false, &97, &50);
+}
+
+#[test]
+#[should_panic(expected = "in_amount must be strictly positive")]
+fn test_swap_zero_in_amount_panics() {
+    let e = Env::default();
+    e.mock_all_auths();
+
+    let admin1 = Address::generate(&e);
+    let admin2 = Address::generate(&e);
+
+    let (token1, token1_admin) = create_token_contract(&e, &admin1);
+    let (token2, token2_admin) = create_token_contract(&e, &admin2);
+    let user1 = Address::generate(&e);
+
+    let liqpool = create_liqpool_contract(&e, &token1.address, &token2.address);
+
+    token1_admin.mint(&user1, &1000);
+    token2_admin.mint(&user1, &1000);
+
+    liqpool.deposit(&user1, &100, &100, &100, &100);
+
+    liqpool.swap(&user1, &false, &0, &0);
+}
+
+#[test]
+#[should_panic(expected = "out_min cannot be negative")]
+fn test_swap_negative_out_min_panics() {
+    let e = Env::default();
+    e.mock_all_auths();
+
+    let admin1 = Address::generate(&e);
+    let admin2 = Address::generate(&e);
+
+    let (token1, token1_admin) = create_token_contract(&e, &admin1);
+    let (token2, token2_admin) = create_token_contract(&e, &admin2);
+    let user1 = Address::generate(&e);
+
+    let liqpool = create_liqpool_contract(&e, &token1.address, &token2.address);
+
+    token1_admin.mint(&user1, &1000);
+    token2_admin.mint(&user1, &1000);
+
+    liqpool.deposit(&user1, &100, &100, &100, &100);
+
+    liqpool.swap(&user1, &false, &10, &-1);
+}
+
+#[test]
 #[should_panic]
 fn deposit_amount_zero_should_panic() {
     let e = Env::default();
@@ -167,7 +267,7 @@ fn deposit_amount_zero_should_panic() {
 }
 
 #[test]
-#[should_panic]
+#[should_panic(expected = "reserves must be strictly positive")]
 fn swap_reserve_one_nonzero_other_zero() {
     let e = Env::default();
     e.mock_all_auths();

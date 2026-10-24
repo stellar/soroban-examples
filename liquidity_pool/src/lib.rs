@@ -212,10 +212,20 @@ impl LiquidityPool {
     }
 
     // If "buy_a" is true, the swap will buy token_a and sell token_b. This is flipped if "buy_a" is false.
-    // "out" is the amount being bought, with in_max being a safety to make sure you receive at least that amount.
-    // swap will transfer the selling token "to" to this contract, and then the contract will transfer the buying token to "to".
-    pub fn swap(e: Env, to: Address, buy_a: bool, out: i128, in_max: i128) {
+    // "in_amount" is the exact amount of token being sold, and "out_min" is the minimum acceptable amount
+    // of the bought token to receive (slippage protection).
+    // swap will transfer the exact selling token "in_amount" from "to" to this contract, and then the
+    // contract will transfer the calculated bought token amount to "to".
+    // Returns the amount of bought tokens transferred to "to".
+    pub fn swap(e: Env, to: Address, buy_a: bool, in_amount: i128, out_min: i128) -> i128 {
         to.require_auth();
+
+        if in_amount <= 0 {
+            panic!("in_amount must be strictly positive");
+        }
+        if out_min < 0 {
+            panic!("out_min cannot be negative");
+        }
 
         let (reserve_a, reserve_b) = (get_reserve_a(&e), get_reserve_b(&e));
         let (reserve_sell, reserve_buy) = if buy_a {
@@ -224,26 +234,31 @@ impl LiquidityPool {
             (reserve_a, reserve_b)
         };
 
-        if reserve_buy < out {
-            panic!("not enough token to buy");
+        if reserve_sell <= 0 || reserve_buy <= 0 {
+            panic!("reserves must be strictly positive");
         }
 
-        // First calculate how much needs to be sold to buy amount out from the pool
-        let n = reserve_sell * out * 1000;
-        let d = (reserve_buy - out) * 997;
-        let sell_amount = (n / d) + 1;
-        if sell_amount > in_max {
-            panic!("in amount is over max")
+        // Calculate amount out based on constant product invariant with a 0.3% fee:
+        // out_amount = (in_amount * 997 * reserve_buy) / (reserve_sell * 1000 + in_amount * 997)
+        let n = in_amount * 997 * reserve_buy;
+        let d = reserve_sell * 1000 + in_amount * 997;
+        let out_amount = n / d;
+
+        if out_amount < out_min {
+            panic!("out amount is below min");
+        }
+        if out_amount >= reserve_buy {
+            panic!("insufficient liquidity to buy");
         }
 
-        // Transfer the amount being sold to the contract
+        // Transfer the exact amount being sold to the contract
         let sell_token = if buy_a {
             get_token_b(&e)
         } else {
             get_token_a(&e)
         };
         let sell_token_client = token::Client::new(&e, &sell_token);
-        sell_token_client.transfer(&to, &e.current_contract_address(), &sell_amount);
+        sell_token_client.transfer(&to, &e.current_contract_address(), &in_amount);
 
         let (balance_a, balance_b) = (get_balance_a(&e), get_balance_b(&e));
 
@@ -263,7 +278,11 @@ impl LiquidityPool {
             residue_denominator * reserve + adj_delta
         };
 
-        let (out_a, out_b) = if buy_a { (out, 0) } else { (0, out) };
+        let (out_a, out_b) = if buy_a {
+            (out_amount, 0)
+        } else {
+            (0, out_amount)
+        };
 
         let new_inv_a = new_invariant_factor(balance_a, reserve_a, out_a);
         let new_inv_b = new_invariant_factor(balance_b, reserve_b, out_b);
@@ -289,6 +308,8 @@ impl LiquidityPool {
 
         put_reserve_a(&e, new_reserve_a);
         put_reserve_b(&e, new_reserve_b);
+
+        out_amount
     }
 
     // transfers share_amount of pool share tokens to this contract, burns all pools share tokens in this contracts, and sends the
