@@ -35,7 +35,7 @@ The examples in this repository:
 - **privacy-pools**: A prototype for Privacy Pools for Soroban.
 - **simple_account**: A minimal example of an account contract, owned by a single ed25519 public key
 - **single_offer**: This contract implements trading of one token pair between one seller and multiple buyers
-- **time_lock**: This contract demonstrates how to write a timelock and implements a greatly simplified claimable balance
+- **token-timelock**: This contract demonstrates how to write a timelock and implements a greatly simplified claimable balance
 - **token**: This contract demonstrates how to write a token contract that implements the Token Interface.
 - **ttl**: The contract demonstrates how TTL can be extended for stored keys
 - **upgradeable_contract**: This contract demonstrates how to upgrade the Wasm bytecode using example contracts

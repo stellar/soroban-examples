@@ -2,7 +2,7 @@
 //! Soroban-managed auth framework for a simple case (a single user that needs
 //! to authorize a single contract invocation).
 //!
-//! See `timelock` and `single_offer` examples for demonstration of performing
+//! See `token-timelock` and `single_offer` examples for demonstration of performing
 //! authorized token operations on behalf of the user.
 //!
 //! See `atomic_swap` and `atomic_multiswap` examples for demonstration of
