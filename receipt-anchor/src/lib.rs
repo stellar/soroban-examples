@@ -79,7 +79,7 @@ impl ReceiptAnchor {
         caller.require_auth();
 
         let args_hash = Self::hash_xdr(&env, args.clone());
-        let result_hash = Self::hash_xdr(&env, result.clone());
+        let result_hash = Self::hash_xdr(&env, result);
         let commitment = Self::commit_parts(
             &env,
             target.clone(),

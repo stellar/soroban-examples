@@ -29,7 +29,14 @@ fn anchor_stores_the_commitment_under_the_caller() {
     let args = call_args(&env, 100, 42);
     let result = result_val(&env, 7);
 
-    let commitment = client.anchor(&caller, &target, &symbol_short!("swap"), &args, &result, &99);
+    let commitment = client.anchor(
+        &caller,
+        &target,
+        &symbol_short!("swap"),
+        &args,
+        &result,
+        &99,
+    );
 
     assert_eq!(client.count(&caller), 1);
     let stored = client.receipt(&caller, &0u32).unwrap();
@@ -48,7 +55,14 @@ fn verify_accepts_the_invocation_it_was_anchored_for() {
     let args = call_args(&env, 100, 42);
     let result = result_val(&env, 7);
 
-    client.anchor(&caller, &target, &symbol_short!("swap"), &args, &result, &99);
+    client.anchor(
+        &caller,
+        &target,
+        &symbol_short!("swap"),
+        &args,
+        &result,
+        &99,
+    );
     let stored = client.receipt(&caller, &0u32).unwrap();
 
     assert!(client.verify(&stored, &args, &result));
@@ -60,7 +74,14 @@ fn verify_rejects_a_different_result() {
     let (client, caller, target) = setup(&env);
     let args = call_args(&env, 100, 42);
 
-    client.anchor(&caller, &target, &symbol_short!("swap"), &args, &result_val(&env, 7), &99);
+    client.anchor(
+        &caller,
+        &target,
+        &symbol_short!("swap"),
+        &args,
+        &result_val(&env, 7),
+        &99,
+    );
     let stored = client.receipt(&caller, &0u32).unwrap();
 
     // Same caller's record, one unit of result changed.
@@ -73,7 +94,14 @@ fn verify_rejects_different_args() {
     let (client, caller, target) = setup(&env);
     let args = call_args(&env, 100, 42);
 
-    client.anchor(&caller, &target, &symbol_short!("swap"), &args, &result_val(&env, 7), &99);
+    client.anchor(
+        &caller,
+        &target,
+        &symbol_short!("swap"),
+        &args,
+        &result_val(&env, 7),
+        &99,
+    );
     let stored = client.receipt(&caller, &0u32).unwrap();
 
     assert!(!client.verify(&stored, &call_args(&env, 101, 42), &result_val(&env, 7)));
@@ -92,7 +120,14 @@ fn verify_rejects_a_different_ledger() {
     let args = call_args(&env, 100, 42);
     let result = result_val(&env, 7);
 
-    client.anchor(&caller, &target, &symbol_short!("swap"), &args, &result, &99);
+    client.anchor(
+        &caller,
+        &target,
+        &symbol_short!("swap"),
+        &args,
+        &result,
+        &99,
+    );
     let stored = client.receipt(&caller, &0u32).unwrap();
 
     // A receipt that claims a different ledger no longer describes this
@@ -112,7 +147,14 @@ fn verify_rejects_a_different_target() {
     let result = result_val(&env, 7);
     let target = Address::generate(&env);
 
-    client.anchor(&caller, &target, &symbol_short!("swap"), &args, &result, &99);
+    client.anchor(
+        &caller,
+        &target,
+        &symbol_short!("swap"),
+        &args,
+        &result,
+        &99,
+    );
     let stored = client.receipt(&caller, &0u32).unwrap();
 
     // Same args, same result, same ledger: only the contract that was called
