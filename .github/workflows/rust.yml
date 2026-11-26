@@ -109,8 +109,4 @@ jobs:
       env:
         CARGO_BUILD_TARGET: ${{ matrix.sys.target }}
     - name: Check no diffs exist
-      # Only check on the msrv, because snapshots of tests that load contract
-      # wasm contain hashes and costs of that wasm, which differ between Rust
-      # versions.
-      if: matrix.rust == 'msrv'
       run: git add -N . && git diff HEAD --exit-code

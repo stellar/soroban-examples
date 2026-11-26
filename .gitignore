@@ -11,3 +11,13 @@ z-dc-build-info/*
 .zshrc
 # proptest generates random inputs each run, so its snapshots are not deterministic
 fuzzing/test_snapshots/proptest/
+# These tests deploy contract wasm built by the build step, so their snapshots
+# contain the wasm's hash, code and costs, which change with the Rust version
+# that built it.
+atomic_multiswap/test_snapshots/
+cross_contract/contract_b/test_snapshots/
+deployer/deployer/test_snapshots/
+import_ark_bn254/test_snapshots/test/test_running_contract_as_wasm.1.json
+increment_with_pause/test_snapshots/test_real/
+privacy-pools/contract/test_snapshots/
+upgradeable_contract/old_contract/test_snapshots/
