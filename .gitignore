@@ -9,8 +9,10 @@ z-dc-build-info/*
 .idea
 .run/
 .zshrc
+
 # proptest generates random inputs each run, so its snapshots are not deterministic
 fuzzing/test_snapshots/proptest/
+
 # These tests deploy contract wasm built by the build step, so their snapshots
 # contain the wasm's hash, code and costs, which change with the Rust version
 # that built it.
