@@ -2,7 +2,8 @@
 extern crate std;
 
 use ed25519_dalek::{Keypair, Signer};
-use rand::thread_rng;
+use rand::rngs::StdRng;
+use rand::SeedableRng;
 use soroban_sdk::{testutils::BytesN as _, vec, BytesN, Env, IntoVal, InvokeError};
 
 use crate::{Contract, Error, Signature};
@@ -10,10 +11,11 @@ use crate::{Contract, Error, Signature};
 #[test]
 fn test_1of2_success() {
     let env = Env::default();
+    let mut rng = StdRng::seed_from_u64(0);
 
     // Generate signing keypairs.
-    let signer1 = Keypair::generate(&mut thread_rng());
-    let signer2 = Keypair::generate(&mut thread_rng());
+    let signer1 = Keypair::generate(&mut rng);
+    let signer2 = Keypair::generate(&mut rng);
 
     // Register the account contract, passing in the two signers (public keys) to the constructor.
     let contract_id = env.register(
@@ -73,11 +75,12 @@ fn test_1of2_success() {
 #[test]
 fn test_1of2_unknown_signer() {
     let env = Env::default();
+    let mut rng = StdRng::seed_from_u64(0);
 
     // Generate signing keypairs.
-    let signer1 = Keypair::generate(&mut thread_rng());
-    let signer2 = Keypair::generate(&mut thread_rng());
-    let signer3 = Keypair::generate(&mut thread_rng()); // 👈 Unknown signer.
+    let signer1 = Keypair::generate(&mut rng);
+    let signer2 = Keypair::generate(&mut rng);
+    let signer3 = Keypair::generate(&mut rng); // 👈 Unknown signer.
 
     // Register the account contract, passing in the two signers (public keys) to the constructor.
     let contract_id = env.register(
@@ -112,10 +115,11 @@ fn test_1of2_unknown_signer() {
 #[test]
 fn test_1of2_failed_verification() {
     let env = Env::default();
+    let mut rng = StdRng::seed_from_u64(0);
 
     // Generate signing keypairs.
-    let signer1 = Keypair::generate(&mut thread_rng());
-    let signer2 = Keypair::generate(&mut thread_rng());
+    let signer1 = Keypair::generate(&mut rng);
+    let signer2 = Keypair::generate(&mut rng);
 
     // Register the account contract, passing in the two signers (public keys) to the constructor.
     let contract_id = env.register(
@@ -152,10 +156,11 @@ fn test_1of2_failed_verification() {
 #[test]
 fn test_1of2_invalid_signature_structure() {
     let env = Env::default();
+    let mut rng = StdRng::seed_from_u64(0);
 
     // Generate signing keypairs.
-    let signer1 = Keypair::generate(&mut thread_rng());
-    let signer2 = Keypair::generate(&mut thread_rng());
+    let signer1 = Keypair::generate(&mut rng);
+    let signer2 = Keypair::generate(&mut rng);
 
     // Register the account contract, passing in the two signers (public keys) to the constructor.
     let contract_id = env.register(

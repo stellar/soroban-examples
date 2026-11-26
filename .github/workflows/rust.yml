@@ -103,6 +103,10 @@ jobs:
     - uses: stellar/stellar-cli@v30.0.1
 
     # Build and Test
+    - name: Clear test snapshots for checking no diffs exists after test run
+      run: find . -type d -name test_snapshots -prune -exec rm -rf {} +
     - run: make test
       env:
         CARGO_BUILD_TARGET: ${{ matrix.sys.target }}
+    - name: Check no diffs exist
+      run: git add -N . && git diff HEAD --exit-code

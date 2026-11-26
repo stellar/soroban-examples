@@ -1,0 +1,2 @@
+# proptest generates random inputs each run, so its snapshots are not deterministic
+/test_snapshots/proptest/

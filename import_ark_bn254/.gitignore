@@ -1,1 +1,6 @@
 opt/
+
+# This test deploys contract wasm built by the build step, so its snapshots
+# contain the wasm's hash, code and costs, which change with the Rust version
+# that built it.
+/test_snapshots/test/test_running_contract_as_wasm.1.json

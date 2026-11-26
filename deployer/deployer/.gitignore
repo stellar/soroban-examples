@@ -1,0 +1,4 @@
+# These tests deploy contract wasm built by the build step, so their snapshots
+# contain the wasm's hash, code and costs, which change with the Rust version
+# that built it.
+/test_snapshots/

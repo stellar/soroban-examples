@@ -3,7 +3,8 @@ extern crate std;
 
 use ed25519_dalek::Keypair;
 use ed25519_dalek::Signer;
-use rand::thread_rng;
+use rand::rngs::StdRng;
+use rand::SeedableRng;
 use soroban_sdk::auth::ContractContext;
 use soroban_sdk::symbol_short;
 use soroban_sdk::testutils::Address as _;
@@ -18,8 +19,8 @@ use soroban_sdk::{
 use crate::AccError;
 use crate::{AccSignature, AccountContract, AccountContractClient};
 
-fn generate_keypair() -> Keypair {
-    Keypair::generate(&mut thread_rng())
+fn generate_keypair(rng: &mut StdRng) -> Keypair {
+    Keypair::generate(rng)
 }
 
 fn signer_public_key(e: &Env, signer: &Keypair) -> BytesN<32> {
@@ -54,7 +55,8 @@ fn test_token_auth() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let mut signers = [generate_keypair(), generate_keypair()];
+    let mut rng = StdRng::seed_from_u64(0);
+    let mut signers = [generate_keypair(&mut rng), generate_keypair(&mut rng)];
     if signers[0].public.as_bytes() > signers[1].public.as_bytes() {
         signers.swap(0, 1);
     }
