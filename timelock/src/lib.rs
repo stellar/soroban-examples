@@ -11,33 +11,47 @@ use soroban_sdk::{contract, contractimpl, contracttype, token, Address, Env, Vec
 #[derive(Clone)]
 #[contracttype]
 pub enum DataKey {
+    /// Marks whether the contract has been initialized.
     Init,
+    /// Stores the claimable balance details.
     Balance,
 }
 
+/// Defines whether the timelock expires before or after a given timestamp.
 #[derive(Clone)]
 #[contracttype]
 pub enum TimeBoundKind {
+    /// The claim is only valid before the specified timestamp.
     Before,
+    /// The claim is only valid after the specified timestamp.
     After,
 }
 
+/// A time constraint that restricts when a claimable balance can be claimed.
 #[derive(Clone)]
 #[contracttype]
 pub struct TimeBound {
+    /// Specifies whether the claim must occur before or after the timestamp.
     pub kind: TimeBoundKind,
+    /// The Unix timestamp (in seconds) used for the time constraint.
     pub timestamp: u64,
 }
 
+/// Holds the state of a deposited claimable balance.
 #[derive(Clone)]
 #[contracttype]
 pub struct ClaimableBalance {
+    /// The address of the token contract.
     pub token: Address,
+    /// The token amount that has been deposited and can be claimed.
     pub amount: i128,
+    /// The list of addresses that are allowed to claim the balance.
     pub claimants: Vec<Address>,
+    /// The time constraint that determines when the balance can be claimed.
     pub time_bound: TimeBound,
 }
 
+/// A contract that implements a claimable balance with a time lock.
 #[contract]
 pub struct ClaimableBalanceContract;
 
@@ -54,6 +68,25 @@ fn check_time_bound(env: &Env, time_bound: &TimeBound) -> bool {
 
 #[contractimpl]
 impl ClaimableBalanceContract {
+    /// Deposits tokens into the contract to create a claimable balance.
+    ///
+    /// The balance can later be claimed by one of the specified claimants,
+    /// provided the time constraint is satisfied.
+    ///
+    /// # Arguments
+    ///
+    /// * `env` - The Soroban environment.
+    /// * `from` - The address of the depositor. Must authorize this call.
+    /// * `token` - The address of the token contract.
+    /// * `amount` - The number of tokens to deposit.
+    /// * `claimants` - A list of addresses eligible to claim the balance (max 10).
+    /// * `time_bound` - The time constraint that must be satisfied before the
+    ///   balance can be claimed.
+    ///
+    /// # Panics
+    ///
+    /// Panics if more than 10 claimants are provided, or if the contract has
+    /// already been initialized.
     pub fn deposit(
         env: Env,
         from: Address,
@@ -90,6 +123,18 @@ impl ClaimableBalanceContract {
         env.storage().instance().set(&DataKey::Init, &());
     }
 
+    /// Claims the deposited balance on behalf of an authorized claimant.
+    ///
+    /// # Arguments
+    ///
+    /// * `env` - The Soroban environment.
+    /// * `claimant` - The address attempting to claim. Must be in the claimants
+    ///   list and must authorize this call.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the time constraint is not satisfied, if the claimant is not
+    /// in the allowed list, or if there is no balance to claim.
     pub fn claim(env: Env, claimant: Address) {
         // Make sure claimant has authorized this call, which ensures their
         // identity.
