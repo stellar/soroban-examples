@@ -220,12 +220,16 @@ fn verify_authorization_policy(
 
     // 'None' means that the contract is outside of the policy.
     if let Some(spend_left) = spend_left {
-        // 'amount' is the third argument in both `approve` and `transfer`.
-        // If the contract has a different signature, it's safer to panic
-        // here, as it's expected to have the standard interface.
+        // 'amount' is the third argument in `approve` and `transfer`,
+        // but the second argument in `burn`.
+        let amount_index = if contract_context.fn_name == BURN_FN {
+            1
+        } else {
+            2
+        };
         let spent: i128 = contract_context
             .args
-            .get(2)
+            .get(amount_index)
             .unwrap()
             .try_into_val(env)
             .unwrap();
